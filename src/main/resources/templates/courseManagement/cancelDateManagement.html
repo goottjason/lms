@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">휴강일 관리</h1>
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <div class="col d-flex justify-content-end">
+      <form class="row col-12 mb-3">
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">진행상황별</option>
+            <option value="">진행 중</option>
+            <option value="">종료</option>
+          </select>
+        </div>
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">연도별</option>
+          </select>
+        </div>
+        <div class="col">
+          <select id="" class="form-control">
+            <option value="">과정별</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 휴강일 리스트 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-2">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">휴강일 리스트 조회</h6>
+        </div>
+        <div class="col-auto">
+          <button id="" class="btn btn-sm btn-info btn-icon-split">
+            <span class="icon text-white-50">
+              <i class="fa fa-undo"></i>
+            </span>
+            <span class="text">공휴일 불러오기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle">유형</th>
+            <th scope="col" class="align-middle">사유</th>
+            <th scope="col" class="align-middle">휴강일자</th>
+            <th scope="col" class="align-middle">과정명</th>
+            <th scope="col" class="align-middle">관리</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="text-center align-middle">공휴일</td>
+            <td class="text-center align-middle">크리스마스</td>
+            <td class="text-center align-middle">2024-12-25 </td>
+            <td class="title align-middle">전체</td>
+            <td class="text-center align-middle">
+              -
+            </td>
+          </tr>
+          <tr>
+            <td class="text-center align-middle">자체휴일</td>
+            <td class="text-center align-middle">강의실 랜선점검</td>
+            <td class="text-center align-middle">2025-01-04 </td>
+            <td class="title align-middle">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
+            <td class="text-center align-middle">
+              <button class="btn btn-danger btn-icon-split btn-sm">
+                <span class="text">삭제</span>
+              </button>
+            </td>
+          </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 휴강일 등록 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">휴강일 등록</h6>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="a">휴강일 유형</label>
+            <select id="a" class="form-control">
+              <option value="">자체휴일</option>
+              <option value="">공휴일</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="b">사유</label>
+            <input type="text" id="b" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="c">휴강일자</label>
+            <input type="date" id="c" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-1 mb-2" style="min-width: 80px;">적용범위</div>
+        <div class="col form-check">
+          <input class="form-check-input" type="checkbox" id="all">
+          <label class="form-check-label" for="all">
+            전체선택
+          </label>
+        </div>
+      </div>
+      <form>
+
+        <div class="row mb-1">
+          <div class="col-md-6 mb-1">
+            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="1">
+                <label class="form-check-label" for="1">
+                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-1">
+            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="2">
+                <label class="form-check-label" for="2">
+                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-1">
+          <div class="col-md-6 mb-1">
+            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="3">
+                <label class="form-check-label" for="3">
+                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-1">
+            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="4">
+                <label class="form-check-label" for="4">
+                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+
+
+        <!-- 버튼 -->
+        <div class="col-12 d-flex justify-content-end mt-5">
+          <button id="" class="btn btn-primary btn-icon-split mr-2">
+            <span class="icon text-white-50">
+                <i class="fas fa-upload"></i>
+            </span>
+            <span class="text px-3">등록</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

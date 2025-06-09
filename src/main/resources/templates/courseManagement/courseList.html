@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과정 조회</h1>
+
+    <div class="col d-flex justify-content-end">
+      <form class="row col-12 mb-3">
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">진행상황별</option>
+            <option value="">진행 중</option>
+            <option value="">종료</option>
+          </select>
+        </div>
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">연도별</option>
+          </select>
+        </div>
+        <div class="col">
+          <select id="" class="form-control">
+            <option value="">과정별</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">과정 리스트 조회</h6>
+        </div>
+        <div class="col-auto">
+          <a th:href="@{/courseRegister}">
+            <button id="" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+              </span>
+              <span class="text">과정 개설</span>
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <!-- 검색 / 정렬 영역 -->
+      <form class="row mb-3">
+        <div class="input-group col-6">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="과정명으로 검색하세요.">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button">
+                <i class="fas fa-search fa-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+          <select id="" class="form-control col-3 mr-3">
+            <option value="">오름차순</option>
+            <option value="">내림차순</option>
+          </select>
+          <select id="" class="form-control col-3">
+            <option value="">과정명</option>
+            <option value="">훈련기간</option>
+          </select>
+        </div>
+      </form>
+
+      <!-- 테이블 리스트 -->
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle">진행상황</th>
+            <th scope="col" class="align-middle">과정명</th>
+            <th scope="col" class="align-middle">훈련기간</th>
+            <th scope="col" class="align-middle">등록인원</th>
+            <th scope="col" class="align-middle">강사</th>
+            <th scope="col" class="align-middle">강의실</th>
+            <th scope="col" class="align-middle">수업시간표</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="text-center align-middle">진행 중</td>
+            <td class="title align-middle"><a th:href="@{/courseDetail}">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</a></td>
+            <td class="text-center align-middle">2025-01-01 ~ 2025-07-25 </td>
+            <td class="text-center align-middle">7</td>
+            <td class="text-center align-middle">김강사</td>
+            <td class="text-center align-middle">5강의실</td>
+            <td class="text-center align-middle">
+              <button class="btn btn-primary btn-icon-split btn-sm">
+                <span class="text">조회</span>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-center align-middle">종료</td>
+            <td class="title align-middle"><a th:href="@{/courseDetail}">[5회] 파이썬을 활용한 어떤 어떤 개발 종합과정</a></td>
+            <td class="text-center align-middle">2024-05-01 ~ 2024-12-31 </td>
+            <td class="text-center align-middle">10</td>
+            <td class="text-center align-middle">이강사</td>
+            <td class="text-center align-middle">3강의실</td>
+            <td class="text-center align-middle">
+              <a href="#" class="btn btn-primary btn-icon-split btn-sm">
+                <span class="text">조회</span>
+              </a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지 -->
+      <nav aria-label="Page navigation example" class="col mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item">
+            <span class="page-link">이전</span>
+          </li>
+          <li class="page-item active">
+            <span class="page-link">1</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">2</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">3</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link page-move">다음</span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+  // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">Blank Page</h1>
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <div class="col d-flex justify-content-end">
+      <form class="row col-12 mb-3">
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">진행상황별</option>
+            <option value="">진행 중</option>
+            <option value="">종료</option>
+          </select>
+        </div>
+        <div class="col-3">
+          <select id="" class="form-control">
+            <option value="">연도별</option>
+          </select>
+        </div>
+        <div class="col">
+          <select id="" class="form-control">
+            <option value="">과정별</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+
+  <p>루트 페이지는 로그인페이지로 만들 예정</p>
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

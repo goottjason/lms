@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.7-SNAPSHOT'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.0.0") // 레이아웃
+
+    testAnnotationProcessor 'org.projectlombok:lombok' // 테스트를 위한 세팅
+    testImplementation 'org.projectlombok:lombok' // 테스트를 위한 세팅
+
+    implementation("jakarta.validation:jakarta.validation-api:3.0.2") // 밸리데이터
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")  // 밸리데이터
+
+    implementation 'net.coobird:thumbnailator:0.4.8' // 썸네일 만들기
+
+    implementation 'org.springframework.security:spring-security-crypto' // 암호화
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과정 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="row mb-4">
+    <!-- 과정 내역 -->
+    <div class="col-lg-6">
+      <div class="card position-relative">
+        <div class="card-header py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="m-0 font-weight-bold text-primary">과정 내역</h6>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <div class="row mb-2">
+            <div class="col-md-9">
+              <div class="form-group">
+                <label for="a">과정명</label>
+                <input type="text" id="a" class="form-control" value="어쩌구 저쩌구 과정" readonly>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="b">등록인원</label>
+                <input type="text" id="b" class="form-control" value="10" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="c">총훈련시간</label>
+                <input type="text" id="c" class="form-control" value="1040" readonly>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="d">총훈련일수</label>
+                <input type="text" id="d" class="form-control" value="130" readonly>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="e">일일훈련시간</label>
+                <input type="text" id="e" class="form-control" value="8" readonly>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="f">쉬는시간</label>
+                <input type="text" id="f" class="form-control" value="10" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="g">과정시작일</label>
+                <input type="date" id="g" class="form-control" value="2024-06-01" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="h">과정종료일</label>
+                <input type="date" id="h" class="form-control" value="2024-12-31" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="i">훈련시작시간</label>
+                <input type="time" id="i" class="form-control" value="09:30" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="j">훈련종료시간</label>
+                <input type="time" id="j" class="form-control" value="18:30" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="k">식사시작시간</label>
+                <input type="time" id="k" class="form-control" value="13:20" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="l">식사종료시간</label>
+                <input type="time" id="l" class="form-control" value="14:30" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="m">강사명</label>
+                <input type="text" id="m" class="form-control" value="김강사" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="n">강의실</label>
+                <input type="text" id="n" class="form-control" value="5강의실" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 교과목 및 교재 내역 -->
+    <div class="col-lg-6">
+      <div class="card position-relative">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">교과목 및 교재 내역</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr class="text-center">
+                <th scope="col" class="align-middle">교과목명</th>
+                <th scope="col" class="align-middle">시간</th>
+                <th scope="col" class="align-middle">교재명</th>
+                <th scope="col" class="align-middle">저자명</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td class="text-center align-middle">백엔드 기초 java</td>
+                <td class="text-center align-middle">120</td>
+                <td class="text-center align-middle">이것이 java다</td>
+                <td class="text-center align-middle">신용권</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="col-12 d-flex justify-content-end mt-3">
+      <a th:href="@{/courseModify}">
+        <button id="" class="btn btn-info btn-icon-split mr-2">
+          <span class="icon text-white-50">
+              <i class="fa fa-wrench"></i>
+          </span>
+          <span class="text px-5">수정</span>
+        </button>
+      </a>
+      <button id="" class="btn btn-danger btn-icon-split mr-2">
+        <span class="icon text-white-50">
+            <i class="fa fa-times"></i>
+        </span>
+        <span class="text px-5">삭제</span>
+      </button>
+      <a th:href="@{/courseList}">
+        <button id="" class="btn btn-secondary btn-icon-split">
+          <span class="icon text-white-50">
+              <i class="fas fa-list"></i>
+          </span>
+          <span class="text px-5">목록</span>
+        </button>
+      </a>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>
