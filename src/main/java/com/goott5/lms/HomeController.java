@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    // 루트
-    @GetMapping("/")
-    public String home() {
-        return "/layout/blank";
-    }
-
-
+  // 루트
+  @GetMapping("/")
+  public String home() {
+    return "/user/login";
+  }
+  
 }

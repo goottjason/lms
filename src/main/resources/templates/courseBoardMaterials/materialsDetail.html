@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업공지 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 상단 카드 시작-->
+  <div class="row">
+    <div class="col-md-4 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow-sm py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                작성자
+              </div>
+              <div class="h6 mb-0 text-gray-800">김강사</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-user fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                작성일</div>
+              <div class="h6 mb-0 text-gray-800">2025-05-04</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-calendar fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-sm-6 mb-3">
+      <div class="card border-left-info shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                조회수</div>
+              <div class="h6 mb-0 text-gray-800">2</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-comments fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 상단 카드 끝 -->
+
+  <!-- 본문 시작 -->
+  <div class="card shadow mb-4">
+    <!-- 제목 -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">여기에 제목이 들어옵니다~~</h6>
+    </div>
+    <!-- 내용 -->
+    <div class="card-body py-5">
+      여기에 내용이 들어옵니다~~~
+    </div>
+    <!-- 첨부 파일 -->
+    <div class="card-footer">
+      <p class="mt-2">첨부파일</p>
+      <div class="row">
+
+        <div class="col-4 card mb-2">
+          <div class="row g-0 m-0">
+            <div class="col-md-3 pl-2">
+              <img
+                  th:src="@{/img/no-image.jpg}"
+                  class="img-fluid rounded-start"
+                  style="width: 60px; object-fit: cover;">
+            </div>
+            <div class="col-md-9 d-flex align-items-center">
+              <div class="card-body p-0">
+                <p class="card-title mb-1 text-truncate">첨부파일123.pdf</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- 본문 끝 -->
+
+  <!-- 버튼 -->
+  <div class="col-12 d-flex justify-content-end mb-4">
+    <button id="" class="btn btn-info btn-icon-split mr-2">
+      <span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+      <span class="text px-3">답변수정</span>
+    </button>
+    <button id="" class="btn btn-danger btn-icon-split mr-2">
+      <span class="icon text-white-50">
+        <i class="fa fa-times"></i>
+      </span>
+      <span class="text px-3">답변삭제</span>
+    </button>
+    <button id="" class="btn btn-secondary btn-icon-split">
+      <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+      <span class="text px-4">목록</span>
+    </button>
+  </div>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

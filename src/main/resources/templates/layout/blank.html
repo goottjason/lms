@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
 
 </head>
@@ -10,8 +11,8 @@
 <div layout:fragment="content">
   <!-- content header 시작 -->
   <div class="row align-items-center">
-    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">Blank Page</h1>
-    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">Page Title</h1>
+      <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
       <form class="row col-12 mb-3">
         <div class="col-3">
@@ -19,11 +20,6 @@
             <option value="">진행상황별</option>
             <option value="">진행 중</option>
             <option value="">종료</option>
-          </select>
-        </div>
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">연도별</option>
           </select>
         </div>
         <div class="col">

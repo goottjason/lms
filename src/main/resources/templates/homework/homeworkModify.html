@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 수정</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <form class="mb-4" method="" action="">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="m-0 font-weight-bold text-primary">과제 수정</h6>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="a">제목</label>
+              <input type="text" id="a" class="form-control" value="작성된 과제명">
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="b">제출기간 시작</label>
+              <input type="date" id="b" class="form-control" value="2025-05-01">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="c">제출기한 종료</label>
+              <input type="date" id="c" class="form-control" value="2025-05-31">
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="d">내용</label>
+              <textarea
+                  id="d"
+                  class="form-control"
+                  style="height: 280px;">작성된 내용</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div class="mb-2">첨부파일</div>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="e">
+              <label class="custom-file-label" for="e">파일을 선택하세요.</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      <!-- 버튼 -->
+    <div class="col-12 d-flex justify-content-end mt-3">
+      <button id="" class="btn btn-primary btn-icon-split mr-2">
+          <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
+        <span class="text px-5">저장</span>
+      </button>
+      <button id="" class="btn btn-secondary btn-icon-split">
+          <span class="icon text-white-50">
+              <i class="fas fa-times"></i>
+          </span>
+        <span class="text px-5">취소</span>
+      </button>
+    </div>
+  </form>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>
