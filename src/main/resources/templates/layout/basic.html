@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="utf-8">
@@ -13,19 +14,21 @@
   <title>Goott5 LMS시스템</title>
 
   <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
+  <link
+      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+      rel="stylesheet">
   <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
   <style>
     @media (max-width: 1200px) {
       body {
-          min-width: 1200px;
-          overflow-x: auto;
+        min-width: 1200px;
+        overflow-x: auto;
       }
     }
+
     a {
-        color: inherit;
-        text-decoration: none;
+      color: inherit;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -56,8 +59,9 @@
     <!-- 세부 메뉴 선택 시 a.collapse-item에 active 클래스를 추가해주는 개발 필요 -->
     <!-- Nav Item - 과정 관리 -->
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseManagement"
-         aria-expanded="true">
+      <a
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseManagement"
+          aria-expanded="true">
         <i class="fas fa-fw fa-cog"></i>
         <span>과정 관리</span>
       </a>
@@ -73,8 +77,12 @@
 
     <!-- Nav Item - 교육생 관리 -->
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#learnerManagement"
-         aria-expanded="true">
+      <a
+          class="nav-link collapsed"
+          href="#"
+          data-toggle="collapse"
+          data-target="#learnerManagement"
+          aria-expanded="true">
         <i class="fa fa-id-card"></i>
         <span>교육생 관리</span>
       </a>
@@ -104,8 +112,9 @@
 
     <!-- Nav Item - 과정 게시판 -->
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseBoard"
-         aria-expanded="true">
+      <a
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseBoard"
+          aria-expanded="true">
         <i class="fa fa-newspaper"></i>
         <span>과정 게시판</span>
       </a>
@@ -120,8 +129,9 @@
 
     <!-- Nav Item - 과제/시험 -->
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#homeworkTest"
-         aria-expanded="true">
+      <a
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#homeworkTest"
+          aria-expanded="true">
         <i class="fa fa-laptop"></i>
         <span>과제 / 시험</span>
       </a>
@@ -164,8 +174,9 @@
 
     <!-- Nav Item - 사용자 관리 -->
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#userManagement"
-         aria-expanded="true">
+      <a
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#userManagement"
+          aria-expanded="true">
         <i class="fa fa-user"></i>
         <span>&nbsp;사용자 관리</span>
       </a>
@@ -215,9 +226,8 @@
           <i class="fa fa-bars"></i>
         </button>
 
-        <select class="form-control col-md-5">
-          <option>[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</option>
-          <option>[5회] 파이썬을 활용한 어쩌구 저쩌구</option>
+        <select id="courseSelector" class="form-control col-md-5">
+          <option></option>
         </select>
 
         <!-- Topbar Navbar -->
@@ -225,15 +235,17 @@
 
           <!-- Nav Item - Alerts -->
           <li class="nav-item dropdown no-arrow mx-1">
-            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a
+                class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fas fa-bell fa-fw"></i>
-              <!-- Counter - Alerts -->
+                <!-- Counter - Alerts -->
               <span class="badge badge-danger badge-counter">3</span>
             </a>
-            <!-- Dropdown - Alerts -->
-            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                 aria-labelledby="alertsDropdown">
+              <!-- Dropdown - Alerts -->
+            <div
+                class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="alertsDropdown">
               <h6 class="dropdown-header">
                 Notice Center
               </h6>
@@ -278,15 +290,18 @@
 
           <!-- Nav Item - User Information -->
           <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a
+                class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="mr-2 d-none d-lg-inline text-gray-600 small">홍길동 관리자</span>
-              <img class="img-profile rounded-circle"
-                   th:src="@{/img/undraw_profile.svg}">
+              <img
+                  class="img-profile rounded-circle"
+                  th:src="@{/img/undraw_profile.svg}">
             </a>
-            <!-- Dropdown - User Information -->
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                 aria-labelledby="userDropdown">
+              <!-- Dropdown - User Information -->
+            <div
+                class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
               <a class="dropdown-item" href="#">
                 <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                 개인정보 조회
@@ -340,8 +355,13 @@
 </a>
 
 <!-- Logout Modal-->
-<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-     aria-hidden="true">
+<div
+    class="modal fade"
+    id="logoutModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -373,19 +393,19 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-    $(document).on('click', '.collapse-item', function(e) {
+    $(document).on("click", ".collapse-item", function (e) {
         // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
-        $(this).closest('.collapse-inner').find('.collapse-item').removeClass('active');
+        $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
 
         // 클릭한 요소에 active 추가
-        $(this).addClass('active');
+        $(this).addClass("active");
     });
-    $(document).on('click', '.nav-link', function () {
-        $('.collapse-item').removeClass('active');
+    $(document).on("click", ".nav-link", function () {
+        $(".collapse-item").removeClass("active");
     });
-    $(document).on('click', '.nav-single', function () {
-        $('.nav-link').addClass('collapsed');
-        $('.collapse').removeClass('show');
+    $(document).on("click", ".nav-single", function () {
+        $(".nav-link").addClass("collapsed");
+        $(".collapse").removeClass("show");
     });
 
 </script>
