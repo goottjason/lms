@@ -9,7 +9,7 @@ public class HomeController {
   // 루트
   @GetMapping("/")
   public String home() {
-    return "/user/login";
+    return "user/login";
   }
-  
+
 }
