@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html
     lang="ko"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -41,18 +40,21 @@
             <div class="text-center mt-4">
               <h2 class="h2 text-gray-900 mb-5">Welcome</h2>
             </div>
-            <form id="loginForm" th:action="@{/member/login}" method="POST">
-              <h4 class="h4 text-gray-900 mb-2">Log-in</h4>
+            <form id="loginForm" th:action="@{/user/login}" method="POST">
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="h4 text-gray-900 mb-2 mr-2">Log-in</h4>
+                <p class="text-danger small mb-2" th:if="${msg}" th:text="${msg}"></p>
+              </div>
               <div class="form-group">
                 <input
                     type="text" class="form-control form-control-user"
-                    id="userId" name="userId"
+                    id="loginId" name="loginId"
                     placeholder="아이디를 입력하세요.">
               </div>
               <div class="form-group">
                 <input
                     type="password" class="form-control form-control-user"
-                    id="userPwd" name="userPwd"
+                    id="password" name="password"
                     placeholder="비밀번호를 입력하세요.">
               </div>
               <div class="form-group row mb-4 align-items-center">
@@ -60,24 +62,24 @@
                 <div class="col-5 pl-4 d-flex align-items-center">
                   <div class="custom-control custom-checkbox small">
                     <input
-                        type="checkbox" class="custom-control-input" id="rememberId"
-                        name="rememberMe">
-                    <label class="custom-control-label mb-0" for="rememberId">자동로그인</label>
+                        type="checkbox" class="custom-control-input" id="autoLogin"
+                        name="autoLogin">
+                    <label class="custom-control-label mb-0" for="autoLogin">자동로그인</label>
                   </div>
                 </div>
 
                 <!-- 비밀번호 변경 링크 -->
                 <div class="col-7 text-right pr-4">
-                  <a th:href="@{/user/passwordModify}" class="small">비밀번호 변경이 필요하신가요?</a>
+                  <a href="#" class="small">비밀번호 변경이 필요하신가요?</a>
                 </div>
               </div>
               <button type="submit" id="loginBtn" class="btn btn-primary btn-user btn-block">
-                Login
+                Log-in
               </button>
             </form>
             <hr>
             <div class="text-center">
-              <a th:href="@{/user/signup}">회원이 아니신가요? 여기서 가입하세요!</a>
+              <a href="#">회원이 아니신가요? 여기서 가입하세요!</a>
             </div>
           </div>
 
@@ -108,9 +110,7 @@
 <script>
 
 
-</script>
-<th:block layout:fragment="script">
 
-</th:block>
+</script>
 </body>
 </html>
