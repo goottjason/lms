@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
 
 </head>
@@ -11,24 +12,19 @@
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">휴강일 관리</h1>
-    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+      <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
       <form class="row col-12 mb-3">
         <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">진행상황별</option>
-            <option value="">진행 중</option>
-            <option value="">종료</option>
-          </select>
-        </div>
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">연도별</option>
+          <select id="first-category" class="form-control">
+            <option value="-1">진행상황별</option>
+            <option value="1">진행 중</option>
+            <option value="0">종료</option>
           </select>
         </div>
         <div class="col">
-          <select id="" class="form-control">
-            <option value="">과정별</option>
+          <select id="second-category" class="form-control">
+            <option value="-1">과정별</option>
           </select>
         </div>
       </form>
@@ -45,7 +41,7 @@
           <h6 class="m-0 font-weight-bold text-primary">휴강일 리스트 조회</h6>
         </div>
         <div class="col-auto">
-          <button id="" class="btn btn-sm btn-info btn-icon-split">
+          <button id="call-holiday-btn" class="btn btn-sm btn-info btn-icon-split">
             <span class="icon text-white-50">
               <i class="fa fa-undo"></i>
             </span>
@@ -66,32 +62,35 @@
             <th scope="col" class="align-middle">관리</th>
           </tr>
           </thead>
-          <tbody>
-          <tr>
-            <td class="text-center align-middle">공휴일</td>
-            <td class="text-center align-middle">크리스마스</td>
-            <td class="text-center align-middle">2024-12-25 </td>
-            <td class="title align-middle">전체</td>
-            <td class="text-center align-middle">
-              -
-            </td>
-          </tr>
-          <tr>
-            <td class="text-center align-middle">자체휴일</td>
-            <td class="text-center align-middle">강의실 랜선점검</td>
-            <td class="text-center align-middle">2025-01-04 </td>
-            <td class="title align-middle">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-            <td class="text-center align-middle">
-              <button class="btn btn-danger btn-icon-split btn-sm">
-                <span class="text">삭제</span>
-              </button>
-            </td>
-          </tr>
+          <tbody id="cancel-date-list">
+
 
           </tbody>
         </table>
       </div>
     </div>
+
+      <!-- 페이지 -->
+    <nav aria-label="Page navigation example" class="col mt-4">
+        <ul id="paging-area" class="pagination justify-content-center">
+          <li class="page-item">
+            <span class="page-link">이전</span>
+          </li>
+          <li class="page-item active">
+            <span class="page-link">1</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">2</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">3</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link page-move">다음</span>
+          </li>
+        </ul>
+      </nav>
+
   </div>
 
   <!-- 휴강일 등록 -->
@@ -105,26 +104,26 @@
     </div>
     <div class="card-body">
 
+
       <div class="row mb-4">
         <div class="col-md-3">
           <div class="form-group">
-            <label for="a">휴강일 유형</label>
-            <select id="a" class="form-control">
-              <option value="">자체휴일</option>
-              <option value="">공휴일</option>
-            </select>
+            <label for="cancel-date-type">휴강일 유형</label>
+            <input type="text" id="cancel-date-type" class="form-control" value="자체휴일" readonly>
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label for="b">사유</label>
-            <input type="text" id="b" class="form-control">
+            <label for="reason">사유</label>
+            <span class="errMsg reasonErr"></span>
+            <input type="text" id="reason" class="form-control">
           </div>
         </div>
         <div class="col-md-3">
           <div class="form-group">
-            <label for="c">휴강일자</label>
-            <input type="date" id="c" class="form-control">
+            <label for="cancel-date">휴강일자</label>
+            <span class="errMsg dateErr"></span>
+            <input type="date" id="cancel-date" class="form-control">
           </div>
         </div>
       </div>
@@ -136,66 +135,18 @@
           <label class="form-check-label" for="all">
             전체선택
           </label>
+          <span class="errMsg rangeErr"></span>
         </div>
       </div>
-      <form>
 
-        <div class="row mb-1">
-          <div class="col-md-6 mb-1">
-            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="1">
-                <label class="form-check-label" for="1">
-                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 mb-1">
-            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="2">
-                <label class="form-check-label" for="2">
-                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
-                </label>
-              </div>
-            </div>
-          </div>
+        <div id="courses-for-reg-cancel-date">
+
         </div>
-
-        <div class="row mb-1">
-          <div class="col-md-6 mb-1">
-            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="3">
-                <label class="form-check-label" for="3">
-                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 mb-1">
-            <div class="card h-100 py-3 pl-3 d-flex align-items-start">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="4">
-                <label class="form-check-label" for="4">
-                  [1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-
-
-
-
 
 
         <!-- 버튼 -->
         <div class="col-12 d-flex justify-content-end mt-5">
-          <button id="" class="btn btn-primary btn-icon-split mr-2">
+          <button id="reg-btn" class="btn btn-primary btn-icon-split mr-2">
             <span class="icon text-white-50">
                 <i class="fas fa-upload"></i>
             </span>
@@ -203,7 +154,7 @@
           </button>
         </div>
 
-      </form>
+
     </div>
   </div>
   <!-- content body 끝 -->
@@ -211,6 +162,549 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
       // javascript 개발은 여기에...
+
+      let categorizeType = 0;
+      let pageNo         = 1;
+
+      $(function () {
+
+          showCancelDatesByCategorizingAndPaging();
+
+          // 휴강일 삭제
+          $("body").on("click", ".delete-btn", function () {
+              console.log($(this).data("id"));
+              let courseId = $(this).data("id");
+              console.log(courseId);
+
+              $.ajax({
+                         url        : "/cancelDateManagement/removeCancelDate", // 데이터가 송수신될 서버의 주소
+                         type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+                         dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                         data       : JSON.stringify(courseId),
+                         contentType: "application/json; charset=utf-8",
+                         // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                         async   : false, // 비동기옵션 off
+                         success : function (data) { // 통신이 성공하면 수행할 함수
+
+                             console.log(data);
+                             showCancelDatesByCategorizingAndPaging();
+
+                         },
+                         error   : function () {
+                         },
+                         complete: function () {
+                         }
+                     });
+          });
+
+          // 휴강일 등록 - 적용범위 가져오기 courses-for-reg-cancel-date
+
+          $.ajax({
+                     url: "/cancelDateManagement/getCoursesByInProgress",
+                     // 데이터가 송수신될 서버의 주소
+                     type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     data    : {"inProgressType": 1},
+                     // contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+                         let output = ``;
+                         console.log(data);
+                         console.log(data.length);
+                         $(data).each(function (index, item) {
+
+                             if (index % 2 == 0) {
+                                 output += `<div class="row mb-1">`;
+                             }
+                             output += `<div class="col-md-6 mb-1">
+                                          <div class="card h-100 py-3 pl-3 d-flex align-items-start">
+                                            <div class="form-check">
+                                              <input class="form-check-input course-for-cancel-date" type="checkbox" id="${item.id}">
+                                              <label class="form-check-label" for="${item.id}">
+                                                ${item.name}
+                                              </label>
+                                            </div>
+                                          </div>
+                                        </div>`;
+
+                             if (index % 2 != 0 || index == data.length - 1) {
+                                 output += `</div>`;
+                             }
+                         });
+
+                         $("#courses-for-reg-cancel-date").html(output);
+
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+          $(".course-for-cancel-date").change(function () {
+
+              if ($(".course-for-cancel-date:checked").length ==
+                  $(".course-for-cancel-date").length) {
+                  $("#all").prop("checked", true);
+              } else {
+                  $("#all").prop("checked", false);
+              }
+          });
+
+          $("#all").change(function () {
+
+              if ($(this).is(":checked")) {
+                  $(".course-for-cancel-date").prop("checked", true);
+              } else {
+                  $(".course-for-cancel-date").prop("checked", false);
+              }
+
+          });
+
+          // 등록 버튼
+          $("#reg-btn").click(function () {
+              let cancelDate = $("#cancel-date").val();
+              let reason     = $("#reason").val();
+
+              if (!checkVaild()) {
+                  return;
+              }
+
+              if ($("#all").is(":checked")) {
+                  $.ajax({
+                             url: "/cancelDateManagement/saveCancelDate",
+                             // 데이터가 송수신될 서버의 주소
+                             type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+                             dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                             data       : JSON.stringify({
+                                                             "all"          : true,
+                                                             "publicHoliday": false,
+                                                             "cancelDate"   : cancelDate,
+                                                             "reason"       : reason
+                                                         }),
+                             contentType: "application/json; charset=utf-8",
+                             // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                             async   : false, // 비동기옵션 off
+                             success : function (data) { // 통신이 성공하면 수행할 함수
+                                 location.reload(true);
+                             },
+                             error   : function () {
+                             },
+                             complete: function () {
+                             }
+                         });
+
+              } else {
+                  $(".course-for-cancel-date:checked").each(function (index, item) {
+                      $.ajax({
+                                 url: "/cancelDateManagement/saveCancelDate",
+                                 // 데이터가 송수신될 서버의 주소
+                                 type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+                                 dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                                 data       : JSON.stringify({
+                                                                 "all"          : false,
+                                                                 "courseId"     :
+                                                                     $(item).attr("id"),
+                                                                 "publicHoliday": false,
+                                                                 "cancelDate"   : cancelDate,
+                                                                 "reason"       : reason
+                                                             }),
+                                 contentType: "application/json; charset=utf-8",
+                                 // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                                 async   : false, // 비동기옵션 off
+                                 success : function (data) { // 통신이 성공하면 수행할 함수
+                                     location.reload(true);
+                                 },
+                                 error   : function () {
+                                 },
+                                 complete: function () {
+                                 }
+                             });
+                  });
+              }
+
+          });
+
+          // 페이지 로딩 시 두번째 카테고리 과정 가져오기
+          $.ajax({
+                     url: "/cancelDateManagement/getCoursesByInProgress",
+                     // 데이터가 송수신될 서버의 주소
+                     type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     data    : {"inProgressType": $("#first-category").val()},
+                     // contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+
+                         console.log(data);
+                         output = `<option value='-1'>과정별</option>`;
+                         $(data).each(function (index, item) {
+                             output += `<option value="${item.id}">${item.name}</option>`;
+                         });
+
+                         $("#second-category").html(output);
+
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+      });
+
+      // 첫번째 분류
+      $("#first-category").change(function () {
+          // console.log($("#first-category").val());
+
+          $.ajax({
+                     url: "/cancelDateManagement/getCoursesByInProgress",
+                     // 데이터가 송수신될 서버의 주소
+                     type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     data    : {"inProgressType": $("#first-category").val()},
+                     // contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+
+                         console.log(data);
+                         output = `<option value='-1'>과정별</option>`;
+                         $(data).each(function (index, item) {
+                             output += `<option value="${item.id}">${item.name}</option>`;
+                         });
+
+                         $("#second-category").html(output);
+
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+          // if (isInProgress == -1) {
+          //     let output = "<option value='-1'>과정별</option>";
+          //     $("#second-category").html(output);
+          //
+          // } else if (isInProgress == 0) {
+          //     let output = ``;
+          //
+          //     $.ajax({
+          //                url: "/cancelDateManagement/getNotInProgressCourses",
+          //                // 데이터가 송수신될 서버의 주소
+          //                type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+          //                dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+          //                // data       : tmpJson,
+          //                // contentType: "application/json; charset=utf-8",
+          //                // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+          //                async   : false, // 비동기옵션 off
+          //                success : function (data) { // 통신이 성공하면 수행할 함수
+          //
+          //                    console.log(data);
+          //                    output = `<option value='-1'>과정별</option>`;
+          //                    $(data).each(function (index, item) {
+          //                        output += `<option value="${item.id}">${item.name}</option>`;
+          //                    });
+          //
+          //                    $("#second-category").html(output);
+          //
+          //                },
+          //                error   : function () {
+          //                },
+          //                complete: function () {
+          //                }
+          //            });
+          //
+          // } else {
+          //     let output = ``;
+          //
+          //     $.ajax({
+          //                url: "/cancelDateManagement/getInProgressCourses",
+          //                // 데이터가 송수신될 서버의 주소
+          //                type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+          //                dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+          //                // data       : tmpJson,
+          //                // contentType: "application/json; charset=utf-8",
+          //                // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+          //                async   : false, // 비동기옵션 off
+          //                success : function (data) { // 통신이 성공하면 수행할 함수
+          //
+          //                    console.log(data);
+          //                    output = `<option value='-1'>과정별</option>`;
+          //                    $(data).each(function (index, item) {
+          //                        output += `<option value="${item.id}">${item.name}</option>`;
+          //                    });
+          //
+          //                    $("#second-category").html(output);
+          //
+          //                },
+          //                error   : function () {
+          //                },
+          //                complete: function () {
+          //                }
+          //            });
+          // }
+
+          showCancelDatesByCategorizingAndPaging();
+
+      });
+
+      // 두번째 분류
+      $("#second-category").change(function () {
+
+          showCancelDatesByCategorizingAndPaging();
+      });
+
+      const
+          myKey =
+              "bodgvmkG3ToKBU%2F0FLZyS%2BqJqDmGqVwnPAUXUra4%2BDyM9KVDC8m2a2D37GdWyytohVNW92pmylfOVX4UamgU4w%3D%3D";
+
+      let url =
+              "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?numOfRows=100";
+      url += "&ServiceKey=" + myKey;
+
+      // 공휴일 불러오기
+      $("#call-holiday-btn").click(function () {
+
+          let requestUrl      = url;
+          let nowDate         = new Date();
+          let nowYearHoliday  = "";
+          let nextYearHoliday = "";
+
+          requestUrl += "&solYear=" + nowDate.getFullYear();
+          console.log(requestUrl);
+
+          $.ajax({
+                     url     : requestUrl, // 데이터가 송수신될 서버의 주소
+                     type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     // data       : tmpJson,
+                     // contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+
+                         console.log(data);
+                         nowYearHoliday = data.response.body.items.item;
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+          requestUrl = url;
+          requestUrl += "&solYear=" + (nowDate.getFullYear() + 1);
+
+          $.ajax({
+                     url     : requestUrl, // 데이터가 송수신될 서버의 주소
+                     type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     // data       : tmpJson,
+                     // contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+
+                         console.log(data);
+                         nextYearHoliday = data.response.body.items.item;
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+          let holidays     = nowYearHoliday.concat(nextYearHoliday);
+          let holidaysJson = JSON.stringify(holidays);
+          console.log(holidaysJson);
+
+          $.ajax({
+                     url : "/cancelDateManagement/saveHoliday", // 데이터가 송수신될 서버의 주소
+                     type: "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+                     // dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     data       : holidaysJson,
+                     contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function () { // 통신이 성공하면 수행할 함수
+
+                         alert("저장완료");
+                     },
+                     error   : function () {
+                         alert("저장 실패!!!!");
+
+                     },
+                     complete: function () {
+                     }
+                 });
+
+      });
+
+      function decideCategorizeType() {
+          let firstCategory  = $("#first-category").val();
+          let secondCategory = $("#second-category").val();
+
+          if (firstCategory == -1 && secondCategory == -1) {
+              categorizeType = 0;
+          } else if (firstCategory != -1 && secondCategory == -1) {
+              categorizeType = 1;
+          } else {
+              categorizeType = 2;
+          }
+
+          console.log(categorizeType);
+
+      }
+
+      function showCancelDatesByCategorizingAndPaging() {
+
+          decideCategorizeType();
+
+          $.ajax({
+                     url: "/cancelDateManagement/getCancelDates",
+                     // 데이터가 송수신될 서버의 주소
+                     type       : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                     dataType   : "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                     data       : {
+                         "pageNo"        : pageNo,
+                         "categorizeType": categorizeType,
+                         "firstCategory" : $("#first-category").val(),
+                         "secondCategory": $("#second-category").val()
+                     },
+                     contentType: "application/json; charset=utf-8",
+                     // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
+                     async   : false, // 비동기옵션 off
+                     success : function (data) { // 통신이 성공하면 수행할 함수
+                         console.log(data);
+                         makeAndShowList(data);
+                         makeAndShowPagingArea(data);
+                     },
+                     error   : function () {
+                     },
+                     complete: function () {
+                     }
+                 });
+
+      }
+
+      function makeAndShowPagingArea(data) {
+
+          let output = ``;
+
+          if (data.prev) {
+              output += `<li class="page-item">
+                           <span class="page-link" onclick="pushPrevBtn(${data.start})">이전</span>
+                         </li>`;
+          } else {
+              output += `<li class="page-item disabled">
+                           <span class="page-link">이전</span>
+                         </li>`;
+          }
+
+          for (let i = data.start; i <= data.end; i++) {
+
+              if (pageNo == i) {
+                  output += `<li class="page-item active">
+                             <span class="page-link" onclick="pushPageBtn(this)">${i}</span>
+                           </li>`;
+
+              } else {
+                  output += `<li class="page-item">
+                             <span class="page-link" onclick="pushPageBtn(this)">${i}</span>
+                           </li>`;
+              }
+
+          }
+
+          if (data.next) {
+              output += `<li class="page-item">
+                           <span class="page-link" onclick="pushNextBtn(${data.start})">다음</span>
+                         </li>`;
+          } else {
+              output += `<li class="page-item disabled">
+                           <span class="page-link">다음</span>
+                         </li>`;
+          }
+
+          $("#paging-area").html(output);
+
+      }
+
+      function pushNextBtn(startNo) {
+          pageNo = startNo + 10;
+          showCancelDatesByCategorizingAndPaging();
+
+      }
+
+      function pushPrevBtn(startNo) {
+          pageNo = startNo - 10;
+          showCancelDatesByCategorizingAndPaging();
+      }
+
+      function pushPageBtn(thisBtn) {
+
+          console.log($(thisBtn).text());
+          pageNo = $(thisBtn).text();
+          showCancelDatesByCategorizingAndPaging();
+
+      }
+
+      function makeAndShowList(data) {
+          let output = ``;
+
+          $(data.voList).each(function (index, item) {
+              output += `<tr>
+                                 <td class="text-center align-middle">${item.publicHoliday ?
+                                                                        "공휴일" : "자체휴일"}</td>
+                                 <td class="text-center align-middle">${item.reason}</td>
+                                 <td class="text-center align-middle">${item.cancelDate}</td>
+                                 <td class="text-center align-middle">${item.all ? "전체" :
+                                                                        item.name}</td>
+                                 <td class="text-center align-middle">
+                                          ${item.publicHoliday ? "-" :
+                                            `<button class='btn btn-danger btn-icon-split btn-sm delete-btn' data-id='${item.id}'><span class='text'>삭제</span></button>`}
+                                 </td>
+                             </tr>`;
+          });
+
+          $("#cancel-date-list").html(output);
+      }
+
+      function checkVaild() {
+          $(".errMsg").empty();
+
+          let result = true;
+
+          let cancelDate = $("#cancel-date").val();
+          let reason     = $("#reason").val();
+          let applyCount = $(".course-for-cancel-date:checked").length;
+
+          if (cancelDate == "") {
+              showErr("dateErr", "* 날짜는 필수 항목입니다.");
+              result = false;
+          }
+
+          if (reason == "") {
+              showErr("reasonErr", "* 사유는 필수 항목입니다.");
+              result = false;
+          }
+
+          if (applyCount == 0) {
+              showErr("rangeErr", "* 최소 하나의 과정은 선택해야 합니다.");
+              result = false;
+          }
+
+          return result;
+      }
+
+      function showErr(errArea, errMsg) {
+          $(`.${errArea}`).text(errMsg);
+      }
+
 
   </script>
 </th:block>

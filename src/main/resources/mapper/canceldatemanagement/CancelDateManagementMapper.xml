@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.canceldatemanagement.mapper.CancelDateManagementMapper">
+
+  <select id="selectCancelDates"
+    resultType="com.goott5.lms.canceldatemanagement.domain.CancelDateVO">
+
+    select cd.id, is_all, course_id, is_public_holiday, cancel_date, reason, cd.created_at,
+    cd.updated_at,
+    cd.deleted_at, name from cancel_date as cd left outer join course as c on cd.course_id = c.id
+
+    <where>
+      <choose>
+        <when test="categorizeType == 1">
+          course_id in (select id from course where is_in_progress = #{firstCategory}) or course_id
+          is null
+        </when>
+        <when test="categorizeType == 2">
+          course_id = #{secondCategory} or course_id is null
+        </when>
+      </choose>
+
+      and cd.deleted_at is null
+
+    </where>
+
+    order by cancel_date desc limit #{skip}, #{pagingSize}
+
+  </select>
+
+  <select id="selectCountOfCancelDate" resultType="int">
+
+    select count(*) from cancel_date
+
+    <where>
+      <choose>
+        <when test="categorizeType == 1">
+          course_id in (select id from course where is_in_progress = #{firstCategory}) or course_id
+          is null
+        </when>
+        <when test="categorizeType == 2">
+          course_id = #{secondCategory} or course_id is null
+        </when>
+      </choose>
+      and deleted_at is null
+
+    </where>
+
+  </select>
+
+  <select id="selectCoursesByInProgress"
+    resultType="com.goott5.lms.canceldatemanagement.domain.CourseVO">
+
+    select id, name from course
+
+    <where>
+      <choose>
+        <when test="inProgressType == 0">
+          is_in_progress = 0
+        </when>
+        <when test="inProgressType == 1">
+          is_in_progress = 1
+        </when>
+      </choose>
+
+    </where>
+
+    order by start_date desc
+
+  </select>
+
+  <insert id="insertCancelDate">
+
+
+    <choose>
+      <when test="courseId == 0">
+        insert into cancel_date (is_all, is_public_holiday, cancel_date, reason) values (#{isAll},
+        #{isPublicHoliday}, #{cancelDate}, #{reason})
+      </when>
+      <when test="courseId != 0">
+        insert into cancel_date (is_all, course_id, is_public_holiday, cancel_date, reason) values
+        (#{isAll}, #{courseId}, #{isPublicHoliday}, #{cancelDate}, #{reason})
+      </when>
+    </choose>
+
+  </insert>
+
+</mapper>

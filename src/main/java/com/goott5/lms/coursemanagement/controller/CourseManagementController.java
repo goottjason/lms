@@ -28,10 +28,6 @@ public class CourseManagementController {
     public String learnerAssignment() {
         return "/courseManagement/learnerAssignment";
     }
-    @GetMapping("/cancelDateManagement")
-    public String cancelDateManagement() {
-        return "/courseManagement/cancelDateManagement";
-    }
 
 
 
