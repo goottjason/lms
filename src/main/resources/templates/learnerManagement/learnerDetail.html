@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center mb-4">
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">교육생 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="row d-flex align-items-stretch mb-4">
+
+    <!-- 기본정보 조회 -->
+    <div class="col-lg-6 d-flex">
+      <div class="card shadow position-relative flex-fill">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">기본정보 조회</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <tr class="text-center">
+                <th width="30%" class="text-center align-middle" style="border-top: none">이름</th>
+                <td class="text-left align-middle" style="border-top: none">홍길동</td>
+              </tr>
+              <tr>
+                <th width="30%" class="text-center align-middle">생년월일</th>
+                <td class="text-left align-middle">2002년 8월 3일</td>
+              </tr>
+              <tr>
+                <th width="30%" class="text-center align-middle">휴대폰</th>
+                <td class="text-left align-middle">010-2222-3333</td>
+              </tr>
+              <tr>
+                <th width="30%" class="text-center align-middle">이메일</th>
+                <td class="text-left align-middle">hong1234@naver.com</td>
+              </tr>
+              <tr>
+                <th width="30%" class="text-center align-middle">주소</th>
+                <td class="text-left align-middle">서울시 금천구 시흥대로 3길</td>
+              </tr>
+              <tr>
+                <th width="30%" class="text-center align-middle">성별</th>
+                <td class="text-left align-middle">남성</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 출결 현황 -->
+    <div class="col-lg-6 d-flex">
+      <div class="card shadow position-relative flex-fill">
+        <div class="card-header py-2">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="m-0 font-weight-bold text-primary">출결 현황</h6>
+            </div>
+            <div class="col-auto">
+              <button
+                id=""
+                class="btn btn-sm btn-info btn-icon-split"
+                data-toggle="modal"
+                data-target="#participationModal">
+                <span class="icon text-white-50">
+                  <i class="fa fa-info-circle"></i>
+                </span>
+                <span class="text">상세보기</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-pie pt-2 pb-2">
+            <canvas id="myPieChart"></canvas>
+          </div>
+          <div class="mt-4 text-center">
+            <span class="mr-2">
+              <i class="fas fa-circle text-info"></i> 출석 <span>35</span>
+            </span>
+            <span class="mr-2">
+              <i class="fas fa-circle text-danger"></i> 결석 <span>2</span>
+            </span>
+            <span class="mr-2">
+              <i class="fas fa-circle text-primary"></i> 휴가 <span>3</span>
+            </span>
+            <span class="mr-2">
+              <i class="fas fa-circle text-warning"></i> 지각 <span>1</span>
+            </span>
+            <span class="mr-2">
+              <i class="fas fa-circle text-secondary"></i> 조퇴 <span>2</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <!-- 과제/시험 현황 -->
+    <div class="col-lg-6">
+      <div class="card shadow position-relative">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">과제/시험 현황</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr class="text-center">
+                <th scope="col" class="align-middle">구분</th>
+                <th scope="col" class="align-middle">이행여부</th>
+                <th scope="col" class="align-middle">제출자료</th>
+                <th scope="col" class="align-middle">결과</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td class="text-center align-middle">시험</td>
+                <td class="text-center align-middle text-info">응시</td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-primary btn-icon-split btn-sm">
+                    <span class="text">답안보기</span>
+                  </button>
+                </td>
+                <td class="text-center align-middle">80</td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">1차과제</td>
+                <td class="text-center align-middle text-danger">미수행</td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-primary btn-icon-split btn-sm">
+                    <span class="text">과제보기</span>
+                  </button>
+                </td>
+                <td class="text-center align-middle">fail?</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 취업 관리 -->
+    <div class="col-lg-6">
+      <div class="card shadow position-relative">
+        <div class="card-header py-2">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="m-0 font-weight-bold text-primary">취업관리</h6>
+            </div>
+            <div class="col-auto">
+              <button id="" class="btn btn-sm btn-info btn-icon-split">
+                <span class="icon text-white-50">
+                  <i class="fa fa-wrench"></i>
+                </span>
+                <span class="text">수정</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- 취업 분류 -->
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <p>취업분류</p>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="aaa" id="a"
+                    value="1">
+                  <label class="form-check-label" for="a">취업</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="aaa" id="b"
+                    value="2">
+                  <label class="form-check-label" for="b">미취업</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="aaa" id="c"
+                    value="3">
+                  <label class="form-check-label" for="c">휴식</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="aaa" id="d"
+                    value="4">
+                  <label class="form-check-label" for="d">취업준비중</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="aaa" id="e"
+                    value="5">
+                  <label class="form-check-label" for="e">학업</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 취업 업체 -->
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="f">취업업체</label>
+                <input type="text" id="f" class="form-control" value="카카오 02-5032-4034 서울 강남구">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <!-- 상담 유무 -->
+            <div class="col-md-3">
+              <div class="form-group">
+                <p>상담유무</p>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="bbb" id="g"
+                    value="1">
+                  <label class="form-check-label" for="g">유</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                    class="form-check-input" type="radio" name="bbb" id="h"
+                    value="2">
+                  <label class="form-check-label" for="h">무</label>
+                </div>
+              </div>
+            </div>
+            <!-- 메모 -->
+            <div class="col-md-9">
+              <div class="form-group">
+                <label for="i">메모</label>
+                <input type="text" id="i" class="form-control" value="수료 후 5주 내에 취업완료 (만족하고 있다고 함)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 버튼 -->
+  <div class="col-12 d-flex justify-content-end mb-4">
+    <button id="" class="btn btn-secondary btn-icon-split">
+      <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+      <span class="text px-4">목록</span>
+    </button>
+  </div>
+  <!-- content body 끝 -->
+
+  <!-- 출결 상세보기 모달 -->
+  <div
+    class="modal fade"
+    id="participationModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">출결 상세</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- 테이블 리스트 -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr class="text-center">
+                <th scope="col" class="align-middle">날짜</th>
+                <th scope="col" class="align-middle">출결상태</th>
+                <th scope="col" class="align-middle">사유</th>
+                <th scope="col" class="align-middle">수료시간</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td class="text-center align-middle">25/05/23</td>
+                <td class="text-center align-middle text-info">출석</td>
+                <td class="text-center align-middle">-</td>
+                <td class="text-center align-middle">8H</td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">25/05/23</td>
+                <td class="text-center align-middle text-danger">결석</td>
+                <td class="text-center align-middle">-</td>
+                <td class="text-center align-middle">8H</td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">25/05/23</td>
+                <td class="text-center align-middle text-primary">휴가</td>
+                <td class="text-center align-middle">병원 방문</td>
+                <td class="text-center align-middle">8H</td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">25/05/23</td>
+                <td class="text-center align-middle text-warning">지각</td>
+                <td class="text-center align-middle">-</td>
+                <td class="text-center align-middle">8H</td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">25/05/23</td>
+                <td class="text-center align-middle text-secondary">조퇴</td>
+                <td class="text-center align-middle">-</td>
+                <td class="text-center align-middle">8H</td>
+              </tr>
+
+              </tbody>
+            </table>
+           </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script src="vendor/chart.js/Chart.min.js"></script>
+  <script>
+
+    // Pie Chart 데이터
+    var ctx        = document.getElementById("myPieChart");
+    var myPieChart = new Chart(ctx, {
+        type   : "doughnut",
+        data   : {
+            labels  : ["출석", "결석", "휴가", "지각", "조퇴"],
+            datasets: [{
+                data                : [35, 2, 3, 1, 2],
+                backgroundColor     : ["#36b9cc", "#e74a3b", "#4e73df", "#f6c23e", "#858796"],
+                hoverBackgroundColor: ["#2ca4b5", "#c0392b", "#3b5cc9", "#d9a820", "#6e707f"],
+                hoverBorderColor    : "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips           : {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor  : "#858796",
+                borderColor    : "#dddfeb",
+                borderWidth    : 1,
+                xPadding       : 15,
+                yPadding       : 15,
+                displayColors  : false,
+                caretPadding   : 10,
+            },
+            legend             : {
+                display: false
+            },
+            cutoutPercentage   : 75,
+        },
+    });
+
+  </script>
+</th:block>
+</body>
+</html>

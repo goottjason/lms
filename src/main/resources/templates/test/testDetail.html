@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+  <style>
+  .question-container {
+    max-height: 600px; /* 문항들 묶은 div인데, Conner가 원하는 높이로 설정해보세요. */
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .question-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .question-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+
+  .answer-container {
+    max-height: 550px;
+    overflow-y: auto;
+    padding-top: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .answer-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .answer-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+
+
+  .custom-tabs .nav-link {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #555;
+    background-color: #fff;
+    border-color: #DCDFEB;
+  }
+
+  .custom-tabs .nav-link.active {
+    background-color: #4E73DF;
+    color: #fff !important;
+    border-color: #0d6efd;
+  }
+
+  #tabsContent {
+    background-color: #fff;
+    padding-top: 20px;
+  }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">시험 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <form>
+    <!-- 시험 정보 시작 -->
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="m-0 font-weight-bold text-primary">시험정보</h6>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4 align-items-end">
+          <div class="col-md-12">
+            <label class="form-label">시험 제목</label>
+            <input
+                type="text"
+                class="form-control"
+                placeholder="예: Java 중간고사"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <label class="form-label">시험 시작일시</label>
+            <input type="datetime-local" class="form-control"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">시험 종료일시</label>
+            <input type="datetime-local" class="form-control"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">시험 시간 (분)</label>
+            <input type="number" class="form-control" placeholder="예: 60"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">총 배점</label>
+            <input type="number" class="form-control" placeholder="예: 100"/>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 시험 정보 끝 -->
+
+    <!-- 탭 -->
+    <ul id="tabs" class="nav nav-tabs custom-tabs">
+      <li class="nav-item"><a
+          href=""
+          data-target="#test-content"
+          data-toggle="tab"
+          class="nav-link px-5 mr-1 active">시험 내용</a></li>
+      <li class="nav-item"><a
+          href=""
+          data-target="#learner-list"
+          data-toggle="tab"
+          class="nav-link px-5">수강생 목록</a></li>
+    </ul>
+
+    <!-- 본문 -->
+    <div id="tabsContent" class="tab-content shadow mb-4">
+
+      <!-- 시험 내용 탭 본문 시작 -->
+      <div id="test-content" class="tab-pane fade active show">
+
+        <!-- 문항 영역 시작 -->
+        <div class="question-container mb-4">
+
+          <!-- 객관식 문항 샘플 시작 -->
+          <div class="card mb-4">
+            <div class="card-header py-2">
+              <div class="row align-items-center">
+                <div class="col-1">
+                  <h6 class="m-0 font-weight-bold text-primary">문항<span>1</span></h6>
+                </div>
+                <div class="col-5">
+                  <div class="form-check form-check-inline">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type1"
+                        checked
+                    />
+                    <label class="form-check-label">객관식</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type1"
+                    />
+                    <label class="form-check-label">주관식</label>
+                  </div>
+                </div>
+                <div class="col-auto ml-auto">
+                  <button id="" class="btn btn-sm btn-danger btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-times"></i>
+                    </span>
+                    <span class="text">문항 삭제</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-10">
+                  <label class="form-label">문항 설명</label>
+                  <input
+                      type="text"
+                      class="form-control"
+                      placeholder="예: 자바의 다형성에 대해 설명하시오"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">배점</label>
+                  <input
+                      type="number"
+                      class="form-control"
+                      placeholder="예: 10"
+                      min="1"
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">객관식 보기 및 정답 선택</label>
+                <span><small class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
+
+                <div class="row align-items-center mb-2 option-row">
+                  <div class="col-10">
+                    <input
+                        type="text"
+                        class="form-control"
+                        placeholder="보기 1"
+                    />
+                  </div>
+                  <div class="col-1 text-center">
+                    <input type="radio" name="answer1"/>
+                  </div>
+                  <div class="col-1">
+                    <button class="btn btn-danger btn-icon-split btn-sm">
+                      <span class="text">삭제</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2 option-row">
+                  <div class="col-10">
+                    <input
+                        type="text"
+                        class="form-control"
+                        placeholder="보기 2"
+                    />
+                  </div>
+                  <div class="col-1 text-center">
+                    <input type="radio" name="answer1"/>
+                  </div>
+                  <div class="col-1">
+                    <button class="btn btn-danger btn-icon-split btn-sm">
+                      <span class="text">삭제</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row align-items-center mb-2">
+                  <div class="col-10">
+                    <button id="" class="btn btn-sm btn-secondary btn-icon-split">
+                      <span class="icon text-white-50">
+                        <i class="fas fa-plus"></i>
+                      </span>
+                      <span class="text">보기 추가</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!-- 객관식 문항 샘플 끝 -->
+
+          <!-- 주관식 문항 샘플 시작 -->
+          <div class="card mb-4">
+            <div class="card-header py-2">
+              <div class="row align-items-center">
+                <div class="col-1">
+                  <h6 class="m-0 font-weight-bold text-primary">문항<span>2</span></h6>
+                </div>
+                <div class="col-5">
+                  <div class="form-check form-check-inline">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type2"
+                        checked
+                    />
+                    <label class="form-check-label">객관식</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                        class="form-check-input"
+                        type="radio"
+                        name="type2"
+                    />
+                    <label class="form-check-label">주관식</label>
+                  </div>
+                </div>
+                <div class="col-auto ml-auto">
+                  <button id="" class="btn btn-sm btn-danger btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-times"></i>
+                    </span>
+                    <span class="text">문항 삭제</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-10">
+                  <label class="form-label">문항 설명</label>
+                  <input
+                      type="text"
+                      class="form-control"
+                      placeholder="예: 자바의 다형성에 대해 설명하시오"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">배점</label>
+                  <input
+                      type="number"
+                      class="form-control"
+                      placeholder="예: 10"
+                      min="1"
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">정답</label>
+                <span><small class="text-muted"> (정답은 하나의 단어 또는 단답형 문장으로만 입력하세요.)</small></span>
+                  <input
+                      type="text"
+                      class="form-control"
+                      placeholder="예: 어쩌구저쩌구"
+                  />
+              </div>
+            </div>
+          </div>
+          <!-- 주관식 문항 샘플 끝 -->
+
+          <!-- 문항 추가 버튼 -->
+          <div class="col-auto mb-4">
+            <button id="" class="btn btn-sm btn-info btn-icon-split">
+              <span class="icon text-white-50">
+                <i class="fa fa-plus"></i>
+              </span>
+              <span class="text">문항 추가</span>
+            </button>
+          </div>
+        </div>
+        <!-- 문항 영역 끝 -->
+      </div>
+      <!-- 시험 내용 탭 본문 끝 -->
+
+      <!-- 수강생 목록 탭 본문 시작 -->
+      <div id="learner-list" class="tab-pane fade">
+
+        <div class="table-responsive px-3">
+          <table class="table">
+            <thead>
+            <tr class="text-center">
+              <th scope="col" class="align-middle">이름</th>
+              <th scope="col" class="align-middle">ID</th>
+              <th scope="col" class="align-middle">응시여부</th>
+              <th scope="col" class="align-middle">응시일시</th>
+              <th scope="col" class="align-middle">점수</th>
+              <th scope="col" class="align-middle">답안</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td class="text-center align-middle">홍길동</td>
+              <td class="text-center align-middle">hong12**</td>
+              <td class="text-center align-middle">응시 완료</td>
+              <td class="text-center align-middle">2025/04/12 10:23:33</td>
+              <td class="text-center align-middle">28</td>
+              <td class="text-center align-middle">
+                <button
+                    type="button"
+                    id=""
+                    class="btn btn-sm btn-info btn-icon-split"
+                    data-toggle="modal"
+                    data-target="#answerModal">
+                  <span class="icon text-white-50">
+                    <i class="fas fa-folder-open"></i>
+                  </span>
+                  <span class="text">답안보기</span>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center align-middle">옥동자</td>
+              <td class="text-center align-middle">ok12**</td>
+              <td class="text-center align-middle">미응시</td>
+              <td class="text-center align-middle">-</td>
+              <td class="text-center align-middle">-</td>
+              <td class="text-center align-middle">
+                -
+              </td>
+            </tr>
+
+            </tbody>
+          </table>
+         </div>
+
+      </div>
+      <!-- 수강생 목록 탭 본문 끝 -->
+    </div>
+
+    <!-- 버튼 -->
+    <div class="col-12 d-flex justify-content-end mb-4">
+      <button id="" class="btn btn-info btn-icon-split mr-2">
+        <span class="icon text-white-50">
+          <i class="fa fa-wrench"></i>
+        </span>
+        <span class="text px-3">시험수정</span>
+      </button>
+      <button id="" class="btn btn-danger btn-icon-split mr-2">
+        <span class="icon text-white-50">
+          <i class="fa fa-times"></i>
+        </span>
+        <span class="text px-3">시험삭제</span>
+      </button>
+      <button id="" class="btn btn-secondary btn-icon-split">
+        <span class="icon text-white-50">
+            <i class="fas fa-list"></i>
+        </span>
+        <span class="text px-4">목록</span>
+      </button>
+    </div>
+  </form>
+  <!-- content body 끝 -->
+
+  <!-- 답안 모달 -->
+  <div
+      class="modal fade"
+      id="answerModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myModalLabel"
+      aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title mr-3" id="myModalLabel">제출 답안</h5>
+          <h5 class="modal-title">(교육생 : <span>홍길동</span>)</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="answer-container mb-4">
+          <div class="modal-body">
+
+            <!-- 객관식 문항 샘플 시작 -->
+            <div class="card mb-4">
+              <div class="card-header py-2">
+                <div class="row align-items-center">
+                  <div class="col-1">
+                    <h6 class="m-0 font-weight-bold text-primary">문항<span>1</span></h6>
+                  </div>
+                  <div class="col-2">
+                    <h6 class="m-0 font-weight-bold text-primary">객관식</h6>
+                  </div>
+                  <div class="col-auto ml-auto">
+                    <span class="btn btn-info btn-circle btn-sm">
+                      <i class="fas fa-check"></i>
+                    </span>
+                      <span class="text-info text-md-center">정답</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-10">
+                    <label class="form-label">문항 설명</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="정답을 골라보시오"
+                        readonly
+                    />
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">배점</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        value="10"
+                        min="1"
+                        readonly
+                    />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="align-items-center mb-2 option-row">
+                    보기 1
+                  </div>
+                  <div class="align-items-center mb-2 option-row text-danger">
+                    보기 2
+                  </div>
+                  <div class="align-items-center mb-2 option-row">
+                    보기 3
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">제출 답</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="보기2"
+                        readonly
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">정답</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="보기2"
+                        readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 객관식 문항 샘플 끝 -->
+
+            <!-- 주관식 문항 샘플 시작 -->
+            <div class="card mb-4">
+              <div class="card-header py-2">
+                <div class="row align-items-center">
+                  <div class="col-1">
+                    <h6 class="m-0 font-weight-bold text-primary">문항<span>2</span></h6>
+                  </div>
+                  <div class="col-2">
+                    <h6 class="m-0 font-weight-bold text-primary">주관식</h6>
+                  </div>
+                  <div class="col-auto ml-auto">
+                    <span class="btn btn-danger btn-circle btn-sm">
+                      <i class="fas fa-times"></i>
+                    </span>
+                      <span class="text-danger text-md-center">오답</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-2">
+                  <div class="col-md-10">
+                    <label class="form-label">문항 설명</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="~~~~를 무엇이라 부르나?"
+                        readonly
+                    />
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">배점</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        placeholder="20"
+                        min="1"
+                        readonly
+                    />
+                  </div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-md-12">
+                    <label class="form-label">제출 답</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="어쩌구 저쩌구"
+                        readonly
+                    />
+                  </div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-md-12">
+                    <label class="form-label">정답</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="저쩌구 어쩌구"
+                        readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 주관식 문항 샘플 끝 -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>
