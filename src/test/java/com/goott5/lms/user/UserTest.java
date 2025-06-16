@@ -17,7 +17,7 @@ public class UserTest {
   public void signupTest() throws IOException {
 
     SignupDTO signupDTO = SignupDTO.builder()
-            .userId("7")
+            .id("7")
             .loginId("ace")
             .password("ace!@34")
             .email("ace@lms.com")
@@ -32,7 +32,7 @@ public class UserTest {
   @Test
   public void findUserTest() throws IOException {
 
-    userService.findUser("7");
+    userService.findUserByLoginId("7");
 
   }
 

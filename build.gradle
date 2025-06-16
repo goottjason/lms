@@ -47,6 +47,10 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.8' // 썸네일 만들기
 
     implementation 'org.springframework.security:spring-security-crypto' // 암호화
+
+    implementation 'javax.mail:mail:1.4.7' // 이메일 보내기
+
+    implementation 'software.amazon.awssdk:s3:2.31.50'  // AWS S3
 }
 
 tasks.named('test') {

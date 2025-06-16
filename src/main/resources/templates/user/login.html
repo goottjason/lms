@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html
-    lang="ko"
-    xmlns:th="http://www.thymeleaf.org">
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="utf-8">
@@ -14,8 +14,8 @@
 
   <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
   <link
-      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-      rel="stylesheet">
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
   <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
   <link th:href="@{/css/user/login.css}" rel="stylesheet">
   <style>
@@ -44,26 +44,27 @@
               <div class="d-flex align-items-center gap-2">
                 <h4 class="h4 text-gray-900 mb-2 mr-2">Log-in</h4>
                 <p class="text-danger small mb-2" th:if="${msg}" th:text="${msg}"></p>
+                <p class="text-info small mb-2" th:if="${signupMsg}" th:text="${signupMsg}"></p>
               </div>
               <div class="form-group">
                 <input
-                    type="text" class="form-control form-control-user"
-                    id="loginId" name="loginId"
-                    placeholder="아이디를 입력하세요.">
+                  type="text" class="form-control form-control-user"
+                  id="loginId" name="loginId"
+                  placeholder="아이디를 입력하세요.">
               </div>
               <div class="form-group">
                 <input
-                    type="password" class="form-control form-control-user"
-                    id="password" name="password"
-                    placeholder="비밀번호를 입력하세요.">
+                  type="password" class="form-control form-control-user"
+                  id="password" name="password"
+                  placeholder="비밀번호를 입력하세요.">
               </div>
               <div class="form-group row mb-4 align-items-center">
                 <!-- 자동 로그인 -->
                 <div class="col-5 pl-4 d-flex align-items-center">
                   <div class="custom-control custom-checkbox small">
                     <input
-                        type="checkbox" class="custom-control-input" id="autoLogin"
-                        name="autoLogin">
+                      type="checkbox" class="custom-control-input" id="autoLogin"
+                      name="autoLogin">
                     <label class="custom-control-label mb-0" for="autoLogin">자동로그인</label>
                   </div>
                 </div>
@@ -79,7 +80,7 @@
             </form>
             <hr>
             <div class="text-center">
-              <a href="#">회원이 아니신가요? 여기서 가입하세요!</a>
+              <a th:href="@{/user/signup}">회원이 아니신가요? 여기서 가입하세요!</a>
             </div>
           </div>
 
