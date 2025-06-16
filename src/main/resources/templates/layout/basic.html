@@ -318,7 +318,7 @@
                 th:text="${session.loginUser.fullName} + '님 안녕하세요.'"></span>
               <img
                 class="img-profile rounded-circle"
-                th:src="@{/img/undraw_profile.svg}">
+                th:src="@{${session.loginUser.profileImg}}">
             </a>
             <!-- Dropdown - User Information -->
             <div
@@ -416,20 +416,23 @@
 <!-- axios -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
+<!-- sweetalert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     $(document).on("click", ".collapse-item", function (e) {
-        // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
-        $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
+      // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
+      $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
 
-        // 클릭한 요소에 active 추가
-        $(this).addClass("active");
+      // 클릭한 요소에 active 추가
+      $(this).addClass("active");
     });
     $(document).on("click", ".nav-link", function () {
-        $(".collapse-item").removeClass("active");
+      $(".collapse-item").removeClass("active");
     });
     $(document).on("click", ".nav-single", function () {
-        $(".nav-link").addClass("collapsed");
-        $(".collapse").removeClass("show");
+      $(".nav-link").addClass("collapsed");
+      $(".collapse").removeClass("show");
     });
 
 </script>

@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString
 public class UserVO {
 
-  private String id;
+  private int id;
   private String type;
   private String loginId;
   private String password;
