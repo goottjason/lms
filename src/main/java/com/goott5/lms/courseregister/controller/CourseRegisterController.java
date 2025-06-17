@@ -1,5 +1,8 @@
 package com.goott5.lms.courseregister.controller;
 
+import com.goott5.lms.canceldatemanagement.domain.CancelDateVO;
+import com.goott5.lms.courseregister.domain.ClassroomVO;
+import com.goott5.lms.courseregister.domain.CourseSaveDTO;
 import com.goott5.lms.courseregister.domain.UserVO;
 import com.goott5.lms.courseregister.service.CourseRegisterService;
 import java.util.List;
@@ -7,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -36,6 +41,29 @@ public class CourseRegisterController {
   public List<UserVO> getCourseHead() {
 
     return courseRegisterService.getCourseHead();
+  }
+
+  @GetMapping("/getCancelDates")
+  @ResponseBody
+  public List<CancelDateVO> getCancelDates() {
+
+    return courseRegisterService.getCancelDates();
+  }
+
+  @GetMapping("/getClassroom")
+  @ResponseBody
+  public List<ClassroomVO> getClassroom() {
+
+    return courseRegisterService.getClassroom();
+  }
+
+  @PostMapping("/saveCourse")
+  @ResponseBody
+  public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO) {
+
+    log.info("courseSaveDTO = {}", courseSaveDTO);
+    courseRegisterService.saveCourse(courseSaveDTO);
+    return "success";
   }
 
 

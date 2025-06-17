@@ -7,6 +7,7 @@ import com.goott5.lms.canceldatemanagement.domain.CourseVO;
 import com.goott5.lms.canceldatemanagement.domain.HolidayDTO;
 import com.goott5.lms.canceldatemanagement.domain.PagingRequestDTO;
 import com.goott5.lms.canceldatemanagement.domain.PagingResponseDTO;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CancelDateManagementService {
@@ -17,7 +18,11 @@ public interface CancelDateManagementService {
 
   void removeCancelDate(Integer id);
 
-  void saveCancelDate(CancelDateDTO cancelDateDTO);
+  void saveCancelDates(List<CancelDateDTO> cancelDateDTOS);
 
   List<CourseVO> getCoursesByInProgress(Integer inProgressType);
+
+  List<CourseVO> getCoursesInProgressByDate(LocalDate cancelDate);
+
+  List<CancelDateVO> getCancelDatesByIsAll();
 }
