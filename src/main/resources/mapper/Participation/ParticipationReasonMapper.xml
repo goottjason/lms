@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goott5.lms.participation.mapper.ParticipationReasonMapper">
+
+  <insert id="insertParticipationReason"
+    parameterType="com.goott5.lms.participation.domain.ParticipationReasonDTO"
+    useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO participation_reason (participation_id, explanation, created_at)
+    VALUES (#{participationId}, #{explanation}, NOW())
+  </insert>
+
+  <select id="selectReasonByParticipationId" parameterType="int"
+    resultType="com.goott5.lms.participation.domain.ParticipationReasonVO">
+    SELECT id,
+           participation_id,
+           explanation,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation_reason
+    WHERE participation_id = #{participationId}
+      AND deleted_at IS NULL
+  </select>
+
+  <select id="selectReasonById" parameterType="int"
+    resultType="com.goott5.lms.participation.domain.ParticipationReasonVO">
+    SELECT id,
+           participation_id,
+           explanation,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation_reason
+    WHERE id = #{id}
+      AND deleted_at IS NULL
+  </select>
+
+  <!-- 하드 딜리트 (완전 삭제) - 휴가용 -->
+  <delete id="deleteParticipationReason" parameterType="int">
+    DELETE
+    FROM participation_reason
+    WHERE id = #{id}
+  </delete>
+
+</mapper>

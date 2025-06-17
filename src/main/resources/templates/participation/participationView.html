@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+  <style>
+  .dateHead {
+    margin: .4rem 0;
+  }
+
+  .dateHead div {
+    background: #858796;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+  }
+
+  .dateHead div.blue {
+    background-color: #4e73df;
+  }
+
+  .dateHead div.red {
+    background-color: #e74a3b;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 5px;
+  }
+
+  .grid div {
+    padding: .6rem;
+    font-size: .9rem;
+  }
+
+  .dateBoard div {
+    background-color: #fff;
+    min-height: 6rem;
+    padding: .4rem .4rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .noColor {
+    background-color: #eee !important;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+  }
+
+  .prevMonth, .nextMonth {
+    font-size: 30px;
+    cursor: pointer;
+  }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">출결 조회</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col-2">
+          <h6 class="m-0 font-weight-bold text-primary">출결 조회</h6>
+        </div>
+        <div class="col">
+          <h6 class="m-0 text-secondary">수업진행률 : <span>74</span>%</h6>
+        </div>
+        <div class="col-auto">
+          <button id="" class="btn btn btn-primary btn-icon-split mr-2">
+            <span class="icon text-white-50">
+              <i class="fa fa fa-check"></i>
+            </span>
+            <span class="text px-3">입실</span>
+          </button>
+          <button id="" class="btn btn btn-danger btn-icon-split mr-3">
+            <span class="icon text-white-50">
+              <i class="fa fa fa-times"></i>
+            </span>
+            <span class="text px-3">퇴실</span>
+          </button>
+          <button
+              id=""
+              class="btn btn btn-info btn-icon-split"
+              data-toggle="modal"
+              data-target="#vacationModal">
+            <span class="icon text-white-50">
+              <i class="fa fa-car"></i>
+            </span>
+            <span class="text px-3">휴가신청</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="rap">
+        <div class="header">
+          <div class="prevMonth">
+            <i class="fa fa-chevron-left"></i>
+          </div>
+          <h2 class='dateTitle text-dark'></h2>
+          <div class="nextMonth">
+            <i class="fa fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <div class="grid dateHead">
+          <div class="red">일</div>
+          <div>월</div>
+          <div>화</div>
+          <div>수</div>
+          <div>목</div>
+          <div>금</div>
+          <div class="blue">토</div>
+        </div>
+
+        <div class="grid dateBoard"></div>
+      </div>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+
+  <!-- 휴가신청 모달 -->
+  <div
+      class="modal fade"
+      id="vacationModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myModalLabel"
+      aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">휴가 신청</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-2">
+            <div class="col-md-5">
+              <div class="form-group">
+                <label for="a">일자</label>
+                <input type="date" id="a" class="form-control">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="b">사유</label>
+                <input type="text" id="b" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-upload"></i>
+            </span>
+            <span class="text px-3">신청</span>
+          </button>
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    $(function () {
+        let date = new Date();
+        makeCalendar(date);
+
+        // 이전 달로 이동
+        $(".prevMonth").click(function () {
+            makeCalendar(new Date(date.setMonth(date.getMonth() - 1)));
+        });
+
+        // 다음 달로 이동
+        $(".nextMonth").click(function () {
+            makeCalendar(new Date(date.setMonth(date.getMonth() + 1)));
+        });
+
+    });
+
+    // 캘린더 출력
+    function makeCalendar(date) {
+        let currentYear  = new Date(date).getFullYear();
+        let currentMonth = new Date(date).getMonth() + 1;
+
+        let firstDay = new Date(date.setDate(1)).getDay();
+        let lastDate = new Date(currentYear, currentMonth, 0).getDate();
+
+        let remainStart = firstDay + lastDate;
+        let remainEnd   = Math.ceil(remainStart / 7) * 7;
+
+        let output = "";
+
+        for (let i = 0; i < firstDay; i++) {
+            output += `<div class="noColor"></div>`;
+        }
+
+        for (let i = 1; i <= lastDate; i++) {
+            let yyyy          = currentYear;
+            let mm            = String(currentMonth).padStart(2, "0");
+            let dd            = String(i).padStart(2, "0");
+            let formattedDate = `${yyyy}-${mm}-${dd}`;
+
+            output += `<div class="date" data-date="${formattedDate}">
+                    <p class="mb-2"><span class="text-lg text-dark">${i}</span><span class="ml-2">출석</span></p>
+                    <p class="mb-1 text-primary">입실 : <span>09:20</span></p>
+                    <p class="mb-1 text-danger">퇴실 : <span>18:20</span></p>
+                    </div>`;
+        }
+
+        for (let i = remainStart; i < remainEnd; i++) {
+            output += `<div class="noColor"></div>`;
+        }
+
+        $(".dateBoard").html(output);
+        $(".dateTitle").html(`<p>${currentYear}년 ${currentMonth}월</p>`);
+    }
+
+
+  </script>
+</th:block>
+</body>
+</html>

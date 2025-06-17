@@ -34,10 +34,10 @@ public class UserController {
 
   @PostMapping("/login")
   public String login(LoginDTO loginDTO,
-          HttpSession session,
-          HttpServletRequest request,
-          HttpServletResponse response,
-          RedirectAttributes redirectAttributes) {
+      HttpSession session,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      RedirectAttributes redirectAttributes) {
 
     UserVO userVO = userService.findUserByLoginId(loginDTO.getLoginId());
     if (userVO != null) {
@@ -76,7 +76,7 @@ public class UserController {
           redirectUrl = "homework/homeworkList";
           break;
         case "LEARNER":
-          redirectUrl = "courseBoardMaterials/materialsList";
+          redirectUrl = "participation/participationView";
       }
       return "redirect:/" + redirectUrl;
 
@@ -107,7 +107,7 @@ public class UserController {
 
   @GetMapping("/logout")
   public String logout(HttpServletRequest request, HttpServletResponse response,
-          HttpSession session) {
+      HttpSession session) {
 
     if (session.getAttribute("loginUser") != null) {
       int userId = ((UserVO) session.getAttribute("loginUser")).getId();
@@ -139,7 +139,7 @@ public class UserController {
 
   @PostMapping("/idDuplicateCheck")
   public ResponseEntity<ApiResponse<String>> idDuplicateCheck(
-          @RequestBody Map<String, String> data) {
+      @RequestBody Map<String, String> data) {
     String loginId = data.get("loginId");
     UserVO userVO = userService.findUserByLoginId(loginId);
     if (userVO == null) {
@@ -151,7 +151,7 @@ public class UserController {
 
   @PostMapping("/sendAuthCodeForSignup")
   public ResponseEntity<ApiResponse<String>> sendAuthCodeForSignup(
-          @RequestBody Map<String, String> data, HttpSession session) {
+      @RequestBody Map<String, String> data, HttpSession session) {
 
     String email = data.get("email");
     String fullname = data.get("fullname");
@@ -160,10 +160,10 @@ public class UserController {
 
     if (userVO == null) {
       return ApiResponse.respondFail(409, "없는 이메일", "과정 신청 시 등록된 이메일 주소가 아닙니다.",
-              HttpStatus.CONFLICT);
+          HttpStatus.CONFLICT);
     } else if (!userVO.getFullName().equals(fullname)) {
       return ApiResponse.respondFail(409, "사용자 이름 오류", "이메일 주소가 등록된 사용자 이름과 다릅니다.",
-              HttpStatus.CONFLICT);
+          HttpStatus.CONFLICT);
     } else {
       String authCode = null;
       try {
@@ -178,7 +178,7 @@ public class UserController {
 
   @PostMapping("/certificateAuthCode")
   public ResponseEntity<ApiResponse<String>> certificateAuthCode(
-          @RequestBody Map<String, String> data, HttpSession session) {
+      @RequestBody Map<String, String> data, HttpSession session) {
     String certificateNo = data.get("certificateNo");
 
     if (session.getAttribute("authCode") != null) {
@@ -208,7 +208,7 @@ public class UserController {
 
   @PostMapping("/mobileDuplicateCheck")
   public ResponseEntity<ApiResponse<String>> mobileDuplicateCheck(
-          @RequestBody Map<String, String> data) {
+      @RequestBody Map<String, String> data) {
 
     String mobile = data.get("mobile");
     UserVO userVO = userService.findUserByMobile(mobile);

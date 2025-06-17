@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html
-  lang="ko"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:th="http://www.thymeleaf.org">
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="utf-8">
@@ -15,8 +15,8 @@
 
   <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
   <link
-    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-    rel="stylesheet">
+      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+      rel="stylesheet">
   <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
   <style>
     @media (max-width: 1200px) {
@@ -70,8 +70,8 @@
     <!-- Nav Item - 과정 관리 -->
     <li th:if="${session.loginUser.type == 'ADMINISTRATOR'}" class="nav-item">
       <a
-        class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseManagement"
-        aria-expanded="true">
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseManagement"
+          aria-expanded="true">
         <i class="fas fa-fw fa-cog"></i>
         <span>과정 관리</span>
       </a>
@@ -96,11 +96,11 @@
     <!-- Nav Item - 교육생 관리 -->
     <li th:if="${session.loginUser.type != 'LEARNER'}" class="nav-item">
       <a
-        class="nav-link collapsed"
-        href="#"
-        data-toggle="collapse"
-        data-target="#learnerManagement"
-        aria-expanded="true">
+          class="nav-link collapsed"
+          href="#"
+          data-toggle="collapse"
+          data-target="#learnerManagement"
+          aria-expanded="true">
         <i class="fa fa-id-card"></i>
         <span>교육생 관리</span>
       </a>
@@ -116,7 +116,7 @@
 
     <!-- Nav Item - 출결 조회 -->
     <li th:if="${session.loginUser.type == 'LEARNER'}" class="nav-item nav-single">
-      <a class="nav-link" href="#">
+      <a class="nav-link" th:href="@{/participation/participationView}">
         <i class="fa fa-calendar"></i>
         <span>&nbsp;출결 조회</span></a>
     </li>
@@ -131,8 +131,8 @@
     <!-- Nav Item - 과정 게시판 -->
     <li class="nav-item">
       <a
-        class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseBoard"
-        aria-expanded="true">
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#courseBoard"
+          aria-expanded="true">
         <i class="fa fa-newspaper"></i>
         <span>과정 게시판</span>
       </a>
@@ -148,8 +148,8 @@
     <!-- Nav Item - 과제/시험 -->
     <li class="nav-item">
       <a
-        class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#homeworkTest"
-        aria-expanded="true">
+          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#homeworkTest"
+          aria-expanded="true">
         <i class="fa fa-laptop"></i>
         <span>과제 / 시험</span>
       </a>
@@ -192,8 +192,8 @@
       <!-- Nav Item - 사용자 관리 -->
       <li class="nav-item">
         <a
-          class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#userManagement"
-          aria-expanded="true">
+            class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#userManagement"
+            aria-expanded="true">
           <i class="fa fa-user"></i>
           <span>&nbsp;사용자 관리</span>
         </a>
@@ -243,9 +243,9 @@
 
         <!-- 헤더 내 과정 선택 셀렉트 박스 - 강사와 교육생만 나오게 처리함 -->
         <select
-          th:if="${session.loginUser.type != 'ADMINISTRATOR'}"
-          id="courseSelector"
-          class="form-control col-md-5">
+            th:if="${session.loginUser.type != 'ADMINISTRATOR'}"
+            id="courseSelector"
+            class="form-control col-md-5">
           <option></option>
         </select>
 
@@ -256,16 +256,16 @@
           <!-- Nav Item - Alerts -->
           <li class="nav-item dropdown no-arrow mx-1">
             <a
-              class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fas fa-bell fa-fw"></i>
-              <!-- Counter - Alerts -->
+                <!-- Counter - Alerts -->
               <span class="badge badge-danger badge-counter">3</span>
             </a>
-            <!-- Dropdown - Alerts -->
+              <!-- Dropdown - Alerts -->
             <div
-              class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-              aria-labelledby="alertsDropdown">
+                class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="alertsDropdown">
               <h6 class="dropdown-header">
                 Notice Center
               </h6>
@@ -311,19 +311,19 @@
           <!-- Nav Item - User Information -->
           <li class="nav-item dropdown no-arrow">
             <a
-              class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span
-                class="mr-2 d-none d-lg-inline text-gray-600 small"
-                th:text="${session.loginUser.fullName} + '님 안녕하세요.'"></span>
+                  class="mr-2 d-none d-lg-inline text-gray-600 small"
+                  th:text="${session.loginUser.fullName} + '님 안녕하세요.'"></span>
               <img
-                class="img-profile rounded-circle"
-                th:src="@{${session.loginUser.profileImg}}">
+                  class="img-profile rounded-circle"
+                  th:src="@{${session.loginUser.profileImg}}">
             </a>
-            <!-- Dropdown - User Information -->
+              <!-- Dropdown - User Information -->
             <div
-              class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-              aria-labelledby="userDropdown">
+                class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
               <a class="dropdown-item" href="#">
                 <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                 개인정보 조회
@@ -334,8 +334,8 @@
               </a>
               <div class="dropdown-divider"></div>
               <a
-                class="dropdown-item" href="#" data-toggle="modal"
-                data-target="#logoutModal">
+                  class="dropdown-item" href="#" data-toggle="modal"
+                  data-target="#logoutModal">
                 <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                 Logout
               </a>
@@ -380,12 +380,12 @@
 
 <!-- Logout Modal-->
 <div
-  class="modal fade"
-  id="logoutModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="exampleModalLabel"
-  aria-hidden="true">
+    class="modal fade"
+    id="logoutModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -421,18 +421,18 @@
 
 <script>
     $(document).on("click", ".collapse-item", function (e) {
-      // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
-      $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
+        // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
+        $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
 
-      // 클릭한 요소에 active 추가
-      $(this).addClass("active");
+        // 클릭한 요소에 active 추가
+        $(this).addClass("active");
     });
     $(document).on("click", ".nav-link", function () {
-      $(".collapse-item").removeClass("active");
+        $(".collapse-item").removeClass("active");
     });
     $(document).on("click", ".nav-single", function () {
-      $(".nav-link").addClass("collapsed");
-      $(".collapse").removeClass("show");
+        $(".nav-link").addClass("collapsed");
+        $(".collapse").removeClass("show");
     });
 
 </script>

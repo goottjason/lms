@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goott5.lms.participation.mapper.CancelDateMapper">
+
+  <select id="isHolidayOrCancelDate" parameterType="date" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM cancel_date
+    WHERE cancel_date = #{date}
+      AND (is_public_holiday = 1 OR is_all = 1)
+      AND deleted_at IS NULL
+  </select>
+
+  <select id="isCancelDateForCourse" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM cancel_date
+    WHERE cancel_date = #{date}
+      AND (course_id = #{courseId} OR is_all = 1)
+      AND deleted_at IS NULL
+  </select>
+
+</mapper>

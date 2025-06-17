@@ -47,6 +47,7 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.8' // 썸네일 만들기
 
     implementation 'org.springframework.security:spring-security-crypto' // 암호화
+    implementation 'org.springframework.boot:spring-boot-starter-quartz' // 스케줄러
 
     implementation 'javax.mail:mail:1.4.7' // 이메일 보내기
 
