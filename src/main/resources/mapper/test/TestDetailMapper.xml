@@ -20,7 +20,7 @@
 
   </resultMap>
 
-  <resultMap id="TestQuestionVO" type="TestQuestionVO">
+  <resultMap id="TestQuestionVO" type="com.goott5.lms.test.domain.test.register.vo.TestQuestionVO">
     <id column="id" property="id"/>
     <result column="test_id" property="testId"/>
     <result column="title" property="title"/>
@@ -33,7 +33,7 @@
       select="selectOptions" column="id"/>
   </resultMap>
 
-  <resultMap id="TestOptionVO" type="TestOptionVO">
+  <resultMap id="TestOptionVO" type="com.goott5.lms.test.domain.test.register.vo.TestOptionVO">
     <id column="id" property="id"/>
     <result column="question_id" property="questionId"/>
     <result column="option_no" property="optionNo"/>
