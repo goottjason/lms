@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.test.mapper.test.TestDetailMapper">
+
+  <resultMap id="TestRegisterVO" type="com.goott5.lms.test.domain.test.register.vo.TestRegisterVO">
+    <id column="id" property="id"/>
+    <result column="instructor_id" property="instructorId"/>
+    <result column="course_id" property="courseId"/>
+    <result column="title" property="title"/>
+    <result column="start_date" property="startDate"/>
+    <result column="end_date" property="endDate"/>
+    <result column="test_time" property="testTime"/>
+    <result column="total_score" property="totalScore"/>
+
+    <collection property="questions"
+      ofType="com.goott5.lms.test.domain.test.register.vo.TestQuestionVO" select="selectQuestions"
+      column="id"/>
+
+  </resultMap>
+
+  <resultMap id="TestQuestionVO" type="TestQuestionVO">
+    <id column="id" property="id"/>
+    <result column="test_id" property="testId"/>
+    <result column="title" property="title"/>
+    <result column="question_type" property="questionType"/>
+    <result column="question_no" property="questionNo"/>
+    <result column="score" property="score"/>
+    <result column="correct_answer" property="correctAnswer"/>
+
+    <collection property="options" ofType="com.goott5.lms.test.domain.test.register.vo.TestOptionVO"
+      select="selectOptions" column="id"/>
+  </resultMap>
+
+  <resultMap id="TestOptionVO" type="TestOptionVO">
+    <id column="id" property="id"/>
+    <result column="question_id" property="questionId"/>
+    <result column="option_no" property="optionNo"/>
+    <result column="content" property="content"/>
+    <result column="is_correct" property="isCorrect"/>
+  </resultMap>
+
+
+  <select id="selectTestDetail" resultMap="TestRegisterVO">
+    SELECT
+    id,
+    instructor_id,
+    course_id,
+    title,
+    start_date,
+    end_date,
+    test_time,
+    total_score
+    FROM test
+    WHERE id = #{testId}
+  </select>
+
+  <select id="selectQuestions" resultMap="TestQuestionVO" parameterType="int">
+    SELECT
+    id,
+    test_id,
+    title,
+    question_type,
+    question_no,
+    score,
+    correct_answer
+    FROM test_question
+    WHERE test_id = #{testId}
+  </select>
+
+  <select id="selectOptions" resultMap="TestOptionVO" parameterType="int">
+    SELECT
+    id,
+    question_id,
+    option_no,
+    content,
+    is_correct
+    FROM test_option
+    WHERE question_id = #{questionId}
+  </select>
+
+  <select id="selectLearnerInfo" resultType="com.goott5.lms.test.domain.test.detail.LearnerInfoVO">
+    SELECT
+    s.learner_id AS learner_id,
+    u.fullname AS full_name,
+    u.login_id AS login_id,
+    s.submission_status AS submission_status,
+    s.is_invalidated AS is_invalidated,
+    s.submission_reg_date AS submission_reg_date,
+    s.score AS score
+    FROM test_submission s JOIN user u
+    ON s.learner_id = u.id
+    WHERE s.test_id = #{testId}
+  </select>
+
+  <update id="updateSameTypeQuestion">
+    UPDATE test_question
+    <set>
+      title = #{inQ.title},
+      question_no = #{inQ.questionNo},
+      score = #{inQ.score},
+
+      <if test="inQ.questionType == 'SHORT'">
+        correct_answer = #{inQ.correctAnswer},
+      </if>
+
+      updated_at = CURRENT_TIMESTAMP
+    </set>
+    WHERE test_id = #{inQ.testId} AND question_no = #{inQ.questionNo}
+  </update>
+
+  <update id="updateDiffTypeQuestion">
+    UPDATE test_question
+    SET
+    title = #{inQ.title},
+    question_no = #{inQ.questionNo},
+    question_type = #{inQ.questionType},
+    score = #{inQ.score},
+    <if test="inQ.questionType == 'MULTIPLE'">
+      correct_answer = "",
+    </if>
+    updated_at = CURRENT_TIMESTAMP
+    WHERE test_id = #{inQ.testId} AND question_no = #{inQ.questionNo}
+  </update>
+
+  <update id="updateSameMultipleTypeOption">
+    UPDATE test_option
+    SET
+    option_no = #{inO.optionNo},
+    content = #{inO.content},
+    is_correct = #{inO.isCorrect},
+    updated_at = CURRENT_TIMESTAMP
+    WHERE question_id = #{inO.questionId} AND option_no = #{inO.optionNo}
+  </update>
+
+  <delete id="deleteQuestion">
+    DELETE FROM test_question
+    WHERE id = #{dbQ.id}
+  </delete>
+
+  <delete id="deleteMultipleOption">
+    DELETE FROM test_option
+    WHERE question_id = #{id}
+    <if test="optionNo != null">
+      AND option_no = #{optionNo}
+    </if>
+  </delete>
+
+
+</mapper>

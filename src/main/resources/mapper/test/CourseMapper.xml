@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.test.mapper.course.CourseMapper">
+
+  <select id="selectCourseListForAdmin" resultType="String">
+
+    select name
+    from course
+    <where>
+      <if test="isInProgress != null">
+        is_in_progress = #{isInProgress}
+      </if>
+    </where>
+
+  </select>
+
+  <resultMap id="courseMap" type="CourseInfoDTO">
+    <result property="courseName" column="name"/>
+    <result property="isInProgress" column="is_in_progress"/>
+  </resultMap>
+
+  <select id="selectCourseListForUser" parameterType="com.goott5.lms.user.domain.UserVO"
+    resultMap="courseMap">
+
+    <choose>
+
+      <when test="type == 'LEARNER'">
+        SELECT c.name AS name, c.is_in_progress AS is_in_progress
+        FROM course c
+        JOIN learner_enrollment l ON c.id = l.course_id
+        WHERE l.user_id = #{id}
+      </when>
+
+      <when test="type == 'INSTRUCTOR'">
+        SELECT c.name AS name, c.is_in_progress AS is_in_progress
+        FROM course c
+        JOIN staff_assignment s ON c.id = s.course_id
+        WHERE s.user_id = #{id}
+      </when>
+
+    </choose>
+    order by is_in_progress DESC, start_date DESC
+  </select>
+
+
+</mapper>
