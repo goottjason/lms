@@ -1,7 +1,16 @@
 package com.goott5.lms.courseregister.service;
 
+import com.goott5.lms.canceldatemanagement.domain.CancelDateVO;
+import com.goott5.lms.courseregister.domain.ClassroomVO;
+import com.goott5.lms.courseregister.domain.CourseSaveDTO;
+import com.goott5.lms.courseregister.domain.ScheduleDTO;
+import com.goott5.lms.courseregister.domain.SubjectDTO;
 import com.goott5.lms.courseregister.domain.UserVO;
 import com.goott5.lms.courseregister.mapper.CourseRegisterMapper;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,5 +33,79 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
   @Override
   public List<UserVO> getCourseHead() {
     return courseRegisterMapper.selectCourseHead();
+  }
+
+  @Override
+  public List<CancelDateVO> getCancelDates() {
+    return courseRegisterMapper.selectCancelDates();
+  }
+
+  @Override
+  public List<ClassroomVO> getClassroom() {
+
+    return courseRegisterMapper.selectClassrooms();
+  }
+
+  @Override
+  public void saveCourse(CourseSaveDTO courseSaveDTO) {
+
+    courseRegisterMapper.insertCourse(courseSaveDTO);
+    log.info("courseSaveDTO.getId() = {}", courseSaveDTO.getId());
+    courseRegisterMapper.insertStaffAssignment(courseSaveDTO);
+    courseRegisterMapper.insertClassroomAllocation(courseSaveDTO);
+    courseRegisterMapper.updateClassroom(courseSaveDTO);
+
+    // 교과목 정렬
+    courseSaveDTO.getSubjects().sort(Comparator.comparingInt(SubjectDTO::getSubjectOrder));
+
+    for (SubjectDTO subjectDTO : courseSaveDTO.getSubjects()) {
+      subjectDTO.setCourse_id(courseSaveDTO.getId());
+      courseRegisterMapper.insertCourseSubject(subjectDTO);
+    }
+    log.info("courseSaveDTO : {}", courseSaveDTO);
+
+    // 시간표 Insert
+    int remainTime = courseSaveDTO.getTotalHours();
+    int subjectIdCount = 0;
+    int lunchMinutes = (int) Duration.between(courseSaveDTO.getLunchStartTime(),
+            courseSaveDTO.getLunchEndTime()).toMinutes();
+
+    for (LocalDate lessonDay : courseSaveDTO.getLessonDays()) {
+
+      LocalTime startTime = courseSaveDTO.getLessonStartTime();
+
+      for (int i = 1; i <= courseSaveDTO.getDailyHours(); i++) {
+
+        int changeTime = 0;
+        for (int j = 0; j <= subjectIdCount; j++) { // 0
+          changeTime += courseSaveDTO.getSubjects().get(j).getHours(); // 160
+        }
+
+        if (remainTime == courseSaveDTO.getTotalHours() - changeTime) { // 1020-160
+          subjectIdCount++;
+        }
+        int subjectId = courseSaveDTO.getSubjects().get(subjectIdCount).getId();
+
+        ScheduleDTO scheduleDTO = ScheduleDTO.builder()
+                .courseId(courseSaveDTO.getId())
+                .subjectId(subjectId)
+                .period(i)
+                .periodStartTime(startTime)
+                .periodEndTime(startTime.plusMinutes(60 - courseSaveDTO.getBreakTime()))
+                .classDate(lessonDay)
+                .build();
+
+        courseRegisterMapper.insertCourseSchedule(scheduleDTO);
+
+        if (scheduleDTO.getPeriodEndTime().equals(courseSaveDTO.getLunchStartTime())) {
+          startTime = startTime.plusMinutes(60 - courseSaveDTO.getBreakTime() + lunchMinutes);
+        } else {
+          startTime = startTime.plusMinutes(60);
+        }
+
+        remainTime--;
+
+      }
+    }
   }
 }

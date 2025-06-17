@@ -112,22 +112,31 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="lesson-end-time-input">훈련종료시간</label>
-                <input type="time" id="lesson-end-time-input" class="form-control">
+                <input type="time" id="lesson-end-time-input" class="form-control" readonly>
               </div>
             </div>
           </div>
 
+
           <div class="row mb-2">
-            <div class="col-md-6">
+            <div class="col-md-3">
               <div class="form-group">
-                <label for="lunch-start-time-input">식사시작시간</label>
-                <input type="time" id="lunch-start-time-input" class="form-control">
+                <label for="when-lunch">식사시간</label>
+                <select id="when-lunch" class="form-control">
+                  <option value>선택</option>
+                </select>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col">
               <div class="form-group">
-                <label for="lunch-end-time-input">식사종료시간</label>
-                <input type="time" id="lunch-end-time-input" class="form-control">
+                <label for="lunch-start-time-input">식사 시작시간</label>
+                <input type="time" id="lunch-start-time-input" class="form-control" readonly>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="lunch-end-time-input">식사 종료시간</label>
+                <input type="time" id="lunch-end-time-input" class="form-control" readonly>
               </div>
             </div>
           </div>
@@ -173,19 +182,45 @@
             <table class="table">
               <thead>
               <tr class="text-center">
-                <th scope="col" class="align-middle" width="22%">수업순서</th>
+                <th scope="col" class="align-middle" width="12%">순서</th>
                 <th scope="col" class="align-middle" width="22%">교과목명</th>
                 <th scope="col" class="align-middle" width="15%">시간</th>
                 <th scope="col" class="align-middle" width="45">교재명</th>
                 <th scope="col" class="align-middle" width="18%">저자명</th>
+                <th scope="col" class="align-middle" width="15%">선택</th>
               </tr>
               </thead>
               <tbody id="subject-table">
+                <tr class="subject-row">
+                  <td class="text-center align-middle"><input
+                      type="text"
+                      class="form-control"
+                      data-id=""></td>
+                  <td class="text-center align-middle"><input
+                      type="text"
+                      class="form-control"
+                      data-id=""></td>
+                  <td class="text-center align-middle"><input
+                      type="text"
+                      class="form-control"
+                      data-id=""></td>
+                  <td class="text-center align-middle"><input
+                      type="text"
+                      class="form-control"
+                      data-id=""></td>
+                  <td class="text-center align-middle"><input
+                      type="text"
+                      class="form-control"
+                      data-id=""></td>
+                  <td class="text-center align-middle"><button
+                      class='btn btn-danger btn-icon-split btn-sm remove-subject-row-btn'><span
+                      class='text'>삭제</span></button></td>
+                </tr>
 
               </tbody>
             </table>
             <div class="text-center">
-              <button id="" class="btn btn-sm btn-info btn-icon-split">
+              <button id="add-subject-row-btn" class="btn btn-sm btn-info btn-icon-split">
                 <span class="icon text-white-50">
                   <i class="fas fa-plus"></i>
                 </span>
@@ -199,7 +234,9 @@
 
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button
+          id="register-btn" class="btn btn-primary btn-icon-split mr-2"
+          onclick="registerCourse(event)">
         <span class="icon text-white-50">
             <i class="fas fa-upload"></i>
         </span>
@@ -277,6 +314,7 @@
                   </button>
                 </td>
               </tr>
+
               </tbody>
             </table>
            </div>
@@ -300,6 +338,10 @@
 <th:block layout:fragment="script">
   <!-- 외부 JS 파일 연결 -->
   <script th:src="@{/js/courseManagement/courseRegister.js}" type="text/javascript"></script>
+
+  <script></script>
+
+
 
 </th:block>
 </body>

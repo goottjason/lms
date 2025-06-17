@@ -7,6 +7,7 @@ import com.goott5.lms.canceldatemanagement.domain.HolidayDTO;
 import com.goott5.lms.canceldatemanagement.domain.PagingRequestDTO;
 import com.goott5.lms.canceldatemanagement.domain.PagingResponseDTO;
 import com.goott5.lms.canceldatemanagement.service.CancelDateManagementService;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class CancelDateManagementController {
 
   private final CancelDateManagementService cancelDateManagementService;
 
-  @GetMapping("")
+  @GetMapping("/cancelDateManagement")
   public String cancelDateManagement() {
     return "courseManagement/cancelDateManagement";
   }
@@ -70,14 +71,28 @@ public class CancelDateManagementController {
     return "success";
   }
 
-  @PostMapping("/saveCancelDate")
+  @PostMapping("/saveCancelDates")
   @ResponseBody
-  public String saveCancelDate(@RequestBody CancelDateDTO cancelDateDTO) {
+  public String saveCancelDates(@RequestBody List<CancelDateDTO> cancelDateDTOS) {
 
-    cancelDateManagementService.saveCancelDate(cancelDateDTO);
+    log.info("cancelDateDTOS: {}", cancelDateDTOS);
+    cancelDateManagementService.saveCancelDates(cancelDateDTOS);
 
     return "success";
   }
 
+  @GetMapping("/getCoursesInProgressByDate")
+  @ResponseBody
+  public List<CourseVO> getCoursesInProgressByDate(LocalDate cancelDate) {
+
+    return cancelDateManagementService.getCoursesInProgressByDate(cancelDate);
+  }
+
+  @GetMapping("/getCancelDatesByIsAll")
+  @ResponseBody
+  public List<CancelDateVO> getCancelDatesByIsAll() {
+
+    return cancelDateManagementService.getCancelDatesByIsAll();
+  }
 
 }

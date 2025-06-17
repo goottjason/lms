@@ -87,4 +87,16 @@
 
   </insert>
 
+  <insert id="insertNewSchedules" parameterType="java.util.List">
+    insert into course_schedule (subject_id, course_id, class_date, period, period_start_time,
+    period_end_time)
+    values
+    <foreach collection="list" item="item" separator=",">
+
+      (#{item.subjectId},#{item.courseId}, #{item.classDate}, #{item.period},
+      #{item.periodStartTime}, #{item.periodEndTime})
+    </foreach>
+
+  </insert>
+
 </mapper>
