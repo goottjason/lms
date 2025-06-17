@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goott5.lms.coursemanagement.mapper.CourseManagementMapper">
+
+  <select id="selectCoursesAll"
+          resultType="com.goott5.lms.coursemanagement.domain.CourseRespDTO">
+    SELECT
+      c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date,
+      c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time,
+      c.lunch_start_time, c.lunch_end_time, c.created_at, c.updated_at, c.deleted_at
+    FROM course c
+    <choose>
+      <when test="loginUserType == 'LEARNER'">
+        INNER JOIN learner_enrollment le ON c.id = le.course_id
+      </when>
+      <otherwise>
+        LEFT JOIN staff_assignment sa ON c.id = sa.course_id
+        LEFT JOIN user u ON sa.user_id = u.id
+      </otherwise>
+    </choose>
+    <include refid="course_auth_search_filter" />
+    ORDER BY ${pageCourseReqDTO.orderBy} ${pageCourseReqDTO.orderDirection}
+    <if test="pageCourseReqDTO.pageSize != null and pageCourseReqDTO.pageNo != null">
+      LIMIT #{pageCourseReqDTO.offset}, #{pageCourseReqDTO.pageSize}
+    </if>
+  </select>
+  <select id="selectCourse"
+          resultType="com.goott5.lms.coursemanagement.domain.CourseRespDTO">
+    SELECT
+      c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date,
+      c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time,
+      c.lunch_start_time, c.lunch_end_time, c.created_at, c.updated_at, c.deleted_at
+    FROM course c
+    <choose>
+      <when test="loginUserType == 'LEARNER'">
+        INNER JOIN learner_enrollment le ON c.id = le.course_id
+      </when>
+      <otherwise>
+        LEFT JOIN staff_assignment sa ON c.id = sa.course_id
+        LEFT JOIN user u ON sa.user_id = u.id
+      </otherwise>
+    </choose>
+    <where>
+      c.id = #{courseId}
+      <choose>
+        <when test="loginUserType == 'LEARNER'">
+          AND le.user_id = #{loginUserId}
+        </when>
+        <otherwise>
+          AND sa.user_id = #{loginUserId}
+        </otherwise>
+      </choose>
+    </where>
+  </select>
+  <sql id="course_auth_search_filter">
+    <where>
+      <choose>
+        <when test="loginUserType == 'LEARNER'">
+          le.user_id = #{loginUserId}
+        </when>
+        <otherwise>
+          sa.user_id = #{loginUserId}
+        </otherwise>
+      </choose>
+      <if test="pageCourseReqDTO.keyword != null and pageCourseReqDTO.keyword != ''">
+        AND ${pageCourseReqDTO.type} like concat('%', #{pageCourseReqDTO.keyword}, '%')
+      </if>
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
+    </where>
+  </sql>
+
+  <select id="selectEnrolledLearnersByCourseId" resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
+    SELECT u.id, u.type, u.fullname, u.mobile, le.completion_status as completionStatus
+    FROM user u
+    LEFT JOIN learner_enrollment le ON u.id = le.user_id
+    LEFT JOIN course c ON le.course_id = c.id
+    WHERE u.type = 'LEARNER' and le.course_id = #{courseId} and c.is_in_progress = 1
+    ORDER BY ${pageUserReqDTO.orderBy} ${pageUserReqDTO.orderDirection}
+    <if test="pageUserReqDTO.pageSize != null and pageUserReqDTO.pageNo != null">
+      LIMIT #{pageUserReqDTO.offset}, #{pageUserReqDTO.pageSize}
+    </if>
+
+  </select>
+  <select id="selectNotEnrolledLearnersAll" resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
+    SELECT u.id, u.type, u.fullname, u.mobile, le.completion_status
+    FROM user u
+    LEFT JOIN learner_enrollment le ON u.id = le.user_id
+    WHERE type = 'LEARNER'
+    AND u.id NOT IN (
+      SELECT u.id FROM user u
+      LEFT JOIN learner_enrollment le ON u.id = le.user_id
+      WHERE le.completion_status = 'IN_PROGRESS')
+    <if test="pageUserReqDTO.keyword != null and pageUserReqDTO.keyword != ''">
+      AND ${pageUserReqDTO.type} like concat('%', #{pageUserReqDTO.keyword}, '%')
+    </if>
+    <if test="includeAll == null">
+      AND le.completion_status IS NULL
+    </if>
+    ORDER BY ${pageUserReqDTO.orderBy} ${pageUserReqDTO.orderDirection}
+    <if test="pageUserReqDTO.pageSize != null and pageUserReqDTO.pageNo != null">
+      LIMIT #{pageUserReqDTO.offset}, #{pageUserReqDTO.pageSize}
+    </if>
+  </select>
+
+  <delete id="deleteCourse">
+    DELETE c
+      FROM course c
+    WHERE
+      #{loginUserId} IN (
+      <include refid="idsOfGeneralManager"/>
+      )
+      AND c.id = #{courseId}
+  </delete>
+  <sql id="idsOfGeneralManager">
+    SELECT u.id
+    FROM user u
+    LEFT JOIN staff_detail sd ON sd.user_id = u.id
+    WHERE u.type = 'ADMINISTRATOR'
+    AND sd.position = 'GENERAL_MANAGER'
+  </sql>
+
+</mapper>
