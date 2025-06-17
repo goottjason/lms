@@ -4,31 +4,31 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{layout/basic.html}">
 <head>
-
+  <style>
+    #courseSelector {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
   <!-- content header 시작 -->
   <div class="row align-items-center">
-    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 조회</h1>
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">과제 조회</h1>
     <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
-      <form class="row col-12 mb-3">
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">진행상황별</option>
-            <option value="">진행 중</option>
-            <option value="">종료</option>
+      <form class="row col-12 mb-3" method="get" th:action="@{/homework/homeworkList}">
+        <div class="col-3" th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
+          <select id="isInProgressForAdmin" class="form-control">
+            <option value="" th:selected="${isInProgressForAdmin == ''}">전체</option>
+            <option th:value="true" th:selected="${isInProgressForAdmin == 'true'}" >진행 중</option>
+            <option th:value="false" th:selected="${isInProgressForAdmin == 'false'}">종료</option>
           </select>
         </div>
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">연도별</option>
-          </select>
-        </div>
+
         <div class="col">
-          <select id="" class="form-control">
-            <option value="">과정별</option>
+          <select id="menuForAdminN" class="form-control" th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
+            <option value="">전체</option>
           </select>
         </div>
       </form>
@@ -44,7 +44,7 @@
           <h6 class="m-0 font-weight-bold text-primary">과제 리스트 조회</h6>
         </div>
         <div class="col-auto">
-          <button id="" class="btn btn-info btn-icon-split">
+          <button id="homeworkRegister" class="btn btn-info btn-icon-split" th:if="${loginUser.getType() == 'INSTRUCTOR'}">
               <span class="icon text-white-50">
                 <i class="fas fa-plus"></i>
               </span>
@@ -59,22 +59,22 @@
       <form class="row mb-3">
         <div class="input-group col-6">
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="과제명으로 검색하세요.">
+            <input type="text" class="form-control" placeholder="과제명으로 검색하세요." id="keyword">
             <div class="input-group-append">
-              <button class="btn btn-primary" type="button">
+              <button class="btn btn-primary search" type="button">
                 <i class="fas fa-search fa-sm"></i>
               </button>
             </div>
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
-          <select id="" class="form-control col-3 mr-3">
-            <option value="">오름차순</option>
-            <option value="">내림차순</option>
+          <select id="order" class="form-control col-3 mr-3">
+            <option th:value="asc" th:selected="${order == 'asc'}">오름차순</option>
+            <option th:value="desc" th:selected="${order == 'desc'}">내림차순</option>
           </select>
-          <select id="" class="form-control col-3">
-            <option value="">과제명</option>
-            <option value="">제출기한</option>
+          <select id="sortBy" class="form-control col-3">
+            <option value="title" th:selected="${sortBy == 'title'}">과제명</option>
+            <option value="endDate" th:selected="${sortBy == 'endDate'}">제출기한</option>
           </select>
         </div>
       </form>
@@ -87,22 +87,35 @@
             <th scope="col" class="align-middle">No</th>
             <th scope="col" class="align-middle">과제명</th>
             <th scope="col" class="align-middle">과정명</th>
+            <th scope="col" class="align-middle">제출 조회</th>
             <th scope="col" class="align-middle">제출기한</th>
+            <th scope="col" class="align-middle">조회수</th>
           </tr>
           </thead>
           <tbody>
-          <tr>
-            <td class="text-center align-middle">2</td>
-            <td class="title align-middle">어쩌구 저쩌구 저쩌구한 어려운 과제입니다.</td>
-            <td class="title align-middle text-truncate" style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-            <td class="text-center align-middle">2025-06-25 </td>
-          </tr>
-          <tr>
-            <td class="text-center align-middle">1</td>
-            <td class="title align-middle">어쩌구 저쩌구 저쩌구한 아주 쉬운 과제입니다.</td>
-            <td class="title align-middle text-truncate" style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-            <td class="text-center align-middle">2025-05-25 </td>
-          </tr>
+          <th:block th:each="homework:${homeworkList}">
+            <tr>
+              <td class="text-center align-middle" th:text="${homework.getId()}">2</td>
+              <td class="title align-middle">
+                <a th:text="${homework.getTitle()}"
+                   th:onclick="|prevPage('/homework/homeworkDetail?homeworkId=${homework.getId()}')|"
+                   style="cursor:pointer;"></a>
+              </td>
+              <td class="title align-middle text-truncate" style="max-width: 200px;"
+                  th:text="${homework.getCourseId()}">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정
+              </td>
+              <td>
+                <button class="btn btn-primary btn-sm submissionBtn"
+                        th:data-id="${homework.getId()}" style="text-align: center"
+                        data-toggle="modal" data-target="#homeworkSubmissionModal">클릭
+                </button>
+              </td>
+              <td class="text-center align-middle" th:text="${#strings.setSplit(homework.getEndDate(),'T')[0]}">2025-06-25
+              </td>
+              <td class="text-center align-middle" th:text="${homework.getReadCount()}">2025-06-25
+              </td>
+            </tr>
+          </th:block>
           </tbody>
         </table>
       </div>
@@ -111,29 +124,493 @@
       <nav aria-label="Page navigation example" class="col mt-4">
         <ul class="pagination justify-content-center">
           <li class="page-item">
-            <span class="page-link">이전</span>
+            <a class="page-link" th:if="${pagingResponseDTO.isPrev()}"
+                  th:href="${pagingResponseDTO.getStart() - 1}">이전</a>
+            <a class="page-link" th:unless="${pagingResponseDTO.isPrev()}" disabled="true"
+                  style="color: grey">이전</a>
           </li>
-          <li class="page-item active">
-            <span class="page-link">1</span>
+          <li class="page-item"
+              th:each="i:${#numbers.sequence(pagingResponseDTO.getStart(),pagingResponseDTO.getEnd())}">
+            <a class="page-link active" th:classappend="${i == pagingResponseDTO.pageNo} ? 'active'"
+               th:if="${loginUser.getType() =='ADMINISTRATOR'}"
+               th:text="${i}"
+               th:href="@{/homework/homeworkList(pageNo=${i}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy},
+               progress=${param.progress}, nameForAdmin=${param.nameForAdmin})}">1</a>
+            <a class="page-link active" th:classappend="${i == pagingResponseDTO.pageNo} ? 'active'"
+               th:unless="${loginUser.getType() =='ADMINISTRATOR'}"
+               th:text="${i}"
+               th:href="@{/homework/homeworkList(pageNo=${i}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">1</a>
           </li>
           <li class="page-item">
-            <span class="page-link">2</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link">3</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link page-move">다음</span>
+            <a class="page-link" th:if="${pagingResponseDTO.isNext()}"
+                  th:href="${pagingResponseDTO.getEnd() + 1}">다음</a>
+            <a class="page-link" th:unless="${pagingResponseDTO.isNext()}" disabled="true"
+                  style="color: grey">다음</a>
           </li>
         </ul>
       </nav>
     </div>
   </div>
+
+  <!-- 과정 불러오기 모달 -->
+  <div class="modal fade" id="homeworkSubmissionModal" tabindex="-1" role="dialog"
+       aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">과제 제출 목록</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <!-- 테이블 리스트 -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr class="text-center">
+                <th scope="col" class="align-middle">id</th>
+                <th scope="col" class="align-middle">제목</th>
+                <th scope="col" class="align-middle">내용</th>
+                <th scope="col" class="align-middle">조회수</th>
+              </tr>
+              </thead>
+              <tbody id="submission">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+
+    let pagingRequestDTO = [[${pagingRequestDTO}]];
+    console.log(pagingRequestDTO);
+
+    //정렬
+    let order = $("#order").val();
+    let sortBy = $("#sortBy").val();
+
+    // 학생, 강사용 메뉴 select
+    let courseSelector = $("#courseSelector");
+
+    //관리자용 select 박스(과정명 출력)
+    //과정 상태(진행 중/종료)
+    let progress = $("#isInProgressForAdmin").val(); //string 상태
+    //let menuForAdminName = [[${menuForAdminName}]]; //model로 받은 것
+    let adminNameSelectBox = $("#menuForAdminN");
+    //let isInProgressForAdmin = [[${isInProgressForAdmin}]];
+
+
+    //관리자면 학생, 강사용 메뉴 select 삭제
+    function courseSelectorForLtRemove() {
+      let loginUserType = [[${loginUser.getType()}]];
+      if (loginUserType === 'ADMINISTRATOR') {
+        $("#courseSelector").remove(); // 완전 제거
+      } else {
+        $("#courseSelector").show(); // 권한 사용자에게만 보여줌
+      }
+    }
+
+
+    let nameForLtList = [[${menuListForLt}]]; //강사,학생용 과정 리스트
+    console.log("nameForLtList", nameForLtList);
+
+
+
+    //강사, 교육생용 select 박스 값 나타내주기
+    function createOptionForLT(selected) {
+      courseSelector.empty();
+      console.log("nameForLtList", nameForLtList);
+
+      if(nameForLtList && nameForLtList.length > 0){
+        const defaultSelected = selected || nameForLtList[0];
+
+
+      nameForLtList.forEach(function (name) {
+        const isSelected = defaultSelected === name ? 'selected' : '';
+        courseSelector.append(`<option value="${name}" ${isSelected}>${name}</option>`);
+      });
+
+      }
+
+    }
+
+
+
+    function getOrder(order,sortBy) {
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+
+      // 정렬 파라미터만 갱신
+      params.set('order', order);
+      params.set('sortBy', sortBy);
+      params.set('keyword', '');
+
+      window.location.href = `${url.pathname}?${params.toString()}`;
+    }
+
+
+
+    // 강사 교육생용 select 박스 값 컨트롤러로 보내기
+    function sendNameForLt(nameForLt) {
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+
+      // 현재 URL에 있는 nameForLt를 디코딩해서 비교
+      const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
+      console.log("currentCourse",currentCourse)
+
+      // 값이 바뀐 경우에만 이동
+      if(nameForLt !== currentCourse){
+        params.set('nameForLt', nameForLt);
+        params.set('keyword', ''); // 검색어 초기화 (선택사항)
+
+        location.href = `${url.pathname}?${params.toString()}`;
+      }
+
+
+    }
+
+    //관리자용 select 박스 값(string->boolean) 컨트롤러로 보내기
+    function sendBooleanForAdmin() {
+      progress = $("#isInProgressForAdmin").val(); //string 상태
+      console.log("progress", progress);
+
+      axios.get("/homework/homeworkForAdminBoolean?progress=" + progress, {
+        params: {
+          progress: progress
+        }
+      }).then(function (response) {
+        console.log(response);
+        let menuForAdminName = response.data; //boolean에 따라 받은 것
+        createOptionForAdminName(menuForAdminName);
+        console.log(menuForAdminName);
+
+        //location.href = "/homework/homeworkList?progress=" + progress;
+      }).catch(function (error) {
+        console.log(error);
+      })
+
+    }
+
+    //관리자용 select 박스(boolean에 따라 과정명 출력)
+    function createOptionForAdminName(datas) {
+      const urlParams = new URLSearchParams(location.search);
+      const currentName = decodeURIComponent(urlParams.get("nameForAdmin") || "").trim();
+      // const currentProgress = urlParams.get("progress");
+
+      adminNameSelectBox.empty();
+      adminNameSelectBox.append(`<option value="" selected>전체</option>`)
+
+      datas.forEach(function (data) {
+        const selected = (data.trim() === currentName) ? 'selected' : '';
+        adminNameSelectBox.append(`<option value="${data}" ${selected}>${data}</option>`);
+      });
+
+      // 진행상태 값이 있다면 해당 값으로 select 상태 갱신
+      // if (currentProgress != null) {
+      //   $("#isInProgress").val(currentProgress);
+      // }
+    }
+
+
+    //관리자용 select 값 boolean 뷰단에 requestparam 보내기
+    function sendForAdminName() {
+      // 진행상황 값
+      //progress = $("#is_in_progress").val(); //string 상태
+
+      progress = $("#isInProgressForAdmin").val();
+      let nameForAdmin = adminNameSelectBox.val();
+
+      axios.get("/homework/homeworkList", {
+        params: {
+          progress: progress,
+          nameForAdmin: nameForAdmin
+        }
+      }).then(function (response) {
+
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+
+        const currentProgress = params.get('progress');
+        const currentNameForAdmin = params.get('nameForAdmin');
+
+        if(currentProgress != progress || currentNameForAdmin != nameForAdmin){
+
+        params.set('progress', progress);
+        params.set('nameForAdmin', nameForAdmin);
+        params.set('keyword', '');
+
+        if(nameForAdmin == ''){
+          params.set('nameForAdmin', '');
+        }
+
+        location.href = `${url.pathname}?${params.toString()}`;
+
+          progress = params.get('progress').toString();
+          nameForAdmin = params.get('nameForAdmin');
+        }
+
+      })
+
+
+    }
+
+    //submission 모달창 조회 + 업데이트
+    function updateModal(homeworkId, submissionPageNo, submissionPageSize) {
+      axios.get("/homework/homeworkSubmissionList", {
+        params: {
+          homeworkId: homeworkId,
+          submissionPageNo: submissionPageNo,
+          submissionPageSize: submissionPageSize
+        }
+        // homeworkId를 제외한 두 개 값은 모두 현 쿼리스트링에 붙어있음
+      }).then(function (response) {
+        console.log(response);
+        console.log(response.data.dtoList);
+        let submissionList = response.data.dtoList;
+        let pagingData = response.data;
+        let output = "";
+        submissionList.forEach(function (submission) {
+          // console.log(submission.id);
+
+          output += `<table class="table">`
+ output += `<tr>
+                <td class="text-center align-middle">${submission.id}</td>
+                <td class="text-center align-middle" >${submission.title}</td>
+                <td class="text-center align-middle">${submission.content}</td>
+                <td class="text-center align-middle"> ${submission.readCount}</td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-primary btn-icon-split btn-sm submissionIn" data-id="${submission.id}">
+                    <span class="text submissionDetail" >보기</span>
+                  </button>
+                </td>
+              </tr>`
+
+          output +=`</table>`;
+
+        })
+
+        if (pagingData.prev) {
+          output += `<nav aria-label="Page navigation example" class="col mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item">
+            <a class="page-link" onclick="updateModal(${homeworkId},${pagingData.start
+          - 1},${pagingData.pageSize})">이전</a>
+          </li>`
+        } else {
+          output += `<nav aria-label="Page navigation example" class="col mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item">
+            <a class="page-link" style="color: grey">이전</a>
+          </li>`;
+
+        }
+
+        for (let i = pagingData.start; i <= pagingData.end; i++) {
+          output += `<li class="page-item">
+            <a class="page-link active"
+            onclick="updateModal(${homeworkId},${i},${pagingData.pageSize})">${i}</a>
+          </li>`;
+        }
+
+        if (pagingData.next) {
+          output += `<li class="page-item">
+            <a class="page-link page-move" onclick="updateModal(${homeworkId},${pagingData.end
+          + 1},${pagingData.pageSize})" >다음</a>
+          </li>
+        </ul>
+      </nav>`
+        } else {
+          output += `<li class="page-item">
+            <a class="page-link page-move" style="color: grey">다음</a>
+          </li>
+        </ul>
+      </nav>`
+
+        }
+
+        $("#submission").html(output);
+        $("#myModal").modal("show");
+
+      }).catch(function (error) {
+        console.log(error);
+      })
+
+    }
+
+    //현재 진행 중인 과정이 없는 강사의 경우
+    function notRegisterInProgress() {
+      let progressRegister = [[${progressRegister}]];
+      if(progressRegister != null){
+      // console.log("progressRegister", progressRegister);
+        alert("현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.");
+      }
+    }
+
+    // 전 페이지 세션에 저장(session 패키지와 연동)
+    function prevPage(link) {
+      let savePage =location.href;
+      localStorage.setItem("savePage", savePage);
+      console.log("저장된 savePage:", savePage);
+
+      // 추후 필요없으면 삭제(프론트 단에서 해결되면)
+      // axios.post("/session/savePage", {
+      //     savePage: savePage //서버로 data로 전달
+      // }).then(function (response) {
+      //   console.log("세션 저장 완료:",response);
+      // }).catch(function (error) {
+      //   console.log("세션 저장 실패:",error);
+      // })
+
+        location.href = link;
+    }
+
+    //$function 모음
+    $(function () {
+
+      // 세션 페이지 저장
+      //prevPage();
+
+      //관리자일 경우,학생+강사용 select 숨기기
+      courseSelectorForLtRemove();
+
+      //강사,학생용 select 조회
+      createOptionForLT();
+
+      // 강사 학생용 data 보내기
+      //sendNameForLt(courseSelector.val());
+
+      //관리자용 boolean 값 보내기
+      sendBooleanForAdmin();
+
+      //관리자용 select-과정명을 조회
+      //createOptionForAdminName();
+
+      //관리자용 select 박스 적용한 pagingresoinse 출력
+      //sendForAdminName();
+
+      // 현재 진행 중이 없는 강사가 등로갛ㄹ떄
+      notRegisterInProgress();
+
+      adminNameSelectBox.on("change", function () {
+        sendForAdminName();
+      })
+
+
+
+      // 진행 상황 변할 때
+      $("#isInProgressForAdmin").on("change", function () {
+        progress = $(this).val();
+        sendBooleanForAdmin();
+        //menuForAdminName = [[${menuForAdminName}]]; //model로 받은 것
+        // createOptionForAdminName();
+      })
+
+      // 강사,교육생 메뉴 선택될때
+      courseSelector.on("change", function () {
+        let nameForLt = $(this).val();
+        sendNameForLt(nameForLt);
+      })
+
+      //order 선택될때
+      $("#order").on("change", function () {
+        getOrder($(this).val(),sortBy);
+      })
+
+      $("#sortBy").on("change", function () {
+        getOrder(order,$(this).val());
+      })
+
+
+
+      //등록 버튼
+      $("#homeworkRegister").on("click", function (e) {
+        e.preventDefault();
+        location.href = "/homework/homeworkRegister";
+      })
+
+      // 검색 버튼(엔터키)
+      $(".search").keypress(function (e) {
+        if (e.keyCode === 13) {
+          $(".search").click(); //나중에 하기
+        }
+      })
+
+      // 검색 버튼
+      $(".search").on("click", function () {
+        let keyword = $("#keyword").val().trim();
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+        params.set("keyword", keyword);
+        location.href = `${url.pathname}?${params.toString()}`;
+      });
+
+
+      // 제출 과제 보기용 버튼
+      $(".submissionBtn").on("click", function (e) {
+        e.preventDefault();
+        //const params = new URLSearchParams(window.location.search);
+        let submissionPageNo = 1;
+        let submissionPageSize = 5;
+
+        let homeworkId = $(this).data("id");
+        console.log("homeworkId", homeworkId);
+
+        if (!homeworkId) {
+          console.log("homeworkId == null", null);
+          return;
+        }
+        updateModal(homeworkId, submissionPageNo, submissionPageSize);
+
+      })
+
+      //제출 과제 상세 페이지 접근 버튼
+      $(document).on("click", ".submissionIn",function (e) {
+        // alert("!");
+        e.preventDefault();
+
+        let submissionId = $(this).data("id");
+        console.log("submissionId", submissionId);
+        axios.get("/homework/submissionDetailAuth?submissionId=" + encodeURIComponent(submissionId), {
+          submissionId:submissionId
+        }).then(function (response) {
+          console.log(response);
+          location.href = "/homework/submissionDetail?submissionId=" + encodeURIComponent(submissionId);
+          alert(response.data.message);
+        }).catch(function (error) {
+          console.log(error);
+          //location.href = error.response.data.data;
+          alert(error.response.data.message);
+        })
+
+      })
+
+      $(document).ready(function () {
+        const params = new URLSearchParams(window.location.search);
+        const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
+        //courseSelector.val(nameForLt); // URL에서 가져온 값으로 select 박스 설정
+        createOptionForLT(nameForLt);
+      });
+
+    })
 
   </script>
 </th:block>

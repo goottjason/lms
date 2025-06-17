@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.homework.mapper.HomeworkMapper">
+
+  <!-- 강사 과제 조회-->
+  <select id="searchBySelectForTeacher"
+    parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO"
+    resultType="com.goott5.lms.homework.domain.HomeworkDTO">
+    SELECT h.id, h.title, h.start_date, h.end_date, h.content, h.course_id, h.read_count, h.instructor_id, h.created_at, h.updated_at, h.deleted_at
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    INNER JOIN staff_assignment sa
+    ON h.course_id=sa.course_id
+    WHERE sa.user_id= (select id
+    from user
+    where login_id = #{loginId})
+    <if test="keyword != null and keyword != '' ">
+      AND h.title like concat('%',#{keyword},'%')
+    </if>
+    <if test="nameForLt != null and nameForLt != '' ">
+      AND c.name = #{nameForLt}
+    </if>
+    <choose>
+      <when test="sortBy == 'endDate'">
+        <if test="order == 'asc'">
+          ORDER BY h.end_date ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.end_date DESC
+        </if>
+      </when>
+      <when test="sortBy == 'title' or sortBy == null">
+        <if test="order == 'asc'">
+          ORDER BY h.title ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.title DESC
+        </if>
+      </when>
+    </choose>
+    <choose>
+      <when test="pagingRequest != null">
+        limit #{pagingRequest.skip},#{pagingRequest.pageSize}
+      </when>
+    </choose>
+  </select>
+
+  <select id="searchCountForTeacher"
+    parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO" resultType="Integer">
+    SELECT count(*)
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    INNER JOIN staff_assignment sa
+    ON h.course_id=sa.course_id
+    WHERE sa.user_id= (select id
+    from user
+    where login_id = #{loginId})
+    <if test="keyword != null and keyword != '' ">
+      AND h.title like concat('%',#{keyword},'%')
+    </if>
+    <if test="nameForLt != null and nameForLt != '' ">
+      AND c.name = #{nameForLt}
+    </if>
+  </select>
+
+  <!--학생 과제 조회-->
+  <select id="searchBySelectForLearner"
+    parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO"
+    resultType="com.goott5.lms.homework.domain.HomeworkDTO">
+    SELECT h.id, h.title, h.start_date, h.end_date, h.content, h.course_id, h.read_count, h.instructor_id, h.created_at, h.updated_at, h.deleted_at
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    INNER JOIN learner_enrollment le
+    ON h.course_id=le.course_id
+    WHERE le.user_id= (select id
+    from user
+    where login_id = #{loginId})
+    <if test="keyword != null and keyword != '' ">
+      AND h.title like concat('%',#{keyword},'%')
+    </if>
+    <if test="nameForLt != null and nameForLt != '' ">
+      AND c.name = #{nameForLt}
+    </if>
+    <choose>
+      <when test="sortBy == 'endDate'">
+        <if test="order == 'asc'">
+          ORDER BY h.end_date ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.end_date DESC
+        </if>
+      </when>
+      <when test="sortBy == 'title' or sortBy == null">
+        <if test="order == 'asc'">
+          ORDER BY h.title ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.title DESC
+        </if>
+      </when>
+    </choose>
+    <choose>
+      <when test="pagingRequest != null">
+        limit #{pagingRequest.skip},#{pagingRequest.pageSize}
+      </when>
+    </choose>
+  </select>
+
+  <select id="searchCountForLearner"
+    parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO" resultType="Integer">
+    SELECT count(*)
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    INNER JOIN learner_enrollment le
+    ON h.course_id=le.course_id
+    WHERE le.user_id= (select id
+    from user
+    where login_id = #{loginId})
+    <if test="keyword != null and keyword != '' ">
+      AND h.title like concat('%',#{keyword},'%')
+    </if>
+    <if test="nameForLt != null and nameForLt != '' ">
+      AND c.name = #{nameForLt}
+    </if>
+  </select>
+
+  <!--관리자용 과제 조회-->
+  <select id="searchBySelectForAdmin" parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO"
+    resultType="com.goott5.lms.homework.domain.HomeworkDTO">
+    SELECT h.id, h.title, h.start_date, h.end_date, h.content, h.course_id, h.read_count, h.instructor_id, h.created_at, h.updated_at, h.deleted_at
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    <where>
+      <if test="isInProgressForAdmin!= null">
+        AND c.is_in_progress = #{isInProgressForAdmin}
+      </if>
+      <if test="nameForAdmin != null and nameForAdmin != ''">
+        AND c.name = #{nameForAdmin}
+      </if>
+      <if test="keyword != null and keyword != '' ">
+        AND h.title like concat('%',#{keyword},'%')
+      </if>
+    </where>
+    <choose>
+      <when test="sortBy == 'endDate'">
+        <if test="order == 'asc'">
+          ORDER BY h.end_date ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.end_date DESC
+        </if>
+      </when>
+      <when test="sortBy == 'title' or sortBy == null">
+        <if test="order == 'asc'">
+          ORDER BY h.title ASC
+        </if>
+        <if test="order == 'desc' or order == null">
+          ORDER BY h.title DESC
+        </if>
+      </when>
+    </choose>
+    <choose>
+      <when test="pagingRequest != null">
+        limit #{pagingRequest.skip},#{pagingRequest.pageSize}
+      </when>
+    </choose>
+  </select>
+
+  <select id="searchCountForAdmin"
+    parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO" resultType="Integer">
+    SELECT count(*)
+    FROM homework h
+    INNER JOIN course c
+    ON h.course_id = c.id
+    <where>
+      <if test="isInProgressForAdmin!= null">
+        AND c.is_in_progress = #{isInProgressForAdmin}
+      </if>
+      <if test="nameForAdmin != null and nameForAdmin != ''">
+        AND c.name = #{nameForAdmin}
+      </if>
+      <if test="keyword != null and keyword != '' ">
+        AND h.title like concat('%',#{keyword},'%')
+      </if>
+    </where>
+  </select>
+
+
+  <!-- 관리자용 select 메뉴 출력 -->
+  <select id="selectBoxCourseNameForAdmin" parameterType="Boolean" resultType="String">
+    select name
+    from course
+    <where>
+      <if test="isInProgressForAdmin != null">
+        is_in_progress = #{isInProgressForAdmin}
+      </if>
+    </where>
+    order by start_date desc
+  </select>
+
+
+  <!--homework insert-->
+  <insert id="insertHomework" parameterType="com.goott5.lms.homework.domain.HomeworkRequestDTO" >
+    insert into homework (title, start_date, end_date, content, course_id, instructor_id)
+    values (#{title}, #{startDate}, #{endDate}, #{content}, #{courseId}, #{instructorId})
+  </insert>
+
+
+</mapper>

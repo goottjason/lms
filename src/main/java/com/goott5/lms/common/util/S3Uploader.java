@@ -24,66 +24,62 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @RequiredArgsConstructor
 public class S3Uploader {
 
-  @Value("${cloud.aws.s3.bucketName}")
-  private String bucket;
-  @Value("${cloud.aws.credentials.accessKey}")
-  private String accessKey;
-  @Value("${cloud.aws.credentials.secretKey}")
-  private String secretKey;
-  @Value("${cloud.aws.region.static}")
-  private String region;
+    @Value("${cloud.aws.s3.bucketName}")
+    private String bucket;
+    @Value("${cloud.aws.credentials.accessKey}")
+    private String accessKey;
+    @Value("${cloud.aws.credentials.secretKey}")
+    private String secretKey;
+    @Value("${cloud.aws.region.static}")
+    private String region;
 
-  private S3Client s3Client;
+    private S3Client s3Client;
 
-  @PostConstruct
-  public void initializeS3() {
-    // s3Client 빌드
-    AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
-    s3Client = S3Client.builder()
-            .region(Region.of(region))
-            .credentialsProvider(StaticCredentialsProvider.create(credentials))
-            .build();
-  }
-
-  public String uploadFile(String dirName, InputStream inputStream, String originalFileName)
-          throws IOException {
-    String uuid = UUID.randomUUID().toString();
-    String uploadFileName = dirName + "/" + uuid + "_" + originalFileName;
-
-    File tempFile = convert(inputStream, originalFileName);
-
-    s3Client.putObject(
-            PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(uploadFileName)
-                    .acl("public-read")
-                    .build(),
-            Paths.get(tempFile.getAbsolutePath()));
-
-    tempFile.delete();
-    return s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(uploadFileName))
-            .toString();
-
-  }
-
-  public void deleteFile(String dirName, String fileName) {
-    // 삭제 시 db에서 파일 경로 가져와서 삭제
-    //fileName은 uuid 붙은 새 이름?
-    s3Client.deleteObject(builder -> builder.bucket(bucket).key(dirName + "/" + fileName));
-  }
-
-  private File convert(InputStream inputStream, String fileName) throws IOException {
-    // 운영체제의 임시 디렉토리 경로에 파일 생성?
-    File file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName);
-    try {
-      FileOutputStream fos = new FileOutputStream(file);
-      fos.write(inputStream.readAllBytes());
-    } catch (FileNotFoundException e) {
-
-      throw new RuntimeException(e);
+    @PostConstruct
+    public void initializeS3(){
+        // s3Client 빌드
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        s3Client = S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
     }
-    return file;
-  }
+
+    public String uploadFile(String dirName, InputStream inputStream, String originalFileName) throws IOException {
+        String uuid = UUID.randomUUID().toString();
+        String uploadFileName = dirName + "/" + uuid + "_" +originalFileName;
+
+        File tempFile = convert(inputStream, originalFileName);
+
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(uploadFileName)
+                        .acl("public-read")
+                        .build(),
+                Paths.get(tempFile.getAbsolutePath()));
+
+        tempFile.delete();
+        return s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(uploadFileName)).toString();
+
+    }
+
+    public void deleteFile(String key) {
+        s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
+    }
+
+    private File convert(InputStream inputStream, String fileName) throws IOException {
+        // 운영체제의 임시 디렉토리 경로에 파일 생성?
+        File file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName);
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(inputStream.readAllBytes());
+        } catch (FileNotFoundException e) {
+
+            throw new RuntimeException(e);
+        }
+        return file;
+    }
 
 
 }
