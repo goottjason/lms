@@ -70,7 +70,7 @@ public class UserController {
       String redirectUrl = "";
       switch (loginUser.getType()) {
         case "ADMINISTRATOR":
-          redirectUrl = "courseManagement/courseList";
+          redirectUrl = "courseManagement/courseLis";
           break;
         case "INSTRUCTOR":
           redirectUrl = "homework/homeworkList";
