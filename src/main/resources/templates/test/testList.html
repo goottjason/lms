@@ -1,130 +1,135 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
-<head>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+  <head>
+    <script th:src="@{/js/test/testCommon.js}" defer></script>
+    <script th:src="@{/js/test/testList.js}" defer></script>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <!-- content header 시작 -->
+      <div id="admin-filter" class="row align-items-center">
+        <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">시험 조회</h1>
+          <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+        <div class="col d-flex justify-content-end">
+          <form class="row col-12 mb-3">
+            <div class="col-3">
+              <select id="progress-filter" class="form-control">
+                <option value="">전체(진행상황별)</option>
+                <option value="true">진행 중</option>
+                <option value="false">종료</option>
+              </select>
+            </div>
+            <div class="col">
+              <select id="course-filter" class="form-control">
+                <option value="">전체(과정별)</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- content header 끝 -->
 
-</head>
-<body>
-<div layout:fragment="content">
-  <!-- content header 시작 -->
-  <div class="row align-items-center">
-    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">시험 조회</h1>
-    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
-    <div class="col d-flex justify-content-end">
-      <form class="row col-12 mb-3">
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">진행상황별</option>
-            <option value="">진행 중</option>
-            <option value="">종료</option>
-          </select>
-        </div>
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">연도별</option>
-          </select>
-        </div>
-        <div class="col">
-          <select id="" class="form-control">
-            <option value="">과정별</option>
-          </select>
-        </div>
-      </form>
-    </div>
-  </div>
-  <!-- content header 끝 -->
+      <!-- content body 시작 -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="m-0 font-weight-bold text-primary">시험 리스트 조회</h6>
+            </div>
+            <div class="col-auto">
 
-  <!-- content body 시작 -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <div class="row align-items-center">
-        <div class="col">
-          <h6 class="m-0 font-weight-bold text-primary">시험 리스트 조회</h6>
-        </div>
-        <div class="col-auto">
-          <button id="" class="btn btn-info btn-icon-split">
+                <button
+                    id="test-register-btn"
+                    class="btn btn-info btn-icon-split"
+                    data-current-page-no="1">
               <span class="icon text-white-50">
                 <i class="fas fa-plus"></i>
               </span>
-            <span class="text">시험 등록</span>
-          </button>
+                  <span class="text">시험 등록</span>
+                </button>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <!-- 테이블 리스트 -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr class="text-center">
+                  <th scope="col" class="align-middle">No</th>
+                  <th scope="col" class="align-middle">시험명</th>
+                  <th scope="col" class="align-middle">과정명</th>
+                  <th scope="col" class="align-middle">응시시간</th>
+                  <th scope="col" class="align-middle">진행상태</th>
+                  <th scope="col" class="align-middle">제한시간</th>
+                  <th scope="col" class="align-middle">응시자수</th>
+                </tr>
+              </thead>
+              <tbody class="test-table-body">
+                <tr>
+                  <td class="text-center align-middle">2</td>
+                  <td class="title align-middle">java 시험문제 입니다.</td>
+                  <td class="title align-middle text-truncate"
+                      style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정
+                  </td>
+                  <td class="text-center align-middle">객관식</td>
+                  <td class="text-center align-middle">2025-05-25 ~ 2025-05-31</td>
+                  <td class="text-center align-middle">완료</td>
+                  <td class="text-center align-middle">60분</td>
+                  <td class="text-center align-middle">7/7</td>
+                </tr>
+                <tr>
+                  <td class="text-center align-middle">1</td>
+                  <td class="title align-middle">DB 시험문제 입니다.</td>
+                  <td class="title align-middle text-truncate"
+                      style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정
+                  </td>
+                  <td class="text-center align-middle">객관식</td>
+                  <td class="text-center align-middle">2025-04-25 ~ 2025-04-26</td>
+                  <td class="text-center align-middle">완료</td>
+                  <td class="text-center align-middle">60분</td>
+                  <td class="text-center align-middle">7/7</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 페이지 -->
+          <nav aria-label="Page navigation example" class="col mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item">
+                <span class="page-link">이전</span>
+              </li>
+              <li class="page-item active">
+                <span class="page-link">1</span>
+              </li>
+              <li class="page-item">
+                <span class="page-link">2</span>
+              </li>
+              <li class="page-item">
+                <span class="page-link">3</span>
+              </li>
+              <li class="page-item">
+                <span class="page-link page-move">다음</span>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
+      <!-- content body 끝 -->
     </div>
+    <th:block layout:fragment="script" th:inline="javascript">
+      <script>
+        // javascript 개발은 여기에...
 
-    <div class="card-body">
-
-      <!-- 테이블 리스트 -->
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-          <tr class="text-center">
-            <th scope="col" class="align-middle">No</th>
-            <th scope="col" class="align-middle">시험명</th>
-            <th scope="col" class="align-middle">과정명</th>
-            <th scope="col" class="align-middle">시험유형</th>
-            <th scope="col" class="align-middle">응시시간</th>
-            <th scope="col" class="align-middle">진행상태</th>
-            <th scope="col" class="align-middle">제한시간</th>
-            <th scope="col" class="align-middle">응시자수</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td class="text-center align-middle">2</td>
-            <td class="title align-middle">java 시험문제 입니다.</td>
-            <td class="title align-middle text-truncate" style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-            <td class="text-center align-middle">객관식</td>
-            <td class="text-center align-middle">2025-05-25 ~ 2025-05-31</td>
-            <td class="text-center align-middle">완료</td>
-            <td class="text-center align-middle">60분</td>
-            <td class="text-center align-middle">7/7</td>
-          </tr>
-          <tr>
-            <td class="text-center align-middle">1</td>
-            <td class="title align-middle">DB 시험문제 입니다.</td>
-            <td class="title align-middle text-truncate" style="max-width: 200px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-            <td class="text-center align-middle">객관식</td>
-            <td class="text-center align-middle">2025-04-25 ~ 2025-04-26</td>
-            <td class="text-center align-middle">완료</td>
-            <td class="text-center align-middle">60분</td>
-            <td class="text-center align-middle">7/7</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 페이지 -->
-      <nav aria-label="Page navigation example" class="col mt-4">
-        <ul class="pagination justify-content-center">
-          <li class="page-item">
-            <span class="page-link">이전</span>
-          </li>
-          <li class="page-item active">
-            <span class="page-link">1</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link">2</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link">3</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link page-move">다음</span>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-  <!-- content body 끝 -->
-</div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-      // javascript 개발은 여기에...
-
-  </script>
-</th:block>
-</body>
+      </script>
+    </th:block>
+  </body>
 </html>
