@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.goott5.lms.participation.mapper.ParticipationMapper">
+
+  <!-- 기본 INSERT -->
+  <insert id="insertParticipation"
+    parameterType="com.goott5.lms.participation.domain.ParticipationDTO"
+    useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO participation (learner_enrollment_id, status, check_in, check_out,
+                               training_time, participation_date, created_at)
+    VALUES (#{learnerEnrollmentId}, #{status}, #{checkIn}, #{checkOut},
+            #{trainingTime}, #{participationDate}, NOW())
+  </insert>
+
+  <!-- 기본 SELECT들 -->
+  <select id="selectParticipationById" parameterType="int"
+    resultType="com.goott5.lms.participation.domain.ParticipationVO">
+    SELECT id,
+           learner_enrollment_id,
+           status,
+           check_in,
+           check_out,
+           training_time,
+           participation_date,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation
+    WHERE id = #{id}
+      AND deleted_at IS NULL
+  </select>
+
+  <select id="selectParticipationByDate" parameterType="date"
+    resultType="com.goott5.lms.participation.domain.ParticipationVO">
+    SELECT id,
+           learner_enrollment_id,
+           status,
+           check_in,
+           check_out,
+           training_time,
+           participation_date,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation
+    WHERE participation_date = #{participationDate}
+      AND deleted_at IS NULL
+    ORDER BY id DESC
+  </select>
+
+  <select id="selectAllParticipation"
+    resultType="com.goott5.lms.participation.domain.ParticipationVO">
+    SELECT id,
+           learner_enrollment_id,
+           status,
+           check_in,
+           check_out,
+           training_time,
+           participation_date,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation
+    WHERE deleted_at IS NULL
+    ORDER BY participation_date DESC, id DESC
+  </select>
+
+  <select id="countAll" resultType="int">
+    SELECT COUNT(*)
+    FROM participation
+    WHERE deleted_at IS NULL
+  </select>
+
+  <!-- 추가 쿼리들 -->
+  <!-- 특정 과정의 수강 중인 모든 learner_enrollment_id 조회 -->
+  <select id="selectActiveLearnerEnrollmentIdsByCourse" parameterType="int" resultType="int">
+    SELECT id
+    FROM learner_enrollment
+    WHERE course_id = #{courseId}
+      AND completion_status = 'IN_PROGRESS'
+      AND deleted_at IS NULL
+  </select>
+
+  <!-- 특정 learner_enrollment_id와 날짜로 participation 조회 -->
+  <select id="selectByLearnerEnrollmentIdAndDate"
+    resultType="com.goott5.lms.participation.domain.ParticipationVO">
+    SELECT id,
+           learner_enrollment_id,
+           status,
+           check_in,
+           check_out,
+           training_time,
+           participation_date,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation
+    WHERE learner_enrollment_id = #{learnerEnrollmentId}
+      AND participation_date = #{participationDate}
+      AND deleted_at IS NULL
+  </select>
+
+  <!-- participation 업데이트 -->
+  <update id="updateParticipation"
+    parameterType="com.goott5.lms.participation.domain.ParticipationDTO">
+    UPDATE participation
+    SET status        = #{status},
+        check_in      = #{checkIn},
+        check_out     = #{checkOut},
+        training_time = #{trainingTime},
+        updated_at    = NOW()
+    WHERE id = #{id}
+  </update>
+
+  <!-- 오늘 출결 기록 존재 여부 확인 -->
+  <select id="existsParticipationToday" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM participation
+    WHERE learner_enrollment_id = #{learnerEnrollmentId}
+      AND participation_date = #{participationDate}
+      AND deleted_at IS NULL
+  </select>
+
+  <!-- 진행 중인 과정 중 수강생이 있는 과정 ID 조회 -->
+  <select id="selectActiveEnrolledCourseIds" resultType="int">
+    SELECT DISTINCT c.id
+    FROM course c
+           JOIN learner_enrollment le ON c.id = le.course_id
+    WHERE c.is_in_progress = 1
+      AND le.completion_status = 'IN_PROGRESS'
+      AND c.deleted_at IS NULL
+      AND le.deleted_at IS NULL
+  </select>
+
+  <!-- 하드 딜리트 (완전 삭제) - 휴가용 -->
+  <delete id="deleteParticipation" parameterType="int">
+    DELETE
+    FROM participation
+    WHERE id = #{id}
+  </delete>
+
+  <!-- 특정 교육생의 총 training_time 합계 조회 -->
+  <select id="selectTotalTrainingTimeByLearnerEnrollmentId" parameterType="int"
+    resultType="Integer">
+    SELECT COALESCE(SUM(training_time), 0)
+    FROM participation
+    WHERE learner_enrollment_id = #{learnerEnrollmentId}
+      AND deleted_at IS NULL
+  </select>
+
+
+</mapper>
