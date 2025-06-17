@@ -1,6 +1,10 @@
 package com.goott5.lms.participation.controller;
 
+
+import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationVO;
+import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
+
 import com.goott5.lms.participation.service.AttendanceService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,29 +32,33 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ParticipationController {
 
   private final AttendanceService attendanceService;
+  private final ParticipationCourseMapper participationCourseMapper;
+
 
   /**
    * 출결 조회 메인 페이지 (진행률 포함)
    */
   @GetMapping("/participationView")
   public String participationView(Model model) {
-    LocalDate today = LocalDate.now();
-    boolean isClassDay = attendanceService.isClassDay(today);
-    Integer learnerEnrollmentId = 1; // TODO: 로그인 세션에서 가져오기
 
-    model.addAttribute("isClassDay", isClassDay);
-    model.addAttribute("today", today);
-    model.addAttribute("learnerEnrollmentId", learnerEnrollmentId);
+//    LocalDate today = LocalDate.now();
+//    boolean isClassDay = attendanceService.isClassDay(today);
+//    Integer learnerEnrollmentId = 1; // TODO: 로그인 세션에서 가져오기
+//
+//    model.addAttribute("isClassDay", isClassDay);
+//    model.addAttribute("today", today);
+//    model.addAttribute("learnerEnrollmentId", learnerEnrollmentId);
+//
+//    if (isClassDay) {
+//      ParticipationVO todayParticipation = attendanceService.getTodayParticipationWithDisplayStatus(
+//          learnerEnrollmentId, today);
+//      model.addAttribute("todayParticipation", todayParticipation);
+//    }
+//
+//    // 진행률 계산
+//    double progressPercentage = attendanceService.getProgressPercentage(learnerEnrollmentId);
+//    model.addAttribute("progressPercentage", progressPercentage);
 
-    if (isClassDay) {
-      ParticipationVO todayParticipation = attendanceService.getTodayParticipationWithDisplayStatus(
-          learnerEnrollmentId, today);
-      model.addAttribute("todayParticipation", todayParticipation);
-    }
-
-    // 진행률 계산
-    double progressPercentage = attendanceService.getProgressPercentage(learnerEnrollmentId);
-    model.addAttribute("progressPercentage", progressPercentage);
 
     return "participation/participationView";
   }
@@ -223,6 +231,36 @@ public class ParticipationController {
       return ResponseEntity.badRequest().body(Map.of(
           "success", false,
           "message", "진행률 조회에 실패했습니다."
+      ));
+    }
+  }
+
+
+  /**
+   * 과정 정보 조회 API
+   */
+  @GetMapping("/course/{courseId}")
+  @ResponseBody
+  public ResponseEntity<?> getCourseInfo(@PathVariable Integer courseId) {
+    try {
+      CourseVO course = participationCourseMapper.selectCourseById(courseId);
+
+      if (course != null) {
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "course", course
+        ));
+      } else {
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "존재하지 않는 과정입니다."
+        ));
+      }
+
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "과정 조회에 실패했습니다."
       ));
     }
   }
