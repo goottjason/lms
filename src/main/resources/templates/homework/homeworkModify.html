@@ -5,7 +5,11 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <style>
+    #courseSelector {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -16,7 +20,7 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="" action="">
+  <form class="mb-4" method="POST" action="/homework/homeworkModify" id="formSubmit" enctype="multipart/form-data">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -29,8 +33,9 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="a">제목</label>
-              <input type="text" id="a" class="form-control" value="작성된 과제명">
+              <label for="title">제목</label>
+              <span id="titleError" style="color: red"></span>
+              <input type="text" id="title" class="form-control" name="title" th:value="${homeworkDTO.getTitle()}">
             </div>
           </div>
         </div>
@@ -38,14 +43,16 @@
         <div class="row mb-2">
           <div class="col-md-6">
             <div class="form-group">
-              <label for="b">제출기간 시작</label>
-              <input type="date" id="b" class="form-control" value="2025-05-01">
+              <label for="startDate">제출기간 시작</label>
+              <span id="startDateError" style="color: red"></span>
+              <input type="datetime-local" id="startDate" class="form-control" name="startDate" th:value="${homeworkDTO.getStartDate()}">
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              <label for="c">제출기한 종료</label>
-              <input type="date" id="c" class="form-control" value="2025-05-31">
+              <label for="endDate">제출기한 종료</label>
+              <span id="endDateError" style="color: red"></span>
+              <input type="datetime-local" id="endDate" class="form-control" name="endDate" th:value="${homeworkDTO.getEndDate()}">
             </div>
           </div>
         </div>
@@ -53,11 +60,15 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="d">내용</label>
+              <label for="content">내용</label>
+              <span id="contentError" style="color: red"></span>
               <textarea
-                  id="d"
+                  id="content"
                   class="form-control"
-                  style="height: 280px;">작성된 내용</textarea>
+                  style="min-height: 280px; white-space: pre-wrap;"
+                  wrap="hard"
+                  name="content"
+              th:text="${homeworkDTO.getContent()}"></textarea>
             </div>
           </div>
         </div>
@@ -65,16 +76,40 @@
           <div class="col-md-12">
             <div class="mb-2">첨부파일</div>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="e">
-              <label class="custom-file-label" for="e">파일을 선택하세요.</label>
+              <input type="file" class="custom-file-input" id="files" multiple>
+              <label class="custom-file-label" for="files" >파일을 선택하세요.</label>
             </div>
+
+            <!--기존에 저장했던 파일 불러오기(x버튼 누르면 해당 파일 db에서 삭제할 리스트에 추가)-->
+            <th:block th:if="${beforeFileList != null}">
+              <div class="col-4 card mb-2" th:each="fileDTO : ${beforeFileList}">
+                <div class="row g-0 m-0">
+                  <div class="col-md-3 pl-2">
+                    <img
+                        th:src="@{/img/no-image.jpg}"
+                        class="img-fluid rounded-start"
+                        style="width: 60px; object-fit: cover;">
+                  </div>
+                  <div class="col-md-9 d-flex align-items-center">
+                    <div class="card-body p-0" style="position: relative;">
+                      <span style="position: absolute; right: 1px; top: 1px"
+                            th:class="softDeleteFile"
+                            th:data-file="${fileDTO.getId()}">X</span>
+                      <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
+                         th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </th:block>
+
           </div>
         </div>
       </div>
     </div>
-      <!-- 버튼 -->
+    <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button id="submit" class="btn btn-primary btn-icon-split mr-2">
           <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
           </span>
@@ -92,7 +127,135 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+
+    // 빈 에러맵 형성
+    let errorMap = new Map();
+
+    // 세션에 저장된 페이지를 담을 변수
+    let savePage = "";
+
+    // 삭제할 파일 리스트
+    let deleteFileList = [];
+    let fileList = [];
+    const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+    // 파일 삭제 function
+    function softDeleteFile(x){
+      // alert($(this).data("file"));
+      $(x).parent().parent().parent().parent().remove();
+      deleteFileList.push($(x).data("file")); // id 배열에 넣기
+      console.log("deleteFileList",deleteFileList);
+      console.log("아이디 타입 확인",typeof($(x).data("file"))); //number
+    }
+
+    //파일 넣는 function
+    function pushFileLIst(){
+      let files = document.getElementById("files").files;
+      fileList = [];
+
+      for(let file of files){
+        if(file){
+          //파일일 경우
+          if(file.size > MAX_FILE_SIZE){
+            alert("파일 사이즈가 초과하였습니다.");
+          }else{
+            fileList.push(file);
+            console.log("file push",file);
+          }
+        }
+      }
+    }
+
+
+    $(function () {
+
+      let prevUrl = localStorage.getItem("sessionSaveUrl");
+      console.log("prevUrl",prevUrl);
+
+      // db에서 삭제할 파일id 배열에 담기
+      $(".softDeleteFile").click(function () {
+        softDeleteFile(this);
+      })
+
+      // 새로운 파일 리스트에 넣기
+      $("#files").change(function () {
+        //파일 사이즈
+        pushFileLIst();
+      })
+
+      // 폼 전송
+      $("#submit").on("click",function (e) {
+        e.preventDefault();
+        let form = document.getElementById("formSubmit");
+        let formData = new FormData(form);
+
+        let homeworkId = [[${homeworkId}]];
+
+        formData.append("homeworkId",homeworkId);
+
+        fileList.forEach(function (file) {
+          formData.append("files",file);
+        })
+
+        deleteFileList.forEach(function (file) {
+          formData.append("deleteFiles",file); // id
+        })
+
+        for (let [key, value] of formData.entries()) {
+          console.log("formData entry:", key, value);
+        }
+
+        axios.post("/homework/homeworkModify",
+            formData
+        ).then(function(response){
+          console.log(response)
+          // location.href = "/homework/homeworkList";
+          // window.history.go(-2); // 두 단계 뒤로 이동
+          savePage = localStorage.getItem("savePage");
+          if(savePage && savePage !== "undefined" && savePage.trim() !== ""){
+            // console.log("savePage",savePage);
+            location.href = savePage;
+          }else{
+            // console.log("savePage",savePage);
+            location.href = "/homework/homeworkList";
+          }
+        }).catch(function (error) {
+          console.log("API 요청 실패",error);
+          errorMap = error.response.data.data;
+          console.log("errorMap",errorMap);
+
+          if(errorMap.title){
+            $("#titleError").html(errorMap.title);
+          } else {
+            $("#titleError").html("");
+          }
+
+          if(errorMap.startDate){
+            $("#startDateError").html(errorMap.startDate);
+          }else {
+            $("#startDateError").html("");
+          }
+
+          if(errorMap.endDate){
+            $("#endDateError").html(errorMap.endDate);
+          }else {
+            $("#endDateError").html("");
+          }
+
+          if(errorMap.content){
+            $("#contentError").html(errorMap.content);
+          }else {
+            $("#contentError").html("");
+          }
+
+        })
+      })
+
+
+
+
+    });
+
 
   </script>
 </th:block>

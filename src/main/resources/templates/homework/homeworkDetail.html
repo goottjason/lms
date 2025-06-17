@@ -5,7 +5,11 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <style>
+    #courseSelector {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -26,7 +30,7 @@
               <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                 작성자
               </div>
-              <div class="h6 mb-0 text-gray-800">김강사</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${instructorLoginId}">김강사</div>
 
             </div>
             <div class="col-auto">
@@ -44,7 +48,7 @@
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                 작성일</div>
-              <div class="h6 mb-0 text-gray-800">2025-05-04</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${homework.getCreatedAt().toString().split('T')[0]}">2025-05-04</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -61,7 +65,7 @@
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                 과제 시작일</div>
-              <div class="h6 mb-0 text-gray-800">2025-05-04</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${homework.getStartDate().toString().split('T')[0]}">2025-05-04</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -78,7 +82,7 @@
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                 과제 종료일</div>
-              <div class="h6 mb-0 text-gray-800">2025-05-10</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${homework.getEndDate().toString().split('T')[0]}">2025-05-10</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -94,10 +98,10 @@
   <div class="card shadow mb-4">
     <!-- 제목 -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary">여기에 제목이 들어옵니다~~</h6>
+      <h6 class="m-0 font-weight-bold text-primary" th:text="${homework.getTitle()}">여기에 제목이 들어옵니다~~</h6>
     </div>
     <!-- 내용 -->
-    <div class="card-body py-5">
+    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;"  th:text="${homework.getContent()}">
       여기에 내용이 들어옵니다~~~
     </div>
     <!-- 첨부 파일 -->
@@ -105,7 +109,8 @@
       <p class="mt-2">첨부파일</p>
       <div class="row">
 
-        <div class="col-4 card mb-2">
+        <th:block th:if="${fileDTOList != null}">
+        <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
           <div class="row g-0 m-0">
             <div class="col-md-3 pl-2">
               <img
@@ -113,13 +118,14 @@
                   class="img-fluid rounded-start"
                   style="width: 60px; object-fit: cover;">
             </div>
-            <div class="col-md-9 d-flex align-items-center">
+            <div class="col-md-9 d-flex align-items-center" >
               <div class="card-body p-0">
-                <p class="card-title mb-1 text-truncate">첨부파일123.pdf</p>
+                <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}" th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
               </div>
             </div>
           </div>
         </div>
+        </th:block>
 
       </div>
     </div>
@@ -128,14 +134,14 @@
 
   <!-- 버튼 -->
   <div class="col-12 d-flex justify-content-end mb-4">
-    <button id="" class="btn btn-info btn-icon-split mr-2">
+    <button id="" class="btn btn-info btn-icon-split mr-2" th:if="${loginUser.getType() == 'INSTRUCTOR'}">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-      <span class="text px-3">과제수정</span>
+      <a class="text px-3" th:href="@{|/homework/homeworkModify?homeworkId=${homework.getId()}|}">과제수정</a>
     </button>
-    <button id="" class="btn btn-danger btn-icon-split mr-2">
-      <span class="icon text-white-50">
+    <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2" th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+      <span class="icon text-white-50" >
         <i class="fa fa-times"></i>
       </span>
       <span class="text px-3">과제삭제</span>
@@ -144,7 +150,7 @@
       <span class="icon text-white-50">
         <i class="fas fa-upload"></i>
       </span>
-      <span class="text px-3">과제등록</span>
+      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}">과제등록</span>
     </button>
     <button id="" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
@@ -153,11 +159,63 @@
       <span class="text px-4">목록</span>
     </button>
   </div>
+
+  <!-- The Modal -->
+  <div class="modal delete" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          정말 삭제하시겠습니까?
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger deleteBtn" data-dismiss="modal">예</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+
+    $(function(){
+
+      let homeworkId = [[${homework.getId()}]];
+
+      // 삭제 모달창 뜨기
+      $("#deleteHomework").on("click",function (){
+        // alert("!");
+        $(".delete").modal("show");
+      })
+
+      // 모달창 끄기
+
+      $(".close").on("click",function(){
+        $(".delete").modal("hide");
+      })
+
+      $(".deleteBtn").on("click",function(){
+        console.log(homeworkId);
+        axios.delete("/homework/deleteHomework?homeworkId="+ homeworkId)
+        .then(function (response) {
+          console.log(response);
+        }).catch(function (error) {
+          console.log(error);
+        })
+      })
+    })
 
   </script>
 </th:block>

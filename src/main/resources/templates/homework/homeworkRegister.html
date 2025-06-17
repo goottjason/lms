@@ -5,7 +5,11 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <style>
+    #courseSelector {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -16,7 +20,7 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="" action="">
+  <form class="mb-4" method="POST" action="/homework/homeworkRegister" id="formSubmit" enctype="multipart/form-data" >
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -29,8 +33,9 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="a">제목</label>
-              <input type="text" id="a" class="form-control" placeholder="과제명을 작성하세요.">
+              <label for="title">제목</label>
+              <span id="titleError" style="color: red"></span>
+              <input type="text" id="title" th:name="title" class="form-control" placeholder="과제명을 작성하세요.">
             </div>
           </div>
         </div>
@@ -38,14 +43,16 @@
         <div class="row mb-2">
           <div class="col-md-6">
             <div class="form-group">
-              <label for="b">제출기간 시작</label>
-              <input type="date" id="b" class="form-control">
+              <label for="startDate">제출기간 시작</label>
+              <span id="startDateError" style="color: red"></span>
+              <input type="datetime-local" id="startDate" class="form-control" th:name="startDate">
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              <label for="c">제출기한 종료</label>
-              <input type="date" id="c" class="form-control">
+              <label for="endDate">제출기한 종료</label>
+              <span id="endDateError" style="color: red"></span>
+              <input type="datetime-local" id="endDate" class="form-control" th:name="endDate">
             </div>
           </div>
         </div>
@@ -53,12 +60,15 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="d">내용</label>
+                <label for="content">내용</label>
+            <span id="contentError" style="color: red"></span>
               <textarea
-                  id="d"
+                  id="content"
                   class="form-control"
                   placeholder="본문 내용을 작성하세요."
-                  style="height: 280px;"></textarea>
+                  th:name="content"
+                  style="min-height: 280px; white-space: pre-wrap;"
+                  wrap="hard"></textarea>
             </div>
           </div>
         </div>
@@ -66,8 +76,8 @@
           <div class="col-md-12">
             <div class="mb-2">첨부파일</div>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="e">
-              <label class="custom-file-label" for="e">파일을 선택하세요.</label>
+              <input type="file" class="custom-file-input" id="file"  multiple>
+              <label class="custom-file-label" for="file" >파일을 선택하세요.</label>
             </div>
           </div>
         </div>
@@ -75,7 +85,7 @@
     </div>
       <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button id="submit" class="btn btn-primary btn-icon-split mr-2" type="submit">
           <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
           </span>
@@ -89,11 +99,114 @@
       </button>
     </div>
   </form>
+
+  <!--preview 단-->
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+
+    let errorMap = new Map();
+
+    // 과정 아이디
+    let courseId = [[${courseId}]];
+
+    // 강사 아이디
+    let instructorId = [[${instructorId}]];
+
+    //파일 사이즈
+    const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+    console.log("courseId",courseId);
+    console.log("instructorId",instructorId);
+
+    // 파일 담을 배열
+    let fileList = [];
+
+    //파일 넣는 function
+    function pushFileLIst(){
+      let files = document.getElementById("file").files;
+      fileList = [];
+
+      for(let file of files){
+        if(file){
+          //파일일 경우
+          if(file.size > MAX_FILE_SIZE){
+            alert("파일 사이즈가 초과하였습니다.")
+          }else{
+            fileList.push(file);
+            console.log("file push",file);
+          }
+
+        }
+      }
+
+    }
+
+
+    $(function(){
+
+      // file input될 때 마다 file 담기
+      $("#file").on("change",function () {
+        pushFileLIst();
+      })
+
+      // 폼 전송
+      $("#submit").on("click",function (e) {
+        e.preventDefault();
+        let form = document.getElementById("formSubmit");
+        let formData = new FormData(form);
+        formData.append("courseId",courseId);
+        formData.append("instructorId",instructorId);
+
+        fileList.forEach(function (file) {
+          formData.append("files",file);
+        })
+
+        axios.post("/homework/homeworkRegister",
+            formData
+        ).then(function(response){
+          console.log(response)
+          console.log(response.data)
+          location.href = "/homework/homeworkList";
+        }).catch(function (error) {
+          console.log(error);
+          errorMap = error.response.data.data;
+          // errorMap = [[${errorResultMap}]];
+          console.log("errorMap",errorMap);
+          console.log("errorMap.title",errorMap.title);
+
+          if(errorMap.title){
+              $("#titleError").html(errorMap.title);
+          } else {
+              $("#titleError").html("");
+          }
+
+          if(errorMap.startDate){
+              $("#startDateError").html(errorMap.startDate);
+          }else {
+              $("#startDateError").html("");
+          }
+
+          if(errorMap.endDate){
+              $("#endDateError").html(errorMap.endDate);
+          }else {
+              $("#endDateError").html("");
+          }
+
+          if(errorMap.content){
+              $("#contentError").html(errorMap.content);
+            }else {
+              $("#contentError").html("");
+          }
+
+        })
+      })
+
+
+
+
+    })
 
   </script>
 </th:block>

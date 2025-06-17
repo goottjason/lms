@@ -54,4 +54,14 @@ public class UtilServiceImpl implements UtilService {
 
         return utilMapper.selectFileFrom(tableName,tableId);
     }
+
+    @Override
+    public FileSelectDTO selectFileById(int id) {
+        return utilMapper.selectFileById(id);
+    }
+
+    @Override
+    public int deleteFileById(int id) {
+        return utilMapper.deleteFileById(id);
+    }
 }
