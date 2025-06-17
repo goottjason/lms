@@ -4,7 +4,7 @@ import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationDTO;
 import com.goott5.lms.participation.domain.ParticipationVO;
 import com.goott5.lms.participation.mapper.CancelDateMapper;
-import com.goott5.lms.participation.mapper.CourseMapper;
+import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.mapper.ParticipationMapper;
 import com.goott5.lms.participation.util.TimeCalculationUtil;
 import java.time.DayOfWeek;
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AttendanceServiceImpl implements AttendanceService {
 
   private final ParticipationMapper participationMapper;
-  private final CourseMapper courseMapper;
+  private final ParticipationCourseMapper participationCourseMapper;
   private final CancelDateMapper cancelDateMapper;
 
   /**
@@ -106,7 +106,8 @@ public class AttendanceServiceImpl implements AttendanceService {
         || participation.getCheckOut() != null) {
       return false;
     }
-    CourseVO course = courseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+    CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(
+        learnerEnrollmentId);
     AttendanceResult result = calculateFinalAttendanceStatus(participation.getCheckIn(),
         checkOutTime, course);
     ParticipationDTO updateDto = ParticipationDTO.builder()
@@ -159,7 +160,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     if (participation == null || participation.getCheckIn() == null) {
       return "ABSENCE";
     }
-    CourseVO course = courseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+
+    CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(
+        learnerEnrollmentId);
     if (course == null) {
       return "ABSENCE";
     }
@@ -331,7 +334,8 @@ public class AttendanceServiceImpl implements AttendanceService {
       }
 
       // 해당 과정의 총 수업시간
-      CourseVO course = courseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+      CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(
+          learnerEnrollmentId);
       if (course == null || course.getTotalHours() == null || course.getTotalHours() == 0) {
         return 0.0;
       }

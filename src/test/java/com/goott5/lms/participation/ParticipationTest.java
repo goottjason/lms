@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationVO;
-import com.goott5.lms.participation.mapper.CourseMapper;
+import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.service.AttendanceService;
 import com.goott5.lms.participation.service.ParticipationService;
 import java.time.LocalDate;
@@ -29,7 +29,9 @@ public class ParticipationTest {
   private AttendanceService attendanceService;
 
   @Autowired
-  private CourseMapper courseMapper;
+
+  private ParticipationCourseMapper participationCourseMapper;
+
 
   @Test
   @DisplayName("과정3의 모든 수강생 출결 기록 생성 테스트 (스케줄러 대신)")
@@ -192,7 +194,9 @@ public class ParticipationTest {
   }
 
   @Test
-  @DisplayName("CourseMapper selectCourseById 테스트")
+
+  @DisplayName("ParticipationCourseMapper selectCourseById 테스트")
+
   void testSelectCourseById() {
     // Given
     Integer courseId = 3;
@@ -201,7 +205,9 @@ public class ParticipationTest {
 
     // When
 
-    CourseVO course = courseMapper.selectCourseById(courseId);
+
+    CourseVO course = participationCourseMapper.selectCourseById(courseId);
+
 
     // Then
     if (course != null) {
