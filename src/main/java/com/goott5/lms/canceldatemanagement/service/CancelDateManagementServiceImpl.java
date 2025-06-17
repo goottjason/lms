@@ -18,12 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CancelDateManagementServiceImpl implements CancelDateManagementService {
 
   private final CancelDateManagementMapper cancelDateManagementMapper;
 
   @Override
-  @Transactional
   public void saveHolidays(List<HolidayDTO> holidays) {
 
     // 기존 휴강일들 받아오기

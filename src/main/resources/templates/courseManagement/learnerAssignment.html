@@ -6,104 +6,90 @@
     layout:decorate="~{layout/basic.html}">
 <head>
 
+  <style>
+    .scroll-container {
+      max-height: 600px;
+      overflow-y: auto;
+      padding-top: 10px;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+  </style>
+
 </head>
 <body>
 <div layout:fragment="content">
-  <!-- content header 시작 -->
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+  <!--course-select-->
+    <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">교육생 배정</h1>
-      <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
       <form class="row col-12 mb-3">
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">진행상황별</option>
-            <option value="">진행 중</option>
-            <option value="">종료</option>
-          </select>
+        <div class="col-5 d-flex justify-content-end align-items-center">
+          과정별
         </div>
-        <div class="col-3">
-          <select id="" class="form-control">
-            <option value="">연도별</option>
-          </select>
-        </div>
-        <div class="col">
-          <select id="" class="form-control">
-            <option value="">과정별</option>
+        <div class="col-7 ml-auto">
+          <select id="course-select" class="form-control">
           </select>
         </div>
       </form>
     </div>
   </div>
-  <!-- content header 끝 -->
+    <!-- content header 끝 -->
 
-  <!-- content body 시작 -->
+    <!-- content body 시작 -->
   <div class="row mb-4" method="" action="">
     <!-- 배정할 교육생 -->
     <div class="col-lg-6">
       <div class="card shadow position-relative">
         <div class="card-header py-2">
           <div class="row align-items-center">
-            <div class="col">
-              <h6 class="m-0 font-weight-bold text-primary">배정할 교육생</h6>
+            <div class="col-2">
+              <h6 class="m-0 font-weight-bold text-primary">배정 전</h6>
             </div>
-            <div class="col-7 input-group">
-              <input type="text" class="form-control" placeholder="이름으로 검색하세요.">
+            <div class="col-5">
+              <input type="checkbox" id="include-all">
+              <span class="mb-2">수료생, 중퇴생 포함</span>
+            </div>
+            <div class="col-5 input-group">
+              <input type="text" class="form-control" placeholder="이름으로 검색하세요." id="search-input">
               <div class="input-group-append">
-                <button class="btn btn-primary" type="button">
+                <button class="btn btn-primary" type="button" id="search-button">
                   <i class="fas fa-search fa-sm"></i>
                 </button>
               </div>
             </div>
           </div>
         </div>
+        <div class="scroll-container">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                <tr class="text-center">
+                  <th scope="col" class="align-middle">상태</th>
+                  <th scope="col" class="align-middle">이름</th>
+                  <th scope="col" class="align-middle">휴대폰</th>
+                  <th scope="col" class="align-middle">관리</th>
+                </tr>
+                </thead>
+                <tbody id="not-enrolled-list">
 
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-              <tr class="text-center">
-                <th scope="col" class="align-middle">상태</th>
-                <th scope="col" class="align-middle">이름</th>
-                <th scope="col" class="align-middle">휴대폰</th>
-                <th scope="col" class="align-middle">관리</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">이준호</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-info btn-icon-split btn-sm">
-                    <span class="text">추가</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">이준호</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-info btn-icon-split btn-sm">
-                    <span class="text">추가</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">이준호</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-info btn-icon-split btn-sm">
-                    <span class="text">추가</span>
-                  </button>
-                </td>
-              </tr>
-
-
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -113,66 +99,66 @@
     <div class="col-lg-6">
       <div class="card shadow position-relative">
         <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">배정된 교육생</h6>
+          <h6 class="m-0 font-weight-bold text-primary">배정 후</h6>
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-              <tr class="text-center">
-                <th scope="col" class="align-middle">상태</th>
-                <th scope="col" class="align-middle">이름</th>
-                <th scope="col" class="align-middle">휴대폰</th>
-                <th scope="col" class="align-middle">관리</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">김종원</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-danger btn-icon-split btn-sm">
-                    <span class="text">삭제</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">김종원</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-danger btn-icon-split btn-sm">
-                    <span class="text">삭제</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="text-center align-middle">교육생</td>
-                <td class="text-center align-middle">김종원</td>
-                <td class="text-center align-middle">010-2423-2433</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-danger btn-icon-split btn-sm">
-                    <span class="text">삭제</span>
-                  </button>
-                </td>
-              </tr>
-
-
-              </tbody>
-            </table>
+        <div class="scroll-container">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                <tr class="text-center">
+                  <th scope="col" class="align-middle">상태</th>
+                  <th scope="col" class="align-middle">이름</th>
+                  <th scope="col" class="align-middle">휴대폰</th>
+                  <th scope="col" class="align-middle">관리</th>
+                </tr>
+                </thead>
+                <tbody id="enrolled-list">
+                <tr>
+                  <td class="text-center align-middle">교육생</td>
+                  <td class="text-center align-middle">김종원</td>
+                  <td class="text-center align-middle">010-2423-2433</td>
+                  <td class="text-center align-middle">
+                    <button class="btn btn-danger btn-icon-split btn-sm">
+                      <span class="text">삭제</span>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-center align-middle">교육생</td>
+                  <td class="text-center align-middle">김종원</td>
+                  <td class="text-center align-middle">010-2423-2433</td>
+                  <td class="text-center align-middle">
+                    <button class="btn btn-danger btn-icon-split btn-sm">
+                      <span class="text">삭제</span>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-center align-middle">교육생</td>
+                  <td class="text-center align-middle">김종원</td>
+                  <td class="text-center align-middle">010-2423-2433</td>
+                  <td class="text-center align-middle">
+                    <button class="btn btn-danger btn-icon-split btn-sm">
+                      <span class="text">삭제</span>
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- content body 끝 -->
+    <!-- content body 끝 -->
 </div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-      // javascript 개발은 여기에...
-
-  </script>
+<th:block layout:fragment="script">
+  const loginUser = JSON.parse('${loginUser}');
+  <!-- 외부 JS 파일 연결 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script th:src="@{/js/courseManagement/learnerAssignment.js}" type="text/javascript"></script>
 </th:block>
 </body>
 </html>

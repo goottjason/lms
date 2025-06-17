@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
 
 </head>
 <body>
 <div layout:fragment="content">
-  <!-- content header 시작 -->
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+    <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과정 상세</h1>
   </div>
-  <!-- content header 끝 -->
+    <!-- content header 끝 -->
 
-  <!-- content body 시작 -->
+    <!-- content body 시작 -->
   <div class="row mb-4">
     <!-- 과정 내역 -->
     <div class="col-lg-6">
@@ -33,13 +36,18 @@
             <div class="col-md-9">
               <div class="form-group">
                 <label for="a">과정명</label>
-                <input type="text" id="a" class="form-control" value="어쩌구 저쩌구 과정" readonly>
+                <input type="text" id="a" class="form-control" th:value="${course.name}" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
                 <label for="b">등록인원</label>
-                <input type="text" id="b" class="form-control" value="10" readonly>
+                <input
+                    type="text"
+                    id="b"
+                    class="form-control"
+                    th:value="${course.numberOfLearner}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -48,25 +56,45 @@
             <div class="col-md-3">
               <div class="form-group">
                 <label for="c">총훈련시간</label>
-                <input type="text" id="c" class="form-control" value="1040" readonly>
+                <input
+                    type="text"
+                    id="c"
+                    class="form-control"
+                    th:value="${course.totalHours}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
                 <label for="d">총훈련일수</label>
-                <input type="text" id="d" class="form-control" value="130" readonly>
+                <input
+                    type="text"
+                    id="d"
+                    class="form-control"
+                    th:value="${course.totalDays}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
                 <label for="e">일일훈련시간</label>
-                <input type="text" id="e" class="form-control" value="8" readonly>
+                <input
+                    type="text"
+                    id="e"
+                    class="form-control"
+                    th:value="${course.dailyHours}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
                 <label for="f">쉬는시간</label>
-                <input type="text" id="f" class="form-control" value="10" readonly>
+                <input
+                    type="text"
+                    id="f"
+                    class="form-control"
+                    th:value="${course.breakTime}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -75,13 +103,23 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="g">과정시작일</label>
-                <input type="date" id="g" class="form-control" value="2024-06-01" readonly>
+                <input
+                    type="date"
+                    id="g"
+                    class="form-control"
+                    th:value="${course.startDate}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label for="h">과정종료일</label>
-                <input type="date" id="h" class="form-control" value="2024-12-31" readonly>
+                <input
+                    type="date"
+                    id="h"
+                    class="form-control"
+                    th:value="${course.endDate}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -90,13 +128,23 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="i">훈련시작시간</label>
-                <input type="time" id="i" class="form-control" value="09:30" readonly>
+                <input
+                    type="time"
+                    id="i"
+                    class="form-control"
+                    th:value="${course.lessonStartTime}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label for="j">훈련종료시간</label>
-                <input type="time" id="j" class="form-control" value="18:30" readonly>
+                <input
+                    type="time"
+                    id="j"
+                    class="form-control"
+                    th:value="${course.lessonEndTime}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -105,13 +153,23 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="k">식사시작시간</label>
-                <input type="time" id="k" class="form-control" value="13:20" readonly>
+                <input
+                    type="time"
+                    id="k"
+                    class="form-control"
+                    th:value="${course.lunchStartTime}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label for="l">식사종료시간</label>
-                <input type="time" id="l" class="form-control" value="14:30" readonly>
+                <input
+                    type="time"
+                    id="l"
+                    class="form-control"
+                    th:value="${course.lunchEndTime}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -120,13 +178,23 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="m">강사명</label>
-                <input type="text" id="m" class="form-control" value="김강사" readonly>
+                <input
+                    type="text"
+                    id="m"
+                    class="form-control"
+                    th:value="${course.instructorFullname}"
+                    readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label for="n">강의실</label>
-                <input type="text" id="n" class="form-control" value="5강의실" readonly>
+                <input
+                    type="text"
+                    id="n"
+                    class="form-control"
+                    th:value="${course.classroomName}"
+                    readonly>
               </div>
             </div>
           </div>
@@ -145,6 +213,7 @@
             <table class="table">
               <thead>
               <tr class="text-center">
+                <th scope="col" class="align-middle">수업순서</th>
                 <th scope="col" class="align-middle">교과목명</th>
                 <th scope="col" class="align-middle">시간</th>
                 <th scope="col" class="align-middle">교재명</th>
@@ -152,11 +221,17 @@
               </tr>
               </thead>
               <tbody>
-              <tr>
-                <td class="text-center align-middle">백엔드 기초 java</td>
-                <td class="text-center align-middle">120</td>
-                <td class="text-center align-middle">이것이 java다</td>
-                <td class="text-center align-middle">신용권</td>
+              <tr
+                  th:if="${course.subjects != null and not #lists.isEmpty(course.subjects)}"
+                  th:each="subject : ${course.subjects}">
+                <td class="text-center align-middle" th:text="${subject.subjectOrder}"></td>
+                <td class="text-center align-middle" th:text="${subject.name}"></td>
+                <td class="text-center align-middle" th:text="${subject.hours}"></td>
+                <td class="text-center align-middle" th:text="${subject.textbookName}"></td>
+                <td class="text-center align-middle" th:text="${subject.textbookAuthor}"></td>
+              </tr>
+              <tr th:unless="${course.subjects != null and not #lists.isEmpty(course.subjects)}">
+                <td colspan="5" class="text-center align-middle">등록된 교과목이 없습니다.</td>
               </tr>
               </tbody>
             </table>
@@ -167,7 +242,7 @@
 
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <a th:href="@{/courseModify}">
+      <a th:href="@{courseModify(courseId=${course.id})}">
         <button id="" class="btn btn-info btn-icon-split mr-2">
           <span class="icon text-white-50">
               <i class="fa fa-wrench"></i>
@@ -175,13 +250,13 @@
           <span class="text px-5">수정</span>
         </button>
       </a>
-      <button id="" class="btn btn-danger btn-icon-split mr-2">
+      <button id="remove-button" class="btn btn-danger btn-icon-split mr-2">
         <span class="icon text-white-50">
             <i class="fa fa-times"></i>
         </span>
         <span class="text px-5">삭제</span>
       </button>
-      <a th:href="@{/courseList}">
+      <a th:href="@{courseList}">
         <button id="" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-list"></i>
@@ -191,13 +266,13 @@
       </a>
     </div>
   </div>
-  <!-- content body 끝 -->
+    <!-- content body 끝 -->
 </div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-      // javascript 개발은 여기에...
+<th:block layout:fragment="script">
+  <!-- 외부 JS 파일 연결 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script th:src="@{/js/courseManagement/courseDetail.js}" type="text/javascript"></script>
 
-  </script>
 </th:block>
 </body>
 </html>

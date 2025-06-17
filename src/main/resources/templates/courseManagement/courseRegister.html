@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
 
 </head>
 <body>
 <div layout:fragment="content">
-  <!-- content header 시작 -->
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+    <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과정 개설</h1>
   </div>
-  <!-- content header 끝 -->
+    <!-- content header 끝 -->
 
-  <!-- content body 시작 -->
+    <!-- content body 시작 -->
   <form class="row mb-4" method="" action="">
     <!-- 과정 등록 -->
     <div class="col-lg-6">
@@ -25,7 +28,12 @@
               <h6 class="m-0 font-weight-bold text-primary">과정 등록</h6>
             </div>
             <div class="col-auto">
-              <button type="button" id="" class="btn btn-sm btn-info btn-icon-split" data-toggle="modal" data-target="#previousCourseModal">
+              <button
+                  type="button"
+                  id="load-course"
+                  class="btn btn-sm btn-info btn-icon-split"
+                  data-toggle="modal"
+                  data-target="#previousCourseModal">
                 <span class="icon text-white-50">
                   <i class="fas fa-folder-open"></i>
                 </span>
@@ -40,14 +48,14 @@
           <div class="row mb-2">
             <div class="col-md-9">
               <div class="form-group">
-                <label for="a">과정명</label>
-                <input type="text" id="a" class="form-control" placeholder="과정명을 입력해주세요.">
+                <label for="name-input">과정명</label>
+                <input type="text" id="name-input" class="form-control" placeholder="과정명을 입력해주세요.">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="b">등록인원</label>
-                <input type="text" id="b" class="form-control">
+                <label for="number-of-learner-input">등록인원</label>
+                <input type="text" id="number-of-learner-input" class="form-control">
               </div>
             </div>
           </div>
@@ -55,26 +63,26 @@
           <div class="row mb-2">
             <div class="col-md-3">
               <div class="form-group">
-                <label for="c">총훈련시간</label>
-                <input type="text" id="c" class="form-control">
+                <label for="total-hours-input">총훈련시간</label>
+                <input type="text" id="total-hours-input" class="form-control">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="d">총훈련일수</label>
-                <input type="text" id="d" class="form-control" readonly>
+                <label for="total-days-input">총훈련일수</label>
+                <input type="text" id="total-days-input" class="form-control" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="e">일일훈련시간</label>
-                <input type="text" id="e" class="form-control">
+                <label for="daily-hours-input">일일훈련시간</label>
+                <input type="text" id="daily-hours-input" class="form-control">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="f">쉬는시간</label>
-                <input type="text" id="f" class="form-control">
+                <label for="break-time-input">쉬는시간</label>
+                <input type="text" id="break-time-input" class="form-control">
               </div>
             </div>
           </div>
@@ -82,29 +90,14 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="g">과정시작일</label>
-                <input type="date" id="g" class="form-control">
+                <label for="start-date-input">과정시작일</label>
+                <input type="date" id="start-date-input" class="form-control">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="h">과정종료일</label>
-                <input type="date" id="h" class="form-control" readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="i">훈련시작시간</label>
-                <input type="time" id="i" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="j">훈련종료시간</label>
-                <input type="time" id="j" class="form-control">
+                <label for="end-date-input">과정종료일</label>
+                <input type="date" id="end-date-input" class="form-control" readonly>
               </div>
             </div>
           </div>
@@ -112,14 +105,14 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="k">식사시작시간</label>
-                <input type="time" id="k" class="form-control">
+                <label for="lesson-start-time-input">훈련시작시간</label>
+                <input type="time" id="lesson-start-time-input" class="form-control">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="l">식사종료시간</label>
-                <input type="time" id="l" class="form-control">
+                <label for="lesson-end-time-input">훈련종료시간</label>
+                <input type="time" id="lesson-end-time-input" class="form-control">
               </div>
             </div>
           </div>
@@ -127,16 +120,39 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="m">강사명</label>
-                <select id="m" class="form-control">
+                <label for="lunch-start-time-input">식사시작시간</label>
+                <input type="time" id="lunch-start-time-input" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="lunch-end-time-input">식사종료시간</label>
+                <input type="time" id="lunch-end-time-input" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="instructor">강사명</label>
+                <select id="instructor" class="form-control">
                   <option value="">강사선택</option>
                 </select>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="form-group">
-                <label for="n">강의실</label>
-                <select id="n" class="form-control">
+                <label for="administrator">관리자</label>
+                <select id="administrator" class="form-control">
+                  <option value="">관리자선택</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="classroom">강의실</label>
+                <select id="classroom" class="form-control">
                   <option value="">강의실선택</option>
                 </select>
               </div>
@@ -157,19 +173,15 @@
             <table class="table">
               <thead>
               <tr class="text-center">
+                <th scope="col" class="align-middle" width="22%">수업순서</th>
                 <th scope="col" class="align-middle" width="22%">교과목명</th>
                 <th scope="col" class="align-middle" width="15%">시간</th>
                 <th scope="col" class="align-middle" width="45">교재명</th>
                 <th scope="col" class="align-middle" width="18%">저자명</th>
               </tr>
               </thead>
-              <tbody>
-              <tr>
-                <td class="text-center align-middle"><input type="text" id="" class="form-control"></td>
-                <td class="text-center align-middle"><input type="text" id="" class="form-control"></td>
-                <td class="text-center align-middle"><input type="text" id="" class="form-control"></td>
-                <td class="text-center align-middle"><input type="text" id="" class="form-control"></td>
-              </tr>
+              <tbody id="subject-table">
+
               </tbody>
             </table>
             <div class="text-center">
@@ -201,10 +213,16 @@
       </button>
     </div>
   </form>
-  <!-- content body 끝 -->
+    <!-- content body 끝 -->
 
-  <!-- 과정 불러오기 모달 -->
-  <div class="modal fade" id="previousCourseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <!-- 과정 불러오기 모달 -->
+  <div
+      class="modal fade"
+      id="previousCourseModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myModalLabel"
+      aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -214,13 +232,17 @@
           </button>
         </div>
         <div class="modal-body">
-
+          <!--과정 검색창-->
           <form class="row mb-3">
             <div class="input-group col-6">
               <div class="input-group">
-                <input type="text" class="form-control" placeholder="과정명으로 검색하세요.">
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="과정명으로 검색하세요."
+                    id="search-input">
                 <div class="input-group-append">
-                  <button class="btn btn-primary" type="button">
+                  <button class="btn btn-primary" type="button" id="search-button">
                     <i class="fas fa-search fa-sm"></i>
                   </button>
                 </div>
@@ -241,37 +263,26 @@
                 <th scope="col" class="align-middle">선택</th>
               </tr>
               </thead>
-              <tbody>
+              <tbody id="table-body">
               <tr>
-                <td class="text-center align-middle">진행 중</td>
-                <td class="title align-middle text-truncate" style="max-width: 250px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-                <td class="text-center align-middle">2025-01-01 ~ 2025-07-25 </td>
-                <td class="text-center align-middle"><span>1040</span>시간</td>
-                <td class="text-center align-middle"><span>130</span>일</td>
-                <td class="text-center align-middle"><span>8</span>시간</td>
+                <td class="text-center align-middle"></td>
+                <td class="title align-middle text-truncate" style="max-width: 250px;"></td>
+                <td class="text-center align-middle"></td>
+                <td class="text-center align-middle"></td>
+                <td class="text-center align-middle"></td>
+                <td class="text-center align-middle"></td>
                 <td class="text-center align-middle">
                   <button class="btn btn-primary btn-icon-split btn-sm">
                     <span class="text" data-dismiss="modal">선택</span>
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td class="text-center align-middle">진행 중</td>
-                <td class="title align-middle text-truncate" style="max-width: 250px;">[1회] 자바 웹 서비스와 CI/CD 자동화를 위한 컨테이너 기술 종합과정</td>
-                <td class="text-center align-middle">2025-01-01 ~ 2025-07-25 </td>
-                <td class="text-center align-middle"><span>1040</span>시간</td>
-                <td class="text-center align-middle"><span>130</span>일</td>
-                <td class="text-center align-middle"><span>8</span>시간</td>
-                <td class="text-center align-middle">
-                  <button class="btn btn-primary btn-icon-split btn-sm">
-                    <span class="text" data-dismiss="modal">선택</span>
-                  </button>
-                </td>
-              </tr>
-
               </tbody>
             </table>
            </div>
+          <!-- 페이지 -->
+          <nav aria-label="Page navigation example" class="col mt-4" id="course-pagination">
+          </nav>
         </div>
         <div class="modal-footer">
           <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
@@ -284,13 +295,12 @@
       </div>
     </div>
   </div>
-  <!-- 모달 끝 -->
+    <!-- 모달 끝 -->
 </div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-      // javascript 개발은 여기에...
+<th:block layout:fragment="script">
+  <!-- 외부 JS 파일 연결 -->
+  <script th:src="@{/js/courseManagement/courseRegister.js}" type="text/javascript"></script>
 
-  </script>
 </th:block>
 </body>
 </html>

@@ -1,0 +1,13 @@
+package com.goott5.lms.learnermanagement.domain;
+
+import lombok.*;
+
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class LearnerReqDTO {
+  private Integer leId;
+}
