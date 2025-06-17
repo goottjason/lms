@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.courseboardmaterials.mapper.CourseBoardMaterialsMapper">
+
+  <select id="selectAllCourseBoardMaterialsListWithNames" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO">
+    SELECT
+    cn.*,
+    c.name AS courseName,
+    u.fullname AS writerName
+    FROM course_notice cn
+    JOIN course c ON cn.course_id = c.id
+    JOIN `user` u ON cn.writer_id = u.id
+    WHERE cn.deleted_at IS NULL
+    ORDER BY cn.is_fixed DESC, cn.created_at DESC
+  </select>
+
+
+  <resultMap id="CourseBoardMaterialsDetailInfo" type="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDetailInfo">
+    <id property="id" column="id" />
+    <id property="courseId" column="courseId"/>
+    <result property="courseName" column="courseName"/>
+    <result property="writerName" column="writerName"/>
+    <result property="title" column="title"/>
+    <result property="content" column="content"/>
+    <result property="readCount" column="readCount"/>
+    <result property="isFixed" column="isFixed"/>
+    <result property="createdAt" column="createdAt"/>
+    <result property="updatedAt" column="updatedAt"/>
+    <result property="deletedAt" column="deletedAt"/>
+
+    <association property="user" javaType="com.goott5.lms.user.domain.UserVO">
+      <id property="loginId" column="loginId" />
+      <result property="type" column="type"/>
+      <result property="gender" column="gender"/>
+      <result property="birthday" column="birthday"/>
+      <result property="mobile" column="mobile"/>
+      <result property="email" column="email"/>
+      <result property="address" column="address"/>
+      <result property="sessionId" column="sessionId"/>
+    </association>
+
+  </resultMap>
+
+  <select id="selectListWithSearch" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO">
+    SELECT
+    cn.*,
+    c.name AS courseName,
+    u.fullname AS writerName,
+    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached
+    FROM
+    course_notice cn
+    JOIN
+    course c ON cn.course_id = c.id
+    JOIN
+    `user` u ON cn.writer_id = u.id
+    LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
+    ON cn.id = f.table_id
+    <where>
+      cn.deleted_at IS NULL
+      <if test="type != null and !type.isEmpty()">  AND
+        <trim prefixOverrides="OR">
+          <if test="type.contains('t'.toString())">
+            OR cn.title LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('c'.toString())">
+            OR cn.content LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('w'.toString())">
+            OR u.fullname LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+        </trim>
+      </if>
+      <if test="hasAttachment != null">
+        AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
+      </if>
+    </where>
+    ORDER BY
+    cn.is_fixed DESC,
+    <choose>
+      <when test="orderBy == 'readCount'">cn.read_count</when>
+      <when test="orderBy == 'title'">cn.title</when>
+      <otherwise>cn.created_at</otherwise> </choose>
+    <if test="orderDirection == 'asc'">ASC</if>
+    <if test="orderDirection == 'desc' or orderDirection == null or orderDirection == ''">DESC</if>,
+    cn.id DESC
+    LIMIT #{skip}, #{pagingSize}
+  </select>
+
+  <select id="selectTotalCountWithSearch" resultType="int">
+    SELECT COUNT(*) FROM
+    course_notice cn JOIN
+    course c ON cn.course_id = c.id
+    JOIN `user` u ON cn.writer_id = u.id LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
+    ON cn.id = f.table_id
+    <where>
+      cn.deleted_at IS NULL
+      <if test="type != null and !type.isEmpty()">
+        AND
+        <trim prefixOverrides="OR">
+          <if test="type.contains('t'.toString())">
+            OR cn.title LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('c'.toString())">
+            OR cn.content LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('w'.toString())">
+            OR u.fullname LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+        </trim>
+      </if>
+      <if test="hasAttachment != null">
+        AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
+      </if>
+    </where>
+  </select>
+
+  <select id="selectCourseBoardMaterialsDetail" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDetailInfo">
+    SELECT
+    cn.id,
+    cn.course_id AS courseId,
+    c.name AS courseName,
+    cn.writer_id AS writerId,
+    u.fullname AS writerName,
+    u.type AS writerType,
+    cn.title,
+    cn.content,
+    cn.read_count AS readCount,
+    cn.is_fixed AS isFixed,
+    cn.created_at AS createdAt,
+    cn.updated_at AS updatedAt,
+    cn.deleted_at AS deletedAt,
+    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached FROM course_notice cn
+    JOIN course c ON cn.course_id = c.id
+    JOIN `user` u ON cn.writer_id = u.id
+    LEFT JOIN (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
+    ON cn.id = f.table_id
+    WHERE cn.id = #{id} AND cn.deleted_at IS NULL
+  </select>
+
+  <update id="incrementReadCount">
+    UPDATE course_notice
+    SET read_count = read_count + 1
+    WHERE id = #{id}
+  </update>
+
+</mapper>
