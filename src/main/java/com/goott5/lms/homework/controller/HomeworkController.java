@@ -6,20 +6,19 @@ import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.homework.domain.*;
-import com.goott5.lms.homework.readcountlog.domain.ReadCountLog;
+import com.goott5.lms.common.domain.ReadCountLog;
 import com.goott5.lms.homework.service.HomeworkService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.net.URLDecoder;
 import java.util.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -81,13 +80,20 @@ public class HomeworkController {
     PagingResponseDTO<HomeworkDTO> pagingResponseDTO = null;
     List<String> menuListForLt = new ArrayList<>();
 
+    if (nameForLt == null) nameForLt = "";
+    if (keyword == null) keyword = "";
+    if (order == null) order = "";
+    if (sortBy == null) sortBy = "";
+    if (progress == null) progress = "";
+    if (nameForAdmin == null) nameForAdmin = "";
+
 
       //조건 적용 전 테스트용-> 조건 적용
     if(!loginUser.getType().equals("ADMINISTRATOR")){
       //강사,학생 시점
     homeworkRequestDTO = HomeworkRequestDTO.builder()
         .loginId(loginUser.getLoginId())
-        .nameForLt(nameForLt)// 프론트에서 보내기
+        .nameForLt(URLDecoder.decode(nameForLt))// 프론트에서 보내기
         .pagingRequest(PagingRequestDTO.builder()
             .pageNo(pageNo)
             .pageSize(5)
@@ -121,7 +127,7 @@ public class HomeworkController {
 
       homeworkRequestDTO = HomeworkRequestDTO.builder()
           .loginId(loginUser.getLoginId())
-          .nameForAdmin(nameForAdmin)// 프론트에서 보내기
+          .nameForAdmin(URLDecoder.decode(nameForAdmin))// 프론트에서 보내기
           .pagingRequest(PagingRequestDTO.builder()
               .pageNo(pageNo)
               .pageSize(5)
@@ -149,11 +155,10 @@ public class HomeworkController {
     model.addAttribute("loginUser",loginUser);
     model.addAttribute("pagingRequestDTO", homeworkRequestDTO.getPagingRequest()); //제게시글에 필요한 파라미터 요청용
     model.addAttribute("pagingResponseDTO", pagingResponseDTO); // 과제 게시글 리스트가 있는 페이징
-    model.addAttribute("homeworkList", pagingResponseDTO.getDtoList()); //페이징 dto안에 있는 과제 리스트
+    model.addAttribute("homeworkList", pagingResponseDTO.getDtoList()); //페이징 dto 안에 있는 과제 리스트
 
     model.addAttribute("order",order); // 강사, 학생이 속해있는 과정명 select
     model.addAttribute("sortBy",sortBy); // 강사, 학생이 속해있는 과정명 select
-    //model.addAttribute("menuForAdminName",menuForAdminName); //관리자용 과정명(boolean)에 따라 출력
 
 
     return "homework/homeworkList";

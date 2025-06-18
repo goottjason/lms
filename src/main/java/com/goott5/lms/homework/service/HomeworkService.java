@@ -3,7 +3,7 @@ package com.goott5.lms.homework.service;
 
 import com.goott5.lms.homework.domain.*;
 
-import com.goott5.lms.homework.readcountlog.domain.ReadCountLog;
+import com.goott5.lms.common.domain.ReadCountLog;
 import java.util.List;
 import java.util.Map;
 

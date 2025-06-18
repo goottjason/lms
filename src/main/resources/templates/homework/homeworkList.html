@@ -8,10 +8,16 @@
     #courseSelector {
       display: none;
     }
+
+    #content {
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+    }
+
   </style>
 </head>
 <body>
-<div layout:fragment="content">
+<div layout:fragment="content" id="content">
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">과제 조회</h1>
@@ -131,12 +137,12 @@
           </li>
           <li class="page-item"
               th:each="i:${#numbers.sequence(pagingResponseDTO.getStart(),pagingResponseDTO.getEnd())}">
-            <a class="page-link active" th:classappend="${i == pagingResponseDTO.pageNo} ? 'active'"
+            <a  th:class="${i == pagingResponseDTO.getPageNo()} ? 'page-link active' : 'page-link'"
                th:if="${loginUser.getType() =='ADMINISTRATOR'}"
                th:text="${i}"
                th:href="@{/homework/homeworkList(pageNo=${i}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy},
                progress=${param.progress}, nameForAdmin=${param.nameForAdmin})}">1</a>
-            <a class="page-link active" th:classappend="${i == pagingResponseDTO.pageNo} ? 'active'"
+            <a  th:class="${i == pagingResponseDTO.getPageNo()} ? 'page-link active' : 'page-link'"
                th:unless="${loginUser.getType() =='ADMINISTRATOR'}"
                th:text="${i}"
                th:href="@{/homework/homeworkList(pageNo=${i}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">1</a>
@@ -245,7 +251,7 @@
 
       nameForLtList.forEach(function (name) {
         const isSelected = defaultSelected === name ? 'selected' : '';
-        courseSelector.append(`<option value="${name}" ${isSelected}>${name}</option>`);
+        courseSelector.append(`<option value="${name}" ${isSelected} accept-charset="UTF-8">${name}</option>`);
       });
 
       }
@@ -271,15 +277,15 @@
     // 강사 교육생용 select 박스 값 컨트롤러로 보내기
     function sendNameForLt(nameForLt) {
       const url = new URL(window.location.href);
-      const params = url.searchParams;
+      const params = url.searchParams; // 일부 인코딩된 상태
 
       // 현재 URL에 있는 nameForLt를 디코딩해서 비교
       const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
-      console.log("currentCourse",currentCourse)
+      console.log("currentCourse",currentCourse) //인코딩된 param 값을 디코딩
 
       // 값이 바뀐 경우에만 이동
       if(nameForLt !== currentCourse){
-        params.set('nameForLt', nameForLt);
+        params.set('nameForLt', nameForLt? encodeURIComponent(nameForLt) : '');
         params.set('keyword', ''); // 검색어 초기화 (선택사항)
 
         location.href = `${url.pathname}?${params.toString()}`;
@@ -337,7 +343,7 @@
       //progress = $("#is_in_progress").val(); //string 상태
 
       progress = $("#isInProgressForAdmin").val();
-      let nameForAdmin = adminNameSelectBox.val();
+      let nameForAdmin =  encodeURIComponent((adminNameSelectBox.val()));
 
       axios.get("/homework/homeworkList", {
         params: {

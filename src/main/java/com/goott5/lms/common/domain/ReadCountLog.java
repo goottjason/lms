@@ -1,4 +1,4 @@
-package com.goott5.lms.homework.readcountlog.domain;
+package com.goott5.lms.common.domain;
 
 import java.util.Date;
 import lombok.Builder;
