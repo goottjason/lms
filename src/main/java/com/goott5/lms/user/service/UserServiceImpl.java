@@ -95,7 +95,10 @@ public class UserServiceImpl implements UserService {
 
     MultipartFile file = signupDTO.getProfileFile();
 
-    if (file != null || !file.isEmpty()) {
+    if (file == null || file.isEmpty()) {
+      signupDTO.setProfileImg(
+              "https://joon-s3upload.s3.ap-northeast-2.amazonaws.com/upload/user/avatar.png");
+    } else {
 
       // 첨부 파일 서버에 저장 + 경로 저장
       // putObject 뒤에 경로 반환
@@ -122,9 +125,6 @@ public class UserServiceImpl implements UserService {
       }
       signupDTO.setProfileImg(insertPath);
 
-    } else {
-      signupDTO.setProfileImg(
-              "https://joon-s3upload.s3.ap-northeast-2.amazonaws.com/upload/user/avatar.png");
     }
 
     int result = userMapper.updateUserForSignup(signupDTO);
