@@ -38,4 +38,7 @@ public interface TestDetailMapper {
   // 선택지 Delete
   void deleteMultipleOption(@Param("id") int id, @Param("optionNo") Integer optionNo);
 
+  // 시험 Delete
+  void deleteTest(@Param("testId") int testId);
+
 }

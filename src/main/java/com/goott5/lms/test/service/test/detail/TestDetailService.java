@@ -15,4 +15,7 @@ public interface TestDetailService {
 
   // 시험 수정
   void modifyTestDetail(@Valid TestRegisterDTO testDetailDTO, int testId);
+
+  // 시험 삭제
+  void removeTestDetail(int testId);
 }

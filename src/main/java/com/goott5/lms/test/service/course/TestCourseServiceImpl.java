@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CourseServiceImpl implements CourseService {
+public class TestCourseServiceImpl implements TestCourseService {
 
   private final TestCourseMapper testCourseMapper;
 

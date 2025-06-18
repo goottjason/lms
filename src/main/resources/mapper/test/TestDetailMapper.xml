@@ -147,5 +147,10 @@
     </if>
   </delete>
 
+  <delete id="deleteTest">
+    DELETE FROM test
+    WHERE id = #{testId}
+  </delete>
+
 
 </mapper>

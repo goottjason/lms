@@ -2,9 +2,9 @@
 // [[DOM 셀렉터 캐싱]]
 //------------------------------------------------------------------------------
 const $courseSelector = $("#courseSelector");
-const $adminFilter    = $("#admin-filter");
+const $adminFilter = $("#admin-filter");
 const $progressFilter = $("#progress-filter");
-const $courseFilter   = $("#course-filter");
+const $courseFilter = $("#course-filter");
 
 const $testRegisterBtn = $("#test-register-btn");
 
@@ -17,19 +17,20 @@ const $pagePart = $(".pagination");
 //------------------------------------------------------------------------------
 
 let defaultCourse;
+let currentPageNoForPrev = 1;
 
 //------------------------------------------------------------------------------
 // [[템플릿 함수]]
 //------------------------------------------------------------------------------
 
 function makeTestRow(test) {
-    console.log(test);
-    let currentPageNo = $("#test-register-btn").data("current-page-no");
+  console.log(test);
+  // let currentPageNo = $("#test-register-btn").data("current-page-no");
 
-    return `
+  return `
     <tr>
       <td class="text-center align-middle">${test.testId}</td>
-      <td class="title align-middle test-detail-btn"><a href="/test/testDetail/${test.testId}?currentPageNo=${currentPageNo}">${test.testTitle}</a></td>     
+      <td class="title align-middle test-detail-btn"><a href="/test/testDetail/${test.testId}?currentPageNo=${currentPageNoForPrev}">${test.testTitle}</a></td>     
       <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
       <td class="text-center align-middle">${test.testStatus}</td>
@@ -45,66 +46,66 @@ function makeTestRow(test) {
 
 // 관리자 필터 호출
 function renderAdminCourseFilter(isInProgress = null) {
-    axios.get(`/api/admin/courses`, {params: {isInProgress: isInProgress}})
-         .then(function (response) {
-             renderCourseFilterOptionsForAdmin("#course-filter",
-                                               response.data.data);
-         })
-         .catch(function (error) {
+  axios.get(`/api/admin/courses`, { params: { isInProgress: isInProgress } })
+       .then(function (response) {
+         renderCourseFilterOptionsForAdmin("#course-filter",
+             response.data.data);
+       })
+       .catch(function (error) {
 
-         });
+       });
 }
 
 // 사용자(수강생/강사) 필터 호출
 function renderUserCourseFilter() {
-    return axios.get(`/api/courses`)
-                .then(function (response) {
-                    console.log(response);
-                    const data = response.data.data;
-                    renderCourseFilterOptionsForAdminForUser("#courseSelector",
-                                                             response.data.data);
+  return axios.get(`/api/courses`)
+              .then(function (response) {
+                console.log(response);
+                const data = response.data.data;
+                renderCourseFilterOptionsForAdminForUser("#courseSelector",
+                    response.data.data);
 
-                    return data.find(el => el.inProgress)?.courseName ||
-                           data[0]?.courseName || "";
-                });
+                return data.find(el => el.inProgress)?.courseName ||
+                    data[0]?.courseName || "";
+              });
 }
 
 // 관리자 필터 생성
 function renderCourseFilterOptionsForAdmin(selector, data) {
-    let $courseFilter = $(selector);
-    $courseFilter.empty();
+  let $courseFilter = $(selector);
+  $courseFilter.empty();
 
-    let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
-    $courseFilter.append(courseFilterPlaceholder);
+  let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
+  $courseFilter.append(courseFilterPlaceholder);
 
-    $.each(data, function (index, el) {
+  $.each(data, function (index, el) {
 
-        console.log(el);
+    console.log(el);
 
-        let courseOption = `<option value="${el}">${el}</option>`;
-        $courseFilter.append(courseOption);
-    });
+    let courseOption = `<option value="${el}">${el}</option>`;
+    $courseFilter.append(courseOption);
+  });
 
 }
 
 // 사용자(수강생/강사) 필터 생성
 function renderCourseFilterOptionsForAdminForUser(selector, data) {
-    let $courseFilter = $(selector);
-    $courseFilter.empty();
+  let $courseFilter = $(selector);
+  $courseFilter.empty();
 
-    console.log(data);
+  console.log(data);
 
-    const defaultEl         = data.find(el => el.inProresss) || data[0];
-    const defaultCourseName = defaultEl ? defaultEl.courseName : "";
+  const defaultEl = data.find(el => el.inProresss) || data[0];
+  const defaultCourseName = defaultEl ? defaultEl.courseName : "";
 
-    $.each(data, function (index, el) {
+  $.each(data, function (index, el) {
 
-        let courseOption = `<option value="${el.courseName}" data-is-in-progress="${el.inProgress}">${el.courseName}</option>`;
-        $courseFilter.append(courseOption);
-    });
+    let courseOption = `<option value="${el.courseName}" data-is-in-progress="${el.inProgress}">${el.courseName}</option>`;
+    $courseFilter.append(courseOption);
+  });
 
-    $courseFilter.val(defaultCourseName);
-    defaultCourse = defaultCourseName;
+  $courseFilter.val(defaultCourseName);
+  defaultCourse = defaultCourseName;
 }
 
 //------------------------------------------------------------------------------
@@ -114,105 +115,105 @@ function renderCourseFilterOptionsForAdminForUser(selector, data) {
 // userType에 따른 화면 변화
 async function renderPageByUserType(userType, currentPageNo = 1) {
 
-    if (userType === "LEARNER") {
-        $adminFilter.remove();
-        $testRegisterBtn.remove();
-        const courseName = await renderUserCourseFilter();
+  if (userType === "LEARNER") {
+    $adminFilter.remove();
+    $testRegisterBtn.remove();
+    const courseName = await renderUserCourseFilter();
 
-        renderTestListPage(defaultCourse, currentPageNo);
+    renderTestListPage(defaultCourse, currentPageNo);
 
-        return;
-    }
+    return;
+  }
 
-    if (userType === "INSTRUCTOR") {
-        $adminFilter.remove();
-        const courseName = await renderUserCourseFilter();
-        console.log(currentPageNo);
-        console.log(courseName);
-        renderTestListPage(defaultCourse, currentPageNo);
+  if (userType === "INSTRUCTOR") {
+    $adminFilter.remove();
+    const courseName = await renderUserCourseFilter();
+    console.log(currentPageNo);
+    console.log(courseName);
+    renderTestListPage(defaultCourse, currentPageNo);
 
-        return;
-    }
+    return;
+  }
 
-    if (userType === "ADMINISTRATOR") {
-        $courseSelector.remove();
-        $testRegisterBtn.remove();
-        renderAdminCourseFilter();
-        renderTestListPage("", currentPageNo);
-    }
+  if (userType === "ADMINISTRATOR") {
+    $courseSelector.remove();
+    $testRegisterBtn.remove();
+    renderAdminCourseFilter();
+    renderTestListPage("", currentPageNo);
+  }
 }
 
 // 시험 리스트 페이지 호출
 function renderTestListPage(courseName = "", currentPageNo = 1) {
 
-    console.log(courseName);
-    axios.get(`/api/tests`,
-              {
-                  params: {
-                      courseName   : courseName,
-                      currentPageNo: currentPageNo
-                  }
-              })
-         .then(function (response) {
-             console.log(response);
+  console.log(courseName);
+  axios.get(`/api/tests`,
+      {
+        params: {
+          courseName: courseName,
+          currentPageNo: currentPageNo
+        }
+      })
+       .then(function (response) {
+         console.log(response);
 
-             renderTestList(response.data.data.items);
+         renderTestList(response.data.data.items);
 
-             console.log(response.data.data.items.length === 0);
+         console.log(response.data.data.items.length === 0);
 
-             renderPagination(response.data.data);
+         renderPagination(response.data.data);
 
-         })
-         .catch(function (error) {
+       })
+       .catch(function (error) {
 
-         });
+       });
 }
 
 // 시험 리스트 요소 생성
 function renderTestList(data) {
-    $testTableBody.empty(); // table body 초기화
+  $testTableBody.empty(); // table body 초기화
 
-    if (data.length === 0) {
-        // 아무 데이터도 없을 경우
-        $testTableBody.append(`
+  if (data.length === 0) {
+    // 아무 데이터도 없을 경우
+    $testTableBody.append(`
     <tr>
       <td colspan="7" class="text-center text-muted py-3">
       등록된 시험이 없습니다.
       </td>
     </tr>
     `);
-        return;
-    }
+    return;
+  }
 
-    $.each(data, function (index, el) {
-        console.log(el);
+  $.each(data, function (index, el) {
+    console.log(el);
 
-        let test = {
-            testId          : el.id,
-            testTitle       : el.title,
-            courseName      : el.courseName,
-            testPeriod      : el.startDate.split("T")[0] + " ~ " +
-                              el.endDate.split(
-                                  "T")[0],
-            testStatus      : assignValueByStatus(el.testStatus),
-            testTime        : el.testTime + "분",
-            participantCount: `${el.completedCount}/${el.numberOfLearner}`
-        };
+    let test = {
+      testId: el.id,
+      testTitle: el.title,
+      courseName: el.courseName,
+      testPeriod: el.startDate.split("T")[0] + " ~ " +
+          el.endDate.split(
+              "T")[0],
+      testStatus: assignValueByStatus(el.testStatus),
+      testTime: el.testTime + "분",
+      participantCount: `${el.completedCount}/${el.numberOfLearner}`
+    };
 
-        $testTableBody.append(makeTestRow(test));
-    });
+    $testTableBody.append(makeTestRow(test));
+  });
 
 }
 
 // DB에서 가져온 testStatus 값에 따라 진행상태 값 할당하는 함수
 function assignValueByStatus(testStatus) {
-    let testStatusMap = {
-        NOT_STARTED: "진행 전",
-        IN_PROGRESS: "진행 중",
-        COMPLETED  : "종료"
-    };
+  let testStatusMap = {
+    NOT_STARTED: "진행 전",
+    IN_PROGRESS: "진행 중",
+    COMPLETED: "종료"
+  };
 
-    return testStatusMap[testStatus];
+  return testStatusMap[testStatus];
 }
 
 //------------------------------------------------------------------------------
@@ -221,39 +222,39 @@ function assignValueByStatus(testStatus) {
 
 // Pagination 요소 생성
 function renderPagination(data) {
-    $pagePart.empty(); // 페이지 부분 초기화
-    console.log(data.items);
+  $pagePart.empty(); // 페이지 부분 초기화
+  console.log(data.items);
 
-    if (data.items.length) {
+  if (data.items.length) {
 
-        // 이전 그룹 이동 버튼
-        $pagePart.append(`
+    // 이전 그룹 이동 버튼
+    $pagePart.append(`
   <li class="page-item prev-page-group ${!data.prev ? "disabled"
-                                                    : ""}" data-current-page-group=${data.currentPageGroup} data-pages-per-group=${data.pagesPerGroup}>
+        : ""}" data-current-page-group=${data.currentPageGroup} data-pages-per-group=${data.pagesPerGroup}>
       <span class="page-link">이전</span>
   </li>
   `);
 
-        // 페이지 번호 생성
-        for (let i = data.startPageNo;
-             i <= Math.min(data.endPageNo, data.totalPages); i++) {
-            $pagePart.append(`
+    // 페이지 번호 생성
+    for (let i = data.startPageNo;
+        i <= Math.min(data.endPageNo, data.totalPages); i++) {
+      $pagePart.append(`
      <li class="page-item page-no ${data.currentPageNo === i ? "active"
-                                                             : ""}" data-page-no=${i}>
+          : ""}" data-page-no=${i}>
          <span class="page-link">${i}</span>
      </li>
     `);
-        }
+    }
 
-        // 다음 그룹 이동 버튼
-        $pagePart.append(`
+    // 다음 그룹 이동 버튼
+    $pagePart.append(`
   <li class="page-item next-page-group ${data.next ? "" : "disabled"}"
    data-current-page-group=${data.currentPageGroup} data-pages-per-group=${data.pagesPerGroup}>
      <span class="page-link page-move">다음</span>
   </li>
   `);
 
-    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -262,25 +263,49 @@ function renderPagination(data) {
 
 $(document).ready(function () {
 
-    const currentPageNo = new URLSearchParams(window.location.search)
-    .get("currentPageNo");
-    console.log(currentPageNo);
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "bottom-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
 
-    axios.get(`/api/tests`, {
-        params: {
-            courseName   : defaultCourse,
-            currentPageNo: currentPageNo
-        }
-    })
-         .then(function (response) {
-             console.log(response);
+  if (UrlUtils.getQueryParam("saved") === "true") {
+    Toast.fire({
+      icon: "success",
+      title: "새 시험이 등록되었습니다."
+    });
+  } else if (UrlUtils.getQueryParam("removed") === "true") {
+    Toast.fire({
+      icon: "success",
+      title: "시험이 삭제되었습니다."
+    });
+  }
 
-             renderPageByUserType(response.data.message,
-                                  response.data.data.currentPageNo);
-         })
-         .catch(function (error) {
+  const currentPageNo = new URLSearchParams(window.location.search)
+  .get("currentPageNo");
+  console.log(currentPageNo);
 
-         });
+  axios.get(`/api/tests`, {
+    params: {
+      courseName: defaultCourse,
+      currentPageNo: currentPageNo
+    }
+  })
+       .then(function (response) {
+         console.log(response);
+
+         renderPageByUserType(response.data.message,
+             response.data.data.currentPageNo);
+       })
+       .catch(function (error) {
+
+       });
 
 });
 
@@ -290,59 +315,62 @@ $(document).ready(function () {
 
 // 이전 페이지 그룹으로 이동 이벤트
 $(document).on("click", ".prev-page-group", function () {
-    if ($(this).hasClass("disabled")) {
-        // 버튼에 ".disabled"가 존재하면 작동 X
-        return;
-    }
+  if ($(this).hasClass("disabled")) {
+    // 버튼에 ".disabled"가 존재하면 작동 X
+    return;
+  }
 
-    let currentPageGroup = $(this).data("current-page-group");
-    let pagesPerGroup    = $(this).data("pages-per-group");
+  let currentPageGroup = $(this).data("current-page-group");
+  let pagesPerGroup = $(this).data("pages-per-group");
 
-    // 이전 페이지 그룹의 첫 번호
-    let courseName    = $courseFilter.length ? $courseFilter.val()
-                                             : $(
-            "#courseSelector").val();
-    let prevPageGroup = (currentPageGroup - 1) * pagesPerGroup;
+  // 이전 페이지 그룹의 첫 번호
+  let courseName = $courseFilter.length ? $courseFilter.val()
+      : $(
+          "#courseSelector").val();
+  let prevPageGroup = (currentPageGroup - 1) * pagesPerGroup;
 
-    $testRegisterBtn.data("current-page-no", prevPageGroup)
-                    .attr("data-current-page-no", prevPageGroup);
+  currentPageNoForPrev = prevPageGroup;
+  // $testRegisterBtn.data("current-page-no", prevPageGroup)
+  //                 .attr("data-current-page-no", prevPageGroup);
 
-    renderTestListPage(defaultCourse, prevPageGroup);
+  renderTestListPage(defaultCourse, prevPageGroup);
 });
 
 // 페이지 번호 클릭시 해당 페이지 번호로 이동
 $(document).on("click", ".page-no", function () {
-    let courseName = $courseFilter.length ? $courseFilter.val() : $(
-        "#courseSelector").val();
-    console.log(courseName);
-    let currentPageNo = $(this).data("page-no");
+  let courseName = $courseFilter.length ? $courseFilter.val() : $(
+      "#courseSelector").val();
+  console.log(courseName);
+  let currentPageNo = $(this).data("page-no");
 
-    $testRegisterBtn.data("current-page-no", currentPageNo)
-                    .attr("data-current-page-no", currentPageNo);
+  currentPageNoForPrev = currentPageNo;
+  // $testRegisterBtn.data("current-page-no", currentPageNo)
+  //                 .attr("data-current-page-no", currentPageNo);
 
-    renderTestListPage(defaultCourse, currentPageNo);
+  renderTestListPage(defaultCourse, currentPageNo);
 });
 
 // 다음 페이지 그룹으로 이동
 $(document).on("click", ".next-page-group", function () {
-    if ($(this).hasClass("disabled")) {
-        // 버튼에 ".disabled"가 존재하면 작동 X
-        return;
-    }
+  if ($(this).hasClass("disabled")) {
+    // 버튼에 ".disabled"가 존재하면 작동 X
+    return;
+  }
 
-    let currentPageGroup = $(this).data("current-page-group");
-    let pagesPerGroup    = $(this).data("pages-per-group");
+  let currentPageGroup = $(this).data("current-page-group");
+  let pagesPerGroup = $(this).data("pages-per-group");
 
-    // 다음 페이지 그룹의 첫 번째 번호
-    let courseName    = $courseFilter.length ? $courseFilter.val()
-                                             : $(
-            "#courseSelector").val();
-    let nextPageGroup = currentPageGroup * pagesPerGroup + 1;
+  // 다음 페이지 그룹의 첫 번째 번호
+  let courseName = $courseFilter.length ? $courseFilter.val()
+      : $(
+          "#courseSelector").val();
+  let nextPageGroup = currentPageGroup * pagesPerGroup + 1;
 
-    $testRegisterBtn.data("current-page-no", nextPageGroup)
-                    .attr("data-current-page-no", nextPageGroup);
+  currentPageNoForPrev = nextPageGroup;
+  // $testRegisterBtn.data("current-page-no", nextPageGroup)
+  //                 .attr("data-current-page-no", nextPageGroup);
 
-    renderTestListPage(defaultCourse, nextPageGroup);
+  renderTestListPage(defaultCourse, nextPageGroup);
 });
 
 //------------------------------------------------------------------------------
@@ -351,62 +379,62 @@ $(document).on("click", ".next-page-group", function () {
 
 // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
 $progressFilter.on("change", function () {
-    console.log("진행상황 필터!!!");
-    let isInProgress = $(this).val(); // 진행상황 값
+  console.log("진행상황 필터!!!");
+  let isInProgress = $(this).val(); // 진행상황 값
 
-    // 전체 시험 리스트 페이지 불러오기
-    // renderTestListPage();
+  // 전체 시험 리스트 페이지 불러오기
+  // renderTestListPage();
 
-    if (isInProgress === "") {
-        // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
-        $courseFilter.empty(); // 진행별 드롭다운 초기화
+  if (isInProgress === "") {
+    // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
+    $courseFilter.empty(); // 진행별 드롭다운 초기화
 
-        let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
-        $courseFilter.append(courseFilterPlaceholder);
+    let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
+    $courseFilter.append(courseFilterPlaceholder);
 
-        // 과정별 필터에 모든 과정명 불러오기
-        renderAdminCourseFilter();
+    // 과정별 필터에 모든 과정명 불러오기
+    renderAdminCourseFilter();
 
-        renderTestListPage();
-        return;
-    }
+    renderTestListPage();
+    return;
+  }
 
-    renderAdminCourseFilter(isInProgress);
+  renderAdminCourseFilter(isInProgress);
 });
 
 // 과정별 필터 값을 바꾸었을 때 리스트 불러오기 (관리자)
 $courseFilter.on("change", function () {
-    console.log("과정별 필터!!!");
-    let courseName = $(this).val();
+  console.log("과정별 필터!!!");
+  let courseName = $(this).val();
 
-    if (courseName === "") {
+  if (courseName === "") {
 
-        $progressFilter.val("");
-    }
-    console.log(courseName);
-    defaultCourse = courseName;
-    renderTestListPage(courseName);
+    $progressFilter.val("");
+  }
+  console.log(courseName);
+  defaultCourse = courseName;
+  renderTestListPage(courseName);
 });
 
 $courseSelector.on("change", function () {
-    defaultCourse = $(this).val();
-    console.log(defaultCourse);
+  defaultCourse = $(this).val();
+  console.log(defaultCourse);
 
-    let isInProgress = $(this).find("option:selected").data("is-in-progress");
+  let isInProgress = $(this).find("option:selected").data("is-in-progress");
 
-    if (isInProgress) {
-        $testRegisterBtn.show();
-    } else {
-        $testRegisterBtn.hide();
-    }
+  if (isInProgress) {
+    $testRegisterBtn.show();
+  } else {
+    $testRegisterBtn.hide();
+  }
 
-    renderTestListPage(defaultCourse);
+  renderTestListPage(defaultCourse);
 });
 
 $testRegisterBtn.on("click", function () {
 
-    let currentPageNo = $(this).data("current-page-no");
-    // let courseName    = $courseSelector.val();
+  let currentPageNo = $(this).data("current-page-no");
+  // let courseName    = $courseSelector.val();
 
-    location.href = `/test/register?currentPageNo=${currentPageNo}`;
+  location.href = `/test/register?currentPageNo=${currentPageNo}`;
 });
