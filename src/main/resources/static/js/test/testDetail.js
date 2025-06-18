@@ -7,6 +7,16 @@ let newQuiz = null;
 
 $(document).ready(function () {
 
+  if (UrlUtils.getQueryParam("modified") === "true") {
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "수정 완료",
+      showConfirmButton: false,
+      timer: 1500
+    });
+  }
+
   const pageNo = new URLSearchParams(window.location.search).get(
       "currentPageNo");
   console.log(pageNo);
@@ -40,7 +50,7 @@ $(document).ready(function () {
     buildQuiz(data.questions);
     renderQuestions(originalQuiz.questions);
     hideAllBtn(true);
-    // renderTestModifyBtn(data.startDate);
+    renderTestModifyBtn(data.startDate);
   })
   .catch(error => console.log(error));
 
@@ -121,6 +131,7 @@ function makeQuestionCard(question) {
         <div class="row mb-3">
           <div class="col-md-10">
             <label class="form-label">문항 설명</label>
+            <span class="question-title-err-msg"></span>
             <input
                 type="text"
                 class="form-control question-title"
@@ -131,6 +142,7 @@ function makeQuestionCard(question) {
           </div>
           <div class="col-md-2">
             <label class="form-label">배점</label>
+            <span class="question-score-err-msg"></span>
             <input
                 type="number"
                 class="form-control question-score"
@@ -194,6 +206,7 @@ function makeQuestionAnswerSection(question) {
         <div class="mb-3 question-answer-section">
           <label class="form-label">객관식 보기 및 정답 선택</label>
           <span><small class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
+          <span class="question-options-err-msg"></span>
 
           ${optionList}
 
@@ -222,6 +235,7 @@ function makeQuestionAnswerSection(question) {
         <div class="mb-3 question-answer-section">
           <label class="form-label">정답</label>
           <span><small class="text-muted"> (정답은 하나의 단어 또는 단답형 문장으로만 입력하세요.)</small></span>
+          <span class="short-answer-err-msg"></span>
             <input
                 type="text"
                 class="form-control short-answer"
@@ -513,11 +527,16 @@ $(document).on("click", "#confirm-modify", function (e) {
 
   if ((JSON.stringify(originalQuiz) === JSON.stringify(newQuiz))
       && (JSON.stringify(originalTestInfo) === JSON.stringify(newTestInfo))) {
-    alert("수정하세요.");
+
+    Swal.fire({
+      icon: "error",
+      title: "변경사항 없음",
+      text: "수정된 내용이 없습니다. 하나 이상의 항목을 변경해주세요."
+    });
+
   } else {
 
     const questionArr = [];
-    const questionOptions = [];
     const testInfo = {
       "instructorId": "",
       "courseName": "",
@@ -529,8 +548,9 @@ $(document).on("click", "#confirm-modify", function (e) {
       "questions": questionArr,
     };
 
-    $.each(newTestInfo.questions, function (index, q) {
+    $.each(newQuiz.questions, function (index, q) {
 
+      const questionOptions = [];
       const question = {
         "questionNo": q.questionNo,
         "questionTitle": q.title,
@@ -560,7 +580,20 @@ $(document).on("click", "#confirm-modify", function (e) {
     console.log(JSON.stringify(testInfo));
 
     const testId = parseInt(UrlUtils.getPathSegment(2));
-    // apiCall("put", `/api/tests/${testId}`);
+    apiCall("put", `/api/tests/${testId}`, testInfo, {},
+        { "Content-Type": "application/json" })
+    .then((res) => {
+      console.log(res);
+
+      const pageNo = UrlUtils.getQueryParam("currentPageNo");
+      window.location.href = `/test/testDetail/${testId}?currentPageNo=${pageNo}&modified=true`;
+
+    })
+    .catch((err) => {
+      console.log(err);
+
+      handleValidationErrors(err.response.data);
+    });
   }
 });
 
@@ -585,6 +618,40 @@ $(document).on("click", "#cancel-modify", function (e) {
   renderQuestions(originalQuiz.questions);
   hideAllBtn(true);
 
+});
+
+$(document).on("click", "#del-test-btn", function (e) {
+  Swal.fire({
+    title: "시험을 정말 삭제하시겠습니까?",
+    text: "삭제된 시험은 복구할 수 없습니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "네, 삭제하겠습니다.",
+    cancelButtonText: "아니요, 취소합니다."
+  }).then((result) => {
+    if (result.isConfirmed) {
+
+      const testId = parseInt(UrlUtils.getPathSegment(2));
+      const currentPageNo = UrlUtils.getQueryParam("currentPageNo");
+      apiCall("delete", `/api/tests/${testId}`, null, {}, {})
+      .then((res) => {
+        Swal.fire({
+          title: "삭제 완료",
+          text: "시험이 성공적으로 삭제되었습니다.",
+          icon: "success"
+        }).then((result) => {
+          if (result.isConfirmed) {
+
+            window.location.href = `/test/testList?currentPageNo=${currentPageNo}&removed=true`;
+          }
+        });
+      })
+      .catch(err => console.log(err));
+
+    }
+  });
 });
 
 $(document).on("click", ".question-type", function (e) {

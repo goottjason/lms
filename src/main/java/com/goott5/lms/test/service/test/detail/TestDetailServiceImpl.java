@@ -1,6 +1,5 @@
 package com.goott5.lms.test.service.test.detail;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.goott5.lms.test.domain.test.detail.LearnerInfoVO;
 import com.goott5.lms.test.domain.test.register.dto.TestRegisterDTO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TestDetailSeviceImpl implements TestDetailService {
+public class TestDetailServiceImpl implements TestDetailService {
 
   private final TestRegisterMapper testRegisterMapper;
 
@@ -159,8 +158,11 @@ public class TestDetailSeviceImpl implements TestDetailService {
         }
       }
     }
+  }
 
-
+  @Override
+  public void removeTestDetail(int testId) {
+    testDetailMapper.deleteTest(testId);
   }
 
 }

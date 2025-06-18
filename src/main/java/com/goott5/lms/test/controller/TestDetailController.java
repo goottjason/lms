@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,4 +67,9 @@ public class TestDetailController {
     return ApiResponse.<T>respondOk(200, "SUCCESS", (T) "SUCCESS");
   }
 
+  @DeleteMapping("/tests/{testId}")
+  public ResponseEntity<ApiResponse<String>> removeTestDetail(@PathVariable("testId") int testId) {
+    testDetailService.removeTestDetail(testId);
+    return ApiResponse.respondOk(200, "SUCCESS", "SUCCESS");
+  }
 }
