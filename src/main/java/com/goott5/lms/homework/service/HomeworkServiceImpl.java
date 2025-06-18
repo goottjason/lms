@@ -4,8 +4,8 @@ import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.homework.domain.*;
 import com.goott5.lms.homework.mapper.HomeworkMapper;
 
-import com.goott5.lms.homework.readcountlog.domain.ReadCountLog;
-import com.goott5.lms.homework.readcountlog.mapper.ReadCountLogMapper;
+import com.goott5.lms.common.domain.ReadCountLog;
+import com.goott5.lms.common.mapper.ReadCountLogMapper;
 import java.util.*;
 
 

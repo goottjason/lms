@@ -5,8 +5,8 @@ import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.homework.domain.*;
 import com.goott5.lms.homework.mapper.HomeworkMapper;
 
-import com.goott5.lms.homework.readcountlog.domain.ReadCountLog;
-import com.goott5.lms.homework.readcountlog.mapper.ReadCountLogMapper;
+import com.goott5.lms.common.domain.ReadCountLog;
+import com.goott5.lms.common.mapper.ReadCountLogMapper;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 

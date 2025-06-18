@@ -1,6 +1,6 @@
-package com.goott5.lms.homework.readcountlog.mapper;
+package com.goott5.lms.common.mapper;
 
-import com.goott5.lms.homework.readcountlog.domain.ReadCountLog;
+import com.goott5.lms.common.domain.ReadCountLog;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
