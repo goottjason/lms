@@ -5,16 +5,90 @@
 
 <mapper namespace="com.goott5.lms.coursemanagement.mapper.CourseManagementMapper">
 
-  <select id="selectCoursesAll"
+  <select id="selectCoursesAllorOne" resultType="com.goott5.lms.coursemanagement.domain.CourseRespDTO">
+    SELECT
+    c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date,
+    c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time,
+    c.lunch_start_time, c.lunch_end_time, c.created_at, c.updated_at, c.deleted_at,
+    cra.classroom_id, cr.name AS classroom_name,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN sa.user_id END) AS course_head_id,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN u.fullname END) AS course_head_fullname,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN sa.user_id END) AS fulltime_instructor_id,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN u.fullname END) AS fulltime_instructor_fullname
+    FROM course c
+    <!-- LEARNER일 때, 배정받은 course만 조회하기 위한 INNER JOIN -->
+    <if test="loginUserType == 'LEARNER'">
+      INNER JOIN learner_enrollment le ON c.id = le.course_id
+    </if>
+    LEFT JOIN staff_assignment sa ON c.id = sa.course_id
+    LEFT JOIN staff_detail sd ON sa.user_id = sd.user_id
+    LEFT JOIN user u ON sd.user_id = u.id
+    LEFT JOIN classroom_allocation cra ON c.id = cra.course_id
+    LEFT JOIN classroom cr ON cra.classroom_id = cr.id
+    <where>
+      <!-- 교육생 조건 -->
+      <if test="loginUserType == 'LEARNER'">
+        le.user_id = #{loginUserId}
+      </if>
+      <!-- 관리자 조건 (GENERAL_MANAGER 여부 쿼리 내 확인) -->
+      <if test="loginUserType == 'ADMINISTRATOR' or loginUserType == 'INSTRUCTOR'">
+        AND (
+          EXISTS (
+          SELECT 1 FROM staff_detail
+          WHERE user_id = #{loginUserId}
+          AND position = 'GENERAL_MANAGER'
+          )
+        OR c.id IN (
+          SELECT course_id FROM staff_assignment
+          WHERE user_id = #{loginUserId}
+          )
+        )
+      </if>
+      <if test="pageCourseReqDTO.keyword != null and pageCourseReqDTO.keyword != ''">
+        AND c.${pageCourseReqDTO.type} like concat('%', #{pageCourseReqDTO.keyword}, '%')
+      </if>
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
+      <if test="courseId != null">
+        AND c.id = #{courseId}
+      </if>
+    </where>
+    GROUP BY c.id
+    ORDER BY ${pageCourseReqDTO.orderBy} ${pageCourseReqDTO.orderDirection}
+    <if test="pageCourseReqDTO.pageSize != null and pageCourseReqDTO.pageNo != null">
+      LIMIT #{pageCourseReqDTO.offset}, #{pageCourseReqDTO.pageSize}
+    </if>
+  </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!--<select id="selectCoursesAll"
           resultType="com.goott5.lms.coursemanagement.domain.CourseRespDTO">
     SELECT
       c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date,
       c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time,
       c.lunch_start_time, c.lunch_end_time, c.created_at, c.updated_at, c.deleted_at
     FROM course c
+    &lt;!&ndash;역할에 따른 JOIN의 변화&ndash;&gt;
     <choose>
       <when test="loginUserType == 'LEARNER'">
         INNER JOIN learner_enrollment le ON c.id = le.course_id
+        LEFT JOIN staff_assignment sa ON 1=0
       </when>
       <otherwise>
         LEFT JOIN staff_assignment sa ON c.id = sa.course_id
@@ -27,6 +101,30 @@
       LIMIT #{pageCourseReqDTO.offset}, #{pageCourseReqDTO.pageSize}
     </if>
   </select>
+
+  <sql id="course_auth_search_filter">
+    <where>
+      <choose>
+        <when test="loginUserType == 'LEARNER'">
+          le.user_id = #{loginUserId}
+        </when>
+        <otherwise>
+          sa.user_id = #{loginUserId}
+        </otherwise>
+      </choose>
+      <if test="pageCourseReqDTO.keyword != null and pageCourseReqDTO.keyword != ''">
+        AND ${pageCourseReqDTO.type} like concat('%', #{pageCourseReqDTO.keyword}, '%')
+      </if>
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
+    </where>
+  </sql>
+
+
+
+
+
   <select id="selectCourse"
           resultType="com.goott5.lms.coursemanagement.domain.CourseRespDTO">
     SELECT
@@ -54,25 +152,8 @@
         </otherwise>
       </choose>
     </where>
-  </select>
-  <sql id="course_auth_search_filter">
-    <where>
-      <choose>
-        <when test="loginUserType == 'LEARNER'">
-          le.user_id = #{loginUserId}
-        </when>
-        <otherwise>
-          sa.user_id = #{loginUserId}
-        </otherwise>
-      </choose>
-      <if test="pageCourseReqDTO.keyword != null and pageCourseReqDTO.keyword != ''">
-        AND ${pageCourseReqDTO.type} like concat('%', #{pageCourseReqDTO.keyword}, '%')
-      </if>
-      <if test="isInProgress != null">
-        AND c.is_in_progress = #{isInProgress}
-      </if>
-    </where>
-  </sql>
+  </select>-->
+
 
   <select id="selectEnrolledLearnersByCourseId" resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
     SELECT u.id, u.type, u.fullname, u.mobile, le.completion_status as completionStatus

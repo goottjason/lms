@@ -46,7 +46,7 @@ $(document).ready(() => {
 async function initCourseSelect() {
 
   let coursesWithPagination = await apiGetRequestAboutCourses(
-    '/api/courses/all',
+    '/api/management/courses',
     {
       loginUserId: loginUserId,
       loginUserType: loginUserType,

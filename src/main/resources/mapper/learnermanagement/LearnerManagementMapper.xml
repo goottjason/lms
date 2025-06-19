@@ -5,15 +5,9 @@
 
 <mapper namespace="com.goott5.lms.learnermanagement.mapper.LearnerManagementMapper">
 
-  <!--
-    pageNo, pageSize가 있으면 LIMIT 반영, ServiceImpl에서 반환처리
-    type, keyword가 있으면 검색해서 반환
-    orderBy, orderDirection의 기본값(id, ASC) 변경 가능
-    u.id, u.type, u.login_id, u.password, u.fullname, u.gender, u.birthday, u.mobile, u.email,
-    u.address,
-    u.profile_img, u.session_id, u.auto_login_limit, u.wrong_password_count, u.created_at,
-    u.updated_at, u.deleted_at, c.name, le.completion_status as completionStatus
-  -->
+
+
+
   <select id="selectLearnersAll"
     resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
     SELECT
@@ -103,6 +97,7 @@
   -->
   <select id="selectLearnerListOrDetail" resultType="com.goott5.lms.learnermanagement.domain.LearnerRespDTO">
     SELECT DISTINCT
+
     le.id as leId,
     le.completion_status as leCompletionStatus,
 
@@ -234,16 +229,18 @@
   </select>
 
   <sql id="authCondition">
-  (
+    (
     u.id = #{loginUserId}
-    OR (
-    CASE
-    WHEN (sd.position = 'GENERAL_MANAGER') THEN 1=1
-    WHEN (sd.position IN ('COURSE_HEAD', 'FULLTIME_INSTRUCTOR')) THEN sa.user_id = #{loginUserId}
-    ELSE 1=0
-    END
+    OR EXISTS (
+    SELECT 1 FROM staff_detail sd_check
+    WHERE sd_check.user_id = #{loginUserId}
+    AND sd_check.position = 'GENERAL_MANAGER'
     )
-  )
+    OR (
+    sd.position IN ('COURSE_HEAD', 'FULLTIME_INSTRUCTOR')
+    AND sa.user_id = #{loginUserId}
+    )
+    )
   </sql>
 
   <update id="updateEmploymentSupport">

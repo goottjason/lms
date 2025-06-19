@@ -13,10 +13,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommonReqDTO {
-  private Integer loginUserId;
-  private String loginUserType;
-
-  private Boolean isInProgress;
-  private Integer courseId;
+public class CourseGetReqDTO {
+  private CommonReqDTO commonReqDTO;
+  private PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO;
 }

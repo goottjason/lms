@@ -16,8 +16,9 @@ const config = {
 
 $(document).ready(function() {
 
-  console.log();
-  let str = $('#status-count-map').val()
+  $("#courseSelector").hide();
+
+  let str = $('#status-count-map').val();
 
   const trimmed = str.slice(1, -1);
   const pairs = trimmed.split(/\s*,\s*/);
@@ -26,6 +27,7 @@ $(document).ready(function() {
     const [key, value] = pair.split('=');
     obj[key] = Number(value);
   });
+  console.log(obj);
   if (Object.keys(obj).length === 0 || (Object.keys(obj).length === 1 && Object.keys(obj)[0] === "")) {
     obj = {
       ATTENDANCE: 0,
@@ -36,16 +38,17 @@ $(document).ready(function() {
     };
     $(".chart-pie").html(`<span class="text-center">데이터가 없습니다.</span>`);
   }
-  console.log(obj);
+  displayChartValues(obj);
 
   // Pie Chart 데이터
-  var ctx        = document.getElementById("myPieChart");
-  var myPieChart = new Chart(ctx, {
+  let $ctx = $("#myPieChart");
+  let data = [obj.ATTENDANCE, obj.ABSENCE, obj.VACATION, obj.LATE, obj.LEAVE_EARLY];
+  var myPieChart = new Chart($ctx, {
     type   : "doughnut",
     data   : {
       labels  : ["출석", "결석", "휴가", "지각", "조퇴"],
       datasets: [{
-        data                : [obj.ATTENDANCE, obj.ABSENCE, obj.VACATION, obj.LATE, obj.LEAVE_EARLY],
+        data                : data,
         backgroundColor     : ["#36b9cc", "#e74a3b", "#4e73df", "#f6c23e", "#858796"],
         hoverBackgroundColor: ["#2ca4b5", "#c0392b", "#3b5cc9", "#d9a820", "#6e707f"],
         hoverBorderColor    : "rgba(234, 236, 244, 1)",
@@ -72,7 +75,7 @@ $(document).ready(function() {
 
 
 
-  displayChartValues(obj);
+
 
   $(document).on('click', '#edit-button', handleEditBtnClick);
   $(document).on('click', '#save-button', handleSaveBtnClick);

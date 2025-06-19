@@ -14,6 +14,8 @@ const config = {
 /* ================================================================================ */
 
 $(document).ready(function() {
+  // 관리자, 강사 모두 숨김
+  $("#courseSelector").hide();
 
   getListState();
   $("#is-in-progress").val(isInProgress == null ? '' : isInProgress);
@@ -38,6 +40,7 @@ $(document).ready(function() {
 
 /* ================================================================================ */
 
+
 function getListState() {
 
   let listState = sessionStorage.getItem('listState');
@@ -60,11 +63,13 @@ function saveListState() {
 
 async function fetchAndDisplayView() {
   let coursesWithPagination = await apiGetRequest(
-    '/api/courses/all',
+    '/api/management/courses',
     {
       loginUserId: loginUserId,
       loginUserType: loginUserType,
-      isInProgress: isInProgress});
+      isInProgress: isInProgress
+    }
+  );
   let courses = coursesWithPagination?.respDTOS || [];
   if (!Array.isArray(courses)) courses = [];
   renderCourseTable(courses);
@@ -96,7 +101,7 @@ function renderCourseTable(courses) {
             <a href="/courseManagement/courseDetail?courseId=${course.id}" onclick="saveListState()">${course.name}</a></td>
           <td class="text-center align-middle">${course.startDate} ~ ${course.endDate}</td>
           <td class="text-center align-middle">${course.numberOfLearner}</td>
-          <td class="text-center align-middle">${course.instructorFullname}</td>
+          <td class="text-center align-middle">${course.fulltimeInstructorFullname}</td>
           <td class="text-center align-middle">${course.classroomName}</td>
           <td class="text-center align-middle">
             <button class="btn btn-primary btn-icon-split btn-sm">

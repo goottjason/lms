@@ -27,11 +27,12 @@ public interface CourseManagementMapper {
    * @param isInProgress
    * @return
    */
-  List<CourseRespDTO> selectCoursesAll(
+  List<CourseRespDTO> selectCoursesAllorOne(
       PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO,
       Integer loginUserId,
       String loginUserType,
-      Boolean isInProgress);
+      Boolean isInProgress,
+      Integer courseId);
 
   /**
    * 과정에 배정된 강사 조회
@@ -61,14 +62,7 @@ public interface CourseManagementMapper {
   })
   String selectClassroomName(@Param("courseRespDTO") CourseRespDTO courseRespDTO);
 
-  /**
-   * 과정 상세 조회 API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param courseId
-   * @return
-   */
+
   CourseRespDTO selectCourse(Integer loginUserId, String loginUserType, Integer courseId);
 
   /**

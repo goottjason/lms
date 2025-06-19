@@ -1,6 +1,7 @@
 package com.goott5.lms.coursemanagement.service;
 
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
+import com.goott5.lms.coursemanagement.domain.CourseGetReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
@@ -12,30 +13,12 @@ import java.util.List;
 
 public interface CourseManagementService {
 
-  /**
-   * 전체 과정 리스트 조회 API
-   *
-   * @param pageCourseReqDTO
-   * @param loginUserId
-   * @param loginUserType
-   * @param isInProgress
-   * @return
-   */
-  PageCourseRespDTO<CourseRespDTO> findCoursesAll(
-      PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO,
-      Integer loginUserId,
-      String loginUserType,
-      Boolean isInProgress);
+  PageCourseRespDTO<CourseRespDTO> findCoursesAllorOne(
+      CommonReqDTO commonReqDTO, PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO
+  );
 
-  /**
-   * 과정 상세 조회 API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param courseId
-   * @return
-   */
-  CourseRespDTO findCourse(Integer loginUserId, String loginUserType, Integer courseId);
+
+  /*CourseRespDTO findCourse(Integer loginUserId, String loginUserType, Integer courseId);*/
 
   /**
    * 교육생 배정 현황 조회 API

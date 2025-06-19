@@ -182,7 +182,7 @@
                     type="text"
                     id="m"
                     class="form-control"
-                    th:value="${course.instructorFullname}"
+                    th:value="${course.fulltimeInstructorFullname}"
                     readonly>
               </div>
             </div>
@@ -242,24 +242,27 @@
 
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <a th:href="@{courseModify(courseId=${course.id})}">
-        <button id="" class="btn btn-info btn-icon-split mr-2">
+      <a th:if="${session.loginUser.type} == 'ADMINISTRATOR'"
+         th:href="@{courseModify(courseId=${course.id})}">
+        <button class="btn btn-info btn-icon-split mr-2">
           <span class="icon text-white-50">
-              <i class="fa fa-wrench"></i>
+            <i class="fa fa-wrench"></i>
           </span>
           <span class="text px-5">수정</span>
         </button>
       </a>
-      <button id="remove-button" class="btn btn-danger btn-icon-split mr-2">
+      <button th:if="${session.loginUser.type} == 'ADMINISTRATOR'"
+              id="remove-button"
+              class="btn btn-danger btn-icon-split mr-2">
         <span class="icon text-white-50">
-            <i class="fa fa-times"></i>
+          <i class="fa fa-times"></i>
         </span>
         <span class="text px-5">삭제</span>
       </button>
       <a th:href="@{courseList}">
-        <button id="" class="btn btn-secondary btn-icon-split">
+        <button class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
-              <i class="fas fa-list"></i>
+            <i class="fas fa-list"></i>
           </span>
           <span class="text px-5">목록</span>
         </button>
