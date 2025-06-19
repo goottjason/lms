@@ -150,5 +150,14 @@
       AND deleted_at IS NULL
   </select>
 
+  <!-- 사용자 ID로 learnerEnrollmentId 조회 -->
+  <select id="selectLearnerEnrollmentIdByUserId" parameterType="int" resultType="Integer">
+    SELECT id
+    FROM learner_enrollment
+    WHERE user_id = #{userId}
+      AND completion_status = 'IN_PROGRESS'
+      AND deleted_at IS NULL
+    LIMIT 1
+  </select>
 
 </mapper>

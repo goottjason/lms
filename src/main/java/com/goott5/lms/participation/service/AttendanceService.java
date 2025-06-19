@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 출결(participation) 서비스 인터페이스 출결 기록 생성, 입퇴실 처리, 조회 등 제공
+ * 출결(participation) 서비스 인터페이스
  */
 public interface AttendanceService {
 
@@ -17,31 +17,26 @@ public interface AttendanceService {
   int createDailyAttendanceForCourse(Integer courseId, LocalDate participationDate);
 
   // 입실 처리
-  boolean processCheckIn(Integer learnerEnrollmentId, LocalDateTime checkInTime,
-      LocalDate participationDate);
+  boolean processCheckIn(Integer learnerEnrollmentId, LocalDateTime checkInTime, LocalDate participationDate);
 
   // 퇴실 처리
-  boolean processCheckOut(Integer learnerEnrollmentId, LocalDateTime checkOutTime,
-      LocalDate participationDate);
+  boolean processCheckOut(Integer learnerEnrollmentId, LocalDateTime checkOutTime, LocalDate participationDate);
 
   // 오늘 출결 기록 + 화면 표시 상태
-  ParticipationVO getTodayParticipationWithDisplayStatus(Integer learnerEnrollmentId,
-      LocalDate participationDate);
+  ParticipationVO getTodayParticipationWithDisplayStatus(Integer learnerEnrollmentId, LocalDate participationDate);
 
   // 날짜별 출결 기록 + 화면 표시 상태
   List<ParticipationVO> getParticipationByDateWithDisplayStatus(LocalDate participationDate);
 
   // 퇴실 예상 상태 예측
-  String predictAttendanceStatus(Integer learnerEnrollmentId, LocalDateTime predictedCheckOut,
-      LocalDate participationDate);
+  String predictAttendanceStatus(Integer learnerEnrollmentId, LocalDateTime predictedCheckOut, LocalDate participationDate);
 
-  // 전체 휴강/공휴일 여부
+  // course_schedule 기반 수업일 여부 확인
   boolean isClassDay(LocalDate date);
 
-  // 특정 과정의 휴강일 여부
-  boolean isClassDayForCourse(Integer courseId, LocalDate date);
-
-  // 진행률 계산 메서드
+  // 진행률 계산
   double getProgressPercentage(Integer learnerEnrollmentId);
 
+  // 새로 추가: 사용자 ID로 learnerEnrollmentId 조회
+  Integer getLearnerEnrollmentIdByUserId(Integer userId);
 }

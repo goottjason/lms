@@ -55,4 +55,6 @@ public interface ParticipationMapper {
   Integer selectTotalTrainingTimeByLearnerEnrollmentId(
       @Param("learnerEnrollmentId") Integer learnerEnrollmentId);
 
+  // 새로 추가: 사용자 ID로 learnerEnrollmentId 조회
+  Integer selectLearnerEnrollmentIdByUserId(@Param("userId") Integer userId);
 }
