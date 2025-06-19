@@ -1,8 +1,11 @@
 package com.goott5.lms.participation.mapper;
 
 import com.goott5.lms.participation.domain.CourseVO;
+import java.time.LocalDate;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 과정(Course) 정보 조회 매퍼
@@ -16,4 +19,8 @@ public interface ParticipationCourseMapper {
   // learnerEnrollmentId로 과정 정보 조회
   CourseVO selectCourseByLearnerEnrollmentId(
       @Param("learnerEnrollmentId") Integer learnerEnrollmentId);
+
+  // course_schedule 테이블에서 해당 날짜에 수업이 있는 과정 ID들 조회
+  @Select("SELECT DISTINCT course_id FROM course_schedule WHERE class_date = #{today}")
+  List<Integer> selectCoursesBySchedule(@Param("today") LocalDate today);
 }
