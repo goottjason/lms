@@ -113,13 +113,13 @@
     let courseId = [[${courseId}]];
 
     // 강사 아이디
-    let instructorId = [[${instructorId}]];
+    let userId = [[${userId}]];
 
     //파일 사이즈
     const MAX_FILE_SIZE = 1024 * 1024 * 8;
 
     console.log("courseId",courseId);
-    console.log("instructorId",instructorId);
+    console.log("userId",userId);
 
     // 파일 담을 배열
     let fileList = [];
@@ -158,7 +158,7 @@
         let form = document.getElementById("formSubmit");
         let formData = new FormData(form);
         formData.append("courseId",courseId);
-        formData.append("instructorId",instructorId);
+        formData.append("instructorId",userId);
 
         fileList.forEach(function (file) {
           formData.append("files",file);

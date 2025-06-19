@@ -167,9 +167,24 @@ public class HomeworkServiceImpl implements HomeworkService {
     return idForHomework;
   }
 
+//  @Override
+//  @Transactional
+//  public Boolean selectIsInProgressAndInSa(String nameForLt,int userId,String userType) {
+//
+//    Boolean first = homeworkMapper.selectIsInProgress(nameForLt);
+//    if(first != null && first){
+//      Boolean second = homeworkMapper.selectIsInProgressForSelectBox(nameForLt,userId,userType);
+//      if(second != null && second){
+//        return true;
+//      }
+//    }
+//
+//    return false;
+//  }
+
   @Override
-  public Map<String, Integer> selectIdCourse(String loginId) {
-    List<Map<String,Integer>> resultMap = homeworkMapper.selectForInsertId(loginId);
+  public Map<String, Integer> selectIdCourse(String name, int userId, String type) {
+    List<Map<String,Integer>> resultMap = homeworkMapper.selectForInsertId(name,userId,type);
     if(!resultMap.isEmpty()){
       return resultMap.get(0);
     }
@@ -197,7 +212,7 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
-  @Transactional
+  @Transactional(rollbackFor = Exception.class)
   public boolean updateReadCount(ReadCountLog readCountLog) {
     // (사용자 userId가 테이블 tableName의 게시물 tableId의 상세페이지에 readDate 날에 접근했을 때)
     String tableName = readCountLog.getTableName();

@@ -45,8 +45,11 @@ public interface HomeworkService {
   // 과제 등록 -> 매퍼에서 성공 시 해당 homeworkDTO의 id를 반환
   int insertHomework(HomeworkDTO homeworkDTO);
 
+  //과제 등록 시, select한 과정이 현재 진행 중인지/앞선 가정을 통과한 과정이 로그인한 강사에게 배정되어 있는지(과제 등록 버튼 막는 용도)
+//  Boolean selectIsInProgressAndInSa(String nameForLt,int userId,String userType);
+
   // 과제 등록을 위한 instructorId, course_id 반환
-  Map<String,Integer> selectIdCourse(String loginId);
+  Map<String,Integer> selectIdCourse(String name, int userId, String type);
 
   //------------- 수정----------------
 

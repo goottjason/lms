@@ -103,16 +103,35 @@ public interface HomeworkMapper {
   // 강사의 과제 등록
   int insertHomework(HomeworkDTO homeworkDTO);
 
+  //select한 nameforlt가 isInProgress인지 확인
+  @Select("select is_in_progress from course where name = #{name}")
+  Boolean selectIsInProgress(String name);
+
+  //(sa에 등록된) select박스에서 선택한 과정과 로그인한 강사가 일치하지 않을 때 막기
+//  @Select("select exists(select  sa.course_id\n"
+//      + "from staff_assignment sa\n"
+//      + "inner join course c\n"
+//      + "on sa.course_id = c.id\n"
+//      + "inner join user u\n"
+//      + "on sa.user_id = u.id\n"
+//      + "where c.name = #{name}\n"
+//      + "and sa.user_id = #{userId}\n"
+//      + "and u.type = #{type}"
+//      + "and c.is_in_progress = 1)")
+//  Boolean selectIsInProgressForSelectBox(String name, int userId, String type);
+
   //강사의 과제 등록을 위한 instructorId와 courseId select
-  @Select("select h.instructor_id, h.course_id\n" +
-      "from homework h\n" +
-      "inner join user u\n" +
-      "on h.instructor_id = u.id\n" +
-      "inner join course c\n" +
-      "on h.course_id = c.id\n" +
-      "where u.login_id = #{loginId}\n" +
-      "and c.is_in_progress = 1;")
-  List<Map<String, Integer>> selectForInsertId(String loginId);
+  @Select("select  sa.course_id, sa.user_id\n"
+      + "from staff_assignment sa\n"
+      + "inner join course c\n"
+      + "on sa.course_id = c.id\n"
+      + "inner join user u\n"
+      + "on sa.user_id = u.id\n"
+      + "where c.name = #{name}\n"
+      + "and sa.user_id = #{userId}\n"
+      + "and u.type = #{type}"
+      + "and c.is_in_progress = 1")
+  List<Map<String, Integer>> selectForInsertId(String name, int userId, String type);
 
   //-------- 과제 수정 ---------------------------------------------------------------------
 

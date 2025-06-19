@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +17,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Configuration
 @Component
@@ -45,6 +51,7 @@ public class S3Uploader {
                 .build();
     }
 
+    //파일 업로드
     public String uploadFile(String dirName, InputStream inputStream, String originalFileName) throws IOException {
         String uuid = UUID.randomUUID().toString();
         String uploadFileName = dirName + "/" + uuid + "_" +originalFileName;
@@ -64,8 +71,25 @@ public class S3Uploader {
 
     }
 
+    // 파일 다운로드(일단 보류)
+    public Path downloadFile(String key,String fileDir) throws IOException {
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(key) //  대상 파일의 key(s3 버켓-객체-파일 클릭-속성-키 에서 확인 가능) (ex. "upload/homework/ddd.jpg")
+            .build();
+
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(getObjectRequest);
+
+        //파일 저장
+        return Files.write(Paths.get(fileDir),objectBytes.asByteArray());
+        // 실패....(이건 일부 컨트롤러에서 존재하니 삭제하실때 공유 부탁드립니다~!)
+    }
+
+    //파일 삭제(일단 보류)
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
+        // 실패....(이건 일부 컨트롤러에서 존재하니 삭제하실때 공유 부탁드립니다~!)
     }
 
     private File convert(InputStream inputStream, String fileName) throws IOException {
