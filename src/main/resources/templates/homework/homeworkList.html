@@ -9,6 +9,7 @@
       display: none;
     }
 
+
     #content {
       opacity: 1;
       transition: opacity 1s ease-in-out;
@@ -233,6 +234,8 @@
         $("#courseSelector").show(); // 권한 사용자에게만 보여줌
       }
     }
+
+    //+) 현재 진행 중인 nameForLt가 아니면 등록 버튼 막기
 
 
     let nameForLtList = [[${menuListForLt}]]; //강사,학생용 과정 리스트
@@ -464,9 +467,9 @@
 
     //현재 진행 중인 과정이 없는 강사의 경우
     function notRegisterInProgress() {
-      let progressRegister = [[${progressRegister}]];
-      if(progressRegister != null){
-      // console.log("progressRegister", progressRegister);
+      let isRegister = [[${isRegister}]];
+      if(isRegister != null){
+      // console.log("isRegister", isRegister);
         alert("현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.");
       }
     }
@@ -550,7 +553,11 @@
       //등록 버튼
       $("#homeworkRegister").on("click", function (e) {
         e.preventDefault();
-        location.href = "/homework/homeworkRegister";
+
+        let courseName = courseSelector.val(); //select한 과정명 보내기
+        console.log("courseName", courseName);
+
+        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(courseName);
       })
 
       // 검색 버튼(엔터키)

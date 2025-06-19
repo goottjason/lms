@@ -180,18 +180,18 @@ class HomeworkTest {
 
   }
 
-  @Test
-  public void testSelectForInsert(){
-
-    List<Map<String, Integer>> resultList = homeworkMapper.selectForInsertId("queen");
-
-    if(!resultList.isEmpty()) {
-      log.info("resultList:{}",resultList.get(0));
-    } else {
-      log.info("없어용:{}", resultList);
-    }
-
-  }
+//  @Test
+//  public void testSelectForInsert(){
+//
+//    List<Map<String, Integer>> resultList = homeworkMapper.selectForInsertId("queen");
+//
+//    if(!resultList.isEmpty()) {
+//      log.info("resultList:{}",resultList.get(0));
+//    } else {
+//      log.info("없어용:{}", resultList);
+//    }
+//
+//  }
 
   @Test
   @Transactional
@@ -352,7 +352,23 @@ class HomeworkTest {
         }
       }
     }
+  }
 
+  @Test
+  public void testCheckCourseIsBoolean(){
+    Boolean test = homeworkMapper.selectIsInProgress("[1회차] 자바와 스프링");
+    if(test == true){
+    log.info("test true={}",test);
+    }else {
+      log.info("test false={}",test);
+    }
+
+    Boolean test2 = homeworkMapper.selectIsInProgressForSelectBox("[1회차] 자바와 스프링",34,"instructor");
+    if(test2 == true){
+      log.info("test2 true={}",test2);
+    }else {
+      log.info("test2 false={}",test2);
+    }
 
   }
 }

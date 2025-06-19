@@ -47,8 +47,11 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                작성일</div>
-              <div class="h6 mb-0 text-gray-800" th:text="${homework.getCreatedAt().toString().split('T')[0]}">2025-05-04</div>
+                작성일
+              </div>
+              <div class="h6 mb-0 text-gray-800"
+                   th:text="${homework.getCreatedAt().toString().split('T')[0]}">2025-05-04
+              </div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -64,8 +67,11 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                과제 시작일</div>
-              <div class="h6 mb-0 text-gray-800" th:text="${homework.getStartDate().toString().split('T')[0]}">2025-05-04</div>
+                과제 시작일
+              </div>
+              <div class="h6 mb-0 text-gray-800"
+                   th:text="${homework.getStartDate().toString().split('T')[0]}">2025-05-04
+              </div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -81,8 +87,11 @@
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                과제 종료일</div>
-              <div class="h6 mb-0 text-gray-800" th:text="${homework.getEndDate().toString().split('T')[0]}">2025-05-10</div>
+                과제 종료일
+              </div>
+              <div class="h6 mb-0 text-gray-800"
+                   th:text="${homework.getEndDate().toString().split('T')[0]}">2025-05-10
+              </div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-lg text-gray-300"></i>
@@ -98,10 +107,12 @@
   <div class="card shadow mb-4">
     <!-- 제목 -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary" th:text="${homework.getTitle()}">여기에 제목이 들어옵니다~~</h6>
+      <h6 class="m-0 font-weight-bold text-primary" th:text="${homework.getTitle()}">여기에 제목이
+        들어옵니다~~</h6>
     </div>
     <!-- 내용 -->
-    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;"  th:text="${homework.getContent()}">
+    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;"
+         th:text="${homework.getContent()}">
       여기에 내용이 들어옵니다~~~
     </div>
     <!-- 첨부 파일 -->
@@ -110,21 +121,38 @@
       <div class="row">
 
         <th:block th:if="${fileDTOList != null}">
-        <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
-          <div class="row g-0 m-0">
-            <div class="col-md-3 pl-2">
-              <img
-                  th:src="@{/img/no-image.jpg}"
-                  class="img-fluid rounded-start"
-                  style="width: 60px; object-fit: cover;">
-            </div>
-            <div class="col-md-9 d-flex align-items-center" >
-              <div class="card-body p-0">
-                <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}" th:text="${fileDTO.getOriginalName()}" >첨부파일123.pdf</a>
+          <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
+            <div class="row g-0 m-0">
+              <div class="col-md-3 pl-2">
+                <img
+                    th:src="@{/img/no-image.jpg}"
+                    class="img-fluid rounded-start"
+                    style="width: 60px; object-fit: cover;">
+              </div>
+              <div class="col-md-9 d-flex align-items-center">
+                <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}">
+                  <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
+                     th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
+                </div>
+                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">
+                  <a th:href="${fileDTO.getPath()}"
+                     th:data-file="${fileDTO.getNewName()}"
+                     th:attr="download=${fileDTO.getOriginalName()}">
+                    <img th:src="${fileDTO.getPath()}"
+                         style="width: 300px; height: 100px; object-fit: cover;">
+                  </a>
+                </div>
+<!--                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">-->
+<!--                  <a th:href="|@{/homework/imgDownload} + '?fileName=' + ${fileDTO.getNewName()}|"-->
+<!--                     th:data-file="${fileDTO.getNewName()}"-->
+<!--                     th:attr="download=${fileDTO.getOriginalName()}">-->
+<!--                    <img th:src="${fileDTO.getPath()}"-->
+<!--                         style="width: 300px; height: 100px; object-fit: cover;">-->
+<!--                  </a>-->
+<!--                </div>-->
               </div>
             </div>
           </div>
-        </div>
         </th:block>
 
       </div>
@@ -134,14 +162,16 @@
 
   <!-- 버튼 -->
   <div class="col-12 d-flex justify-content-end mb-4">
-    <button id="" class="btn btn-info btn-icon-split mr-2" th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+    <button id="" class="btn btn-info btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
       <a class="text px-3" th:href="@{|/homework/homeworkModify?homeworkId=${homework.getId()}|}">과제수정</a>
     </button>
-    <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2" th:if="${loginUser.getType() == 'INSTRUCTOR'}">
-      <span class="icon text-white-50" >
+    <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+      <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
       <span class="text px-3">과제삭제</span>
@@ -193,37 +223,39 @@
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
 
-    $(function(){
+    $(function () {
 
       let homeworkId = [[${homework.getId()}]];
 
       // 삭제 모달창 뜨기
-      $("#deleteHomework").on("click",function (){
+      $("#deleteHomework").on("click", function () {
         // alert("!");
         $(".delete").modal("show");
       })
 
       // 모달창 끄기
 
-      $(".close").on("click",function(){
+      $(".close").on("click", function () {
         $(".delete").modal("hide");
       })
 
-      $(".deleteBtn").on("click",function(){
+      $(".deleteBtn").on("click", function () {
         console.log(homeworkId);
-        axios.delete("/homework/deleteHomework?homeworkId="+ homeworkId)
+        axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
         .then(function (response) {
           savePage = localStorage.getItem("savePage");
-          if(savePage && savePage !== "undefined" && savePage.trim() !== ""){
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
             // console.log("savePage",savePage);
             location.href = savePage;
-          }else {
+          } else {
             location.href = "/homework/homeworkList";
           }
         }).catch(function (error) {
           console.log(error);
         })
       })
+
+
     })
 
   </script>
