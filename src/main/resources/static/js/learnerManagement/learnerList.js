@@ -24,6 +24,8 @@ let courseId = null;
 /* ================================================================================ */
 
 $(document).ready(() => {
+  // 관리자, 강사 모두 숨김
+  $("#courseSelector").hide();
 
   getListState()
   $("#is-in-progress").val(isInProgress == null ? '' : isInProgress);
@@ -54,7 +56,7 @@ $(document).ready(() => {
 
 async function initCourseSelect() {
   let coursesWithPagination = await apiGetRequestAboutCourses(
-    '/api/courses/all',
+    '/api/management/courses',
     {
       loginUserId: loginUserId,
       loginUserType: loginUserType,
@@ -126,7 +128,7 @@ async function handleProgressStatusChange() {
   saveListState();
 
   let coursesWithPagination = await apiGetRequestAboutCourses(
-    '/api/courses/all',
+    '/api/management/courses',
     {
       loginUserId: loginUserId,
       loginUserType: loginUserType,

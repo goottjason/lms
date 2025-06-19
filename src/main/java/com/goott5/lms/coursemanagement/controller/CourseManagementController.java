@@ -2,6 +2,7 @@ package com.goott5.lms.coursemanagement.controller;
 
 import com.goott5.lms.coursemanagement.domain.ApiResponse;
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
+import com.goott5.lms.coursemanagement.domain.CourseGetReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
@@ -35,61 +36,34 @@ public class CourseManagementController {
 
   private final CourseManagementService courseManagementService;
 
-  /**
-   * 전체 과정 리스트 조회 API
-   *
-   * @param pageCourseReqDTO
-   * @param loginUserId
-   * @param loginUserType
-   * @param isInProgress
-   * @return
-   */
-  @GetMapping("api/courses/all")
+  @GetMapping("api/management/courses")
   @ResponseBody
-  public ResponseEntity<ApiResponse<PageCourseRespDTO<CourseRespDTO>>> getCoursesAll(
-      @ModelAttribute PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO,
-      @RequestParam("loginUserId") Integer loginUserId,
-      @RequestParam("loginUserType") String loginUserType,
-      @RequestParam(value = "isInProgress", required = false) Boolean isInProgress
+  public ResponseEntity<ApiResponse<PageCourseRespDTO<CourseRespDTO>>> getCoursesAllorOne(
+      @ModelAttribute CommonReqDTO commonReqDTO,
+      @ModelAttribute PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO
   ) {
-
+    log.info("commonReqDTO: {}", commonReqDTO);
+    log.info("pageCourseReqDTO: {}", pageCourseReqDTO);
     PageCourseRespDTO<CourseRespDTO> courses =
-        courseManagementService.findCoursesAll(
-            pageCourseReqDTO, loginUserId, loginUserType, isInProgress);
+        courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
 
     return ApiResponse.okResponse(200, "success", courses);
   }
 
-  /**
-   * 과정 상세 조회 API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param courseId
-   * @return
-   */
-  @GetMapping("api/course")
+
+  /*@GetMapping("api/course")
   @ResponseBody
-  public ResponseEntity<ApiResponse<CourseRespDTO>> getCourse(
-      @RequestParam("loginUserId") Integer loginUserId,
-      @RequestParam("loginUserType") String loginUserType,
-      @RequestParam("courseId") Integer courseId
+  public ResponseEntity<ApiResponse<PageCourseRespDTO<CourseRespDTO>>> getCourse(
+      @ModelAttribute CourseGetReqDTO courseGetReqDTO
   ) {
 
-    CourseRespDTO course =
-        courseManagementService.findCourse(
-            loginUserId, loginUserType, courseId);
+    PageCourseRespDTO<CourseRespDTO> course =
+        courseManagementService.findCoursesAllorOne(courseGetReqDTO);
 
     return ApiResponse.okResponse(200, "success", course);
-  }
+  }*/
 
-  /**
-   * 교육생 배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param courseId
-   * @return
-   */
+
   @GetMapping("api/learners/enrolled")
   @ResponseBody
   public List<UserRespDTO> getEnrolledLearnersByCourseId(
@@ -100,13 +74,7 @@ public class CourseManagementController {
     return courseManagementService.findEnrolledLearnersByCourseId(pageUserReqDTO, courseId);
   }
 
-  /**
-   * 교육생 미배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param includeAll
-   * @return
-   */
+
   @GetMapping("api/learners/not-enrolled")
   @ResponseBody
   public List<UserRespDTO> getNotEnrolledLearners(
@@ -117,12 +85,7 @@ public class CourseManagementController {
     return courseManagementService.findNotEnrolledLearnersAll(pageUserReqDTO, includeAll);
   }
 
-  /**
-   * 교육생 배정 '추가' API
-   *
-   * @param payload
-   * @return
-   */
+
   @PostMapping("api/learner-enrollments")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> addLearnerToCourse(
@@ -146,15 +109,7 @@ public class CourseManagementController {
     }
   }
 
-  /**
-   * 교육생 배정 '삭제' API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param learnerId
-   * @param courseId
-   * @return
-   */
+
   @DeleteMapping("api/learner-enrollments")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeLearnerFromCourse(
@@ -174,12 +129,7 @@ public class CourseManagementController {
     }
   }
 
-  /**
-   * 과정 삭제 API
-   *
-   * @param commonReqDTO
-   * @return
-   */
+
   @DeleteMapping("api/course")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeCourse(
@@ -199,24 +149,13 @@ public class CourseManagementController {
     }
   }
 
-  /**
-   * courseList 페이지
-   *
-   * @return
-   */
+
   @GetMapping("courseManagement/courseList")
   public String courseList() {
     return "courseManagement/courseList";
   }
 
-  /**
-   * courseDetail 페이지
-   *
-   * @param courseId
-   * @param model
-   * @param session
-   * @return
-   */
+
   @GetMapping("courseManagement/courseDetail")
   public String courseDetail(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
@@ -231,20 +170,21 @@ public class CourseManagementController {
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     Integer loginUserId = Integer.valueOf(loginUser.getId());
     String loginUserType = loginUser.getType();
-    CourseRespDTO course =
-        courseManagementService.findCourse(loginUserId, loginUserType, courseId);
-    model.addAttribute("course", course);
+    CommonReqDTO commonReqDTO = CommonReqDTO.builder()
+        .loginUserId(loginUserId)
+        .loginUserType(loginUserType)
+        .courseId(courseId)
+        .isInProgress(null)
+        .build();
+    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
+    PageCourseRespDTO<CourseRespDTO> courses =
+        courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
+
+    model.addAttribute("course", courses.getRespDTOS().get(0));
     return "courseManagement/courseDetail";
   }
 
-  /**
-   * courseModify 페이지
-   *
-   * @param courseId
-   * @param model
-   * @param session
-   * @return
-   */
+
   @GetMapping("courseManagement/courseModify")
   public String courseModify(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
@@ -259,19 +199,21 @@ public class CourseManagementController {
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     Integer loginUserId = Integer.valueOf(loginUser.getId());
     String loginUserType = loginUser.getType();
-    CourseRespDTO course =
-        courseManagementService.findCourse(loginUserId, loginUserType, courseId);
-    model.addAttribute("course", course);
+    CommonReqDTO commonReqDTO = CommonReqDTO.builder()
+        .loginUserId(loginUserId)
+        .loginUserType(loginUserType)
+        .courseId(courseId)
+        .isInProgress(null)
+        .build();
+    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
+    PageCourseRespDTO<CourseRespDTO> courses =
+        courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
+
+    model.addAttribute("course", courses.getRespDTOS().get(0));
     return "courseManagement/courseModify";
   }
 
-  /**
-   * learnerAssignment 페이지
-   *
-   * @param session
-   * @param model
-   * @return
-   */
+
   @GetMapping("courseManagement/learnerAssignment")
   public String learnerAssignment(HttpSession session, Model model) {
 

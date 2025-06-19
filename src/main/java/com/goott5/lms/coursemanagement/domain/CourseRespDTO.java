@@ -38,7 +38,15 @@ public class CourseRespDTO {
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;
 
-  private String instructorFullname;
+  // Classroom 정보
+  private Integer classroomId;
   private String classroomName;
+
+  // 학과장/강사 정보
+  private Integer courseHeadId;
+  private String courseHeadFullname;
+  private Integer fulltimeInstructorId;
+  private String fulltimeInstructorFullname;
+
   private List<CourseSubjectRespDTO> subjects;
 }

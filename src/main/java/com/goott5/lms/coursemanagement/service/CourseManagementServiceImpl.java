@@ -1,6 +1,7 @@
 package com.goott5.lms.coursemanagement.service;
 
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
+import com.goott5.lms.coursemanagement.domain.CourseGetReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
@@ -22,55 +23,49 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
   private final CourseManagementMapper courseManagementMapper;
 
-  /**
-   * 전체 과정 리스트 조회 API
-   *
-   * @param pageCourseReqDTO
-   * @param loginUserId
-   * @param loginUserType
-   * @param isInProgress
-   * @return
-   */
   @Override
-  public PageCourseRespDTO<CourseRespDTO> findCoursesAll(
-      PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO,
-      Integer loginUserId,
-      String loginUserType,
-      Boolean isInProgress
+  public PageCourseRespDTO<CourseRespDTO> findCoursesAllorOne(
+      CommonReqDTO commonReqDTO, PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO
   ) {
-
+    // page정보를 임시 변수에 저장
     Integer originalPageNo = pageCourseReqDTO.getPageNo();
     Integer originalPageSize = pageCourseReqDTO.getPageSize();
 
+    // page정보가 있으면, 임시로 null로 바꿈
     if (originalPageNo != null && originalPageSize != null) {
       pageCourseReqDTO.setPageNo(null);
       pageCourseReqDTO.setPageSize(null);
     }
 
-    List<CourseRespDTO> allCourses = courseManagementMapper.selectCoursesAll(
-        pageCourseReqDTO, loginUserId, loginUserType, isInProgress);
+    // 전체의 레코드 개수를 셈
+    List<CourseRespDTO> allCourses
+        = courseManagementMapper.selectCoursesAllorOne(
+            pageCourseReqDTO,
+            commonReqDTO.getLoginUserId(),
+            commonReqDTO.getLoginUserType(),
+            commonReqDTO.getIsInProgress(),
+            commonReqDTO.getCourseId()
+    );
     int totalRecords = allCourses.size();
 
+    // page정보가 있으면, 임시 변수에서 기존의 page 정보를 꺼내어 페이징된 데이터만 조회
     if (originalPageNo != null && originalPageSize != null) {
       pageCourseReqDTO.setPageNo(originalPageNo);
       pageCourseReqDTO.setPageSize(originalPageSize);
-      // 페이징된 데이터만 조회
-      allCourses = courseManagementMapper.selectCoursesAll(
-          pageCourseReqDTO, loginUserId, loginUserType, isInProgress);
+      allCourses
+          = courseManagementMapper.selectCoursesAllorOne(
+              pageCourseReqDTO,
+              commonReqDTO.getLoginUserId(),
+              commonReqDTO.getLoginUserType(),
+              commonReqDTO.getIsInProgress(),
+              commonReqDTO.getCourseId()
+      );
     }
 
+    // 페이징된 데이터 결과가 있으면, 배열을 순회하면서
     if (!allCourses.isEmpty()) {
-      for (CourseRespDTO courseRespDTO : allCourses) {
-        String instructorFullname = courseManagementMapper.selectInstructorFullname(courseRespDTO);
-        if (instructorFullname == null) {
-          instructorFullname = "미배정";
-        }
-        courseRespDTO.setInstructorFullname(instructorFullname);
-        String classroomName = courseManagementMapper.selectClassroomName(courseRespDTO);
-        if (classroomName == null) {
-          classroomName = "미배정";
-        }
-        courseRespDTO.setClassroomName(classroomName);
+      for (CourseRespDTO course : allCourses) {
+        course.setSubjects(courseManagementMapper.selectCourseSubjectById(course.getId()));
       }
     }
 
@@ -81,15 +76,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         .build();
   }
 
-  /**
-   * 과정 상세 조회 API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param courseId
-   * @return
-   */
-  @Override
+  /*@Override
   public CourseRespDTO findCourse(
       Integer loginUserId,
       String loginUserType,
@@ -114,7 +101,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     }
 
     return course;
-  }
+  }*/
 
   /**
    * 교육생 배정 현황 조회 API
@@ -170,14 +157,16 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       Integer learnerId,
       Integer courseId) {
     // 해당하는 과정의 총원을 불러옴(A)
-    CourseRespDTO course = courseManagementMapper.selectCourse(loginUserId, loginUserType,
-        courseId);
+    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
+
+    List<CourseRespDTO> courses = courseManagementMapper.selectCoursesAllorOne(
+        pageCourseReqDTO, loginUserId, loginUserType, null, courseId);
+
     // 해당하는 과정에 수강중인 교육생의 수를 불러옴(B)
     Integer enrolledLernerCount = courseManagementMapper.selectErolledLernerCount(courseId);
-    log.info("총원: {}, 현재수강인원: {}", course.getNumberOfLearner(), enrolledLernerCount);
     int result = 0;
     // A>B 일때만 추가가능
-    if (course.getNumberOfLearner() > enrolledLernerCount) {
+    if (courses.get(0).getNumberOfLearner() > enrolledLernerCount) {
       result = courseManagementMapper.insertLearnerToCourse(learnerId, courseId);
       Integer leId = courseManagementMapper.selectLearnerEnrollmentByIds(learnerId, courseId);
       int subResult = courseManagementMapper.insertEmploymentSupport(leId);
@@ -211,14 +200,25 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
   @Override
   public Boolean removeCourse(CommonReqDTO commonReqDTO) {
+
+    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
+
+    List<CourseRespDTO> courses =
+        courseManagementMapper.selectCoursesAllorOne(
+            pageCourseReqDTO,
+            commonReqDTO.getLoginUserId(),
+            commonReqDTO.getLoginUserType(),
+            null,
+            commonReqDTO.getCourseId()
+        );
     CourseRespDTO courseRespDTO = courseManagementMapper.selectCourse(
         commonReqDTO.getLoginUserId(),
         commonReqDTO.getLoginUserType(),
         commonReqDTO.getCourseId());
     LocalDate today = LocalDate.now();
 
-    if (courseRespDTO != null) {
-      if (courseRespDTO.getStartDate().isAfter(today)) {
+    if (courses != null) {
+      if (courses.get(0).getStartDate().isAfter(today)) {
         log.info("과정시작일이 오늘 이후임");
         int result = courseManagementMapper.deleteCourse(
             commonReqDTO.getLoginUserId(),
