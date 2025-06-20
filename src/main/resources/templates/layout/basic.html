@@ -78,9 +78,9 @@
       <div id="courseManagement" class="collapse" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded">
           <a class="collapse-item" th:href="@{/courseManagement/courseList}">과정 조회</a>
-          <a class="collapse-item" href="#">수업시간표 조회</a>
+          <a class="collapse-item" th:href="@{/courseSchedule}">수업시간표 조회</a>
           <a class="collapse-item" th:href="@{/courseManagement/learnerAssignment}">교육생 배정</a>
-          <a class="collapse-item" th:href="@{/cancelDateManagement/cancelDateManagement}">휴강일
+          <a class="collapse-item" th:href="@{/cancelDateManagement}">휴강일
                                                                                            관리</a>
         </div>
       </div>
@@ -91,6 +91,13 @@
       <a class="nav-link" th:href="@{/courseManagement/courseList}">
         <i class="fa fa-graduation-cap"></i>
         <span>과정 조회</span></a>
+    </li>
+
+    <!-- Nav Item - 수업시간표 조회 -->
+    <li th:if="${session.loginUser.type != 'ADMINISTRATOR'}" class="nav-item nav-single">
+      <a class="nav-link" th:href="@{/courseSchedule}">
+        <i class="fa fa-calendar"></i>
+        <span>수업시간표 조회</span></a>
     </li>
 
     <!-- Nav Item - 교육생 관리 -->
@@ -107,8 +114,8 @@
       <div id="learnerManagement" class="collapse" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded">
           <a class="collapse-item" th:href="@{/learnerManagement/learnerList}">교육생 조회</a>
-          <a class="collapse-item" href="#">출결 조회</a>
-          <a class="collapse-item" href="#">취업 관리</a>
+          <a class="collapse-item" th:href="@{/learnerManagement/participationList}">출결 조회</a>
+          <a class="collapse-item" th:href="@{/learnerManagement/employment}">취업 관리</a>
           <a class="collapse-item" href="#">휴가/조퇴 승인</a>
         </div>
       </div>
@@ -177,7 +184,7 @@
 
     <!-- Nav Item - 1:1문의 -->
     <li class="nav-item nav-single">
-      <a class="nav-link" href="#">
+      <a class="nav-link" th:href="@{/communityInquiry/inquiryList}">
         <i class="fa fa-comments"></i>
         <span>1:1문의</span></a>
     </li>
@@ -199,14 +206,14 @@
         </a>
         <div id="userManagement" class="collapse" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item" href="#">사용자 등록</a>
-            <a class="collapse-item" href="#">교직원 관리</a>
+            <a class="collapse-item" th:href="@{/operationsManagement/userRegister}">사용자 등록</a>
+            <a class="collapse-item" th:href="@{/operationsManagement/staffList}">교직원 관리</a>
           </div>
         </div>
       </li>
       <!-- Nav Item - 강의실 관리 -->
       <li class="nav-item nav-single">
-        <a class="nav-link" href="#">
+        <a class="nav-link" th:href="@{/operationsManagement/classroomList}">
           <i class="fa fa-window-restore"></i>
           <span>&nbsp;강의실 관리</span></a>
       </li>

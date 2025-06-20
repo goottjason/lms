@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">1:1문의 조회</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">1:1문의 조회</h6>
+        </div>
+        <div class="col-auto">
+          <a th:href="@{/communityInquiry/inquiryRegister}">
+            <button id="" class="btn btn-info btn-icon-split">
+                <span class="icon text-white-50">
+                  <i class="fas fa-plus"></i>
+                </span>
+              <span class="text">1:1문의 등록</span>
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- 검색 / 정렬 영역 -->
+      <form class="row mb-3">
+        <div class="input-group col-6">
+          <div class="col-3">
+            <select id="searchTypeSelect" class="form-control">
+              <option value="">검색조건</option>
+              <option value="t" th:selected="${inquiryRequestParam.searchType == 't'}">제목</option>
+              <option value="i" th:selected="${inquiryRequestParam.searchType == 'i'}">내용</option>
+              <option
+                value="w" th:selected="${inquiryRequestParam.searchType == 'w'}"
+                th:if="${session.loginUser.type == 'ADMINISTRATOR'}">질문작성자</option>
+            </select>
+          </div>
+          <div class="col-9 input-group">
+            <input
+              type="text" id="keyword" class="form-control" placeholder="검색어를 입력하세요."
+              th:value="${inquiryRequestParam.keyword}">
+            <div class="input-group-append">
+              <button id="searchBtn" class="btn btn-primary" type="button">
+                <i class="fas fa-search fa-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+          <select id="orderBy" class="form-control col-3 mr-3">
+            <option value="desc" th:selected="${inquiryRequestParam.orderBy == 'desc'}">내림차순
+            </option>
+            <option value="asc" th:selected="${inquiryRequestParam.orderBy == 'asc'}">오름차순</option>
+          </select>
+          <select id="sort" class="form-control col-3">
+            <option value="createdAt" th:selected="${inquiryRequestParam.sort == 'createdAt'}">질문작성일
+            </option>
+            <option value="answeredAt" th:selected="${inquiryRequestParam.sort == 'answeredAt'}">답변일
+            </option>
+          </select>
+        </div>
+      </form>
+
+      <!-- 테이블 리스트 -->
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle">답변여부</th>
+            <th scope="col" class="align-middle">제목</th>
+            <th scope="col" class="align-middle">질문작성자</th>
+            <th scope="col" class="align-middle">질문작성일</th>
+            <th scope="col" class="align-middle">답변작성자</th>
+            <th scope="col" class="align-middle">답변일</th>
+          </tr>
+          </thead>
+          <tbody>
+
+          <tr th:each="inquiry : ${inquiryListResponse.inquiryList}">
+            <td
+              class="text-center" th:text="${inquiry.isAnswered} ? '답변 완료' : '답변 대기'"
+              th:classappend="${inquiry.isAnswered} ? 'text-primary' : 'text-secondary'"></td>
+            <td
+              class="title" th:text="${inquiry.title}" th:data-inquiryid="${inquiry.id}"
+              style="cursor: pointer;"></td>
+            <td class="text-center" th:text="${inquiry.writerName}"></td>
+            <td
+              class="text-center"
+              th:text="${#temporals.format(inquiry.createdAt, 'yy-MM-dd')}"></td>
+            <td
+              class="text-center"
+              th:text="${inquiry.answererName}"></td>
+            <td
+              class="text-center"
+              th:text="${inquiry.answeredAt == 0 ? #temporals.format(inquiry.answeredAt, 'yy-MM-dd') : '-'}"></td>
+          </tr>
+
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지 -->
+      <nav aria-label="Page navigation example" class="col mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item">
+            <span class="page-link">이전</span>
+          </li>
+          <li class="page-item active">
+            <span class="page-link">1</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">2</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link">3</span>
+          </li>
+          <li class="page-item">
+            <span class="page-link page-move">다음</span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    let searchType = $("#searchTypeSelect").val();
+    let keyword    = $("#keyword").val();
+    let sort       = $("#sort").val();
+    let orderBy    = $("#orderBy").val();
+
+    $("#searchTypeSelect").change(function () {
+      searchType = $(this).val();
+    });
+
+    $("#keyword").change(function () {
+      keyword = $(this).val();
+    });
+
+    $("#sort").change(function () {
+      sort = $(this).val();
+      getBoardList(1);
+    });
+
+    $("#orderBy").change(function () {
+      orderBy = $(this).val();
+      getBoardList(1);
+    });
+
+    $("#searchBtn").click(function () {
+
+      if (searchType === "" && keyword !== "") {
+        alert("검색조건을 선택하세요.");
+      }
+
+      let pageSize = $("#pageSizeSelect").val();
+      getBoardList(1, pageSize);
+    });
+
+    $(".page-move").click(function () {
+      let pageNo   = $(this).data("pageno");
+      let pageSize = $("#pageSizeSelect").val();
+      getBoardList(pageNo, pageSize);
+    });
+
+    // $(".title").click(function(){
+    //
+    //   let boardNo = $(this).data("boardno");
+    //   let pageNo = $(".page-item.active .page-move").data("pageno");
+    //   let pageSize = $("#pageSizeSelect").val();
+    //
+    //   location.href = `/board/detail?boardNo=${boardNo}&pageNo=${pageNo}&pageSize=${pageSize}&searchType=${searchType}&keyword=${keyword}`
+    // })
+    //
+    // $("#registerBtn").click(function(){
+    //
+    //   let pageNo = $(".page-item.active .page-move").data("pageno");
+    //   let pageSize = $("#pageSizeSelect").val();
+    //
+    //   location.href = `/board/register?pageNo=${pageNo}&pageSize=${pageSize}&searchType=${searchType}&keyword=${keyword}`;
+    // })
+
+    function getBoardList(pageNo) {
+      location.href =
+        `/communityInquiry/inquiryList?pageNo=${pageNo}&searchType=${searchType}&keyword=${keyword}&sort=${sort}&orderBy=${orderBy}`;
+    }
+
+  </script>
+</th:block>
+</body>
+</html>

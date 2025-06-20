@@ -9,6 +9,8 @@ import javax.mail.MessagingException;
 
 public interface UserService {
 
+  UserVO findUserByUserId(int userId);
+
   UserVO findUserByLoginId(String loginId);
 
   UserVO findUserByEmail(String email);

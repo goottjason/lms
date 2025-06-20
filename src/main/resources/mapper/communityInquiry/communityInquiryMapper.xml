@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.communityInquiry.mapper.InquiryMapper">
+
+  <select id="selectInquiryList" resultMap="inquiryWithUserMap">
+    SELECT ci.*, u.fullname AS writer_name
+    FROM community_inquiry ci
+    JOIN user u ON ci.writer = u.id
+    <include refid="userCondition"/>
+    <if test="searchType != null and searchType != ''">
+      <include refid="searchCondition"/>
+    </if>
+    <include refid="orderCondition"/>
+    LIMIT #{skip}, #{pageSize}
+  </select>
+
+  <resultMap id="inquiryWithUserMap" type="com.goott5.lms.communityInquiry.domain.InquiryVO">
+    <id property="id" column="id"/>
+    <result property="title" column="title"/>
+    <result property="inquiry" column="inquiry"/>
+    <result property="writer" column="writer"/>
+    <result property="isPosted" column="is_posted"/>
+    <result property="isAnswered" column="is_answered"/>
+    <result property="isAnsweredChecked" column="is_answeredChecked"/>
+    <result property="answerer" column="answerer"/>
+    <result property="createdAt" column="created_at"/>
+    <result property="answeredAt" column="answered_at"/>
+    <result property="updatedAt" column="updated_at"/>
+    <result property="deletedAt" column="deleted_at"/>
+    <!-- 조인된 fullname -->
+    <result property="writerName" column="writer_name"/>
+  </resultMap>
+
+  <sql id="userCondition">
+    <choose>
+      <when test='userType == "INSTRUCTOR" or userType == "LEARNER"'>
+        WHERE writer = #{userId}
+      </when>
+      <when test='userType == "ADMINISTRATOR"'>
+        WHERE writer IS NOT NULL
+      </when>
+    </choose>
+  </sql>
+
+  <sql id="searchCondition">
+    <choose>
+      <when test='searchType == "t"'>
+        AND title LIKE CONCAT('%', #{keyword}, '%')
+      </when>
+      <when test='searchType == "i"'>
+        AND inquiry LIKE CONCAT('%', #{keyword}, '%')
+      </when>
+      <when test='searchType == "w"'>
+        AND fullname LIKE CONCAT('%', #{keyword}, '%')
+      </when>
+    </choose>
+  </sql>
+
+
+  <!--  <select id="selectInquiryList" resultType="com.goott5.lms.communityInquiry.domain.InquiryVO">-->
+  <!--    select * from community_inquiry-->
+  <!--    <include refid="userCondition"></include>-->
+  <!--    <if test="searchType != null and searchType != ''">-->
+  <!--      <include refid="searchCondition"></include>-->
+  <!--    </if>-->
+  <!--    <include refid="orderCondition"></include>-->
+  <!--    limit #{skip}, #{pageSize}-->
+  <!--  </select>-->
+
+
+  <!--  <sql id="userCondition">-->
+  <!--    <choose>-->
+  <!--      <when test='userType == "INSTRUCTOR" or userType == "LEARNER"'>-->
+  <!--        where writer = #{userId}-->
+  <!--      </when>-->
+  <!--      <when test='userType == "ADMINISTRATOR"'>-->
+  <!--        where writer is not null-->
+  <!--      </when>-->
+  <!--    </choose>-->
+  <!--  </sql>-->
+
+  <!--  <sql id="searchCondition">-->
+  <!--    <choose>-->
+  <!--      <when test='searchType == "t"'>-->
+  <!--        and title like CONCAT('%', #{keyword}, '%')-->
+  <!--      </when>-->
+  <!--      <when test='searchType == "i"'>-->
+  <!--        and inquiry like CONCAT('%', #{keyword}, '%')-->
+  <!--      </when>-->
+  <!--      <when test='searchType == "w"'>-->
+  <!--        and writer like CONCAT('%', #{keyword}, '%')-->
+  <!--      </when>-->
+  <!--    </choose>-->
+  <!--  </sql>-->
+
+
+  <sql id="orderCondition">
+    <choose>
+      <when test="sort == 'createdAt' and orderBy == 'asc'">
+        ORDER BY created_at ASC
+      </when>
+      <when test="sort == 'createdAt' and orderBy == 'desc'">
+        ORDER BY created_at DESC
+      </when>
+      <when test="sort == 'answeredAt' and orderBy == 'asc'">
+        ORDER BY answered_at ASC
+      </when>
+      <when test="sort == 'answeredAt' and orderBy == 'desc'">
+        ORDER BY answered_at DESC
+      </when>
+      <otherwise>
+        ORDER BY created_at DESC
+      </otherwise>
+    </choose>
+  </sql>
+
+  <select id="selectCountBoardWithSearchCondition" resultType="int">
+
+    SELECT count(*)
+    FROM community_inquiry ci
+    JOIN user u ON ci.writer = u.id
+    <include refid="userCondition"></include>
+    <if test="searchType != null and searchType != ''">
+      <include refid="searchCondition"></include>
+    </if>
+  </select>
+
+</mapper>
