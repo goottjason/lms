@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업 시간표</h1>
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <div class="col d-flex justify-content-end"
+         th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
+      <form class="row col-12 mb-3">
+        <div class="col-4">
+          <select id="in-progress-type" class="form-control">
+            <option value="-1">진행상황별</option>
+            <option value="1">진행 중</option>
+            <option value="0">종료</option>
+          </select>
+        </div>
+        <div class="col">
+          <select id="course-type" class="form-control">
+            <option value="-1">과정별</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col-2">
+          <h6 class="m-0 font-weight-bold text-primary">수업 시간표</h6>
+        </div>
+        <h6 class="col mt-1">
+          <span id="prev-btn" class="fa fa-chevron-left" style="cursor: pointer"></span>
+          <span id="week-num" class='text-secondary mx-5'>1주차</span>
+          <span id="next-btn" class="fa fa-chevron-right" style="cursor: pointer"></span>
+        </h6>
+<!--        <div class="col-auto">-->
+<!--          <button id="" class="btn btn-info btn-icon-split mr-2" data-toggle="modal" data-target="#courseScheduleManagementModal">-->
+<!--            <span class="icon text-white-50">-->
+<!--              <i class="fa fa fa-wrench"></i>-->
+<!--            </span>-->
+<!--            <span class="text px-3">휴강일 관리</span>-->
+<!--          </button>-->
+<!--        </div>-->
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle bg-gray-100" style="width: 15%">교시</th>
+            <th scope="col" class="align-middle bg-gray-100" style="width: 17%">월<p
+                class="mb-0 th-date"></p></th>
+            <th scope="col" class="align-middle bg-gray-100" style="width: 17%">화<p
+                class="mb-0 th-date"></p></th>
+            <th scope="col" class="align-middle bg-gray-100" style="width: 17%">수<p
+                class="mb-0 th-date"></p></th>
+            <th scope="col" class="align-middle bg-gray-100" style="width: 17%">목<p
+                class="mb-0 th-date"></p></th>
+            <th scope="col" class="align-middle bg-gray-100" style="width: 17%">금<p
+                class="mb-0 th-date"></p></th>
+          </tr>
+          </thead>
+          <tbody id="schedule-table">
+          <tr>
+            <td class="text-center align-middle">1교시<p>(09:30 ~ 10:20)</p></td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-center align-middle">2교시<p>(10:30 ~ 11:20)</p></td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+            <td class="text-center align-middle pt-3">
+              <p class="mb-0">백엔드 기초 Javascript</p>
+              <p>(5강의실)</p>
+              <p class="mb-0"><span>김소영</span>강사님</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 휴강일 관리 모달 -->
+  <div class="modal fade" id="courseScheduleManagementModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">선택한 과정 휴강일 기록</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr class="text-center">
+                <th scope="col" class="align-middle" style="width: 20%">휴강일자</th>
+                <th scope="col" class="align-middle">사유</th>
+                <th scope="col" class="align-middle" style="width: 30%">관리</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td class="text-center align-middle">2025-06-21</td>
+                <td class="align-middle">시설 증축</td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-info btn-icon-split btn-sm">
+                    <span class="text" data-dismiss="modal">수정</span>
+                  </button>
+                  <button class="btn btn-danger btn-icon-split btn-sm">
+                    <span class="text" data-dismiss="modal">삭제</span>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center align-middle">2025-06-21</td>
+                <td class="align-middle">시설 증축</td>
+                <td class="text-center align-middle">
+                  <button class="btn btn-info btn-icon-split btn-sm">
+                    <span class="text" data-dismiss="modal">수정</span>
+                  </button>
+                  <button class="btn btn-danger btn-icon-split btn-sm">
+                    <span class="text" data-dismiss="modal">삭제</span>
+                  </button>
+                </td>
+              </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-center">
+            <button id="" class="btn btn-sm btn-info btn-icon-split">
+                <span class="icon text-white-50">
+                  <i class="fas fa-plus"></i>
+                </span>
+              <span class="text px-3">추가</span>
+            </button>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    const loginUser = [[${session.loginUser}]];
+  </script>
+  <script th:src="@{/js/courseSchedule/courseSchedule.js}" type="text/javascript"></script>
+
+</th:block>
+</body>
+</html>
