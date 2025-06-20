@@ -30,6 +30,11 @@ public class UserServiceImpl implements UserService {
   private final UtilService utilService;
 
   @Override
+  public UserVO findUserByUserId(int userId) {
+    return userMapper.selectUserByUserId(userId);
+  }
+
+  @Override
   public UserVO findUserByLoginId(String loginId) {
     return userMapper.selectUserByLoginId(loginId);
   }

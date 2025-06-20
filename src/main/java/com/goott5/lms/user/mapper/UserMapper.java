@@ -12,6 +12,10 @@ import org.apache.ibatis.annotations.Update;
 public interface UserMapper {
 
   @Select("select id, type, login_id, password, fullname, gender, birthday, mobile, email, address, "
+          + "profile_img, session_id, auto_login_limit, wrong_password_count, created_at, updated_at, deleted_at from user where id = #{userId}")
+  UserVO selectUserByUserId(int userId);
+
+  @Select("select id, type, login_id, password, fullname, gender, birthday, mobile, email, address, "
           + "profile_img, session_id, auto_login_limit, wrong_password_count, created_at, updated_at, deleted_at from user where login_id = #{loginId}")
   UserVO selectUserByLoginId(@Param("loginId") String loginId);
 
@@ -34,5 +38,6 @@ public interface UserMapper {
   @Update("update user set login_id = #{loginId}, password = #{password}, mobile = #{mobile}, email = #{email}, "
           + "address = #{address}, profile_img = #{profileImg}, updated_at = now() where id = #{id}")
   int updateUserForSignup(SignupDTO signupDTO);
+
 
 }
