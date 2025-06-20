@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.courseschedule.mapper.CourseScheduleMapper">
+
+
+  <select id="selectCoursesByInProgressAndLoginUser" resultType="com.goott5.lms.courseschedule.domain.CourseVO">
+
+    select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c join staff_assignment sa on c.id = sa.course_id
+
+    <where>
+      sa.user_id = #{loginUser.id}
+
+      <if test="inProgressType != -1">
+
+        and c.is_in_progress = #{inProgressType}
+
+      </if>
+
+    </where>
+
+  </select>
+
+  <select id="selectCoursesByInProgress" resultType="com.goott5.lms.courseschedule.domain.CourseVO">
+
+    select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c
+
+    <if test="inProgressType != -1">
+
+      where is_in_progress = #{inProgressType}
+
+    </if>
+
+  </select>
+
+  <select id="selectFirstCourseByUser" resultType="com.goott5.lms.courseschedule.domain.CourseVO">
+
+    select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c
+    <choose>
+      <when test="'LEARNER'.equals(type)">
+        join learner_enrollment le on c.id = le.course_id where le.user_id = #{id}
+      </when>
+      <when test="!'LEARNER'.equals(type)">
+        join staff_assignment sa on c.id = sa.course_id where sa.user_id = #{id}
+      </when>
+    </choose>
+
+    order by c.end_date desc limit 1;
+  </select>
+
+  <select id="selectcoursesByUser" resultType="com.goott5.lms.courseschedule.domain.CourseVO">
+
+    select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c
+    <choose>
+      <when test="'LEARNER'.equals(type)">
+        join learner_enrollment le on c.id = le.course_id where le.user_id = #{id}
+      </when>
+      <when test="!'LEARNER'.equals(type)">
+        join staff_assignment sa on c.id = sa.course_id where sa.user_id = #{id}
+      </when>
+    </choose>
+    order by c.end_date desc;
+
+  </select>
+
+</mapper>

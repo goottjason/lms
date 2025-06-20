@@ -26,7 +26,7 @@ public class CancelDateManagementController {
 
   private final CancelDateManagementService cancelDateManagementService;
 
-  @GetMapping("/cancelDateManagement")
+  @GetMapping("")
   public String cancelDateManagement() {
     return "courseManagement/cancelDateManagement";
   }
