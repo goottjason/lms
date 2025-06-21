@@ -5,9 +5,12 @@ import com.goott5.lms.test.domain.test.register.dto.TestRegisterDTO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestQuestionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
+import com.goott5.lms.test.domain.test.submission.TestSubmissionDTO;
 import com.goott5.lms.test.mapper.test.TestDetailMapper;
 import com.goott5.lms.test.mapper.test.TestMapperUtil;
 import com.goott5.lms.test.mapper.test.TestRegisterMapper;
+import com.goott5.lms.user.domain.UserVO;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,7 +103,7 @@ public class TestDetailServiceImpl implements TestDetailService {
               // 추가되는 선택지가 더 적은 경우 Delete
 
               testDetailMapper.deleteMultipleOption(dbQ.getId(),
-                  dbQ.getOptions().get(p).getOptionNo());
+                      dbQ.getOptions().get(p).getOptionNo());
             }
           }
 

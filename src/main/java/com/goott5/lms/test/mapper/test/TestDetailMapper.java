@@ -4,9 +4,11 @@ import com.goott5.lms.test.domain.test.detail.LearnerInfoVO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestQuestionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
+import com.goott5.lms.test.domain.test.submission.TestSubmissionDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 @Mapper
@@ -20,8 +22,8 @@ public interface TestDetailMapper {
 
   // 시험 기본 정보 수정
   @Update("UPDATE test"
-      + " SET title = #{title}, start_date = #{startDate}, end_date = #{endDate}, test_time = #{testTime}, total_score = ${totalScore}"
-      + " WHERE id = #{id}")
+          + " SET title = #{title}, start_date = #{startDate}, end_date = #{endDate}, test_time = #{testTime}, total_score = ${totalScore}"
+          + " WHERE id = #{id}")
   void updateTestInfo(TestRegisterVO testDetailVO);
 
   // 동일한 유형 : 문항 Update

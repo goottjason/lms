@@ -1,5 +1,6 @@
 package com.goott5.lms.test.domain.test.register.vo;
 
+import com.goott5.lms.test.domain.test.detail.result.vo.TestOptionResultVO;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

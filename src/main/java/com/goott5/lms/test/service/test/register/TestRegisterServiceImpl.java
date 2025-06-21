@@ -8,7 +8,7 @@ import com.goott5.lms.test.domain.test.register.dto.TestRegisterDTO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestQuestionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
-import com.goott5.lms.test.domain.test.register.vo.TestSubmissionVO;
+import com.goott5.lms.test.domain.test.submission.TestSubmissionVO;
 import com.goott5.lms.test.mapper.test.TestRegisterMapper;
 import com.goott5.lms.test.mapper.test.TestMapperUtil;
 import com.goott5.lms.user.domain.UserVO;

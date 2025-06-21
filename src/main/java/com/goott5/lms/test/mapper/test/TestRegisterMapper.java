@@ -5,7 +5,7 @@ import com.goott5.lms.test.domain.test.list.TestListVO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestQuestionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
-import com.goott5.lms.test.domain.test.register.vo.TestSubmissionVO;
+import com.goott5.lms.test.domain.test.submission.TestSubmissionVO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

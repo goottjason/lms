@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  layout:decorate="~{layout/basic.html}"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org">
+<head>
+  <script src="sweetalert2.all.min.js"></script>
+  <script defer th:src="@{/js/test/testCommon.js}"></script>
+  <script defer th:src="@{/js/test/testModel.js}"></script>
+  <script defer th:src="@{/js/test/testDetail.js}"></script>
+  <style>
+
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">시험 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 시험 정보 시작 -->
+  <div class="card shadow mb-4" id="test-info-container">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">시험정보</h6>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-4 align-items-end">
+        <div class="col-md-12">
+          <label class="form-label">시험 제목</label>
+          <span class="test-title-err-msg"></span>
+          <input
+            class="form-control"
+            disabled
+            id="test-title"
+            placeholder="예: Java 중간고사"
+            type="text"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <label class="form-label">시험 시작일시</label>
+          <span class="test-start-date-err-msg"></span>
+          <input class="form-control" disabled id="start-date" type="datetime-local"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">시험 종료일시</label>
+          <span class="test-end-date-err-msg"></span>
+          <input class="form-control" disabled id="end-date" type="datetime-local"/>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">시험 시간 (분)</label>
+          <span class="test-time-err-msg"></span>
+          <input
+            class="form-control" disabled id="test-time" placeholder="예: 60"
+            type="number"/>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">총 배점</label>
+          <span class="total-score-err-msg"></span>
+          <input
+            class="form-control"
+            disabled
+            id="total-score"
+            placeholder="예: 100"
+            type="number"/>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 시험 정보 끝 -->
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">시험 유의사항</h6>
+    </div>
+    <div class="card-body text-gray-800 pl-5 py-5">
+      <p>시험은 한 번만 응시할 수 있습니다.</p>
+      <p>제한 시간이 지나면 자동으로 제출됩니다.</p>
+      <p>응시 중 브라우저를 종료하거나 새로고침하면 시험이 무효 처리될 수 있습니다.</p>
+      <p>답안은 자동 저장되지 않으니 주기적으로 저장 버튼을 눌러주세요.</p>
+      <p>부정행위가 적발될 경우 불이익이 있을 수 있습니다.</p>
+    </div>
+    <div class="card-footer">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="a">
+        <label class="form-check-label" for="a">
+          (필수) 유의사항에 동의합니다.
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+    <button id="" class="btn btn-primary btn-icon-split mr-2">
+        <span class="icon text-white-50">
+          <i class="fa fa-check"></i>
+        </span>
+      <span class="text px-3">시험응시</span>
+    </button>
+    <button id="" class="btn btn-secondary btn-icon-split mr-2">
+        <span class="icon text-white-50">
+          <i class="fa fa-list"></i>
+        </span>
+      <span class="text px-3">목록</span>
+    </button>
+  </div>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

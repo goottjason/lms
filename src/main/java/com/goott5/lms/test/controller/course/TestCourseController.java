@@ -1,6 +1,6 @@
 package com.goott5.lms.test.controller.course;
 
-import com.goott5.lms.test.domain.apiresponse.ApiResponse;
+import com.goott5.lms.test.domain.apiresponse.ApiResult;
 import com.goott5.lms.test.domain.course.CourseInfoDTO;
 import com.goott5.lms.test.service.course.TestCourseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,9 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import javax.management.ValueExp;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.ExistingWebApplicationScopes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,11 +36,11 @@ public class TestCourseController {
   @ApiResponses(value = {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CourseInfoDTO.class)))
   })
-  public ResponseEntity<ApiResponse<List<String>>> getCourseListForAdmin(
+  public ResponseEntity<ApiResult<List<String>>> getCourseListForAdmin(
       @RequestParam(required = false) Boolean isInProgress) {
 
     List<String> courseList = testCourseService.getCourseListForAdmin(isInProgress);
-    return ApiResponse.respondOk(200, "SUCCESS", courseList);
+    return ApiResult.respondOk(200, "SUCCESS", courseList);
   }
 
 
@@ -53,12 +51,12 @@ public class TestCourseController {
   @ApiResponses(value = {
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CourseInfoDTO.class)))
   })
-  public ResponseEntity<ApiResponse<List<CourseInfoDTO>>> getCourseListForUser(
+  public ResponseEntity<ApiResult<List<CourseInfoDTO>>> getCourseListForUser(
       @Parameter(hidden = true) HttpSession session) {
 
     List<CourseInfoDTO> courseList = testCourseService.getCourseListForUser(session);
 
-    return ApiResponse.respondOk(200, "SUCCESS", courseList);
+    return ApiResult.respondOk(200, "SUCCESS", courseList);
   }
 
 }
