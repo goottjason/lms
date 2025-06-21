@@ -5,7 +5,7 @@
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:th="http://www.thymeleaf.org">
   <head>
-    <script src="sweetalert2.all.min.js"></script>
+    <script defer th:src="@{sweetalert2.all.min.js}"></script>
     <script defer th:src="@{/js/test/testCommon.js}"></script>
     <script defer th:src="@{/js/test/testModel.js}"></script>
     <script defer th:src="@{/js/test/testDetail.js}"></script>
@@ -466,8 +466,10 @@
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title mr-3" id="myModalLabel">제출 답안</h5>
-              <h5 class="modal-title">(교육생 : <span>홍길동</span>)</h5>
-              <button aria-label="닫기" class="close" data-dismiss="modal" type="button">
+              <h5 class="modal-title">(교육생 : <span class="learner-name">홍길동</span>)</h5>
+              <button aria-label="닫기" class="close close-learner-result-modal"
+                      data-dismiss="modal"
+                      type="button">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>

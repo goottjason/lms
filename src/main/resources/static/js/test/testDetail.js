@@ -1,20 +1,23 @@
 let originalTestInfo = null;
-let newTestInfo = null;
+let newTestInfo      = null;
 
 let originalQuiz = new Quiz();
-let copyQuiz = null;
-let newQuiz = null;
+let copyQuiz     = null;
+let newQuiz      = null;
+
+let userQuiz   = new Quiz();
+let userAnswer = [];
 
 $(document).ready(function () {
 
   if (UrlUtils.getQueryParam("modified") === "true") {
     Swal.fire({
-      position: "center",
-      icon: "success",
-      title: "수정 완료",
-      showConfirmButton: false,
-      timer: 1500
-    });
+                position         : "center",
+                icon             : "success",
+                title            : "수정 완료",
+                showConfirmButton: false,
+                timer            : 1500
+              });
   }
 
   const pageNo = new URLSearchParams(window.location.search).get(
@@ -32,22 +35,22 @@ $(document).ready(function () {
        .catch(function (error) {
        });
 
-  const parts = window.location.pathname.split("/");
+  const parts  = window.location.pathname.split("/");
   const testId = parseInt(parts[parts.length - 1]);
 
   apiCall("get", `/api/tests/${testId}`)
   .then((res) => {
 
     console.log(res);
-    const data = res.data.data;
+    const data       = res.data.data;
     originalTestInfo = new TestInfo(data.testTitle, data.startDate,
-        data.endDate,
-        data.testTime, data.totalScore);
+                                    data.endDate, data.testTime,
+                                    data.totalScore);
 
     // console.log(testInfo);
 
     renderTestHeader(originalTestInfo);
-    buildQuiz(data.questions);
+    buildQuiz(originalQuiz, data.questions);
     renderQuestions(originalQuiz.questions);
     hideAllBtn(true);
     renderTestModifyBtn(data.startDate);
@@ -64,21 +67,11 @@ $(document).ready(function () {
 
 });
 
-const $testTitle = $("#test-title");
-const $startDate = $("#start-date");
-const $endDate = $("#end-date");
-const $testTime = $("#test-time");
+const $testTitle  = $("#test-title");
+const $startDate  = $("#start-date");
+const $endDate    = $("#end-date");
+const $testTime   = $("#test-time");
 const $totalScore = $("#total-score");
-
-function renderTestHeader(testInfo) {
-
-  $testTitle.val(testInfo.title);
-  $startDate.val(testInfo.startDate);
-  $endDate.val(testInfo.endDate);
-  $testTime.val(testInfo.testTime);
-  $totalScore.val(testInfo.totalScore);
-
-}
 
 function makeQuestionCard(question) {
   console.log(question);
@@ -189,7 +182,7 @@ function makeQuestionAnswerSection(question) {
                 type="button"
                 class="btn btn-danger btn-icon-split btn-sm del-option-btn">
               <span class="text" ${question.options.length
-      === 2 ? "disabled" : ""}>삭제</span>
+                                   === 2 ? "disabled" : ""}>삭제</span>
             </button>
           </div>
         </div>
@@ -220,7 +213,7 @@ function makeQuestionAnswerSection(question) {
                   <i class="fas fa-plus"></i>
                 </span>
                 <span class="text" ${question.options.length === 4 ? "disable"
-        : ""}>보기 추가</span>
+                                                                   : ""}>보기 추가</span>
               </button>
             </div>
           </div>
@@ -250,20 +243,20 @@ function makeQuestionAnswerSection(question) {
   return questionAnswerSection;
 }
 
-function buildQuiz(questionInfo) {
+function buildQuiz(quiz, questionInfo) {
 
   $.each(questionInfo, function (index, item) {
     console.log(item);
     const {
-      questionNo,
-      questionType,
-      questionTitle,
-      questionScore,
-      options,
-      questionAnswer,
-    } = item;
+            questionNo,
+            questionType,
+            questionTitle,
+            questionScore,
+            options,
+            questionAnswer,
+          }      = item;
     let question = new Question(questionNo, questionType, questionTitle,
-        questionScore);
+                                questionScore);
     console.log(questionAnswer);
     question.setShortAnswer(questionAnswer);
     console.log(question);
@@ -283,10 +276,10 @@ function buildQuiz(questionInfo) {
     });
 
     // console.log(options);
-    originalQuiz.addQuestion(question);
+    quiz.addQuestion(question);
     // console.log(question);
   });
-  console.log(originalQuiz);
+  console.log(quiz);
 }
 
 const $questionListBox = $(".question-list-box");
@@ -320,7 +313,7 @@ function hideAllBtn(isDisabled) {
 const $modifyTestBtn = $("#modify-test-btn");
 
 function renderTestModifyBtn(startDate) {
-  const now = new Date();
+  const now   = new Date();
   const start = new Date(startDate);
 
   if (now > start) {
@@ -339,29 +332,40 @@ function renderLearnerList(learnerArray) {
     console.log(item);
 
     const learnerInfo = {
-      learnerId: item.learnerId,
-      fullName: item.fullName,
-      loginId: maskId(item.loginId),
-      submissionStatus: assignValueBySubmissionStatus(
+      learnerId        : item.learnerId,
+      fullName         : item.fullName,
+      loginId          : maskId(item.loginId),
+      submissionStatus : assignValueBySubmissionStatus(
           item.submissionStatus),
-      submissionRegDate: item.submissionRegDate ? item.submissionRegDate
-          : "-",
-      score: getStudentScoreDisplay(item.isInvalidated,
-          item.submissionStatus,
-          item.score)
+      submissionRegDate: item.submissionRegDate ? localDateTimeFormatter(
+                                                    item.submissionRegDate)
+                                                : "-",
+      score            : getStudentScoreDisplay(item.isInvalidated,
+                                                item.submissionStatus,
+                                                item.score)
     };
+    console.log(learnerInfo);
 
     $learnerTableBody.append(makeLearnerListTr(learnerInfo));
 
   });
 }
 
+function localDateTimeFormatter(date) {
+
+  const dateArr = date.split("T");
+
+  return dateArr[0] + " " + dateArr[1];
+}
+
 function getStudentScoreDisplay(isInvalidated, submissionStatus, score) {
+  console.log(isInvalidated, submissionStatus, score);
+
   if (isInvalidated) {
     return "시험 무효";
   }
 
-  switch (isInvalidated) {
+  switch (submissionStatus) {
     case "COMPLETED":
       return `${score}점`;
     default:
@@ -376,7 +380,7 @@ function maskId(id) {
   }
 
   const visiblePart = id.slice(0, 4);
-  const maskedPart = "*".repeat(id.length - 4);
+  const maskedPart  = "*".repeat(id.length - 4);
 
   return visiblePart + maskedPart;
 }
@@ -385,7 +389,7 @@ function assignValueBySubmissionStatus(status) {
   const statusValue = {
     "NOT_STARTED": "미응시",
     "IN_PROGRESS": "응시중",
-    "COMPLETED": "응시 완료"
+    "COMPLETED"  : "응시 완료"
   };
 
   return statusValue[status];
@@ -395,21 +399,21 @@ function makeLearnerListTr(data) {
   console.log(data);
 
   return `
-    <tr>
-      <td class="text-center align-middle">${data.fullName}</td>
+    <tr class="learner-row">
+      <td class="text-center align-middle fullname">${data.fullName}</td>
       <td class="text-center align-middle">${data.loginId}</td>
       <td class="text-center align-middle">${data.submissionStatus}</td>
       <td class="text-center align-middle">${data.submissionRegDate}</td>
       <td class="text-center align-middle">${data.score}</td>
       <td class="text-center align-middle">
         <button
+                type="button"
             class="btn btn-sm btn-info btn-icon-split show-learner-answer-btn"
             data-learner-id="${data.learnerId}"
             data-target="#answerModal"
             data-toggle="modal"
             id=""
-            type="button"
-            ${data.score.includes("점") ? "" : "disabled"}
+        ${data.score.includes("점") ? "" : "disabled"}
             >
           <span class="icon text-white-50">
             <i class="fas fa-folder-open"></i>
@@ -453,17 +457,17 @@ function checkAllQuestionBtn(quiz) {
     } else if (q.options.length === 2) {
       // 보기 삭제 disabled
       $.each($questionCard.eq(q.questionNo - 1).find(".del-option-btn"),
-          function (index, item) {
-            $(item).prop("disabled", true);
-          });
+             function (index, item) {
+               $(item).prop("disabled", true);
+             });
     } else {
       // 보기 추가 | 삭제 able
       $questionCard.eq(q.questionNo - 1).find(".add-option-btn").prop(
           "disabled", false);
       $.each($questionCard.eq(q.questionNo - 1).find(".del-option-btn"),
-          function (index, item) {
-            $(item).prop("disabled", false);
-          });
+             function (index, item) {
+               $(item).prop("disabled", false);
+             });
     }
   });
 
@@ -498,8 +502,8 @@ $(document).on("click", "#modify-test-btn", function (e) {
 
   if ($(e.target).text() === "시험수정") {
     newTestInfo = originalTestInfo.clone();
-    copyQuiz = originalQuiz.clone();
-    newQuiz = originalQuiz.clone();
+    copyQuiz    = originalQuiz.clone();
+    newQuiz     = originalQuiz.clone();
 
     $(".learner-tab").addClass("disabled");
 
@@ -529,35 +533,35 @@ $(document).on("click", "#confirm-modify", function (e) {
       && (JSON.stringify(originalTestInfo) === JSON.stringify(newTestInfo))) {
 
     Swal.fire({
-      icon: "error",
-      title: "변경사항 없음",
-      text: "수정된 내용이 없습니다. 하나 이상의 항목을 변경해주세요."
-    });
+                icon : "error",
+                title: "변경사항 없음",
+                text : "수정된 내용이 없습니다. 하나 이상의 항목을 변경해주세요."
+              });
 
   } else {
 
     const questionArr = [];
-    const testInfo = {
+    const testInfo    = {
       "instructorId": "",
-      "courseName": "",
-      "testTitle": newTestInfo.title,
-      "startDate": newTestInfo.startDate,
-      "endDate": newTestInfo.endDate,
-      "testTime": newTestInfo.testTime,
-      "totalScore": newTestInfo.totalScore,
-      "questions": questionArr,
+      "courseName"  : "",
+      "testTitle"   : newTestInfo.title,
+      "startDate"   : newTestInfo.startDate,
+      "endDate"     : newTestInfo.endDate,
+      "testTime"    : newTestInfo.testTime,
+      "totalScore"  : newTestInfo.totalScore,
+      "questions"   : questionArr,
     };
 
     $.each(newQuiz.questions, function (index, q) {
 
       const questionOptions = [];
-      const question = {
-        "questionNo": q.questionNo,
-        "questionTitle": q.title,
-        "questionScore": q.score,
-        "questionType": q.type,
+      const question        = {
+        "questionNo"    : q.questionNo,
+        "questionTitle" : q.title,
+        "questionScore" : q.score,
+        "questionType"  : q.type,
         "questionAnswer": q.answer ? q.answer : "",
-        "options": questionOptions,
+        "options"       : questionOptions,
       };
 
       if (q.type === "MULTIPLE") {
@@ -565,9 +569,9 @@ $(document).on("click", "#confirm-modify", function (e) {
         $.each(q.options, function (index, o) {
 
           let option = {
-            "optionNo": o.optionNo,
+            "optionNo"     : o.optionNo,
             "optionContent": o.content,
-            "isCorrect": o.isCorrect,
+            "isCorrect"    : o.isCorrect,
           };
 
           question.options.push(option);
@@ -581,11 +585,11 @@ $(document).on("click", "#confirm-modify", function (e) {
 
     const testId = parseInt(UrlUtils.getPathSegment(2));
     apiCall("put", `/api/tests/${testId}`, testInfo, {},
-        { "Content-Type": "application/json" })
+            {"Content-Type": "application/json"})
     .then((res) => {
       console.log(res);
 
-      const pageNo = UrlUtils.getQueryParam("currentPageNo");
+      const pageNo         = UrlUtils.getQueryParam("currentPageNo");
       window.location.href = `/test/testDetail/${testId}?currentPageNo=${pageNo}&modified=true`;
 
     })
@@ -601,11 +605,11 @@ $(document).on("click", "#cancel-modify", function (e) {
   console.log("수정 취소");
   $(".learner-tab").removeClass("disabled");
   newTestInfo = null;
-  copyQuiz = null;
-  newQuiz = null;
+  copyQuiz    = null;
+  newQuiz     = null;
 
   const $confirmModify = $("#confirm-modify");
-  const $cancelModify = $("#cancel-modify");
+  const $cancelModify  = $("#cancel-modify");
 
   $confirmModify.find(".text").text("시험수정");
   $confirmModify.attr("id", "modify-test-btn");
@@ -622,26 +626,26 @@ $(document).on("click", "#cancel-modify", function (e) {
 
 $(document).on("click", "#del-test-btn", function (e) {
   Swal.fire({
-    title: "시험을 정말 삭제하시겠습니까?",
-    text: "삭제된 시험은 복구할 수 없습니다.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "네, 삭제하겠습니다.",
-    cancelButtonText: "아니요, 취소합니다."
-  }).then((result) => {
+              title             : "시험을 정말 삭제하시겠습니까?",
+              text              : "삭제된 시험은 복구할 수 없습니다.",
+              icon              : "warning",
+              showCancelButton  : true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor : "#d33",
+              confirmButtonText : "네, 삭제하겠습니다.",
+              cancelButtonText  : "아니요, 취소합니다."
+            }).then((result) => {
     if (result.isConfirmed) {
 
-      const testId = parseInt(UrlUtils.getPathSegment(2));
+      const testId        = parseInt(UrlUtils.getPathSegment(2));
       const currentPageNo = UrlUtils.getQueryParam("currentPageNo");
       apiCall("delete", `/api/tests/${testId}`, null, {}, {})
       .then((res) => {
         Swal.fire({
-          title: "삭제 완료",
-          text: "시험이 성공적으로 삭제되었습니다.",
-          icon: "success"
-        }).then((result) => {
+                    title: "삭제 완료",
+                    text : "시험이 성공적으로 삭제되었습니다.",
+                    icon : "success"
+                  }).then((result) => {
           if (result.isConfirmed) {
 
             window.location.href = `/test/testList?currentPageNo=${currentPageNo}&removed=true`;
@@ -658,12 +662,12 @@ $(document).on("click", ".question-type", function (e) {
 
   // 해당 문항의 question-card 요소의 question-no 값 가져오기
   let $questionCard = $(e.target).closest(".question-card");
-  const questionNo = $questionCard.data("question-no");
+  const questionNo  = $questionCard.data("question-no");
 
   // 클릭한 라디오 버튼의 값 가져오기
   const questionType = $(e.target).val();
   newQuiz.questions[questionNo - 1].setType(questionType);
-  const type = copyQuiz.questions[questionNo - 1].type;
+  const type    = copyQuiz.questions[questionNo - 1].type;
   const newType = newQuiz.questions[questionNo - 1].type;
 
   if (type === newType) {
@@ -765,7 +769,7 @@ $(document).on("click", ".del-question-btn", function (e) {
   const $delQuestionBtn = $(e.target).closest(".del-question-btn");
   if ($delQuestionBtn) {
     const $questionCard = $delQuestionBtn.closest(".question-card");
-    const questionNo = $questionCard.data("question-no");
+    const questionNo    = $questionCard.data("question-no");
     copyQuiz.removeQuestion(questionNo);
     newQuiz.removeQuestion(questionNo);
     renderQuestions(newQuiz.questions);
@@ -786,7 +790,7 @@ $(document).on("click", "#add-question-btn", function (e) {
 
 $(document).on("click", ".add-option-btn", function (e) {
   const $addOptionBtn = $(e.target).closest(".add-option-btn");
-  const questionNo = $addOptionBtn.data("question-no");
+  const questionNo    = $addOptionBtn.data("question-no");
   copyQuiz.questions.find(q => q.questionno === questionNo).addOption();
   newQuiz.questions.find(q => q.questionNo === questionNo).addOption();
   renderQuestions(newQuiz.questions);
@@ -802,7 +806,7 @@ $(document).on("click", ".del-option-btn", function (e) {
 
     const questionNo = $delOptionBtn.closest(".question-card").data(
         "question-no");
-    const optionNo = $questionOption.data("option-no");
+    const optionNo   = $questionOption.data("option-no");
 
     console.log(newQuiz);
     copyQuiz.questions.find(q => q.questionNo === questionNo).removeOption(
@@ -817,6 +821,34 @@ $(document).on("click", ".del-option-btn", function (e) {
     setQuestionFieldsDisabled(false);
     checkAllQuestionBtn(newQuiz);
   }
+});
+
+$(document).on("click", ".show-learner-answer-btn", async function (e) {
+  console.log($(e.target).closest(".show-learner-answer-btn"));
+  const testId      = parseInt(UrlUtils.getPathSegment(2));
+  const learnerId   = $(e.target).closest(".show-learner-answer-btn")
+                                 .data("learner-id");
+  const learnerName = $(e.target).closest(".learner-row").find(".fullname")
+                                 .text();
+  $(".learner-name").text(learnerName);
+
+
+  const quizRes = await apiCall("get",
+                                `/api/my/tests/${testId}/learner/${learnerId}`);
+
+  buildQuiz(userQuiz, quizRes.data.data.questions);
+  console.log(userQuiz);
+  buildUserAnswer(quizRes.data.data.questions,
+                  quizRes.data.data.userScore);
+  console.log(userAnswer);
+  renderQuestionResult(".answer-container", userQuiz, userAnswer);
+});
+
+$("#answerModal").on("hidden.bs.modal", () => {
+  userQuiz   = new Quiz();
+  userAnswer = [];
+
+  $(".answer-container").empty();
 });
 
 //------------------------------------------------------------------------------
@@ -842,7 +874,7 @@ $(document).on("blur", "#test-time", function (e) {
 });
 
 $(document).on("blur", ".question-title", function (e) {
-  const questionNo = $(e.target)
+  const questionNo                        = $(e.target)
   .closest(".question-card").data("question-no");
   newQuiz.questions[questionNo - 1].title = $(e.target).val().trim();
 });
@@ -851,7 +883,7 @@ $(document).on("blur", ".question-title", function (e) {
 $(document).on("keyup", ".question-score", function (e) {
   const questionNo = $(e.target).closest(".question-card")
                                 .data("question-no");
-  let total = 0;
+  let total        = 0;
 
   $(".question-score").each(function () {
     let score = parseInt($(this).val());
@@ -868,7 +900,7 @@ $(document).on("keyup", ".question-score", function (e) {
 $(document).on("blur", ".question-option", function (e) {
   const questionNo = $(e.target).closest(".question-card")
                                 .data("question-no");
-  const optionNo = $(e.target).data("option-no");
+  const optionNo   = $(e.target).data("option-no");
   newQuiz.questions[questionNo - 1].options[optionNo - 1].setContent(
       $(e.target).val().trim());
 });
@@ -876,13 +908,13 @@ $(document).on("blur", ".question-option", function (e) {
 $(document).on("change", ".question-answer", function (e) {
   const questionNo = $(e.target).closest(".question-card")
                                 .data("question-no");
-  const optionNo = $(e.target).closest(".option-row").find(
+  const optionNo   = $(e.target).closest(".option-row").find(
       ".question-option").data("option-no");
   newQuiz.questions[questionNo - 1].setCorrectOption(optionNo);
 });
 
 $(document).on("blur", ".short-answer", function (e) {
-  const questionNo = $(e.target)
+  const questionNo                         = $(e.target)
   .closest(".question-card").data("question-no");
   newQuiz.questions[questionNo - 1].answer = $(e.target).val().trim();
 });
@@ -905,10 +937,156 @@ function renderCourseFilterOptionsForAdminForUser(data) {
   $courseFilter.val(defaultCourse);
 }
 
+const $courseSelector = $("#courseSelector");
+
 $("#prev-page").on("click", function () {
 
   let prevPageNo = $(this).data("page-no");
   console.log(prevPageNo);
 
-  location.href = `/test/testList?currentPageNo=${prevPageNo}`;
+  let courseName = $courseSelector.val();
+  console.log(courseName);
+
+  location.href = `/test/testList?currentPageNo=${prevPageNo}&courseName=${courseName}`;
 });
+
+function renderQuestionResult(selector, quiz, userAnswer) {
+  const $questionContainer = $(selector);
+  $questionContainer.empty();
+
+  $.each(quiz.questions, function (index, q) {
+
+    $questionContainer.append(
+        makeLearnerQuestionCard(q, userAnswer[index]));
+  });
+}
+
+function makeLearnerQuestionCard(q, ua) {
+  console.log(q);
+  console.log(ua);
+
+  const cardHeader = `
+    <div class="card mb-4">
+      <div class="card-header py-2">
+        <div class="row align-items-center">
+          <div class="col-1">
+            <h6 class="m-0 font-weight-bold text-primary">문항<span>${q.questionNo}</span></h6>
+          </div>
+          <div class="col-2">
+            <h6 class="m-0 font-weight-bold text-primary">
+                ${q.type === "MULTIPLE" ? "객관식" : "주관식"}
+            </h6>
+          </div>
+          <div class="col-auto ml-auto">
+                  <span class="btn btn-${ua.userIsCorrect ? "info" : "danger"} btn-circle btn-sm">
+                    <i class="fas fa-${ua.userIsCorrect ? "check" : "times"}"></i>
+                  </span>
+            <span class="text-${ua.userIsCorrect ? "info" : "danger"} text-md-center">
+                ${ua.userIsCorrect ? "정답" : "오답"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+
+  let cardBody = `
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-10">
+          <label class="form-label">문항 설명</label>
+          <input
+              class="form-control"
+              readonly
+              type="text"
+              value="${q.title}"
+          />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">배점</label>
+          <input
+              class="form-control"
+              min="1"
+              readonly
+              type="number"
+              value="${q.score}"
+          />
+        </div>
+      </div> 
+    `;
+
+  console.log(q.options);
+  if (q.type === "MULTIPLE") {
+
+    cardBody += `<div class="mb-3">`;
+
+    $.each(q.options, function (index, o) {
+
+      console.log(o);
+      console.log(ua);
+      cardBody += `
+            <div class="align-items-center mb-2 option-row ${parseInt(
+          ua.userAnswer) === o.optionNo ? "text-danger" : ""}" >
+            ${o.content}
+            </div>
+            `;
+    });
+    cardBody += `</div>`;
+
+    const correctOpt    = q.options.find(o => o.isCorrect) || {};
+    const userSelectOpt = q.options.find(
+        o => o.optionNo === parseInt(ua.userAnswer));
+
+    cardBody += `
+         <div class="row mb-3">
+           <div class="col-md-6">
+             <label class="form-label">제출 답</label>
+             <input
+               class="form-control"
+               readonly
+               type="text"
+               value="${userSelectOpt.content || ""}"
+             />
+           </div>
+           <div class="col-md-6">
+             <label class="form-label">정답</label>
+             <input
+               class="form-control"
+               readonly
+               type="text"
+               value="${correctOpt.content || ""}"
+             />
+           </div>
+         </div>
+        `;
+  } else {
+
+    cardBody += `
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <label class="form-label">제출 답</label>
+            <input
+              class="form-control"
+              readonly
+              type="text"
+              value="${ua.userAnswer || ""}"
+            />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <label class="form-label">정답</label>
+            <input
+              class="form-control"
+              readonly
+              type="text"
+              value="${q.answer || ""}"
+            />
+          </div>
+        </div>       
+        `;
+  }
+
+  cardBody += `</div>\n</div>`;
+
+  return cardHeader + cardBody;
+}

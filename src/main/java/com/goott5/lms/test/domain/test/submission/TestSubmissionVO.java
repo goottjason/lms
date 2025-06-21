@@ -1,4 +1,4 @@
-package com.goott5.lms.test.domain.test.register.vo;
+package com.goott5.lms.test.domain.test.submission;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

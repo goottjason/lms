@@ -2,6 +2,8 @@ package com.goott5.lms.test.service.test.detail;
 
 import com.goott5.lms.test.domain.test.detail.LearnerInfoVO;
 import com.goott5.lms.test.domain.test.register.dto.TestRegisterDTO;
+import com.goott5.lms.test.domain.test.submission.TestSubmissionDTO;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 
@@ -18,4 +20,5 @@ public interface TestDetailService {
 
   // 시험 삭제
   void removeTestDetail(int testId);
+
 }

@@ -1,4 +1,4 @@
-package com.goott5.lms.test.config;
+package com.goott5.lms.common.config;
 
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;

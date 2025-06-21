@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.test.mapper.test.TestSubmissionMapper">
+
+
+  <select id="selectCorrectedQuestion"
+    resultType="com.goott5.lms.test.domain.test.answer.QuestionScoreVO">
+    SELECT
+    q.question_no AS question_no,
+    q.score AS score,
+    a.is_correct AS is_correct
+    FROM test_question q JOIN test_answer a
+    ON q.id = a.question_id
+    WHERE q.test_id = #{testId} AND a.submission_id = #{testSubmissionId} AND a.is_correct = true;
+  </select>
+
+  <update id="updateTestSubmission"
+    parameterType="com.goott5.lms.test.domain.test.submission.TestSubmissionVO">
+    UPDATE test_submission
+    SET submission_time = #{testSubmissionVO.submissionTime},
+    submission_status = #{testSubmissionVO.submissionStatus},
+
+    <if test="testSubmissionVO.retryCount != null">
+      retry_count = #{testSubmissionVO.retryCount},
+    </if>
+
+    <if test="testSubmissionVO.isInvalidated != null">
+      is_invalidated = #{testSubmissionVO.isInvalidated},
+    </if>
+
+    <if test="testSubmissionVO.submissionRegDate != null">
+      submission_reg_date = #{testSubmissionVO.submissionRegDate},
+    </if>
+
+    score = #{testSubmissionVO.score}
+    WHERE id = #{testSubmissionVO.id}
+  </update>
+
+
+  <resultMap id="testAnswerMap" type="com.goott5.lms.test.domain.test.answer.TestAnswerDTO">
+    <collection property="questionNums" column="question_id"/>
+    <collection property="selectAnswers" column="select_answer"/>
+  </resultMap>
+
+
+  <select id="selectSelectAnswers" resultMap="testAnswerMap">
+    SELECT question_id, select_answer
+    FROM test_answer
+    WHERE submission_id = #{testSubmissionId}
+  </select>
+
+
+  <resultMap id="testResultMap"
+    type="com.goott5.lms.test.domain.test.detail.result.vo.TestQuestionResultVO">
+    <id column="question_id" property="id"/>
+    <result column="title" property="questionTitle"/>
+    <result column="question_type" property="questionType"/>
+    <result column="question_no" property="questionNo"/>
+    <result column="score" property="questionScore"/>
+    <result column="correct_answer" property="questionAnswer"/>
+
+    <result column="select_answer" property="userAnswer"/>
+    <result column="user_is_correct" property="userIsCorrect"/>
+
+
+    <collection property="options"
+      ofType="com.goott5.lms.test.domain.test.detail.result.vo.TestOptionResultVO"
+      select="selectResultOptions" column="question_id"/>
+  </resultMap>
+
+  <resultMap id="testResultOption"
+    type="com.goott5.lms.test.domain.test.detail.result.vo.TestOptionResultVO">
+    <id column="id" property="id"/>
+    <result column="option_no" property="optionNo"/>
+    <result column="content" property="optionContent"/>
+    <result column="is_correct" property="isCorrect"/>
+  </resultMap>
+
+  <select id="selectTestResult" resultMap="testResultMap">
+    SELECT
+    q.id AS question_id,
+    q.title AS title,
+    q.question_type AS question_type,
+    q.question_no AS question_no,
+    q.score AS score,
+    q.correct_answer AS correct_answer,
+    a.select_answer AS select_answer,
+    a.is_correct AS user_is_correct
+    FROM test_question q
+    LEFT JOIN test_answer a ON q.id = a.question_id AND a.submission_id = #{submissionId}
+    WHERE q.test_id = #{testId}
+  </select>
+
+  <select id="selectResultOptions" resultMap="testResultOption">
+    SELECT
+    id, option_no, content, is_correct
+    FROM test_option
+    WHERE question_id = #{questionId}
+  </select>
+
+</mapper>

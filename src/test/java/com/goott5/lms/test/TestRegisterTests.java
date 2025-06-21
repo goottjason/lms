@@ -1,11 +1,14 @@
 package com.goott5.lms.test;
 
 import com.goott5.lms.test.domain.test.detail.LearnerInfoVO;
+import com.goott5.lms.test.domain.test.detail.result.vo.TestOptionResultVO;
+import com.goott5.lms.test.domain.test.detail.result.vo.TestQuestionResultVO;
 import com.goott5.lms.test.domain.test.register.vo.TestOptionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestQuestionVO;
 import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
 import com.goott5.lms.test.mapper.test.TestDetailMapper;
 import com.goott5.lms.test.mapper.test.TestRegisterMapper;
+import com.goott5.lms.test.mapper.test.TestSubmissionMapper;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,9 @@ public class TestRegisterTests {
 
   @Autowired
   private TestDetailMapper testDetailMapper;
+
+  @Autowired
+  private TestSubmissionMapper testSubmissionMapper;
 
   @Test
   void getTestDetailTest() {
@@ -55,5 +61,21 @@ public class TestRegisterTests {
 
   }
 
+  @Test
+  void getTestResult() {
+    int testId = 8039;
+
+    List<TestQuestionResultVO> testQuestionResultVOS = testSubmissionMapper.selectTestResult(
+        testId, 49);
+
+    for (TestQuestionResultVO testquestionResultVO : testQuestionResultVOS) {
+      log.info("testQuestionResultVO: {}", testquestionResultVO);
+
+      for (TestOptionResultVO testOptionResultVO : testquestionResultVO.getOptions()) {
+        log.info("testOptionResultVO: {}", testOptionResultVO);
+      }
+    }
+
+  }
 
 }

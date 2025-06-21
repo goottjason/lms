@@ -9,12 +9,12 @@
  */
 function apiCall(method, url, data = null, params = {}, headers = {}) {
   return axios({
-    method,
-    url,
-    data,
-    params,
-    headers
-  });
+                 method,
+                 url,
+                 data,
+                 params,
+                 headers
+               });
 }
 
 /**
@@ -60,6 +60,97 @@ const UrlUtils = {
 };
 
 //------------------------------------------------------------------------------
+
+function renderTestHeader(testInfo) {
+
+  const $testTitle = $("#test-title");
+  const $startDate = $("#start-date");
+  const $endDate = $("#end-date");
+  const $testTime = $("#test-time");
+  const $totalScore = $("#total-score");
+
+  $testTitle.val(testInfo.title);
+  $startDate.val(testInfo.startDate);
+  $endDate.val(testInfo.endDate);
+  $testTime.val(testInfo.testTime);
+  $totalScore.val(testInfo.totalScore);
+
+}
+
+function buildQuiz(quiz, questionInfo) {
+
+  $.each(questionInfo, function (index, item) {
+    console.log(item);
+    const {
+            questionNo,
+            questionType,
+            questionTitle,
+            questionScore,
+            options,
+            questionAnswer,
+          } = item;
+    let question = new Question(questionNo, questionType, questionTitle,
+                                questionScore);
+    console.log(questionAnswer);
+    question.setShortAnswer(questionAnswer);
+    console.log(question);
+
+    while (question.options.length < options.length) {
+      question.addOption();
+    }
+
+    // console.log(question.options);
+
+    // 선택지 넣기
+    $.each(question.options, function (index, item) {
+      let optionData = options[index];
+
+      item.setContent(optionData.optionContent);
+      item.setCorrect(optionData.isCorrect);
+    });
+
+    // console.log(options);
+    quiz.addQuestion(question);
+    // console.log(question);
+  });
+  console.log(quiz);
+}
+
+function buildUserAnswer(questions, score) {
+  console.log(questions);
+  $(".user-score").text(score);
+
+  $.each(questions, function (index, q) {
+
+    const userAnswerObj = {
+      userAnswer   : q.userAnswer,
+      userIsCorrect: q.userIsCorrect
+    };
+
+    userAnswer.push(userAnswerObj);
+  });
+}
+
+const $testDetailBody = $(".test-detail-body");
+
+function renderTestDetailPageForLearnerBySubmissionStatus(data) {
+  console.log(data);
+  const submissionStatus = data.submissionStatus;
+  $testDetailBody.empty();
+  $testDetailBody.append(makeTestDetailPageBodyForLearner(submissionStatus));
+  renderTestStartBtn(submissionStatus);
+
+}
+
+const $testStartBtn = $("#test-start-btn");
+
+function renderTestStartBtn(submissionStatus) {
+  if (submissionStatus === "IN_PROGRESS") {
+    $testStartBtn.text("시험 재응시");
+  } else if (submissionStatus === "COMPLETED") {
+    $testStartBtn.hide();
+  }
+}
 
 function handleValidationErrors(errorData) {
   const errorMsgObj = errorData.data;
@@ -155,7 +246,7 @@ function handleValidationErrors(errorData) {
     }
 
     if ((questionErrMsgObj.options.length === 0 &&
-            questionErrMsgObj.multipleAnswerValid)
+         questionErrMsgObj.multipleAnswerValid)
         || questionErrMsgObj.shortAnswerValid) {
       $questionCard.find(".short-answer-err-msg").text(
           questionErrMsgObj.shortAnswerValid || "");
@@ -179,3 +270,4 @@ function formatDateTime(date) {
 
   return dateArr[0] + " " + dateArr[1] + ":00";
 }
+
