@@ -15,17 +15,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 
 @SpringBootTest
 @Slf4j
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class HomeworkTest {
+
+
+  @Value("${cloud.aws.s3.bucketName}")
+  private String bucket;
+  @Value("${cloud.aws.credentials.accessKey}")
+  private String accessKey;
+  @Value("${cloud.aws.credentials.secretKey}")
+  private String secretKey;
+  @Value("${cloud.aws.region.static}")
+  private String region;
+
+
 
 
   @Autowired(required = true)
@@ -36,6 +50,9 @@ class HomeworkTest {
 
   @Autowired(required = true)
   ReadCountLogMapper readCountLogMapper;
+
+  @Autowired(required = true)
+//  S3Client s3Client;
 
 
   @Test
@@ -354,21 +371,127 @@ class HomeworkTest {
     }
   }
 
-  @Test
-  public void testCheckCourseIsBoolean(){
-    Boolean test = homeworkMapper.selectIsInProgress("[1회차] 자바와 스프링");
-    if(test == true){
-    log.info("test true={}",test);
-    }else {
-      log.info("test false={}",test);
-    }
+//  @Test
+//  public void testCheckCourseIsBoolean(){
+//    Boolean test = homeworkMapper.selectIsInProgress("[1회차] 자바와 스프링");
+//    if(test == true){
+//    log.info("test true={}",test);
+//    }else {
+//      log.info("test false={}",test);
+//    }
+//
+//    Boolean test2 = homeworkMapper.selectIsInProgressForSelectBox("[1회차] 자바와 스프링",34,"instructor");
+//    if(test2 == true){
+//      log.info("test2 true={}",test2);
+//    }else {
+//      log.info("test2 false={}",test2);
+//    }
+//
+//  }
 
-    Boolean test2 = homeworkMapper.selectIsInProgressForSelectBox("[1회차] 자바와 스프링",34,"instructor");
-    if(test2 == true){
-      log.info("test2 true={}",test2);
-    }else {
-      log.info("test2 false={}",test2);
-    }
+  @Test
+  public void selectHomeworkDTOBySubmissionId(){
+    HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOBySubmissionId(71);
+
+    log.info("homeworkDTO={}",homeworkDTO);
 
   }
+
+  @Test
+  @Transactional
+  public void insertHomeworkSubmissionTest(){
+    HomeworkSubmissionDTO hs = HomeworkSubmissionDTO.builder()
+        .homeworkId(50)
+        .title("test")
+        .content("test")
+        .learnerId(36)
+        .build();
+
+   int insertNum = homeworkMapper.insertHomeworkSubmission(hs);
+
+   if(insertNum == 1){
+     log.info("success");
+     log.info(hs.toString());
+   } else {
+     log.info("fail");
+   }
+  }
+
+  @Test
+  public void getSubmission(){
+    int userId = 41;
+    int homeworkId = 49;
+
+    int firstBoolean = homeworkMapper.isLearnerInCourse(userId,homeworkId);
+    int secondBoolean = homeworkMapper.existSubmission(userId,homeworkId);
+
+    if(firstBoolean == 1){
+      log.info("해당 과제의 과정에 속한 학생입니다.");
+      if(secondBoolean == 1){
+        log.info("해당 과제를 제출한 전적이 있으므로 등록할 수 없습니다.");
+      }else {
+        log.info("해당 과제를 제출한 전적이 없습니다.");
+      }
+    } else{
+      log.info("해당 과제의 과정에 해당하지 않습니다.");
+    }
+  }
+
+
+  @Test
+  @Transactional
+   public void updateSubmission2(){
+
+    String title = "test";
+    String content = "test 수정222222222222";
+    int id = 85;
+
+    HomeworkSubmissionDTO homeworkSubmissionDTO = HomeworkSubmissionDTO.builder()
+        .title(title)
+        .content(content)
+        .id(id)
+        .build();
+
+    homeworkSubmissionDTO.setUpdatedAt(LocalDateTime.now());
+
+    int result = homeworkMapper.updateSubmission(homeworkSubmissionDTO);
+    if(result == 1){
+      log.info("update success");
+    } else {
+      log.info("update fail");
+    }
+
+   }
+
+//
+//   @Test
+//   @Transactional
+//  public void testFile(){
+//
+//     //파일 삭제(일단 보류)
+//
+////        s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
+//
+//     String result = "";
+////       boolean isObjectExist = s3Client.headObject()
+////       if (isObjectExist) {
+////         s3Client.deleteObject(bucket, key);
+////       } else {
+////         result = "file not found";
+////       }
+////     } catch (Exception e) {
+////       log.debug("Delete File failed", e);
+////     }
+//
+//     HeadObjectResponse response = s3Client
+//         .headObject(builder -> builder.bucket(bucket).key("upload/homework/c7d3b29a-f5ad-44c6-a16f-94a902fab694_thumb_25df04b0-ec3b-417a-831c-9940d238ce85_1709801344_tmp콘다_이력서_양식.jpg"));
+//
+//     if(response != null){
+//       log.info("response:{}",response);
+//     } else {
+//       log.info("response is null");
+//     }
+//
+//
+//   }
 }

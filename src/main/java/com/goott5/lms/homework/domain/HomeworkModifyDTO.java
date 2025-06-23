@@ -1,9 +1,11 @@
 package com.goott5.lms.homework.domain;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Generated;
@@ -30,6 +32,8 @@ public class HomeworkModifyDTO {
   @NotBlank(message = "내용을 입력하세요.")
   @Size(min = 100, max = 1000, message = "100자 이상 1000자 이하로 입력하세요.")
   private String content;
+
+  private OffsetDateTime updatedAt;
 
 
 

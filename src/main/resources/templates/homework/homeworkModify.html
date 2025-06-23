@@ -193,6 +193,11 @@
 
         formData.append("homeworkId",homeworkId);
 
+        //updateAt
+        let updatedAt = new Date().toISOString();
+        formData.append("updatedAt",updatedAt);
+
+
         fileList.forEach(function (file) {
           formData.append("files",file);
         })

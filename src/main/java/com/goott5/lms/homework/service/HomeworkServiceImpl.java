@@ -22,6 +22,12 @@ public class HomeworkServiceImpl implements HomeworkService {
   private final UtilMapper utilMapper;
   private final ReadCountLogMapper readCountLogMapper;
 
+
+  @Override
+  public String courseNameById(int id) {
+    return homeworkMapper.courseName(id);
+  }
+
   @Override
   public PagingResponseDTO<HomeworkDTO> serviceList(HomeworkRequestDTO homeworkRequestDTO,String type) {
     List<HomeworkDTO> homeworkDTOList = new ArrayList<>();
@@ -122,6 +128,11 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public String homeworkName(int id) {
+    return homeworkMapper.selectTitle(id);
+  }
+
+  @Override
   public HomeworkDTO selectHomeworkDTOById(int id) {
     HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOById(id);
 
@@ -157,8 +168,16 @@ public class HomeworkServiceImpl implements HomeworkService {
     return resultMap;
   }
 
+  // submission 객체 보내기
   @Override
-  @Transactional
+  public HomeworkSubmissionDTO selectSubmission(int submissionId) {
+
+    return homeworkMapper.selectSubmissionBySubmissionId(submissionId);
+  }
+
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
   public int insertHomework(HomeworkDTO homeworkDTO) {
     int idForHomework = -1;
     if(homeworkMapper.insertHomework(homeworkDTO) == 1){
@@ -167,20 +186,6 @@ public class HomeworkServiceImpl implements HomeworkService {
     return idForHomework;
   }
 
-//  @Override
-//  @Transactional
-//  public Boolean selectIsInProgressAndInSa(String nameForLt,int userId,String userType) {
-//
-//    Boolean first = homeworkMapper.selectIsInProgress(nameForLt);
-//    if(first != null && first){
-//      Boolean second = homeworkMapper.selectIsInProgressForSelectBox(nameForLt,userId,userType);
-//      if(second != null && second){
-//        return true;
-//      }
-//    }
-//
-//    return false;
-//  }
 
   @Override
   public Map<String, Integer> selectIdCourse(String name, int userId, String type) {
@@ -249,6 +254,141 @@ public class HomeworkServiceImpl implements HomeworkService {
           }
         }
       }
+    }
+    return false;
+  }
+
+  @Override
+  public HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId) {
+    return homeworkMapper.selectHomeworkDTOBySubmissionId(submissionId) == null ? null : homeworkMapper.selectHomeworkDTOBySubmissionId(submissionId);
+  }
+
+  // submission readCountLog 업데이트
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public boolean updateReadCountForSubmission(ReadCountLog readCountLog) {
+    // (사용자 userId가 테이블 tableName의 게시물 tableId의 상세페이지에 readDate 날에 접근했을 때)
+    String tableName = readCountLog.getTableName();
+    int tableId = readCountLog.getTableId();
+    int userId = readCountLog.getUserId();
+
+    int checkReadCount = readCountLogMapper.checkReadCountLog(tableName,tableId,userId);
+
+    if(checkReadCount == 0){
+      // 처음 방문
+      int insertNum = readCountLogMapper.insertReadCountLog(readCountLog);
+      if(insertNum == 1){
+        int updateNum = homeworkMapper.updateReadCountForSubmission(tableId);
+        if(updateNum == 1){
+          log.info("처음 submission 사용자: 조회수 insert && update 성공");
+          return true;
+        }
+      }
+    } else {
+      // 두 번째 방문
+      int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
+      if(dateNum == 1){
+        // 하루 이내 방문
+        log.info("이후 submission 사용자: 조회수 증가 x");
+        return true;
+      }else{
+        // 하루 이후 방문
+        int updateReadDate = readCountLogMapper.updateReadCountLogByDate(readCountLog);
+        if(updateReadDate == 1){
+          int updateReadCount = homeworkMapper.updateReadCountForSubmission(tableId);
+          if(updateReadCount == 1){
+            log.info("이후 submission 사용자: 조회수 증가 o");
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+
+
+  }
+
+  // eval readCountLog 업데이트
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public boolean updateReadCountForEval(ReadCountLog readCountLog) {
+    // (사용자 userId가 테이블 tableName의 게시물 tableId의 상세페이지에 readDate 날에 접근했을 때)
+    String tableName = readCountLog.getTableName();
+    int tableId = readCountLog.getTableId();
+    int userId = readCountLog.getUserId();
+
+    int checkReadCount = readCountLogMapper.checkReadCountLog(tableName,tableId,userId);
+
+    if(checkReadCount == 0){
+      // 처음 방문
+      int insertNum = readCountLogMapper.insertReadCountLog(readCountLog);
+      if(insertNum == 1){
+        int updateNum = homeworkMapper.updateReadCountForEval(tableId);
+        if(updateNum == 1){
+          log.info("처음 eval 사용자: 조회수 insert && update 성공");
+          return true;
+        }
+      }
+    } else {
+      // 두 번째 방문
+      int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
+      if(dateNum == 1){
+        // 하루 이내 방문
+        log.info("이후 eval 사용자: 조회수 증가 x");
+        return true;
+      }else{
+        // 하루 이후 방문
+        int updateReadDate = readCountLogMapper.updateReadCountLogByDate(readCountLog);
+        if(updateReadDate == 1){
+          int updateReadCount = homeworkMapper.updateReadCountForEval(tableId);
+          if(updateReadCount == 1){
+            log.info("이후 eval 사용자: 조회수 증가 o");
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+
+
+  }
+
+  // 파일과 함께 insertHomework
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public int insertHomeworkSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO) {
+    int idForHomework = -1;
+    if(homeworkMapper.insertHomeworkSubmission(homeworkSubmissionDTO) == 1){
+      idForHomework = utilMapper.selectLastIdFromAll();
+    }
+    return idForHomework;
+  }
+
+  @Override
+  public boolean canSubmission(int learnerId, int homeworkId) {
+
+    int firstTest = homeworkMapper.isLearnerInCourse(learnerId,homeworkId);
+    int secondTest = homeworkMapper.existSubmission(learnerId,homeworkId);
+
+    if(firstTest == 1){
+      //해당 과제의 과정에 속한 학생인지 확인
+        // 해당 학생의 해당 과제에 대한 제출기록이 존재 x인지 확인(맞으면 제출 가능)
+        return secondTest == 0;
+    }
+
+    return false;
+  }
+
+  @Override
+  public int updateSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO) {
+    return homeworkMapper.updateSubmission(homeworkSubmissionDTO);
+  }
+
+  @Override
+  public boolean deleteSubmissionById(int id) {
+    int result = homeworkMapper.deleteSubmissionById(id);
+    if(result == 1){
+      return true;
     }
     return false;
   }

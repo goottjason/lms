@@ -171,34 +171,32 @@
           console.log(response.data)
           location.href = "/homework/homeworkList";
         }).catch(function (error) {
-          console.log(error);
-          errorMap = error.response.data.data;
-          // errorMap = [[${errorResultMap}]];
-          console.log("errorMap",errorMap);
-          console.log("errorMap.title",errorMap.title);
-
-          if(errorMap.title){
+          console.log("error",error);
+          if(error.response.data.data != null){
+            errorMap = error.response.data.data;
+            if(errorMap.title){
               $("#titleError").html(errorMap.title);
-          } else {
+            } else {
               $("#titleError").html("");
-          }
+            }
 
-          if(errorMap.startDate){
+            if(errorMap.startDate){
               $("#startDateError").html(errorMap.startDate);
-          }else {
+            }else {
               $("#startDateError").html("");
-          }
+            }
 
-          if(errorMap.endDate){
+            if(errorMap.endDate){
               $("#endDateError").html(errorMap.endDate);
-          }else {
+            }else {
               $("#endDateError").html("");
-          }
+            }
 
-          if(errorMap.content){
+            if(errorMap.content){
               $("#contentError").html(errorMap.content);
             }else {
               $("#contentError").html("");
+            }
           }
 
         })

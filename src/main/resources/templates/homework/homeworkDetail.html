@@ -142,14 +142,6 @@
                          style="width: 300px; height: 100px; object-fit: cover;">
                   </a>
                 </div>
-<!--                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">-->
-<!--                  <a th:href="|@{/homework/imgDownload} + '?fileName=' + ${fileDTO.getNewName()}|"-->
-<!--                     th:data-file="${fileDTO.getNewName()}"-->
-<!--                     th:attr="download=${fileDTO.getOriginalName()}">-->
-<!--                    <img th:src="${fileDTO.getPath()}"-->
-<!--                         style="width: 300px; height: 100px; object-fit: cover;">-->
-<!--                  </a>-->
-<!--                </div>-->
               </div>
             </div>
           </div>
@@ -162,12 +154,12 @@
 
   <!-- 버튼 -->
   <div class="col-12 d-flex justify-content-end mb-4">
-    <button id="" class="btn btn-info btn-icon-split mr-2"
+    <button id="modify" class="btn btn-info btn-icon-split mr-2"
             th:if="${loginUser.getType() == 'INSTRUCTOR'}">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-      <a class="text px-3" th:href="@{|/homework/homeworkModify?homeworkId=${homework.getId()}|}">과제수정</a>
+      <span class="text px-3">과제수정</span>
     </button>
     <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
             th:if="${loginUser.getType() == 'INSTRUCTOR'}">
@@ -180,13 +172,13 @@
       <span class="icon text-white-50">
         <i class="fas fa-upload"></i>
       </span>
-      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}">과제등록</span>
+      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}" id = "registerBtn">과제 제출 등록</span>
     </button>
-    <button id="" class="btn btn-secondary btn-icon-split">
+    <button id="toList" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-      <span class="text px-4" th:href="@{/homework/homeworkList}">목록</span>
+      <span class="text px-4" >목록</span>
     </button>
   </div>
 
@@ -222,10 +214,14 @@
 
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
+    let homeworkId = [[${homework.getId()}]];
+
+    // 등록 버튼
+    function registerBtn(){
+      location.href = "/homework/submissionRegister?homeworkId=" + homeworkId;
+    }
 
     $(function () {
-
-      let homeworkId = [[${homework.getId()}]];
 
       // 삭제 모달창 뜨기
       $("#deleteHomework").on("click", function () {
@@ -254,6 +250,23 @@
           console.log(error);
         })
       })
+
+      $("#registerBtn").on("click", function (e) {
+        e.preventDefault();
+
+        registerBtn();
+      })
+
+      //목록으로
+      $("#toList").click(function () {
+        location.href = "/homework/homeworkList";
+      })
+
+      // 수정
+      $("#modify").click(function () {
+        location.href = "/homework/homeworkModify?homeworkId=" + homeworkId;
+      })
+
 
 
     })

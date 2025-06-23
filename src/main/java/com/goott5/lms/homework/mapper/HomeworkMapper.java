@@ -20,6 +20,10 @@ public interface HomeworkMapper {
       + "where id = #{id}")
   String selectInstructorIdForHomework(int id);
 
+  // 과정 아이디로 과정명 가져오기
+  @Select("select name from course where id = #{id}")
+  String courseName(int id);
+
   // 로그인한 아이디가 속한 과정 출력(학생,강사)
   //1. 학생
   @Select("select c.name from course c "
@@ -72,6 +76,10 @@ public interface HomeworkMapper {
   @Select("select count(*) from homework_submission where homework_id = #{homeworkId}")
   int totalSubmission(int homeworkId);
 
+  //submission의 homeworkId에 따른 homework명 반환
+  @Select("select title from homework where id = #{id}")
+  String selectTitle(int id);
+
   //--------- 상세 페이지------------------------------------------------------------------------
 
   // 과제 아이디-> 과제 상세 페이지 반환
@@ -82,22 +90,6 @@ public interface HomeworkMapper {
   HomeworkDTO selectHomeworkDTOById(int id);
 
 
-  //submission 상세 확인 시, 아이디 검사
-  @Select("select login_id from user \n"
-      + "where id = (select learner_id from homework_submission where id = #{id})")
-  String selectUserIdForSubmission(int id);
-
-  //submission 정보 조회(submission data)
-  @Select("select id, homework_id, title, content, " +
-      " read_count, learner_id, created_at, updated_at, deleted_at " +
-      " from homework_submission " +
-      " where id = #{submissionId}")
-  HomeworkSubmissionDTO selectSubmissionBySubmissionId(int submissionId);
-
-  //submissionId에 따른 eval 조회
-  @Select("select id, hs_id, is_pass, content, read_count, instructor_id, created_at, updated_at, deleted_at from homework_eval where hs_id = #{hsId}")
-  HomeworkEvalDTO selectEvalById(int hsId);
-
   //--------과제 등록------------------------------------------------------------------------
 
   // 강사의 과제 등록
@@ -107,18 +99,7 @@ public interface HomeworkMapper {
   @Select("select is_in_progress from course where name = #{name}")
   Boolean selectIsInProgress(String name);
 
-  //(sa에 등록된) select박스에서 선택한 과정과 로그인한 강사가 일치하지 않을 때 막기
-//  @Select("select exists(select  sa.course_id\n"
-//      + "from staff_assignment sa\n"
-//      + "inner join course c\n"
-//      + "on sa.course_id = c.id\n"
-//      + "inner join user u\n"
-//      + "on sa.user_id = u.id\n"
-//      + "where c.name = #{name}\n"
-//      + "and sa.user_id = #{userId}\n"
-//      + "and u.type = #{type}"
-//      + "and c.is_in_progress = 1)")
-//  Boolean selectIsInProgressForSelectBox(String name, int userId, String type);
+
 
   //강사의 과제 등록을 위한 instructorId와 courseId select
   @Select("select  sa.course_id, sa.user_id\n"
@@ -146,19 +127,10 @@ public interface HomeworkMapper {
       + ")")
   int selectIsInstructorId(String loginId, int homeworkId);
 
-  // 해당 homeworkId 에 해당하는 과정 아이디 조회
-//    @Select("select h.instructor_id, h.course_id\n" +
-//        "from homework h\n" +
-//        "inner join user u\n" +
-//        "on h.instructor_id = u.id\n" +
-//        "inner join course c\n" +
-//        "on h.course_id = c.id\n" +
-//        "where u.login_id = #{loginId}\n" +
-//        "and h.id = #{homeworkId}")
-//    List<Map<String, Integer>> selectForUpdateId(String loginId, int homeworkId);
+
 
   // 과제 업데이트(homeworkModifyDTO)
-  @Update("update homework set title = #{title}, start_date = #{startDate}, end_date = #{endDate}, content = #{content} where id = #{id}")
+  @Update("update homework set title = #{title}, start_date = #{startDate}, end_date = #{endDate}, content = #{content}, updated_at = #{updatedAt} where id = #{id}")
   int updateHomework(HomeworkModifyDTO homeworkModifyDTO);
 
   //-------과제 delete-----------------
@@ -167,15 +139,68 @@ public interface HomeworkMapper {
 
   //------------ 조회수--------------
 
-  //조회수 업데이트
+  //조회수 업데이트(homework)
   @Update("update homework set read_count = read_count + 1 where id = #{tableId}")
   int updateReadCount(int tableId);
+
+  //조회수 업데이트(homework_submission)
+  @Update("update homework_submission  set read_count = read_count + 1 where id = #{tableId}")
+  int updateReadCountForSubmission(int tableId);
+
+  //조회수 업데이트(homework_eval)
+  @Update("update homework_eval  set read_count = read_count + 1 where id = #{tableId}")
+  int updateReadCountForEval(int tableId);
 
   //--------테스트용------------------------------------------------------------------------
 
   //homework_submission insert(일단 더미데이터용)
   @Insert("insert into homework_submission(homework_id,  title, content, learner_id) values(#{homeworkId}, #{title}, #{content}, #{learnerId})")
   int insertHomeworkSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+  //-------submission용----------------------------------------------------
+
+  //submission 상세 확인 시, 아이디 검사
+  @Select("select login_id from user \n"
+      + "where id = (select learner_id from homework_submission where id = #{id})")
+  String selectUserIdForSubmission(int id);
+
+  //submission 정보 조회(submission data)
+  @Select("select id, homework_id, title, content, " +
+      " read_count, learner_id, created_at, updated_at, deleted_at " +
+      " from homework_submission " +
+      " where id = #{submissionId}")
+  HomeworkSubmissionDTO selectSubmissionBySubmissionId(int submissionId);
+
+  //submissionId에 따른 eval 조회
+  @Select("select id, hs_id, is_pass, content, read_count, instructor_id, created_at, updated_at, deleted_at from homework_eval where hs_id = #{hsId}")
+  HomeworkEvalDTO selectEvalById(int hsId);
+
+  //submissionId로 해당 homeworkDTO조회
+  @Select("select id, title, start_date, end_date, content, course_id, read_count, instructor_id , created_at, updated_at, deleted_at "
+      + "from homework where id = (select homework_id from homework_submission where id = #{submissionId})")
+  HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId);
+
+
+  //insert homeworkSubmission
+  @Insert("insert into homework_submission (title,  content, course_id, learner_id )\n"
+      + "    values (#{title},  #{content}, #{courseId}, #{learnerId})")
+  HomeworkSubmissionDTO insertSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+  //해당 과제의 과정에 속한 학생인지 확인
+  @Select("select exists (select user_id from learner_enrollment where user_id = #{userId} and course_id = (select course_id from homework where id = #{homeworkId}))")
+  int isLearnerInCourse(int userId, int homeworkId);
+
+  // 해당 학생이 해당 과제에 대한 제출기록이 1개 이상 존재하는지 확인(맞으면 막기)
+  @Select("select exists (select id from homework_submission where learner_id = #{learnerId} and homework_id = #{homeworkId})")
+  int existSubmission(int learnerId, int homeworkId);
+
+  //submission 업데이트(수정)
+  @Update("update homework_submission set title = #{title}, content = #{content}, updated_at = #{updatedAt} where id = #{id}")
+  int updateSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+  //submission delete
+  @Delete("delete from homework_submission where id = #{id}")
+  int deleteSubmissionById(int id);
 
 
 }
