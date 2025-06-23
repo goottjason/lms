@@ -15,6 +15,7 @@ import com.goott5.lms.test.mapper.test.TestSubmissionMapper;
 import com.goott5.lms.test.service.test.detail.TestDetailService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.print.DocFlavor.STRING;
@@ -79,11 +80,11 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
 
   @Override
   public String modifyTestSubmissionToInProgressIncrementAbnormalCount(TestAnswerDTO testAnswerDTO,
-          HttpSession session) {
+      HttpSession session) {
 
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(
-            testAnswerDTO.getTestId(),
-            ((UserVO) session.getAttribute("loginUser")).getId());
+        testAnswerDTO.getTestId(),
+        ((UserVO) session.getAttribute("loginUser")).getId());
 
     // 응시자의 submission_status를 확인 후
     // IN_PROGRESS로 Update
@@ -92,13 +93,13 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
       // is_invalidated를 true로 변경
 
       TestSubmissionVO abnormalCompleted = TestSubmissionVO.builder()
-              .id(testSubmissionVO.getId())
-              .submissionTime(testAnswerDTO.getSubmissionTime())
-              .submissionStatus("COMPLETED")
-              .isInvalidated(true)
-              .submissionRegDate(LocalDateTime.now())
-              .score(0)
-              .build();
+          .id(testSubmissionVO.getId())
+          .submissionTime(testAnswerDTO.getSubmissionTime())
+          .submissionStatus("COMPLETED")
+          .isInvalidated(true)
+          .submissionRegDate(LocalDateTime.now())
+          .score(0)
+          .build();
 
       testSubmissionMapper.updateTestSubmission(abnormalCompleted);
       testSubmissionMapper.deleteTestAnswer(testSubmissionVO.getId());
@@ -110,11 +111,11 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
       // submissionStatus => "IN_PROGRESS"
 
       TestSubmissionVO abnormalInProgress = TestSubmissionVO.builder()
-              .id(testSubmissionVO.getId())
-              .submissionTime(testAnswerDTO.getSubmissionTime())
-              .submissionStatus("IN_PROGRESS")
-              .retryCount(testSubmissionVO.getRetryCount() + 1)
-              .build();
+          .id(testSubmissionVO.getId())
+          .submissionTime(testAnswerDTO.getSubmissionTime())
+          .submissionStatus("IN_PROGRESS")
+          .retryCount(testSubmissionVO.getRetryCount() + 1)
+          .build();
 
       testSubmissionMapper.updateTestSubmission(abnormalInProgress);
 
@@ -124,7 +125,7 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
         TestQuestionVO testQuestionVO = testRegisterVO.getQuestions().get(i);
 
         testSubmissionMapper.insertTestAnswer(testQuestionVO.getId(), testSubmissionVO.getId(),
-                testAnswerDTO.getSelectAnswers().get(i), false);
+            testAnswerDTO.getSelectAnswers().get(i), false);
       }
 
       return "COUNT1";
@@ -137,8 +138,8 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
 
     // 제출 ID(PK)
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(
-            testAnswerDTO.getTestId(),
-            ((UserVO) session.getAttribute("loginUser")).getId());
+        testAnswerDTO.getTestId(),
+        ((UserVO) session.getAttribute("loginUser")).getId());
 
     if ("IN_PROGRESS".equals(testSubmissionVO.getSubmissionStatus())) {
 
@@ -165,8 +166,8 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
         boolean isCorrect = Integer.parseInt(selectedMultipleAnswer) == correctMultipleAnswerNo;
 
         testSubmissionMapper.insertTestAnswer(answerKeyQuestion.getId(),
-                testSubmissionVO.getId(),
-                selectedMultipleAnswer, isCorrect);
+            testSubmissionVO.getId(),
+            selectedMultipleAnswer, isCorrect);
 
 
       } else if ("SHORT".equals(questionType)) {
@@ -177,25 +178,26 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
         boolean isCorrect = selectedShortAnswer.equals(correctShortAnswer);
 
         testSubmissionMapper.insertTestAnswer(answerKeyQuestion.getId(), testSubmissionVO.getId(),
-                selectedShortAnswer, isCorrect);
+            selectedShortAnswer, isCorrect);
 
       }
     }
 
     // 시험 점수 정산
     List<QuestionScoreVO> questionScoreVOS = testSubmissionMapper.selectCorrectedQuestion(
-            testAnswerDTO.getTestId(),
-            testSubmissionVO.getId());
+        testAnswerDTO.getTestId(),
+        testSubmissionVO.getId());
     for (QuestionScoreVO questionScoreVO : questionScoreVOS) {
       userScore += questionScoreVO.getScore();
     }
 
     TestSubmissionVO normalCompleted = TestSubmissionVO.builder()
-            .id(testSubmissionVO.getId())
-            .submissionTime(testAnswerDTO.getSubmissionTime())
-            .submissionStatus("COMPLETED")
-            .score(userScore)
-            .build();
+        .id(testSubmissionVO.getId())
+        .submissionTime(testAnswerDTO.getSubmissionTime())
+        .submissionStatus("COMPLETED")
+        .submissionRegDate(LocalDateTime.now())
+        .score(userScore)
+        .build();
     // 시험 제출 정보 수정
     testSubmissionMapper.updateTestSubmission(normalCompleted);
 
@@ -206,24 +208,28 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
   public TestRegisterResultVO getTestResult(int testId, HttpSession session) {
 
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
-            ((UserVO) session.getAttribute("loginUser")).getId());
+        ((UserVO) session.getAttribute("loginUser")).getId());
+
+    DecimalFormat df = new DecimalFormat("#0.00");
+    double submissionTime = testSubmissionVO.getSubmissionTime() / 60.0;
 
     return TestRegisterResultVO.builder()
-            .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
-            .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
-            .build();
+        .submissionTime(df.format(submissionTime))
+        .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
+        .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
+        .build();
   }
 
   @Override
   public TestRegisterResultVO getTestResultByLearnerId(int testId, int learnerId) {
 
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
-            learnerId);
+        learnerId);
 
     return TestRegisterResultVO.builder()
-            .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
-            .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
-            .build();
+        .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
+        .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
+        .build();
   }
 
   private int getCorrectMultipleAnswerNo(List<TestOptionVO> options) {

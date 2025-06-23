@@ -28,12 +28,12 @@ function makeTestRow(userType, test) {
   console.log(test);
 
   basePath = "LEARNER" === userType ? `/test/testDetail/${test.testId}/learner`
-                                    : `/test/testDetail/${test.testId}`;
+      : `/test/testDetail/${test.testId}`;
 
   return `
     <tr>
       <td class="text-center align-middle">${test.testId}</td>
-      <td class="title align-middle test-detail-btn"><a href="${basePath}?currentPageNo=${currentPageNoForPrev}&courseName=${$courseSelector.val()}">${test.testTitle}</a></td>     
+      <td class="title align-middle test-detail-btn"><a href="${basePath}?currentPageNo=${currentPageNoForPrev}&courseName=${$courseSelector.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
       <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
       <td class="text-center align-middle">${test.testStatus}</td>
@@ -52,7 +52,7 @@ function renderAdminCourseFilter(isInProgress = null) {
   axios.get(`/api/admin/courses`, { params: { isInProgress: isInProgress } })
        .then(function (response) {
          renderCourseFilterOptionsForAdmin("#course-filter",
-                                           response.data.data);
+             response.data.data);
        })
        .catch(function (error) {
 
@@ -66,10 +66,10 @@ function renderUserCourseFilter() {
                 console.log(response);
                 const data = response.data.data;
                 renderCourseFilterOptionsForAdminForUser("#courseSelector",
-                                                         response.data.data);
+                    response.data.data);
 
                 return data.find(el => el.inProgress)?.courseName ||
-                       data[0]?.courseName || "";
+                    data[0]?.courseName || "";
               });
 }
 
@@ -155,12 +155,12 @@ function renderTestListPage(courseName = "", currentPageNo = 1) {
 
   console.log(courseName);
   axios.get(`/api/tests`,
-            {
-              params: {
-                courseName: courseName,
-                currentPageNo: currentPageNo
-              }
-            })
+      {
+        params: {
+          courseName: courseName,
+          currentPageNo: currentPageNo
+        }
+      })
        .then(function (response) {
          console.log(response);
 
@@ -200,8 +200,8 @@ function renderTestList(userType, data) {
       testTitle: el.title,
       courseName: el.courseName,
       testPeriod: el.startDate.split("T")[0] + " ~ " +
-                  el.endDate.split(
-                      "T")[0],
+          el.endDate.split(
+              "T")[0],
       testStatus: assignValueByStatus(el.testStatus),
       testTime: el.testTime + "분",
       participantCount: `${el.completedCount}/${el.numberOfLearner}`
@@ -237,17 +237,17 @@ function renderPagination(data) {
     // 이전 그룹 이동 버튼
     $pagePart.append(`
   <li class="page-item prev-page-group ${!data.prev ? "disabled"
-                                                    : ""}" data-current-page-group=${data.currentPageGroup} data-pages-per-group=${data.pagesPerGroup}>
+        : ""}" data-current-page-group=${data.currentPageGroup} data-pages-per-group=${data.pagesPerGroup}>
       <span class="page-link">이전</span>
   </li>
   `);
 
     // 페이지 번호 생성
     for (let i = data.startPageNo;
-         i <= Math.min(data.endPageNo, data.totalPages); i++) {
+        i <= Math.min(data.endPageNo, data.totalPages); i++) {
       $pagePart.append(`
      <li class="page-item page-no ${data.currentPageNo === i ? "active"
-                                                             : ""}" data-page-no=${i}>
+          : ""}" data-page-no=${i}>
          <span class="page-link">${i}</span>
      </li>
     `);
@@ -271,27 +271,27 @@ function renderPagination(data) {
 $(document).ready(function () {
 
   const Toast = Swal.mixin({
-                             toast: true,
-                             position: "bottom-end",
-                             showConfirmButton: false,
-                             timer: 3000,
-                             timerProgressBar: true,
-                             didOpen: (toast) => {
-                               toast.onmouseenter = Swal.stopTimer;
-                               toast.onmouseleave = Swal.resumeTimer;
-                             }
-                           });
+    toast: true,
+    position: "bottom-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
 
   if (UrlUtils.getQueryParam("saved") === "true") {
     Toast.fire({
-                 icon: "success",
-                 title: "새 시험이 등록되었습니다."
-               });
+      icon: "success",
+      title: "새 시험이 등록되었습니다."
+    });
   } else if (UrlUtils.getQueryParam("removed") === "true") {
     Toast.fire({
-                 icon: "success",
-                 title: "시험이 삭제되었습니다."
-               });
+      icon: "success",
+      title: "시험이 삭제되었습니다."
+    });
   }
 
   const currentPageNo = new URLSearchParams(window.location.search)
@@ -312,7 +312,7 @@ $(document).ready(function () {
          console.log(response);
 
          renderPageByUserType(response.data.message,
-                              response.data.data.currentPageNo);
+             response.data.data.currentPageNo);
        })
        .catch(function (error) {
 
@@ -336,7 +336,7 @@ $(document).on("click", ".prev-page-group", function () {
 
   // 이전 페이지 그룹의 첫 번호
   let courseName = $courseFilter.length ? $courseFilter.val()
-                                        : $(
+      : $(
           "#courseSelector").val();
   let prevPageGroup = (currentPageGroup - 1) * pagesPerGroup;
 
@@ -373,7 +373,7 @@ $(document).on("click", ".next-page-group", function () {
 
   // 다음 페이지 그룹의 첫 번째 번호
   let courseName = $courseFilter.length ? $courseFilter.val()
-                                        : $(
+      : $(
           "#courseSelector").val();
   let nextPageGroup = currentPageGroup * pagesPerGroup + 1;
 

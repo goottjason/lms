@@ -18,8 +18,13 @@ import lombok.ToString;
 @Builder
 public class TestRegisterResultVO {
 
+  private String submissionTime;
   private int userScore;
 
   List<TestQuestionResultVO> questions;
+
+  public void setSubmissionTime(int submissionTime) {
+
+  }
 
 }

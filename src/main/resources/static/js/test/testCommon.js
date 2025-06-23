@@ -9,12 +9,12 @@
  */
 function apiCall(method, url, data = null, params = {}, headers = {}) {
   return axios({
-                 method,
-                 url,
-                 data,
-                 params,
-                 headers
-               });
+    method,
+    url,
+    data,
+    params,
+    headers
+  });
 }
 
 /**
@@ -82,15 +82,15 @@ function buildQuiz(quiz, questionInfo) {
   $.each(questionInfo, function (index, item) {
     console.log(item);
     const {
-            questionNo,
-            questionType,
-            questionTitle,
-            questionScore,
-            options,
-            questionAnswer,
-          } = item;
+      questionNo,
+      questionType,
+      questionTitle,
+      questionScore,
+      options,
+      questionAnswer,
+    } = item;
     let question = new Question(questionNo, questionType, questionTitle,
-                                questionScore);
+        questionScore);
     console.log(questionAnswer);
     question.setShortAnswer(questionAnswer);
     console.log(question);
@@ -123,7 +123,7 @@ function buildUserAnswer(questions, score) {
   $.each(questions, function (index, q) {
 
     const userAnswerObj = {
-      userAnswer   : q.userAnswer,
+      userAnswer: q.userAnswer,
       userIsCorrect: q.userIsCorrect
     };
 
@@ -146,7 +146,8 @@ const $testStartBtn = $("#test-start-btn");
 
 function renderTestStartBtn(submissionStatus) {
   if (submissionStatus === "IN_PROGRESS") {
-    $testStartBtn.text("시험 재응시");
+    $testStartBtn.attr("data-restart-test", true).data("restart-test", true);
+    $testStartBtn.find(".text").text("시험 재응시");
   } else if (submissionStatus === "COMPLETED") {
     $testStartBtn.hide();
   }
@@ -246,7 +247,7 @@ function handleValidationErrors(errorData) {
     }
 
     if ((questionErrMsgObj.options.length === 0 &&
-         questionErrMsgObj.multipleAnswerValid)
+            questionErrMsgObj.multipleAnswerValid)
         || questionErrMsgObj.shortAnswerValid) {
       $questionCard.find(".short-answer-err-msg").text(
           questionErrMsgObj.shortAnswerValid || "");
