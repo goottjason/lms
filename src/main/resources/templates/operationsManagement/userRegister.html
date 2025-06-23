@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">사용자 등록</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <form
+      id="user-register-form"
+      class=""
+      action="/operationsManagement/userRegister/saveUser"
+      method="POST">
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <h6 class="m-0 font-weight-bold text-primary">사용자 등록</h6>
+        </div>
+        <div class="col-auto">
+          <span class="mr-2">분류</span>
+        </div>
+        <div class="col-3">
+          <select id="user-type-selector" class="form-control" name="type">
+            <option value="LEARNER">교육생</option>
+            <option value="ADMINISTRATOR">관리자</option>
+            <option value="INSTRUCTOR">강사</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="fullname">이름<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+              <span id="fullname-msg" class="text-danger small error-box"></span>
+              <input
+                type="text"
+                id="fullname"
+                name="fullname"
+                class="form-control"
+                placeholder="이름을 입력하세요.">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="email">이메일<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+              <span id="email-msg" class="text-danger small error-box">이메일 사용가능 여부 확인을 해주세요.</span>
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="email"
+                  name="email"
+                  class="form-control"
+                  placeholder="이메일을 입력하세요.">
+                <div class="input-group-append">
+                        <button
+                            id="email-check-btn"
+                            class="btn btn-outline-primary"
+                            type="button">이메일 확인</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label" for="birthday">생년월일<span class="text-danger">*
+                    </span>&nbsp;&nbsp;</label>
+              <span id="birthday-msg" class="text-danger small error-box"></span>
+              <input
+                type="date"
+                id="birthday"
+                name="birthday"
+                class="form-control"
+              >
+            </div>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-2 pb-1">성별
+              <span class="text-danger">*</span>&nbsp;&nbsp;
+              <span id="gender-msg" class="text-danger small error-box"></span>
+            </p>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="gender" id="femaleGender"
+                     value="F" />
+              <label class="form-check-label" for="femaleGender">여성</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="gender" id="maleGender"
+                     value="M" />
+              <label class="form-check-label" for="maleGender">남성</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4 staff-detail-box">
+
+        </div>
+
+        <div class="d-flex justify-content-end mb-3">
+          <button type="submit" id="register-btn" class="btn btn-primary btn-icon-split mr-2">
+                  <span class="icon text-white-50">
+                      <i class="fas fa-address-book"></i>
+                  </span>
+            <span class="text px-5">등록</span>
+          </button>
+          <button id="cancel-btn" class="btn btn-secondary btn-icon-split">
+                  <span class="icon text-white-50">
+                    <i class="fa fa-times"></i>
+                  </span>
+            <span class="text px-5">취소</span>
+          </button>
+        </div>
+
+    </div>
+  </div>
+  </form>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script src="sweetalert2.all.min.js"></script>
+  <script th:if="${isSaveSuccess}" th:inline="javascript">
+    let isSaveSuccess = [[${isSaveSuccess}]];
+    if (isSaveSuccess) {
+      Swal.fire({
+                  position: "top-end",
+                  icon: "success",
+                  title: "저장 완료",
+                  showConfirmButton: false,
+                  timer: 1500
+                });
+    } else {
+      Swal.fire({
+                  position: "top-end",
+                  icon: "warning",
+                  title: "저장 실패",
+                  showConfirmButton: false,
+                  timer: 1500
+                });
+    }
+  </script>
+
+  <script th:src="@{/js/userRegister/userRegister.js}" type="text/javascript"></script>
+</th:block>
+</body>
+</html>

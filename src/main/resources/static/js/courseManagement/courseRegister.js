@@ -143,6 +143,11 @@ $(document).ready(function () {
                }
            });
 
+    $("#cancel-btn").click(function(e){
+        e.preventDefault();
+       location.href = "/courseManagement/courseList";
+    });
+
     $("#total-hours-input").blur(function () {
 
         clearErr(this);
