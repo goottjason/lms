@@ -6,8 +6,12 @@ import com.goott5.lms.homework.domain.*;
 import com.goott5.lms.common.domain.ReadCountLog;
 import java.util.List;
 import java.util.Map;
+import org.apache.ibatis.annotations.Select;
 
 public interface HomeworkService {
+
+  //과정명 반환
+  String courseNameById(int id);
 
   //과제 반환
   PagingResponseDTO<HomeworkDTO> serviceList(HomeworkRequestDTO homeworkRequestDTO,String type);
@@ -29,6 +33,9 @@ public interface HomeworkService {
   //관리자의 진행상황(Boolean,tinyint)에 따라 과정명 반환
   List<String> selectBoxCourseNameForAdmin(Boolean isInProgress);
 
+  //과제 번호에 따른 과제명 반환
+  String homeworkName(int id);
+
   //-----------상세----------------------------
 
   // 과제 아이디-> 과제 상세 페이지
@@ -37,8 +44,6 @@ public interface HomeworkService {
   // int id-> loginId 출력
   String selectLoginId(int id);
 
-  //과제 제출 + 과제 평가
-  Map<HomeworkSubmissionDTO, HomeworkEvalDTO> selectSubmissionEval(int submissionId);
 
   //------------등록--------------------
 
@@ -64,8 +69,37 @@ public interface HomeworkService {
   // 해당 아이디의 과제 삭제
   int deleteHomeworkById(int id);
 
+  //-------homework 조회수-------------
+
   // 조회수 업데이트(homework)
   boolean updateReadCount(ReadCountLog readCountLog);
 
+  //--------- 과제 제출 및 평가 리스트---------------------------------------
 
+  //과제 제출 + 과제 평가
+  Map<HomeworkSubmissionDTO, HomeworkEvalDTO> selectSubmissionEval(int submissionId);
+
+  // 그냥 submission만 보내기
+  HomeworkSubmissionDTO selectSubmission(int submissionId);
+
+  //제출 아이디로 homeworkDTO 출력
+  HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId);
+
+  //homeowork_submission 조회수
+  boolean updateReadCountForSubmission(ReadCountLog readCountLog);
+
+  //homework_eval 조회수
+  boolean updateReadCountForEval(ReadCountLog readCountLog);
+
+  //homeworkSubmission insert
+  int insertHomeworkSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+  //homeworkSubmission 등록 시 검사
+  boolean canSubmission(int learnerId, int homeworkId);
+
+  //homeworkSubmission update
+  int updateSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+  //homeworkSubmission delete
+  boolean deleteSubmissionById(int id);
 }

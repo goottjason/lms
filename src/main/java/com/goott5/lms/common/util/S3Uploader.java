@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+@Slf4j
 @Configuration
 @Component
 @RequiredArgsConstructor
@@ -40,6 +42,7 @@ public class S3Uploader {
     private String region;
 
     private S3Client s3Client;
+
 
     @PostConstruct
     public void initializeS3(){
@@ -89,7 +92,9 @@ public class S3Uploader {
     //파일 삭제(일단 보류)
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
-        // 실패....(이건 일부 컨트롤러에서 존재하니 삭제하실때 공유 부탁드립니다~!)
+//        log.info("delete : {}",  s3Client.deleteObject(builder -> builder.bucket(bucket).key(key)));
+          log.info("key:{}",key); // 성공
+          log.info("파일 서버 삭제 성공:{}",key);
     }
 
     private File convert(InputStream inputStream, String fileName) throws IOException {

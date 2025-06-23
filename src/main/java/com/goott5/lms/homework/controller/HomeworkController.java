@@ -13,22 +13,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -184,40 +178,20 @@ public class HomeworkController {
     model.addAttribute("order", order); // 강사, 학생이 속해있는 과정명 select
     model.addAttribute("sortBy", sortBy); // 강사, 학생이 속해있는 과정명 select
 
+    //pagingResponseDTO에 따른 과정명 출력
+    String courseName = "";
+    Map<Integer,String> courseNameMap = new HashMap<>();
+    for(HomeworkDTO homeworkDTO:pagingResponseDTO.getDtoList()){
+      courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+      courseNameMap.put(homeworkDTO.getCourseId(),homeworkService.courseNameById(homeworkDTO.getCourseId()));
+    }
+    model.addAttribute("courseNameMap",courseNameMap);
+
     return "homework/homeworkList";
   }
 
 
-  @GetMapping("/homeworkSubmissionList")
-  @ResponseBody
-  public PagingResponseDTO<HomeworkSubmissionDTO> getHomeworkSubmissionList(
-      @RequestParam(required = false) Integer submissionPageNo,
-      @RequestParam(required = false) Integer submissionPageSize,
-      @RequestParam(required = false) Integer homeworkId) {
 
-    //null 체크
-    if (homeworkId == null) {
-      return null;
-    }
-
-    if (submissionPageNo == null) {
-      submissionPageNo = 1;
-    } else if (submissionPageSize == null) {
-      submissionPageSize = 5;
-    }
-
-    PagingResponseDTO<HomeworkSubmissionDTO> pagingResponseSubmission =
-        homeworkService.pagingSubmissionDTO((int) homeworkId,
-            PagingRequestDTO.builder().pageNo((int) submissionPageNo)
-                .pageSize((int) submissionPageSize).build());
-    log.info("pageNo:{}", submissionPageNo);
-    log.info("pageSize:{}", submissionPageSize);
-
-    if (pagingResponseSubmission != null) {
-      return pagingResponseSubmission;
-    }
-    return null;
-  }
 
 
   @GetMapping("/homeworkForAdminBoolean")
@@ -342,77 +316,10 @@ public class HomeworkController {
 //  }
 
 
-  @GetMapping("/submissionDetail")
-  public String homeworkSubmissionDetail(@RequestParam(required = false) Integer submissionId,
-      Model model, HttpSession session, HttpServletRequest request) {
-    // 해당 submissionid의 submission객체와 그것을 fk로 갖는 eval 객체 보내기
-
-    String referer = request.getHeader("Referer");// 전 페이지
-
-    String learnerIdForSubmission = homeworkService.selectUserIdForSubmission(submissionId);
-
-    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-
-    if (loginUser == null) {
-      return "redirect:/" + (referer != null ? referer : "homework/homeworkList");
-    }
-
-    if (learnerIdForSubmission != null) {
-      if (loginUser.getLoginId().equals(learnerIdForSubmission) || loginUser.getType()
-          .equals("ADMINISTRATOR") || loginUser.getType().equals("INSTRUCTOR")) {
-
-        Map<HomeworkSubmissionDTO, HomeworkEvalDTO> resultMap = homeworkService.selectSubmissionEval(
-            submissionId);
-
-        if (resultMap != null) {
-          if (resultMap.size() > 0) {
-
-            model.addAttribute("resultMap", resultMap);
-          }
-        }
-
-        log.info("모델 바인딩된 resultMap:{}", resultMap);
-
-        return "homework/homeworkModify"; //추후 HomeworkSubmissionDetail로 바꿔주기
 
 
-      }
-    }
-
-    return "redirect:/" + (referer != null ? referer : "homework/homeworkList");
-  }
 
 
-  @GetMapping("/submissionDetailAuth")
-  @ResponseBody
-  public ResponseEntity<MyResponseWithDataPYJ> homeworkDetailForLeaner(Model model,
-      @RequestParam(required = false) Integer homeworkId, HttpSession session,
-      @RequestParam(required = false) Integer submissionId) {
-    //detail로 진입 전 로그인 유저 확인(타 교육생의 제출 상세 페이지 접근 막기)
-    // alert 창 띄우는 용도
-
-    //로그인 여부 확인
-    if (session.getAttribute("loginUser") == null) {
-      return ResponseEntity.badRequest().body(null);
-    }
-
-    //로그인한 사용자 타입 확인
-    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    log.info("loginUser:{}", loginUser);
-
-    String learnerIdForSubmission = homeworkService.selectUserIdForSubmission(submissionId);
-
-    if (learnerIdForSubmission != null) {
-      if (loginUser.getLoginId().equals(learnerIdForSubmission) || loginUser.getType()
-          .equals("ADMINISTRATOR") || loginUser.getType().equals("INSTRUCTOR")) {
-        return ResponseEntity.ok().body(new MyResponseWithDataPYJ(200, "이동 ok",
-            "homework/submissionDetail?submissionId=" + submissionId));
-      }
-    }
-
-    return ResponseEntity.badRequest()
-        .body(new MyResponseWithDataPYJ(404, "해당 과제물에 접근할 수 없습니다.", "/homeworkList"));
-  }
 
   @GetMapping("/homeworkRegister")
   public String homeworkRegister(HttpSession session, Model model,
@@ -643,8 +550,8 @@ public class HomeworkController {
         // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
         for (FileSelectDTO selectDTO : deleteFileList) {
           log.info("selectDTO.getPath:{}", selectDTO.getPath());
-          s3Uploader.deleteFile("upload/homework/" + selectDTO.getNewName());
-          log.info("파일 서버 삭제 성공?"); // 성공 못함
+          s3Uploader.deleteFile("upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
+          log.info("파일 서버 삭제 성공"); // 성공 못함
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
             log.info("파일 db 삭제 성공"); // 성공
@@ -692,7 +599,7 @@ public class HomeworkController {
   @DeleteMapping("/deleteHomework")
   @ResponseBody
   public ResponseEntity<MyResponseWithDataPYJ> deleteHomework(
-      @RequestParam(required = false) Integer homeworkId) {
+      @RequestParam(required = false) Integer homeworkId) throws UnsupportedEncodingException {
     log.info("deleteHomework homeworkId:{}", homeworkId);
 
     if (homeworkId == null) {
@@ -708,7 +615,7 @@ public class HomeworkController {
         for (FileSelectDTO selectDTO : fileList) {
 
           // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
-          s3Uploader.deleteFile("upload/homework/" + selectDTO.getNewName());
+          s3Uploader.deleteFile("upload/homework/" + URLDecoder.decode(selectDTO.getNewName(),"UTF-8"));
           log.info("파일 서버 삭제 성공?"); // 성공 못함
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
