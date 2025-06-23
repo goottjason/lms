@@ -12,7 +12,11 @@
     t.start_date AS start_date,
     t.end_date AS end_date,
     t.test_time AS test_time,
-    COUNT(DISTINCT ts.learner_id) AS completed_count,
+    (
+    SELECT COUNT(*)
+    FROM test_submission ts
+    WHERE ts.test_id = t.id AND ts.submission_status = 'COMPLETED'
+    ) AS completed_count,
     c.number_of_learner AS number_of_learner
     FROM test t
     JOIN course c ON t.course_id = c.id
@@ -44,7 +48,8 @@
 
   </select>
 
-  <insert id="insertTest" parameterType="com.goott5.lms.test.domain.test.register.vo.TestRegisterVO" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertTest" parameterType="com.goott5.lms.test.domain.test.register.vo.TestRegisterVO"
+    useGeneratedKeys="true" keyProperty="id">
 
     INSERT INTO test (instructor_id, course_id, title, start_date, end_date, test_time, total_score)
     VALUES (
@@ -59,7 +64,9 @@
 
   </insert>
 
-  <insert id="insertQuestion" parameterType="com.goott5.lms.test.domain.test.register.vo.TestQuestionVO" useGeneratedKeys="true"
+  <insert id="insertQuestion"
+    parameterType="com.goott5.lms.test.domain.test.register.vo.TestQuestionVO"
+    useGeneratedKeys="true"
     keyProperty="id">
 
     INSERT INTO test_question (test_id, title, question_type, question_no, score, correct_answer)
@@ -67,7 +74,8 @@
 
   </insert>
 
-  <insert id="insertOption" parameterType="com.goott5.lms.test.domain.test.register.vo.TestOptionVO">
+  <insert id="insertOption"
+    parameterType="com.goott5.lms.test.domain.test.register.vo.TestOptionVO">
 
     INSERT INTO test_option (question_id, option_no, content, is_correct)
     VALUES (#{questionId}, #{optionNo}, #{content}, #{isCorrect})

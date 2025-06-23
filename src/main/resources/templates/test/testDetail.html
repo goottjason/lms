@@ -5,7 +5,7 @@
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:th="http://www.thymeleaf.org">
   <head>
-    <script defer th:src="@{sweetalert2.all.min.js}"></script>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
     <script defer th:src="@{/js/test/testCommon.js}"></script>
     <script defer th:src="@{/js/test/testModel.js}"></script>
     <script defer th:src="@{/js/test/testDetail.js}"></script>
@@ -432,12 +432,14 @@
 
         <!-- 버튼 -->
         <div class="col-12 d-flex justify-content-end mb-4">
+
           <button class="btn btn-info btn-icon-split mr-2" id="modify-test-btn" type="button">
         <span class="icon text-white-50">
           <i class="fa fa-wrench"></i>
         </span>
             <span class="text px-3">시험수정</span>
           </button>
+
           <button class="btn btn-danger btn-icon-split mr-2" id="del-test-btn" type="button">
         <span class="icon text-white-50">
           <i class="fa fa-times"></i>a

@@ -1,63 +1,68 @@
 <!DOCTYPE html>
 <html
-  lang="ko"
-  xmlns:th="http://www.thymeleaf.org">
+    lang="ko"
+    xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta content="IE=edge" http-equiv="X-UA-Compatible">
+  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+  <meta content="" name="description">
+  <meta content="" name="author">
 
   <title>Goott5 LMS시스템</title>
 
-  <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
+  <script defer th:src="@{/js/test/testCommon.js}"></script>
+  <script defer th:src="@{/js/test/testModel.js}"></script>
+  <script defer th:src="@{/js/test/testSubmission.js}"></script>
+
+  <link rel="stylesheet" th:href="@{/vendor/fontawesome-free/css/all.min.css}" type="text/css">
   <link
-    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-    rel="stylesheet">
-  <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
+      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+      rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/sb-admin-2.min.css}">
   <style>
       @media (max-width: 1200px) {
-          body {
-              min-width: 1200px;
-              overflow-x: auto;
-          }
+        body {
+          min-width: 1200px;
+          overflow-x: auto;
+        }
       }
 
 
       html, body {
-          height: 100%;
+        height: 100%;
       }
 
       #wrapper {
-          min-height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: start;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: start;
       }
 
       .wrapper-card {
-          width: 90%;
-          max-width: 1200px;
-          height: auto;
+        width: 90%;
+        max-width: 1200px;
+        height: auto;
       }
 
       input[readonly] {
-          background-color: #fff !important;
+        background-color: #fff !important;
       }
 
 
   </style>
 </head>
 <body id="">
-<div id="wrapper" class="py-5">
+<div class="py-5" id="wrapper">
   <div class="wrapper-card o-hidden border-0 shadow-lg" style="height: auto">
     <div class="card-body p-5">
       <!-- 시험 정보 시작 -->
       <div class="row mb-4 align-items-end">
         <div class="col-md-12 text-center">
-          <h2 id="test-title" class="h2 text-gray-900 mb-5">Java 중간고사</h2>
+          <h2 class="h2 text-gray-900 mb-5" id="test-title">Java 중간고사</h2>
         </div>
       </div>
 
@@ -76,18 +81,18 @@
           <label class="form-label">시험 시간 (분)</label>
           <span class="test-time-err-msg"></span>
           <input
-            class="form-control" disabled id="test-time" placeholder="예: 60"
-            type="number"/>
+              class="form-control" disabled id="test-time" placeholder="예: 60"
+              type="text"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">총 배점</label>
           <span class="total-score-err-msg"></span>
           <input
-            class="form-control"
-            disabled
-            id="total-score"
-            placeholder="예: 100"
-            type="number"/>
+              class="form-control"
+              disabled
+              id="total-score"
+              placeholder="예: 100"
+              type="number"/>
         </div>
       </div>
       <!-- 시험 정보 끝 -->
@@ -117,7 +122,7 @@
                 <div class="col-10">
                   <label class="form-label">객관식 보기 및 정답 선택</label>
                   <span><small
-                    class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
+                      class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
                 </div>
                 <div class="col-1 text-center">
                   정답
@@ -127,11 +132,11 @@
                 <div class="row align-items-center mb-2 option-row">
                   <div class="col-10">
                     <input
-                      class="form-control question-option"
-                      data-option-no="1"
-                      placeholder="보기 1"
-                      type="text"
-                      readonly
+                        class="form-control question-option"
+                        data-option-no="1"
+                        placeholder="보기 1"
+                        readonly
+                        type="text"
                     />
                   </div>
                   <div class="col-1 text-center">
@@ -141,11 +146,11 @@
                 <div class="row align-items-center mb-2 option-row">
                   <div class="col-10">
                     <input
-                      class="form-control question-option"
-                      data-option-no="2"
-                      placeholder="보기 2"
-                      type="text"
-                      readonly
+                        class="form-control question-option"
+                        data-option-no="2"
+                        placeholder="보기 2"
+                        readonly
+                        type="text"
                     />
                   </div>
                   <div class="col-1 text-center">
@@ -179,9 +184,9 @@
             <div class="mb-3">
               <label class="form-label">정답</label>
               <input
-                class="form-control"
-                placeholder="정답은 하나의 단어 또는 단답형 문장으로만 입력하세요."
-                type="text"
+                  class="form-control"
+                  placeholder="정답은 하나의 단어 또는 단답형 문장으로만 입력하세요."
+                  type="text"
               />
             </div>
           </div>
@@ -191,13 +196,13 @@
       </div>
 
       <div class="col-12 d-flex justify-content-end mt-3 mb-4">
-        <button id="" class="btn btn-primary btn-icon-split mr-2">
+        <button class="btn btn-primary btn-icon-split mr-2" id="test-submit-btn" type="button">
         <span class="icon text-white-50">
           <i class="fa fa-upload"></i>
         </span>
           <span class="text px-3">시험제출</span>
         </button>
-        <button id="" class="btn btn-danger btn-icon-split mr-2">
+        <button class="btn btn-danger btn-icon-split mr-2" id="">
         <span class="icon text-white-50">
           <i class="fa fa-times"></i>
         </span>

@@ -33,55 +33,69 @@ public class TestSubmissionController {
 
   @GetMapping("/my/tests/{testId}/submission")
   public ResponseEntity<ApiResult<TestSubmissionVO>> getTestSubmission(
-          @PathVariable(required = true) int testId, HttpSession session) {
+      @PathVariable(required = true) int testId, HttpSession session) {
 
     return ApiResult.respondOk(200, "SUCCESS",
-            testSubmissionService.getTestSubmission(testId, session));
+        testSubmissionService.getTestSubmission(testId, session));
   }
 
   @PutMapping("/my/tests/{testId}/submission/abnormal")
   public ResponseEntity<ApiResult<String>> modifyTestSubmissionToInProgressIncrementAbnormalCount(
-          @PathVariable int testId,
-          @RequestBody TestAnswerDTO testAnswerDTO,
-          HttpSession session) {
+      @PathVariable int testId,
+      @RequestBody TestAnswerDTO testAnswerDTO,
+      HttpSession session) {
 
     return ApiResult.respondOk(200, "SUCCESS",
-            testSubmissionService.modifyTestSubmissionToInProgressIncrementAbnormalCount(
-                    testAnswerDTO,
-                    session));
+        testSubmissionService.modifyTestSubmissionToInProgressIncrementAbnormalCount(
+            testAnswerDTO,
+            session));
   }
 
   @PutMapping("/my/tests/{testId}/submission")
   public ResponseEntity<ApiResult<String>> modifySubmissionToCompleted(
-          @PathVariable int testId,
-          @RequestBody TestAnswerDTO testAnswerDTO,
-          HttpSession session) {
+      @PathVariable int testId,
+      @RequestBody TestAnswerDTO testAnswerDTO,
+      HttpSession session) {
+
+    log.info("testAnswerDTO: {}", testAnswerDTO);
 
     return ApiResult.respondOk(200, "SUCCESS",
-            testSubmissionService.modifySubmissionToCompleted(testAnswerDTO, session));
+        testSubmissionService.modifySubmissionToCompleted(testAnswerDTO, session));
   }
 
   @GetMapping("/my/tests/{testId}")
   public ResponseEntity<ApiResult<TestRegisterResultVO>> getTestResult(
-          @PathVariable(required = true) int testId,
-          HttpSession session
+      @PathVariable(required = true) int testId,
+      HttpSession session
   ) {
 
     return ApiResult.respondOk(200, "SUCCESS",
-            testSubmissionService.getTestResult(testId, session));
+        testSubmissionService.getTestResult(testId, session));
   }
 
   @GetMapping("/my/tests/{testId}/learner/{learnerId}")
   public ResponseEntity<ApiResult<TestRegisterResultVO>> getTestResultByLearnerId(
-          @PathVariable(required = true) int testId,
-          @PathVariable(required = true) int learnerId
+      @PathVariable(required = true) int testId,
+      @PathVariable(required = true) int learnerId
   ) {
 
-    System.out.println(">> getTestResult called: testId=" + testId + ", learnerId=" + learnerId);
-
     return ApiResult.respondOk(200, "SUCCESS",
-            testSubmissionService.getTestResultByLearnerId(testId, learnerId));
+        testSubmissionService.getTestResultByLearnerId(testId, learnerId));
   }
+
+//  @GetMapping("/my/tests/{testId}/submission/previous")
+//  public ResponseEntity<ApiResult<TestAnswerDTO>> getPreviousTestAnswer(
+//      @PathVariable(required = true) int testId,
+//      HttpSession session
+//  ) {
+//
+//    testSubmissionService.getPreviousTestAnswer(testId, session);
+//
+//
+//    return null;
+//  }
+
+
 
 
 }
