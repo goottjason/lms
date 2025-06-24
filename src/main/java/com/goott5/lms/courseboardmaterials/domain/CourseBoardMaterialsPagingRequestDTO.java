@@ -27,7 +27,8 @@ public class CourseBoardMaterialsPagingRequestDTO {
   private int pagingSize = 10;
 
   private String link;
-
+  private Integer courseId;
+  private String courseName;
   private String keyword;
   private String type; // 검색타입 : c, t, w, tc, tcw
 
@@ -45,6 +46,7 @@ public class CourseBoardMaterialsPagingRequestDTO {
   private Boolean hasAttachment; // 첨부파일 여부 (true:있음, false:없음, null:전체)
   private String orderBy;        // 정렬 기준 (예: "createdAt", "readCount", "title")
   private String orderDirection; // 정렬 방향 (예: "desc", "asc")
+  private Boolean isInProgress;
 
   private String generateLink() {
 
@@ -52,6 +54,18 @@ public class CourseBoardMaterialsPagingRequestDTO {
 
     sb.append("pageNo=").append(pageNo)
         .append("&pagingSize=").append(pagingSize);
+
+    if (courseId != null && courseId > 0) {
+      sb.append("&courseId=").append(courseId);
+    }
+
+    if (courseName != null && courseName.isBlank()) {
+      sb.append("&courseName=").append(courseName);
+    }
+
+    if (isInProgress != null ) {
+      sb.append("&isInProgress=").append(isInProgress);
+    }
 
     if (type != null && !type.isBlank()) {
       sb.append("&type=").append(type);
@@ -90,6 +104,18 @@ public class CourseBoardMaterialsPagingRequestDTO {
     StringBuilder sb = new StringBuilder();
 
     sb.append("&pagingSize=").append(pagingSize);
+
+    if (courseId != null && courseId > 0) {
+      sb.append("&courseId=").append(courseId);
+    }
+
+    if (courseName != null && courseName.isBlank()) {
+      sb.append("&courseName=").append(courseName);
+    }
+
+    if (isInProgress != null) {
+      sb.append("&isInProgress=").append(isInProgress);
+    }
 
     if (type != null && !type.isBlank()) {
       sb.append("&type=").append(type);

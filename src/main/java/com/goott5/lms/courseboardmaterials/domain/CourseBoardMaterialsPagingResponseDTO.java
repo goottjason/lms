@@ -24,16 +24,19 @@ public class CourseBoardMaterialsPagingResponseDTO<T> {
   private List<T> dtoList;
 
   private CourseBoardMaterialsPagingRequestDTO pagingRequestDTO;
+  private List<T> pinnedList;
+
 
   @Builder(builderMethodName = "allInfo") // 빌더의 이름을 지정
   public CourseBoardMaterialsPagingResponseDTO(
-      CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO,List<T> dtoList, int total) {
+      CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO,List<T> dtoList, int total,List<T> pinnedList) {
     this.pagingRequestDTO = courseBoardMaterialsPagingRequestDTO;
     this.pageNo = courseBoardMaterialsPagingRequestDTO.getPageNo();
     this.pagingSize = courseBoardMaterialsPagingRequestDTO.getPagingSize();
 
     this.total= total;
     this.dtoList = dtoList;
+    this.pinnedList = pinnedList;
 
     this.end = (int)(Math.ceil(pageNo / 10.0)) * 10;
 //        this.end = (((10 - 1) / 10 ) 몫 + 1) * 10 // ok

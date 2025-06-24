@@ -1,13 +1,26 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
+  <style>
+    .pinned-post {
+      background-color: #fffbe6; /* 약간 누런색 배경 */
+      font-weight: bold; /* 글씨를 약간 굵게 (선택사항) */
+    }
 
+    /* 마우스를 올렸을 때 배경색이 살짝 더 진해지도록 (선택사항) */
+    .pinned-post:hover {
+      background-color: #fff8d9;
+    }
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">수업공지 조회</h1>
@@ -15,14 +28,14 @@
     <div class="col d-flex justify-content-end" th:if="${loginUserType == 'ADMINISTRATOR'}">
       <form class="row col-12 mb-3">
         <div class="col-3">
-          <select id="" class="form-control">
+          <select id="is-in-progress" class="form-control">
             <option value="">진행상황별</option>
-            <option value="">진행 중</option>
-            <option value="">종료</option>
+            <option value="true">진행 중</option>
+            <option value="false">종료</option>
           </select>
         </div>
         <div class="col">
-          <select id="" class="form-control">
+          <select id="course-select" class="form-control">
             <option value="">과정별</option>
           </select>
         </div>
@@ -39,13 +52,12 @@
           <h6 class="m-0 font-weight-bold text-primary">공지 및 수업자료 리스트 조회</h6>
         </div>
         <div class="col-auto">
-          <form action="/courseBoardMaterials/materialsRegister" method="get">
-          <button id="materialsRegisterBtn" class="btn btn-info btn-icon-split" th:data-usertype="${loginUserType}">
-              <span class="icon text-white-50">
-                <i class="fas fa-plus"></i>
-              </span>
-            <span class="text">수업공지 등록</span>
-          </button>
+          <form action="/courseBoardMaterials/materialsRegister" method="get" id="registerForm">
+            <input type="hidden" name="courseId" id="courseIdForRegister">
+            <button type="submit" id="materialsRegisterBtn" class="btn btn-info btn-icon-split">
+              <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
+              <span class="text">수업공지 등록</span>
+            </button>
           </form>
         </div>
       </div>
@@ -53,7 +65,9 @@
 
     <div class="card-body">
       <!-- 검색 / 정렬 영역 -->
-      <form class="row mb-3" action="/courseBoardMaterials/materialsList" method="get">
+      <form class="row mb-3" action="/courseBoardMaterials/materialsList" method="get" id="searchForm">
+        <input type="hidden" name="courseId" id="searchCourseId" th:value="${responseDTO?.pagingRequestDTO?.courseId}">
+        <input type="hidden" name="isInProgress" id="searchInProgress" th:value="${responseDTO?.pagingRequestDTO?.isInProgress}">
         <div class="input-group col-6">
           <div class="col-3">
             <select id="" name="type" class="form-control">
@@ -74,17 +88,17 @@
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
-          <select name="hasAttachment" class="form-control col-3 mr-3">
+          <select id="hasAttachment" name="hasAttachment" class="form-control col-3 mr-3">
             <option value="">파일 여부</option>
             <option value="true" th:selected="${responseDTO?.pagingRequestDTO?.hasAttachment == true}">파일 있음</option>
             <option value="false" th:selected="${responseDTO?.pagingRequestDTO?.hasAttachment == false}">파일 없음</option>
           </select>
-          <select name="orderDirection" class="form-control col-3 mr-3">
+          <select id="orderDirection" name="orderDirection" class="form-control col-3 mr-3">
             <option value="">정렬 방향</option>
             <option value="asc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'asc'}">오름차순</option>
-            <option value="desc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'desc' or responseDTO?.pagingRequestDTO?.orderDirection == null or responseDTO?.pagingRequestDTO?.orderDirection == ''}">내림차순</option>
+            <option value="desc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'desc'}">내림차순</option>
           </select>
-            <select name="orderBy" class="form-control col-3">
+            <select id="orderBy" name="orderBy" class="form-control col-3">
               <option value="">정렬 기준</option>
               <option value="createdAt" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'createdAt'}">작성일</option>
               <option value="readCount" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'readCount'}">조회수</option>
@@ -108,18 +122,38 @@
           </tr>
           </thead>
           <tbody>
-          <tr th:if="${#lists.isEmpty(responseDTO.dtoList)}">
-            <td colspan="7" class="text-center">검색 결과가 없습니다.</td>
-          </tr>
+          <th:block th:if="${responseDTO.pagingRequestDTO.keyword == null or #strings.isEmpty(responseDTO.pagingRequestDTO.keyword)}">
+            <tr th:each="dto : ${responseDTO.pinnedList}" class="pinned-post">
+              <td class="text-center align-middle"><i class="fas fa-thumbtack text-primary"></i></td>
+              <td class="title align-middle">
+                <a th:href="@{/courseBoardMaterials/materialsDetail(id=${dto.id})}" th:text="${dto.title}">고정글 제목</a>
+              </td>
+              <td th:text="${dto.courseName}" class="title align-middle text-truncate" style="max-width: 200px;">과정명</td>
+              <td th:text="${dto.writerName}" class="text-center align-middle">작성자</td>
+              <td th:text="${#temporals.format(dto.createdAt, 'yyyy-MM-dd')}" class="text-center align-middle">작성일</td>
+              <td th:text="${dto.readCount}" class="text-center align-middle">조회수</td>
+            </tr>
+          </th:block>
+
           <tr th:each="dto: ${responseDTO.dtoList}">
             <td th:text="${dto.id}" class="text-center align-middle">0</td>
             <td class="title align-middle">
-              <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|" th:text="${dto.title}">제목</a>
+              <th:block th:if="${dto.deletedAt == null}">
+                <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
+                   th:text="${dto.title}">제목</a>
+              </th:block>
+              <th:block th:if="${dto.deletedAt != null}">
+                <span class="text-muted" readonly="readonly">삭제된 글입니다.</span>
+              </th:block>
             </td>
             <td th:text="${dto.courseName}" class="title align-middle text-truncate" style="max-width: 200px;">과정명</td>
             <td th:text="${dto.writerName}" class="text-center align-middle">작성자</td>
             <td th:text="${#temporals.format(dto.createdAt, 'yyyy-MM-dd')}" class="text-center align-middle">작성일</td>
             <td th:text="${dto.readCount}" class="text-center align-middle">조회수</td>
+          </tr>
+
+          <tr th:if="${#lists.isEmpty(responseDTO.dtoList)} and (${responseDTO.pagingRequestDTO.keyword != null and !#strings.isEmpty(responseDTO.pagingRequestDTO.keyword)} or ${#lists.isEmpty(responseDTO.pinnedList)})">
+            <td colspan="6" class="text-center">검색 결과가 없습니다.</td>
           </tr>
           </tbody>
         </table>
@@ -156,28 +190,218 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+    const loginUserId = $("#login-user-id").val();
+    const loginUserType = $("#login-user-type").val();
+    // URL 파라미터로 받은 현재 courseId (필터링 상태 유지용)
+    const currentCourseId = /*[[${responseDTO.pagingRequestDTO?.courseId}]]*/ null;
 
-      // 컨트롤러에서 전달받은 사용자 로그인 타입 (역할)을 JavaScript 변수로 가져옵니다.
-      const loginUserType = [[${loginUserType}]]; // 모델 속성 이름 'loginUserType'으로 변경됨
+    // --- 페이지 로드 완료 시 초기화 함수 실행 ---
+    document.addEventListener('DOMContentLoaded', function() {
+      initializePage();
+      initializeExistingFilters(); // 기존 필터링 로직 초기화
+      renderAdminCourseFilter();
+    });
 
-      // "수업공지 등록" 버튼 요소 가져오기
-      const materialsRegisterButton = document.getElementById('materialsRegisterBtn');
+    // --- 페이지 핵심 기능 초기화 함수 ---
+    async function initializePage() {
+      // basic.html에 있는 헤더의 courseSelector를 대상으로 작업
+      const headerCourseSelector = document.getElementById('courseSelector');
 
+      // 강사 또는 교육생일 경우 (헤더에 courseSelector가 있을 때만)
+      if (headerCourseSelector) {
+        // 과정 목록 API 호출 및 드롭다운 UI 업데이트
+        const courses = await fetchCourses();
+        updateCourseSelectBox('#courseSelector', courses, currentCourseId);
 
-      /**
-       * 교육생(LEARNER)이거나 로그인하지 않은 사용자일 경우 버튼 숨기기
-       * ADMIN 또는 INSTRUCTOR만 버튼을 볼 수 있게 함
-       */
-      if (materialsRegisterButton) {
-        // 관리자(ADMINISTRATOR) 또는 강사(INSTRUCTOR)만 '수업공지 등록' 버튼 표시
-        if (loginUserType === 'ADMINISTRATOR' || loginUserType === 'INSTRUCTOR') {
-          materialsRegisterButton.style.display = 'block';
-        } else {
-          materialsRegisterButton.style.display = 'none';
-        }
+        // "수업공지 등록" 버튼 링크에 courseId 초기값 설정
+        updateRegisterButtonLink();
+
+        // 과정 선택 드롭다운에 '변경' 이벤트 리스너 추가
+        headerCourseSelector.addEventListener('change', function() {
+          const selectedCourseId = this.value;
+          // 검색 폼의 숨겨진 필드에 선택된 ID값 설정
+          document.getElementById('searchCourseId').value = selectedCourseId;
+          // 검색 폼 제출하여 페이지 리로드
+          document.getElementById('searchForm').submit();
+        });
       }
 
+      // "수업공지 등록" 버튼 권한에 따라 표시/숨김 처리
+      setupRegisterButton();
+    }
+
+    // --- Helper 함수들 ---
+
+    /**
+     * API를 통해 해당 유저가 수강중인 과정 목록을 가져오는 함수
+     */
+    async function fetchCourses() {
+      // 관리자가 아닐 때만 API 호출
+      if (loginUserType === 'ADMINISTRATOR') {
+        return [];
+      }
+      try {
+        const response = await axios.get('/api/management/courses', {
+          params: { loginUserId: loginUserId, loginUserType: loginUserType }
+        });
+        // API 응답 구조에 따라 ?. 연산자로 안전하게 접근
+        return response.data?.data?.respDTOS || [];
+      } catch (error) {
+        console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
+        return []; // 오류 발생 시 빈 배열 반환
+      }
+    }
+
+    /**
+     * 과정 목록으로 Select Box(드롭다운) UI를 생성하는 함수
+     */
+    function updateCourseSelectBox(selector, data, selectedValue) {
+      const selectElement = document.querySelector(selector);
+      if (!selectElement) return;
+
+      // 기존 옵션들을 모두 비움
+      selectElement.innerHTML = '';
+
+      // 기본 옵션("전체 과정 보기" 등) 추가
+      const defaultOption = document.createElement('option');
+      defaultOption.value = ''; // 값은 비워둠
+      defaultOption.textContent = '과정 선택';
+      selectElement.appendChild(defaultOption);
+
+      // API로 받아온 과정 목록을 옵션으로 추가
+      data.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.id;
+        option.textContent = course.name;
+        // 현재 선택된 courseId와 일치하는 옵션을 'selected'로 만듦
+        if (course.id == selectedValue) {
+          option.selected = true;
+        }
+        selectElement.appendChild(option);
+      });
+    }
+
+    /**
+     * "수업공지 등록" 버튼의 숨겨진 courseId 값을 업데이트하는 함수
+     */
+    function updateRegisterButtonLink() {
+      const headerCourseSelector = document.getElementById('courseSelector');
+      const courseIdInputForRegister = document.getElementById('courseIdForRegister');
+
+      if (headerCourseSelector && courseIdInputForRegister) {
+        // 헤더의 셀렉터에서 현재 선택된 과정 ID를 가져와 숨겨진 필드에 설정
+        courseIdInputForRegister.value = headerCourseSelector.value;
+      }
+    }
+
+    /**
+     * "수업공지 등록" 버튼을 유저 권한에 따라 표시하거나 숨기는 함수
+     */
+    function setupRegisterButton() {
+      const registerButton = document.getElementById('materialsRegisterBtn');
+      if (registerButton) {
+        if (loginUserType === 'ADMINISTRATOR' || loginUserType === 'INSTRUCTOR') {
+          registerButton.style.display = 'block'; //
+        } else {
+          registerButton.style.display = 'none';
+        }
+      }
+    }
+
+    /**
+     * 기존에 있던 다른 필터(검색, 정렬 등)들의 이벤트 리스너를 설정하는 함수
+     */
+    function initializeExistingFilters() {
+      const searchForm = document.getElementById('searchForm');
+      const hasAttachmentSelect = document.getElementById('hasAttachment');
+      const orderDirectionSelect = document.getElementById('orderDirection');
+      const orderBySelect = document.getElementById('orderBy');
+
+      // 즉시 변경이 필요한 필터들에 'change' 이벤트 리스너 추가
+      [hasAttachmentSelect, orderDirectionSelect, orderBySelect].forEach(element => {
+        if (element) {
+          element.addEventListener('change', () => searchForm.submit());
+        }
+      });
+    }
+
+    // 관리자 필터 호출
+    function renderAdminCourseFilter(isInProgress = null) {
+      axios.get(`/api/admin/courses`, { params: { isInProgress: isInProgress } })
+      .then(function (response) {
+        console.log(response);
+        renderCourseFilterOptionsForAdmin("#course-select",
+            response.data.data);
+
+      })
+      .catch(function (error) {
+
+      });
+    }
+
+    // 관리자 필터 생성
+    function renderCourseFilterOptionsForAdmin(selector, data) {
+      let $courseFilter = $(selector);
+      $courseFilter.empty();
+
+      let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
+      $courseFilter.append(courseFilterPlaceholder);
+
+      $.each(data, function (index, el) {
+
+        console.log(el);
+
+        let courseOption = `<option value="${el}">${el}</option>`;
+        $courseFilter.append(courseOption);
+      });
+
+    }
+
+    // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
+    $("#is-in-progress").on("change", function () {
+      console.log("진행상황 필터!!!");
+      let isInProgress = $(this).val(); // 진행상황 값
+
+      if (isInProgress === "") {
+        // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
+        $courseFilter.empty(); // 진행별 드롭다운 초기화
+
+        let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
+        $courseFilter.append(courseFilterPlaceholder);
+
+        // 과정별 필터에 모든 과정명 불러오기
+        renderAdminCourseFilter();
+
+        return;
+      }
+
+      renderAdminCourseFilter(isInProgress);
+    });
+
+    // 과정별 필터 값을 바꾸었을 때 리스트 불러오기 (관리자)
+    $("#course-select").on("change", function () {
+      console.log("과정별 필터!!!");
+      let courseName = $(this).val();
+
+      if (courseName === "") {
+
+        $progressFilter.val("");
+      }
+      console.log(courseName);
+      window.location.href=`/courseBoardMaterials/materialsList?courseName=${courseName}`;
+    });
+
+    $("#materialsRegisterBtn").on("click", function (e) {
+      e.preventDefault();
+
+      const courseName = new URLSearchParams(window.location.search).get("courseName");
+      console.log(courseName);
+
+      if (loginUserType === "ADMINISTRATOR") {
+
+        window.location.href = `/courseBoardMaterials/materialsRegister?courseId=0&courseName=${courseName}`;
+      }
+    });
 
 
   </script>

@@ -9,6 +9,8 @@
 </head>
 <body>
 <div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업공지 등록</h1>
@@ -16,7 +18,13 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="" action="">
+  <form class="mb-4" method="post" id="registerForm"
+        th:action="@{/courseBoardMaterials/materialsRegister}" th:object="${courseBoardMaterialsDTO}" enctype="multipart/form-data">
+    <input type="hidden" th:field="*{courseId}" id="selectedCourseIdInput">
+    <input type="hidden"
+           name="courseName"
+           id="courseNameForRegister"
+           th:value="${currentCourseName}"/>
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -25,8 +33,8 @@
           </div>
           <div class="col-auto pr-5">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="1">
-              <label class="form-check-label" for="1">
+              <input class="form-check-input" type="checkbox" id="isFixed" th:field="*{isFixed}">
+              <label class="form-check-label" for="isFixed">
                 고정여부
               </label>
             </div>
@@ -37,20 +45,21 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="a">제목</label>
-              <input type="text" id="a" class="form-control" placeholder="제목을 작성하세요.">
+              <label for="title">제목  <b class="text-danger mt-1" id="titleError"></b></label>
+              <input type="text" id="title" name="title" class="form-control" placeholder="제목을 작성하세요." th:field="*{title}">
             </div>
           </div>
         </div>
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="b">내용</label>
+              <label for="contentArea">내용  <b class="text-danger mt-1" id="contentError"></b></label>
               <textarea
-                  id="b"
+                  id="contentArea"
                   class="form-control"
                   placeholder="본문 내용을 작성하세요."
-                  style="height: 280px;"></textarea>
+                  style="min-height: 280px; white-space: pre-wrap;"
+                  wrap="hard" th:field="*{content}"></textarea>
             </div>
           </div>
         </div>
@@ -58,8 +67,8 @@
           <div class="col-md-12">
             <div class="mb-2">첨부파일</div>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="c">
-              <label class="custom-file-label" for="c">파일을 선택하세요.</label>
+              <input type="file" class="custom-file-input" id="files" name="files" multiple>
+              <label class="custom-file-label" for="files">파일을 선택하세요.</label>
             </div>
           </div>
         </div>
@@ -67,26 +76,233 @@
     </div>
       <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button id="submit-btn" type="button" class="btn btn-primary btn-icon-split mr-2">
           <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
           </span>
         <span class="text px-5">등록</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <a th:href="@{/courseBoardMaterials/materialsList}" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
         <span class="text px-5">취소</span>
-      </button>
+      </a>
     </div>
   </form>
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
 
+    let courseId = [[${courseId}]];
+    let userId = [[${userId}]];
+    let fileList = [];
+    const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+
+      const loginUserIdElem = document.getElementById('login-user-id');
+      const loginUserTypeElem = document.getElementById('login-user-type');
+      const loginUserId = loginUserIdElem ? loginUserIdElem.value : null;
+      const loginUserType = loginUserTypeElem ? loginUserTypeElem.value : null;
+
+      const form = document.getElementById('registerForm');
+      const submitButton = document.getElementById('submit-btn');
+      const titleInput = document.getElementById('title');
+      const contentInput = document.getElementById('contentArea');
+      const titleError = document.getElementById('titleError');
+      const contentError = document.getElementById('contentError');
+      const fileInput = document.getElementById('files');
+      const fileLabel = document.querySelector('.custom-file-label[for="files"]');
+
+      /*<![CDATA[*/
+      const currentCourseId = /*[[${currentCourseId}]]*/ null;
+      /*]]>*/
+
+      /*<![CDATA[*/
+      const currentCourseName = /*[[${currentCourseName}]]*/ null;
+      /*]]>*/
+
+      // --- 폼 유효성 검사 이벤트 리스너 설정 ---
+      if (submitButton) {
+        submitButton.addEventListener('click', function() {
+
+          let isClientValid = true;
+          titleError.textContent = '';
+          contentError.textContent = '';
+
+          if (!titleInput || titleInput.value.trim() === '') {
+            titleError.textContent = '제목을 입력해주세요.';
+            isClientValid = false;
+          }
+          console.log(contentInput.value);
+          if (!contentInput || contentInput.value.trim() === '') {
+            contentError.textContent = '내용을 입력해주세요.';
+            isClientValid = false;
+
+          }
+
+          // --- 유효할 경우에만 AJAX로 제출 ---
+          if (isClientValid) {
+            const formData = new FormData(form);
+
+            axios.post('/courseBoardMaterials/materialsRegister', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            })
+            .then(response => {
+              alert(response.data.message);
+              location.href = '/courseBoardMaterials/materialsList';
+            })
+            .catch(error => {
+              if (error.response && error.response.data && error.response.data.data) {
+                const errorMap = error.response.data.data;
+                if (errorMap.title) titleError.textContent = errorMap.title;
+                if (errorMap.content) contentError.textContent = errorMap.content;
+              } else {
+                alert('등록 중 서버 오류가 발생했습니다.');
+                console.error(error);
+              }
+            });
+          }
+        });
+      }
+
+      // --- 첨부파일 UI 이벤트 리스너 설정 ---`
+      if(fileInput && fileLabel) {
+        fileInput.addEventListener('change', function(e) {
+          const files = e.target.files;
+          if (files.length > 1) {
+            fileLabel.textContent = `${files.length}개의 파일이 선택되었습니다.`;
+          } else if (files.length === 1) {
+            fileLabel.textContent = files[0].name;
+          } else {
+            fileLabel.textContent = '파일을 선택하세요.';
+          }
+        });
+      }
+
+      // --- 페이지 초기화 함수 정의 및 호출 ---
+      async function initializePage() {
+        const headerCourseSelector = document.getElementById('courseSelector');
+        if (headerCourseSelector) {
+          const courses = await fetchCourses(loginUserId, loginUserType);
+          updateCourseSelectBox('#courseSelector', courses, currentCourseId);
+          headerCourseSelector.disabled = true;
+        }
+      }
+
+      async function fetchCourses(loginUserId, loginUserType) {
+        if (loginUserType === 'ADMINISTRATOR') return [];
+        try {
+          const response = await axios.get('/api/management/courses', {
+            params: { loginUserId: loginUserId, loginUserType: loginUserType }
+          });
+          return response.data?.data?.respDTOS || [];
+        } catch (error) {
+          console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
+          return [];
+        }
+      }
+
+      function updateCourseSelectBox(selector, data, selectedValue) {
+        const selectElement = document.querySelector(selector);
+        if (!selectElement) return;
+
+        selectElement.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '과정을 선택하세요';
+        selectElement.appendChild(defaultOption);
+
+        data.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id;
+          option.textContent = course.name;
+          if (course.id == selectedValue) {
+            option.selected = true;
+          }
+          selectElement.appendChild(option);
+        });
+      }
+
+      // 페이지 초기화 함수 호출
+      initializePage();
+    });
+
+    function pushFileLIst(){
+      let files = document.getElementById("file").files;
+      fileList = [];
+
+      for(let file of files){
+        if(file){
+          //파일일 경우
+          if(file.size > MAX_FILE_SIZE){
+            alert("파일 사이즈가 초과하였습니다.")
+          }else{
+            fileList.push(file);
+            console.log("file push",file);
+          }
+        }
+      }
+    }
+
+    $(function () {
+
+      // file input될 때 마다 file 담기
+      $("#file").on("change", function () {
+        pushFileLIst();
+      });
+
+      // 폼 전송
+      $("#submit").on("click", function (e) {
+        e.preventDefault();
+
+        const courseName = $("#courseNameForRegister").val();
+        console.log(courseName);
+
+        let form = document.getElementById("registerForm");
+        let formData = new FormData(form);
+        formData.append("courseId", courseId);
+        formData.append("courseName", courseName);
+        formData.append("instructorId", userId);
+
+        console.log(fileList);
+
+        fileList.forEach(function (file) {
+          formData.append("files", file);
+        });
+
+        axios.post("/courseBoardMaterials/materialsRegister",
+            formData
+        ).then(function (response) {
+          console.log(response);
+          console.log(response.data);
+          location.href = "/courseBoardMaterials/materialsList";
+        }).catch(function (error) {
+          console.log(error);
+          // errorMap = error.response.data.data;
+          // // errorMap = [[${errorResultMap}]];
+          // console.log("errorMap",errorMap);
+          // console.log("errorMap.title",errorMap.title);
+          //
+          // if(errorMap.title){
+          //   $("#titleError").html(errorMap.title);
+          // } else {
+          //   $("#titleError").html("");
+          // }
+          //
+          // if(errorMap.content){
+          //   $("#contentError").html(errorMap.content);
+          // }else {
+          //   $("#contentError").html("");
+          // }
+
+        });
+      });
+
+    });
   </script>
 </th:block>
 </body>

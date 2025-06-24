@@ -9,6 +9,8 @@
 </head>
 <body>
 <div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업공지 수정</h1>
@@ -16,7 +18,9 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="" action="">
+  <form class="mb-4" method="post" th:action="@{/courseBoardMaterials/materialsModify}" th:object="${courseBoardMaterialsDTO}" enctype="multipart/form-data">
+
+    <input type="hidden" th:field="*{id}" />
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -25,8 +29,8 @@
           </div>
           <div class="col-auto pr-5">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="1">
-              <label class="form-check-label" for="1">
+              <input class="form-check-input" type="checkbox" id="isFixed" th:field="*{isFixed}">
+              <label class="form-check-label" for="isFixed">
                 고정여부
               </label>
             </div>
@@ -37,28 +41,45 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="a">제목</label>
-              <input type="text" id="a" class="form-control" value="작성한 제목">
+              <label for="title">제목</label>
+              <input type="text" id="title" class="form-control" th:field="*{title}">
             </div>
           </div>
         </div>
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="b">내용</label>
+              <label for="content">내용</label>
               <textarea
-                  id="b"
+                  id="content"
                   class="form-control"
-                  style="height: 280px;">작성한 내용</textarea>
+                  style="min-height: 280px; white-space: pre-wrap;"
+                  wrap="hard" th:field="*{content}"></textarea>
             </div>
           </div>
         </div>
         <div class="row mb-4">
           <div class="col-md-12">
-            <div class="mb-2">첨부파일</div>
+            <div class="mb-2">기존 첨부파일</div>
+            <ul class="list-group list-group-flush mb-3" th:if="${not #lists.isEmpty(attachments)}">
+              <li class="list-group-item d-flex justify-content-between align-items-center" th:each="file : ${attachments}">
+                <span th:text="${file.originalName}">existing_file.pdf</span>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="deleteFiles" th:value="${file.id}" th:id="'deleteFile' + ${file.id}">
+                  <label class="form-check-label text-danger" th:for="'deleteFile' + ${file.id}">
+                    삭제
+                  </label>
+                </div>
+              </li>
+            </ul>
+            <div th:if="${#lists.isEmpty(attachments)}">
+              <p class="text-muted">기존 첨부파일 없음</p>
+            </div>
+
+            <div class="mb-2">파일 새로 첨부</div>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="c">
-              <label class="custom-file-label" for="c">파일을 선택하세요.</label>
+              <input type="file" class="custom-file-input" id="files" name="files" multiple>
+              <label class="custom-file-label" for="files">파일을 선택하세요.</label>
             </div>
           </div>
         </div>
@@ -66,18 +87,18 @@
     </div>
       <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button type="submit" class="btn btn-primary btn-icon-split mr-2">
           <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
           </span>
         <span class="text px-5">저장</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <a th:href="@{/courseBoardMaterials/materialsDetail(id=*{id})}" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
         <span class="text px-5">취소</span>
-      </button>
+      </a>
     </div>
   </form>
   <!-- content body 끝 -->
@@ -86,6 +107,153 @@
   <script>
       // javascript 개발은 여기에...
 
+      const loginUserId = $("#login-user-id").val();
+      const loginUserType = $("#login-user-type").val();
+      const currentCourseId = /*[[${currentCourseId}]]*/ null;
+
+      let courseId = [[${courseId}]];
+      let userId = [[${userId}]];
+      let fileList = [];
+      const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+      // --- 페이지 로드 완료 시 초기화 함수 실행 ---
+      document.addEventListener('DOMContentLoaded', function() {
+        initializePage();
+      });
+
+      $(function() {
+        // 폼(form) 전체의 submit 이벤트를 감지합니다.
+        $('form').on('submit', function(e) {
+          // 기본 폼 전송(새로고침)을 막습니다.
+          e.preventDefault();
+
+          const form = this;
+          const formData = new FormData(form);
+
+          // courseId를 formData에 추가 (만약 필요하다면)
+          const currentCourseId = /*[[${currentCourseId}]]*/ null;
+          if (currentCourseId) {
+            formData.append("courseId", currentCourseId);
+          }
+
+          // axios를 사용해 form 데이터를 서버로 전송합니다.
+          axios.post('/courseBoardMaterials/materialsModify', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then(function(response) {
+            // 서버로부터 받은 응답(response)을 확인합니다.
+            console.log(response.data);
+
+            // 서버 응답 코드(code)가 200 (성공)일 경우
+            if (response.data.code === 200) {
+              alert(response.data.message); // "수정 완료" 메시지를 알림창으로 띄웁니다.
+
+              // 응답 데이터에 포함된 게시글 ID(id)를 가져옵니다.
+              const materialId = response.data.data.id;
+
+              // 수정된 게시글의 상세 페이지로 이동합니다.
+              location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`;
+            } else {
+              // 성공이 아닐 경우 서버가 보낸 에러 메시지를 띄웁니다.
+              alert('수정 실패: ' + response.data.message);
+            }
+          }).catch(function(error) {
+            // 통신 중 에러가 발생했을 경우
+            console.error(error);
+            alert('수정 중 오류가 발생했습니다.');
+
+            // 유효성 검사(validation) 실패 시 에러 메시지 처리
+            if (error.response && error.response.data && error.response.data.data) {
+              const errorMap = error.response.data.data;
+              let errorMsg = '';
+              for (const key in errorMap) {
+                errorMsg += `${errorMap[key]}\n`;
+              }
+              alert(errorMsg);
+            }
+          });
+        });
+
+        $('input[name="deleteFiles"]').on('change', function() {
+          const labelSpan = $(this).closest('li').find('span');
+
+          if ($(this).is(':checked')) {
+            labelSpan.addClass('text-decoration-line-through');
+          } else {
+            labelSpan.removeClass('text-decoration-line-through');
+          }
+        });
+
+
+        // 파일 input에 파일명이 표시되도록 하는 스크립트
+        $('.custom-file-input').on('change', function() {
+          let fileNames = [];
+          for (let i = 0; i < $(this)[0].files.length; i++) {
+            fileNames.push($(this)[0].files[i].name);
+          }
+          $(this).siblings('.custom-file-label').html(fileNames.join(', '));
+        });
+      });
+
+      // --- 페이지 핵심 기능 초기화 함수 ---
+      async function initializePage() {
+        const headerCourseSelector = document.getElementById('courseSelector');
+        if (headerCourseSelector) {
+          const courses = await fetchCourses(loginUserId, loginUserType);
+          updateCourseSelectBox('#courseSelector', courses, currentCourseId);
+          headerCourseSelector.disabled = true;
+        }
+      }
+
+      // --- Helper 함수들 ---
+
+      /**
+       * API를 통해 과정 목록을 가져오는 함수
+       */
+      async function fetchCourses() {
+        // 관리자는 모든 과정을 볼 필요가 없으므로 빈 배열 반환 (또는 역할에 맞게 수정)
+        if (loginUserType === 'ADMINISTRATOR') return [];
+        try {
+          const response = await axios.get('/api/management/courses', {
+            params: { loginUserId: loginUserId, loginUserType: loginUserType }
+          });
+          return response.data?.data?.respDTOS || [];
+        } catch (error) {
+          console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
+          return [];
+        }
+      }
+
+      /**
+       * 과정 목록으로 Select Box(드롭다운) UI를 생성/업데이트하는 함수
+       */
+      function updateCourseSelectBox(selector, data, selectedValue) {
+        const selectElement = document.querySelector(selector);
+        if (!selectElement) return;
+
+        // 드롭다운 메뉴를 비움
+        selectElement.innerHTML = '';
+
+        // 기본 안내 옵션 추가
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '과정을 선택하세요';
+        selectElement.appendChild(defaultOption);
+
+        // API로 받아온 과정 목록을 옵션으로 추가
+        data.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id;
+          option.textContent = course.name;
+
+          // 전달받은 courseId와 일치하는 옵션을 'selected' 상태로 만듦
+          if (course.id == selectedValue) {
+            option.selected = true;
+          }
+          selectElement.appendChild(option);
+        });
+      }
   </script>
 </th:block>
 </body>

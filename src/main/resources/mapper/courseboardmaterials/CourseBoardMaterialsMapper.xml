@@ -4,44 +4,61 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goott5.lms.courseboardmaterials.mapper.CourseBoardMaterialsMapper">
 
-  <select id="selectAllCourseBoardMaterialsListWithNames" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO">
+  <insert id="insertCourseBoardMaterials" useGeneratedKeys="true" keyProperty="dto.id">
+    insert into course_notice(course_id, writer_id, title, content, is_fixed)
+    values(#{dto.courseId}, #{dto.writerId}, #{dto.title}, #{dto.content}, #{dto.isFixed})
+  </insert>
+
+  <update id="updateCourseBoardMaterials">
+    UPDATE course_notice
+    SET
+    title = #{title},
+    content = #{content},
+    is_fixed = #{isFixed},
+    updated_at = now()
+    WHERE
+    id = #{id}
+  </update>
+
+  <select id="selectCourseBoardMaterialsDetailFlat" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsFlatDTO">
     SELECT
-    cn.*,
+    cn.id,
+    cn.course_id,
     c.name AS courseName,
-    u.fullname AS writerName
-    FROM course_notice cn
-    JOIN course c ON cn.course_id = c.id
-    JOIN `user` u ON cn.writer_id = u.id
-    WHERE cn.deleted_at IS NULL
-    ORDER BY cn.is_fixed DESC, cn.created_at DESC
+    cn.title,
+    cn.content,
+    cn.read_count,
+    cn.is_fixed,
+    cn.created_at,
+    cn.updated_at,
+    u.id AS writerId,
+    u.fullname AS writerName,
+    u.type AS writerType
+    FROM
+    course_notice cn
+    JOIN
+    user u ON cn.writer_id = u.id
+    JOIN
+    course c ON cn.course_id = c.id
+    WHERE
+    cn.id = #{id} AND cn.deleted_at IS NULL
   </select>
 
-
-  <resultMap id="CourseBoardMaterialsDetailInfo" type="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDetailInfo">
-    <id property="id" column="id" />
-    <id property="courseId" column="courseId"/>
-    <result property="courseName" column="courseName"/>
-    <result property="writerName" column="writerName"/>
-    <result property="title" column="title"/>
-    <result property="content" column="content"/>
-    <result property="readCount" column="readCount"/>
-    <result property="isFixed" column="isFixed"/>
-    <result property="createdAt" column="createdAt"/>
-    <result property="updatedAt" column="updatedAt"/>
-    <result property="deletedAt" column="deletedAt"/>
-
-    <association property="user" javaType="com.goott5.lms.user.domain.UserVO">
-      <id property="loginId" column="loginId" />
-      <result property="type" column="type"/>
-      <result property="gender" column="gender"/>
-      <result property="birthday" column="birthday"/>
-      <result property="mobile" column="mobile"/>
-      <result property="email" column="email"/>
-      <result property="address" column="address"/>
-      <result property="sessionId" column="sessionId"/>
-    </association>
-
-  </resultMap>
+  <select id="selectAttachmentsByBoardId" resultType="com.goott5.lms.common.domain.FileSelectDTO">
+    SELECT
+    id,
+    original_name AS originalName,
+    new_name AS newName,
+    path,
+    is_image AS isImage,
+    size
+    FROM
+    file
+    WHERE
+    table_name = 'course_notice'
+    AND table_id = #{id}
+    AND deleted_at IS NULL
+  </select>
 
   <select id="selectListWithSearch" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO">
     SELECT
@@ -60,6 +77,7 @@
     ON cn.id = f.table_id
     <where>
       cn.deleted_at IS NULL
+      AND cn.is_fixed = false
       <if test="type != null and !type.isEmpty()">  AND
         <trim prefixOverrides="OR">
           <if test="type.contains('t'.toString())">
@@ -75,6 +93,12 @@
       </if>
       <if test="hasAttachment != null">
         AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
+      </if>
+      <if test="courseId != null">
+        AND cn.course_id = #{courseId}
+      </if>
+      <if test = "courseName != null">
+        AND c.name = #{courseName}
       </if>
     </where>
     ORDER BY
@@ -93,11 +117,12 @@
     SELECT COUNT(*) FROM
     course_notice cn JOIN
     course c ON cn.course_id = c.id
-    JOIN `user` u ON cn.writer_id = u.id LEFT JOIN
+    JOIN user u ON cn.writer_id = u.id LEFT JOIN
     (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
     ON cn.id = f.table_id
     <where>
       cn.deleted_at IS NULL
+      AND cn.is_fixed = false
       <if test="type != null and !type.isEmpty()">
         AND
         <trim prefixOverrides="OR">
@@ -115,36 +140,71 @@
       <if test="hasAttachment != null">
         AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
       </if>
+      <if test="courseId != null">
+        AND cn.course_id = #{courseId}
+      </if>
+      <if test="courseName != null and courseName != ''">
+        AND c.name = #{courseName}
+      </if>
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
     </where>
   </select>
 
-  <select id="selectCourseBoardMaterialsDetail" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDetailInfo">
-    SELECT
-    cn.id,
-    cn.course_id AS courseId,
-    c.name AS courseName,
-    cn.writer_id AS writerId,
-    u.fullname AS writerName,
-    u.type AS writerType,
-    cn.title,
-    cn.content,
-    cn.read_count AS readCount,
-    cn.is_fixed AS isFixed,
-    cn.created_at AS createdAt,
-    cn.updated_at AS updatedAt,
-    cn.deleted_at AS deletedAt,
-    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached FROM course_notice cn
-    JOIN course c ON cn.course_id = c.id
-    JOIN `user` u ON cn.writer_id = u.id
-    LEFT JOIN (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
-    ON cn.id = f.table_id
-    WHERE cn.id = #{id} AND cn.deleted_at IS NULL
-  </select>
-
-  <update id="incrementReadCount">
+  <update id="updateReadCount">
     UPDATE course_notice
     SET read_count = read_count + 1
     WHERE id = #{id}
   </update>
+
+  <update id="softDeleteById">
+    UPDATE course_notice
+    SET deleted_at = NOW()
+    WHERE id = #{id}
+  </update>
+
+  <select id="countFixedPosts" resultType="int">
+    SELECT
+    count(id)
+    FROM
+    course_notice cn
+    WHERE
+    cn.is_fixed = true
+    AND cn.deleted_at IS NULL
+    ORDER BY
+    cn.created_at DESC
+  </select>
+
+  <select id="selectAllFixedPosts"
+    parameterType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingRequestDTO"
+    resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPageDTO">
+    SELECT
+    cn.id, cn.title, cn.is_fixed, cn.created_at, cn.read_count, cn.deleted_at,
+    c.name AS courseName,
+    u.fullname AS writerName,
+    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached
+    FROM
+    course_notice cn
+    JOIN
+    course c ON cn.course_id = c.id
+    JOIN
+    `user` u ON cn.writer_id = u.id
+    LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_notice' AND deleted_at IS NULL) f
+    ON cn.id = f.table_id
+    <where>
+      cn.is_fixed = true
+      AND cn.deleted_at IS NULL
+      <if test="courseId != null and courseId != 0">
+        AND cn.course_id = #{courseId}
+      </if>
+      <if test="courseName != null and courseName != ''">
+        AND c.name = #{courseName}
+      </if>
+    </where>
+    ORDER BY
+    cn.created_at DESC
+  </select>
 
 </mapper>
