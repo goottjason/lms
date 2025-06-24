@@ -14,9 +14,6 @@ public interface TestSubmissionService {
   // 시험 제출 정보 가져오기
   TestSubmissionVO getTestSubmission(int testId, HttpSession session);
 
-  // 시험 제출 답안 정보 가져오기 (재응시의 경우)
-//  void getPreviousTestAnswer(int testId, HttpSession session);
-
   // 시험 비정상적인 조작시 비정상 조작 카운트 증가
   String modifyTestSubmissionToInProgressIncrementAbnormalCount(TestAnswerDTO testAnswerDTO, HttpSession session);
 

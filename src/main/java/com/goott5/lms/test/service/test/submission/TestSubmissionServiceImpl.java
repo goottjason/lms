@@ -38,45 +38,6 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
     return testSubmissionMapper.selectTestSubmission(testId, learnerId);
   }
 
-//  @Override
-//  public void modifyTestAnswer(int testId, HttpSession session) {
-//
-//    // 제출 ID(PK)
-//    Integer testSubmissionId = testSubmissionMapper.selectSubmissionId(testId,
-//        ((UserVO) session.getAttribute("loginUser")).getId());
-//
-//    TestAnswerDTO testAnswerDTO = testSubmissionMapper.selectSelectAnswers(testSubmissionId);
-//    // 답안 가져오기
-//    TestRegisterVO testRegisterVO = testDetailMapper.selectTestDetail(testId);
-//
-//    // 채점
-//    for (int i = 0; i < testAnswerDTO.getQuestionNums().size(); i++) {
-//      TestQuestionVO answerKeyQuestion = testRegisterVO.getQuestions().get(i);
-//      String questionType = answerKeyQuestion.getQuestionType();
-//
-//      if ("MULTIPLE".equals(questionType)) {
-//        // 객관식 문항의 경우
-//        String selectedMultipleAnswer = testAnswerDTO.getSelectAnswers().get(i);
-//        int correctMultipleAnswerNo = getCorrectMultipleAnswerNo(answerKeyQuestion.getOptions());
-//
-//        boolean isCorrect = Integer.parseInt(selectedMultipleAnswer) == correctMultipleAnswerNo;
-//`
-//        testSubmissionMapper.updateTestAnswer(answerKeyQuestion.getId(), testSubmissionId,
-//            isCorrect);
-//
-//      } else if ("SHORT".equals(questionType)) {
-//        // 주관식 문항의 경우
-//        String selectedShortAnswer = testAnswerDTO.getSelectAnswers().get(i);
-//        String correctShortAnswer = answerKeyQuestion.getCorrectAnswer();
-//
-//        boolean isCorrect = selectedShortAnswer.equals(correctShortAnswer);
-//
-//        testSubmissionMapper.updateTestAnswer(answerKeyQuestion.getId(), testSubmissionId,
-//            isCorrect);
-//      }
-//    }
-//
-//  }
 
   @Override
   public String modifyTestSubmissionToInProgressIncrementAbnormalCount(TestAnswerDTO testAnswerDTO,

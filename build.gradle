@@ -54,6 +54,8 @@ dependencies {
     implementation 'software.amazon.awssdk:s3:2.31.50'  // AWS S3
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6' // Swagger
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket' // STOMP
 }
 
 tasks.named('test') {
