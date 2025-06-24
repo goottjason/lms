@@ -6,6 +6,10 @@
     xmlns:th="http://www.thymeleaf.org">
   <head>
     <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js}"></script>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js}"></script>
+
+
     <script defer th:src="@{/js/test/testCommon.js}"></script>
     <script defer th:src="@{/js/test/testModel.js}"></script>
     <script defer th:src="@{/js/test/testDetail.js}"></script>
@@ -469,9 +473,10 @@
             <div class="modal-header">
               <h5 class="modal-title mr-3" id="myModalLabel">제출 답안</h5>
               <h5 class="modal-title">(교육생 : <span class="learner-name">홍길동</span>)</h5>
-              <button aria-label="닫기" class="close close-learner-result-modal"
-                      data-dismiss="modal"
-                      type="button">
+              <button
+                  aria-label="닫기" class="close close-learner-result-modal"
+                  data-dismiss="modal"
+                  type="button">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>

@@ -1,5 +1,6 @@
 package com.goott5.lms.test.controller;
 
+import com.goott5.lms.test.domain.Message;
 import com.goott5.lms.test.domain.apiresponse.ApiResult;
 import com.goott5.lms.test.domain.test.answer.TestAnswerDTO;
 import com.goott5.lms.test.domain.test.detail.result.dto.TestQuestionResultDTO;
@@ -14,6 +15,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +33,8 @@ public class TestSubmissionController {
 
   private final TestSubmissionService testSubmissionService;
 
+  private final SimpMessagingTemplate messagingTemplate;
+
   @GetMapping("/my/tests/{testId}/submission")
   public ResponseEntity<ApiResult<TestSubmissionVO>> getTestSubmission(
       @PathVariable(required = true) int testId, HttpSession session) {
@@ -45,10 +49,22 @@ public class TestSubmissionController {
       @RequestBody TestAnswerDTO testAnswerDTO,
       HttpSession session) {
 
-    return ApiResult.respondOk(200, "SUCCESS",
-        testSubmissionService.modifyTestSubmissionToInProgressIncrementAbnormalCount(
-            testAnswerDTO,
-            session));
+    String result = testSubmissionService.modifyTestSubmissionToInProgressIncrementAbnormalCount(
+        testAnswerDTO,
+        session);
+
+    if (result.equals("COUNT1")) {
+
+      return ApiResult.respondOk(200, "SUCCESS", "COUNT1");
+    }
+
+    Message isFinished = Message.builder()
+        .type("IsFinished")
+        .testId(testId)
+        .build();
+    messagingTemplate.convertAndSend("/topic/submissions/" + testId, isFinished);
+
+    return ApiResult.respondOk(200, "SUCCESS", "INVALIDATED");
   }
 
   @PutMapping("/my/tests/{testId}/submission")
@@ -57,10 +73,15 @@ public class TestSubmissionController {
       @RequestBody TestAnswerDTO testAnswerDTO,
       HttpSession session) {
 
-    log.info("testAnswerDTO: {}", testAnswerDTO);
+    testSubmissionService.modifySubmissionToCompleted(testAnswerDTO, session);
 
-    return ApiResult.respondOk(200, "SUCCESS",
-        testSubmissionService.modifySubmissionToCompleted(testAnswerDTO, session));
+    Message isFinished = Message.builder()
+        .type("IsFinished")
+        .testId(testId)
+        .build();
+    messagingTemplate.convertAndSend("/topic/submissions/" + testId, isFinished);
+
+    return ApiResult.respondOk(200, "SUCCESS", "SUCCESS");
   }
 
   @GetMapping("/my/tests/{testId}")
@@ -82,20 +103,5 @@ public class TestSubmissionController {
     return ApiResult.respondOk(200, "SUCCESS",
         testSubmissionService.getTestResultByLearnerId(testId, learnerId));
   }
-
-//  @GetMapping("/my/tests/{testId}/submission/previous")
-//  public ResponseEntity<ApiResult<TestAnswerDTO>> getPreviousTestAnswer(
-//      @PathVariable(required = true) int testId,
-//      HttpSession session
-//  ) {
-//
-//    testSubmissionService.getPreviousTestAnswer(testId, session);
-//
-//
-//    return null;
-//  }
-
-
-
 
 }
