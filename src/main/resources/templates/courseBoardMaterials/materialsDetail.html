@@ -9,6 +9,8 @@
 </head>
 <body>
 <div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업공지 상세</h1>
@@ -77,54 +79,69 @@
   <!-- 상단 카드 끝 -->
 
   <!-- 본문 시작 -->
-  <div class="card shadow mb-4" th:each="detail: ${detail}">
+  <div class="card shadow mb-4" th:object="${detail}">
     <!-- 제목 -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary" th:text="${detail.title}">여기에 제목이 들어옵니다~~</h6>
+      <h6 class="m-0 font-weight-bold text-primary" th:text="*{title}">여기에 제목이 들어옵니다~~</h6>
     </div>
     <!-- 내용 -->
-    <div class="card-body py-5" th:text="${detail.content}">
+    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;" th:text="*{content}">
       여기에 내용이 들어옵니다~~~
     </div>
     <!-- 첨부 파일 -->
     <div class="card-footer">
       <p class="mt-2">첨부파일</p>
       <div class="row">
-
-        <div class="col-4 card mb-2">
-          <div class="row g-0 m-0">
-            <div class="col-md-3 pl-2">
-              <img
-                  th:src="@{/img/no-image.jpg}"
-                  class="img-fluid rounded-start"
-                  style="width: 60px; object-fit: cover;">
-            </div>
-            <div class="col-md-9 d-flex align-items-center">
-              <div class="card-body p-0">
-                <p class="card-title mb-1 text-truncate">첨부파일123.pdf</p>
+        <th:block th:if="${fileDTOList != null}">
+          <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
+            <div class="row g-0 m-0">
+                <div class="col-md-3 pl-2" th:if="${fileDTO.isImage != ''}">
+                <img
+                    th:src="@{/img/no-image.jpg}"
+                    class="img-fluid rounded-start"
+                    style="width: 100px; object-fit: cover;">
+              </div>
+              <div class="col-md-9 d-flex align-items-center">
+                <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}">
+                  <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
+                     th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
+                </div>
+                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">
+                  <a th:href="${fileDTO.getPath()}"
+                     th:data-file="${fileDTO.getNewName()}"
+                     th:attr="download=${fileDTO.getOriginalName()}">
+                    <img th:src="${fileDTO.getPath()}"
+                         style="width: 200px; height: 100px; object-fit: cover;">
+                    <div th:text="${fileDTO.getOriginalName()}"></div>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+        </th:block>
+        <div class="col" th:if="${fileDTOList == null or fileDTOList.isEmpty()}">
+          <p class="text-muted ms-2">첨부파일이 없습니다.</p>
         </div>
-
       </div>
     </div>
   </div>
+
   <!-- 본문 끝 -->
 
   <!-- 버튼 -->
   <div class="col-12 d-flex justify-content-end mb-4">
     <div th:if="${loginUserType != 'LEARNER'}">
 
-      <button type="button" id="modify-btn" class="btn btn-info btn-icon-split mr-2" th:if="${loginUserType == 'INSTRUCTOR'}"
-      th:data-id="${detail.id}" th:data-link="${pagingRequestDTO.generateLinkExceptPageNo()}">
+      <button type="button" id="modify-btn" class="btn btn-info btn-icon-split mr-2" th:if="${loginUserType == 'INSTRUCTOR' || loginUserType == 'ADMINISTRATOR'}"
+              th:data-id="${detail.id}" th:data-link="${pagingRequestDTO.generateLinkExceptPageNo()}">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
         <span class="text px-3">수정</span>
       </button>
 
-      <button id="delete-button" class="btn btn-danger btn-icon-split mr-2" type="button">
+      <button id="delete-button" class="btn btn-danger btn-icon-split mr-2" type="button" th:if="${loginUserType == 'INSTRUCTOR' || loginUserType == 'ADMINISTRATOR'}"
+              th:data-id="${detail.id}">
       <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
@@ -144,28 +161,140 @@
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-      <span class="text px-4">목록</span>
-    </button>
+        <span class="text px-4">목록</span>
+      </button>
     </a>
+  </div>
+
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">삭제 확인</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          정말로 이 게시글을 삭제하시겠습니까? 삭제시 되돌릴 수 없습니다.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="confirm-delete-btn">삭제</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
   </div>
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-    // javascript 개발은 여기에...
-    $(function() {
+    // 모든 코드는 페이지(DOM)가 완전히 로드된 후에 실행되도록 합니다.
+    document.addEventListener('DOMContentLoaded', function() {
 
-      // 수정하기 버튼
-      $("#modify-btn").click(function () {
-        const id = $(this).data("id");
-        // console.log(id);
-        let link = $(this).data("link");
-        let url = `/courseBoardMaterials/materialsModify?id=${id}`;
-        if (link){
-          url += `&${link}`;
+      // --- 1. 변수 초기화 ---
+      const loginUserId = document.getElementById('login-user-id')?.value;
+      const loginUserType = document.getElementById('login-user-type')?.value;
+
+      /*<![CDATA[*/
+      // Thymeleaf로부터 안전하게 데이터를 가져옵니다.
+      const currentCourseId = /*[[${currentCourseId}]]*/ null;
+      /*]]>*/
+
+      // --- 2. 버튼 및 모달 요소 가져오기 ---
+      const modifyButton = document.getElementById('modify-btn');
+      const deleteButton = document.getElementById('delete-button');
+      const confirmDeleteButton = document.getElementById('confirm-delete-btn');
+
+      // --- 3. 이벤트 리스너 설정 ---
+
+      // 수정 버튼 이벤트
+      if (modifyButton) {
+        modifyButton.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const link = this.dataset.link;
+          let url = `/courseBoardMaterials/materialsModify?id=${id}`;
+          if (link) { url += `&${link}`; }
+          location.href = url;
+        });
+      }
+
+      // '삭제' 버튼 클릭 시 -> 모달 창 띄우기
+      if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+          // Bootstrap jQuery 플러그인을 사용하여 모달을 켭니다.
+          $('#deleteConfirmModal').modal('show');
+        });
+      }
+
+      // 모달 안의 '삭제 실행' 버튼 클릭 시 -> 실제 삭제 로직 실행
+      if (confirmDeleteButton) {
+        confirmDeleteButton.addEventListener('click', function() {
+          // '삭제' 버튼에 저장된 data-id 속성에서 게시글 ID를 가져옵니다.
+          // const materialId = [[${detail.id}]];
+          const deleteButton = document.getElementById('delete-button');
+          console.log("1. '삭제' 버튼 요소:", deleteButton);
+
+          const materialId = deleteButton.dataset.id;
+          console.log("2. 가져온 게시글 ID:", materialId);
+
+          if (!materialId) {
+            alert('게시글 ID를 찾을 수 없습니다.');
+            return;
+          }
+
+          axios.delete(`/courseBoardMaterials/${materialId}`)
+          .then(response => {
+            $('#deleteConfirmModal').modal('hide'); // 모달 닫기
+            alert(response.data.message || '삭제되었습니다.');
+            location.href = '/courseBoardMaterials/materialsList';
+          })
+          .catch(error => {
+            $('#deleteConfirmModal').modal('hide'); // 모달 닫기
+            alert('삭제 처리 중 오류가 발생했습니다.');
+            console.error(error);
+          });
+        });
+      }
+
+      // --- 4. 페이지 초기화 (헤더 드롭다운) ---
+      async function initializePage() {
+        const headerCourseSelector = document.getElementById('courseSelector');
+        if (headerCourseSelector) {
+          const courses = await fetchCourses(loginUserId, loginUserType);
+          updateCourseSelectBox('#courseSelector', courses, currentCourseId);
+          headerCourseSelector.disabled = true;
         }
-        location.href = url;
-      });
+      }
+
+      async function fetchCourses(loginUserId, loginUserType) {
+        if (loginUserType === 'ADMINISTRATOR') return [];
+        try {
+          const response = await axios.get('/api/management/courses', { params: { loginUserId, loginUserType } });
+          return response.data?.data?.respDTOS || [];
+        } catch (error) { console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return []; }
+      }
+
+      function updateCourseSelectBox(selector, data, selectedValue) {
+        const selectElement = document.querySelector(selector);
+        if (!selectElement) return;
+        selectElement.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '과정 전체'; // 상세페이지에서는 '과정 전체'로 표시
+        selectElement.appendChild(defaultOption);
+        data.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id;
+          option.textContent = course.name;
+          if (course.id == selectedValue) {
+            option.selected = true;
+          }
+          selectElement.appendChild(option);
+        });
+      }
+
+      initializePage();
     });
   </script>
 </th:block>

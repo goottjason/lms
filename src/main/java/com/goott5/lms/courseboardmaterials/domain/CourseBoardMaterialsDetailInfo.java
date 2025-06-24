@@ -1,7 +1,9 @@
 package com.goott5.lms.courseboardmaterials.domain;
 
+import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.user.domain.UserVO;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +35,7 @@ public class CourseBoardMaterialsDetailInfo {
   private Boolean isAttached; // 첨부파일 여부
 
   private UserVO user; // 작성자 UserVO
+  private List<FileSelectDTO> attachments;
 
 
 }

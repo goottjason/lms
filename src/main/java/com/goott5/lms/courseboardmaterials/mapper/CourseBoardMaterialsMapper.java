@@ -1,11 +1,14 @@
 package com.goott5.lms.courseboardmaterials.mapper;
 
+import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsDetailInfo;
-import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO;
+import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsFlatDTO;
+import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPageDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingRequestDTO;
+import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO;
+import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import java.util.List;
-import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -14,28 +17,8 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface CourseBoardMaterialsMapper {
 
-  @Select("select now()")
-  String selectNow();
-
-  //  전체 리스트를 불러오는 쿼리문
-  @Select("select * from course_notice where deleted_at is null")
-  List<CourseBoardMaterialsVO> selectAllCourseBoardMaterialsList();
-
-  // 작성자 리스트를 불러오는 쿼리문
-  @Select("select * from course_notice where writer_id = #{writerId}")
-  List<CourseBoardMaterialsVO> selectAllCourseBoardMaterialsListByWriterId(CourseBoardMaterialsDTO dto);
-
-  // 제목 리스트를 불러오는 쿼리문
-  @Select("select * from course_notice where title = #{title}")
-  List<CourseBoardMaterialsVO> selectAllCourseBoardMaterialsListByTitle(CourseBoardMaterialsDTO dto);
-
-  // 내용 리스트를 불러오는 쿼리문
-  @Select("select * from course_notice where content = #{content}")
-  List<CourseBoardMaterialsVO> selectAllCourseBoardMaterialsListByContent(CourseBoardMaterialsDTO dto);
-
-  // 공지 작성 쿼리문
-  @Insert("insert into course_notice(course_id, writer_id, title, content) values(#{courseId}, #{writerId}, #{title},#{content})")
-  void insertCourseBoardMaterials(CourseBoardMaterialsDTO  courseBoardMaterialsDTO);
+  // 게시글 등록
+  int insertCourseBoardMaterials(@Param("dto")CourseBoardMaterialsDTO  courseBoardMaterialsDTO);
 
   // 검색 기능
   List<CourseBoardMaterialsVO> selectListWithSearch(CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO);
@@ -48,5 +31,27 @@ public interface CourseBoardMaterialsMapper {
   CourseBoardMaterialsDetailInfo selectCourseBoardMaterialsDetail(@Param("id") int id);
 
   // 조회수 증가
-  void incrementReadCount(@Param("id") int id);
+  int updateReadCount(@Param("id") int id);
+
+  // 게시글+작성자 정보 조회용
+  CourseBoardMaterialsFlatDTO selectCourseBoardMaterialsDetailFlat(@Param("id") int id);
+
+  // 첨부파일 목록 조회용
+  List<FileSelectDTO> selectAttachmentsByBoardId(@Param("id") int id);
+
+  // 게시글 수정
+  int updateCourseBoardMaterials(CourseBoardMaterialsDTO courseBoardMaterialsDTO);
+
+  // 게시글 삭제
+  int softDeleteById(@Param("id") int id);
+
+  // 고정 기능
+  int countFixedPosts();
+
+  List<CourseBoardMaterialsPageDTO> selectAllFixedPosts(CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO);
+
+  // 과정 ID(PK) 가져오기
+  @Select("SELECT id FROM course WHERE name = #{courseName} ")
+  int selectCourseId(String courseName);
+
 }
