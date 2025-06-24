@@ -1,248 +1,1339 @@
 <!DOCTYPE html>
-<html
-    lang="ko"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    xmlns:th="http://www.thymeleaf.org"
-    layout:decorate="~{layout/basic.html}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic}">
 <head>
-  <style>
-  .dateHead {
-    margin: .4rem 0;
-  }
+    <title>출결 조회</title>
+    <!-- ======================== CSS 스타일 정의 ======================== -->
+        <style>
+            /* 전체 컨테이너 스타일 */
+            .attendance-container {
+              padding: 20px;
+              background-color: #f8f9fc;
+              min-height: calc(100vh - 200px);
+            }
 
-  .dateHead div {
-    background: #858796;
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-  }
+            /* 수강과정 정보 카드 (이미지와 동일한 디자인) */
+            .course-info-card {
+              background: white;
+              border-radius: 12px;
+              padding: 25px;
+              margin-bottom: 25px;
+              box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+              border-left: 4px solid #4e73df;
+            }
 
-  .dateHead div.blue {
-    background-color: #4e73df;
-  }
+            .course-info-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 15px;
+            }
 
-  .dateHead div.red {
-    background-color: #e74a3b;
-  }
+            .course-title {
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: #5a5c69;
+              margin: 0;
+            }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-gap: 5px;
-  }
+            /* 과정명 스타일 (이미지와 동일) */
+            .course-name {
+              font-size: 1.3rem;
+              font-weight: bold;
+              color: #4e73df;
+              margin-bottom: 15px;
+            }
 
-  .grid div {
-    padding: .6rem;
-    font-size: .9rem;
-  }
+            /* 출석률 표시 영역 */
+            .attendance-rate-display {
+              display: flex;
+              align-items: center;
+              gap: 15px;
+            }
 
-  .dateBoard div {
-    background-color: #fff;
-    min-height: 6rem;
-    padding: .4rem .4rem;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+            .rate-label {
+              font-size: 1rem;
+              color: #5a5c69;
+              font-weight: 500;
+            }
 
-  .noColor {
-    background-color: #eee !important;
-  }
+            .rate-value {
+              font-size: 1.8rem;
+              font-weight: bold;
+              color: #4e73df;
+            }
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem 2rem;
-  }
+            /* 입퇴실 버튼 영역 (이미지와 동일한 3개 버튼) */
+            .attendance-buttons {
+              display: flex;
+              gap: 15px;
+              margin-bottom: 25px;
+              justify-content: center;
+            }
 
-  .prevMonth, .nextMonth {
-    font-size: 30px;
-    cursor: pointer;
-  }
-  </style>
+            .btn-attendance {
+              flex: 1;
+              max-width: 150px;
+              padding: 12px 20px;
+              border: none;
+              border-radius: 8px;
+              font-size: 1rem;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+            }
+
+            /* 입실 버튼 (파란색) */
+            .btn-checkin {
+              background: #4e73df;
+              color: white;
+            }
+
+            .btn-checkin:hover:not(:disabled) {
+              background: #375cd3;
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(78, 115, 223, 0.4);
+            }
+
+            /* 퇴실 버튼 (초록색) */
+            .btn-checkout {
+              background: #1cc88a;
+              color: white;
+            }
+
+            .btn-checkout:hover:not(:disabled) {
+              background: #17a673;
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(28, 200, 138, 0.4);
+            }
+
+            /* 휴가신청 버튼 (노란색) */
+            .btn-vacation {
+              background: #f6c23e;
+              color: white;
+            }
+
+            .btn-vacation:hover:not(:disabled) {
+              background: #f4b619;
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(246, 194, 62, 0.4);
+            }
+
+            /* 비활성화된 버튼 스타일 */
+            .btn-attendance:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+              transform: none !important;
+              box-shadow: none !important;
+            }
+
+            /* 캘린더 컨테이너 (이미지와 동일한 디자인) */
+            .calendar-container {
+              background: white;
+              border-radius: 12px;
+              padding: 25px;
+              box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            }
+
+            /* 캘린더 헤더 (이전/다음 버튼과 월 표시) */
+            .calendar-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 20px;
+              padding-bottom: 15px;
+              border-bottom: 2px solid #e3e6f0;
+            }
+
+            .calendar-title {
+              font-size: 1.5rem;
+              font-weight: 600;
+              color: #5a5c69;
+              margin: 0;
+            }
+
+            .calendar-nav-btn {
+              background: #4e73df;
+              color: white;
+              border: none;
+              padding: 10px 16px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              font-weight: 500;
+              transition: all 0.3s ease;
+            }
+
+            .calendar-nav-btn:hover {
+              background: #375cd3;
+              transform: translateY(-1px);
+            }
+
+            /* 캘린더 그리드 (7열 달력 형태) */
+            .calendar-grid {
+              display: grid;
+              grid-template-columns: repeat(7, 1fr);
+              gap: 1px;
+              border: 1px solid #e3e6f0;
+              border-radius: 8px;
+              overflow: hidden;
+              background: #e3e6f0;
+            }
+
+            /* 캘린더 개별 날짜 셀 */
+            .calendar-day {
+              min-height: 100px;
+              padding: 8px;
+              background: white;
+              position: relative;
+              font-size: 0.85rem;
+              cursor: pointer;
+              transition: background-color 0.2s ease;
+            }
+
+            .calendar-day:hover {
+              background: #f8f9fc;
+            }
+
+            /* 요일 헤더 (일~토) */
+            .calendar-day.header {
+              background: #f8f9fc;
+              color: #5a5c69;
+              font-weight: 600;
+              text-align: center;
+              min-height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: default;
+            }
+
+            /* 오늘 날짜 표시 (이미지의 23일처럼 파란 테두리) */
+            .calendar-day.today {
+              background: #eef2ff;
+              border: 2px solid #4e73df;
+            }
+
+            /* 주말 날짜 스타일 */
+            .calendar-day.weekend {
+              background: #f8f9fa;
+              color: #858796;
+            }
+
+            /* 날짜 숫자 스타일 */
+            .day-number {
+              font-weight: 600;
+              margin-bottom: 0; /* 기존 6px에서 0으로 변경 */
+              color: #5a5c69;
+              font-size: 0.9rem;
+            }
+
+            /* 출결 상태 표시 (이미지의 "수업중" 같은 상태) */
+            .attendance-status {
+              font-size: 0.7rem;
+              padding: 3px 6px;
+              border-radius: 4px;
+              text-align: center;
+              margin-bottom: 0; /* 기존 2px에서 0으로 변경 */
+              display: block;
+              font-weight: 500;
+              line-height: 1.2;
+              cursor: pointer;
+            }
+
+            /* 상태별 색상 정의 */
+            .status-attendance { background: #d1eddf; color: #1cc88a; }
+            .status-late { background: #fef0cd; color: #f6c23e; }
+            .status-leave_early { background: #fadbd8; color: #ef4444; }
+            .status-vacation { background: #e2e3ff; color: #8b5cf6; }
+            .status-absence { background: #fadbd8; color: #ef4444; }
+            .status-in_study { background: #cfe2ff; color: #4e73df; } /* 이미지의 "수업중" */
+
+            /* 시간 표시 (이미지의 "입실 09:17" 같은 정보) */
+            .time-display {
+              font-size: 1.0rem;
+              color: #858796;
+              line-height: 1.1;
+              margin-top: 2px;
+            }
+
+            /* 수업 없는 날 알림 */
+            .no-class-alert {
+              background: #f8f9fc;
+              border: 1px solid #e3e6f0;
+              border-left: 4px solid #858796;
+              border-radius: 8px;
+              padding: 20px;
+              text-align: center;
+              color: #5a5c69;
+              margin: 20px 0;
+            }
+
+            /* 로딩 스피너 */
+            .loading-spinner {
+              display: none;
+              text-align: center;
+              padding: 30px;
+            }
+
+            /* 모달 스타일 개선 */
+            .modal {
+              z-index: 1050;
+            }
+
+            .modal-backdrop {
+              z-index: 1040;
+            }
+
+            .modal-header {
+              background: #4e73df;
+              color: white;
+              border-bottom: none;
+              border-radius: 0.3rem 0.3rem 0 0;
+            }
+
+            .modal-title {
+              color: white;
+            }
+
+            .modal-header .close {
+              color: white;
+              opacity: 1;
+              text-shadow: none;
+            }
+
+            .modal-header .close:hover {
+              color: #f8f9fa;
+            }
+
+            /* 상황별 모달 헤더 색상 */
+            .modal-header.bg-warning {
+              background: #f6c23e !important;
+            }
+
+            .modal-header.bg-danger {
+              background: #e74a3b !important;
+            }
+
+            .modal-header.bg-success {
+              background: #1cc88a !important;
+            }
+
+            /* 반응형 디자인 */
+            @media (max-width: 768px) {
+              .attendance-buttons {
+                flex-direction: column;
+              }
+
+              .btn-attendance {
+                max-width: none;
+                margin-bottom: 10px;
+              }
+
+              .attendance-rate-display {
+                flex-direction: column;
+                text-align: center;
+                gap: 5px;
+              }
+
+              /* 날짜 헤더 스타일 추가 */
+              .day-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6px;
+              }
+
+              .calendar-day {
+                min-height: 80px;
+                font-size: 0.75rem;
+              }
+            }
+        </style>
 </head>
+
 <body>
-<div layout:fragment="content">
-  <!-- content header 시작 -->
-  <div class="row align-items-center">
-    <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">출결 조회</h1>
-  </div>
-  <!-- content header 끝 -->
 
-  <!-- content body 시작 -->
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <div class="row align-items-center">
-        <div class="col-2">
-          <h6 class="m-0 font-weight-bold text-primary">출결 조회</h6>
-        </div>
-        <div class="col">
-          <h6 class="m-0 text-secondary">수업진행률 : <span>74</span>%</h6>
-        </div>
-        <div class="col-auto">
-          <button id="" class="btn btn btn-primary btn-icon-split mr-2">
-            <span class="icon text-white-50">
-              <i class="fa fa fa-check"></i>
-            </span>
-            <span class="text px-3">입실</span>
-          </button>
-          <button id="" class="btn btn btn-danger btn-icon-split mr-3">
-            <span class="icon text-white-50">
-              <i class="fa fa fa-times"></i>
-            </span>
-            <span class="text px-3">퇴실</span>
-          </button>
-          <button
-              id=""
-              class="btn btn btn-info btn-icon-split"
-              data-toggle="modal"
-              data-target="#vacationModal">
-            <span class="icon text-white-50">
-              <i class="fa fa-car"></i>
-            </span>
-            <span class="text px-3">휴가신청</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="rap">
-        <div class="header">
-          <div class="prevMonth">
-            <i class="fa fa-chevron-left"></i>
-          </div>
-          <h2 class='dateTitle text-dark'></h2>
-          <div class="nextMonth">
-            <i class="fa fa-chevron-right"></i>
-          </div>
-        </div>
+    <div layout:fragment="content" class="container-fluid">
 
-        <div class="grid dateHead">
-          <div class="red">일</div>
-          <div>월</div>
-          <div>화</div>
-          <div>수</div>
-          <div>목</div>
-          <div>금</div>
-          <div class="blue">토</div>
-        </div>
 
-        <div class="grid dateBoard"></div>
-      </div>
-    </div>
-  </div>
-  <!-- content body 끝 -->
+        <!-- ======================== 메인 컨텐츠 영역 ======================== -->
+        <div class="attendance-container">
 
-  <!-- 휴가신청 모달 -->
-  <div
-      class="modal fade"
-      id="vacationModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="myModalLabel"
-      aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h6 class="modal-title" id="myModalLabel">휴가 신청</h6>
-          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="row mb-2">
-            <div class="col-md-5">
-              <div class="form-group">
-                <label for="a">일자</label>
-                <input type="date" id="a" class="form-control">
-              </div>
+            <!-- 페이지 제목 -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">출결 조회</h1>
             </div>
-          </div>
-          <div class="row mb-2">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="b">사유</label>
-                <input type="text" id="b" class="form-control">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="" class="btn btn-primary btn-icon-split">
-            <span class="icon text-white-50">
-                <i class="fas fa-upload"></i>
-            </span>
-            <span class="text px-3">신청</span>
-          </button>
-          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
-            <span class="icon text-white-50">
-                <i class="fas fa-times"></i>
-            </span>
-            <span class="text px-3">닫기</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- 모달 끝 -->
-</div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-    $(function () {
-        let date = new Date();
-        makeCalendar(date);
 
-        // 이전 달로 이동
-        $(".prevMonth").click(function () {
-            makeCalendar(new Date(date.setMonth(date.getMonth() - 1)));
+            <!-- 수강과정 정보 카드 -->
+            <div class="course-info-card">
+
+                <!-- 과정명 표시 (basic.html의 courseSelector와 연동) -->
+                <div class="course-name" id="currentCourseName">
+                    <span th:if="${currentCourse}" th:text="${currentCourse.name}">과정명</span>
+                    <span th:unless="${currentCourse}">수강 중인 과정이 없습니다</span>
+                </div>
+
+                <!-- 출석률 표시  -->
+                <div class="attendance-rate-display">
+                    <span class="rate-label">출석률</span>
+                    <span class="rate-value" th:text="${attendanceRate != null ? attendanceRate + '%' : '0.0%'}">0.0%</span>
+                </div>
+            </div>
+
+            <!-- 수업일인 경우: 입퇴실 버튼들  -->
+            <div th:if="${isClassDay}" class="attendance-buttons">
+
+                <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
+                    <i class="fas fa-sign-in-alt"></i>입실
+                </button>
+                <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
+                    <i class="fas fa-sign-out-alt"></i>퇴실
+                </button>
+                <button class="btn-attendance btn-vacation" onclick="openVacationModal()">
+                    <i class="fas fa-calendar-alt"></i>휴가신청
+                </button>
+            </div>
+
+            <!-- 수업 없는 날 알림 -->
+            <div th:unless="${isClassDay}" class="no-class-alert">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>오늘은 수업이 없는 날입니다.</strong>
+            </div>
+
+            <!-- 출결 캘린더  -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left mr-1"></i>이전
+                    </button>
+                    <h4 class="calendar-title" id="currentMonth">2025년 6월</h4>
+                    <button class="calendar-nav-btn" onclick="changeMonth(1)">
+                        다음<i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 로딩 스피너 -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">출결 정보를 불러오는 중...</p>
+                </div>
+
+                <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- JavaScript에서 요일 헤더와 날짜들을 동적으로 생성 -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ======================== 모달들 ======================== -->
+
+        <!-- 입실 완료 모달 -->
+        <div class="modal fade" id="checkInModal" tabindex="-1" role="dialog" aria-labelledby="checkInModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-success">
+                        <h5 class="modal-title" id="checkInModalLabel">
+                            <i class="fas fa-check-circle mr-2"></i>입실 완료
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        <p class="mt-3 mb-0 h5">입실되었습니다.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퇴실 확인 모달 (상황별 메시지 표시) -->
+        <div class="modal fade" id="checkOutModal" tabindex="-1" role="dialog" aria-labelledby="checkOutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header" id="checkOutModalHeader">
+                        <h5 class="modal-title" id="checkOutModalLabel">퇴실 확인</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="checkOutModalMessage" class="mb-0">퇴실하시겠습니까?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="confirmCheckOutBtn" class="btn btn-primary" onclick="confirmCheckOut()">확인</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 휴가 신청 모달 -->
+        <div class="modal fade" id="vacationModal" tabindex="-1" role="dialog" aria-labelledby="vacationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="vacationModalLabel">
+                            <i class="fas fa-calendar-alt mr-2"></i>휴가 신청
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="vacationForm">
+                            <div class="form-group">
+                                <label for="vacationDate" class="font-weight-bold">일자</label>
+                                <input type="date" class="form-control" id="vacationDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vacationReason" class="font-weight-bold">사유</label>
+                                <textarea class="form-control" id="vacationReason" rows="4"
+                                          placeholder="휴가 사유를 입력해주세요" required></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="submitVacation()">신청</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 휴가 삭제 모달 -->
+        <div class="modal fade" id="vacationDeleteModal" tabindex="-1" role="dialog" aria-labelledby="vacationDeleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title text-white" id="vacationDeleteModalLabel">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>휴가 삭제
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>휴가를 삭제하시겠습니까?</strong></p>
+
+                        <p class="text-danger"><small>삭제 후에는 복구할 수 없습니다.</small></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="confirmVacationDeleteBtn" class="btn btn-danger" onclick="confirmVacationDelete()">삭제</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ======================== JavaScript 영역 (모든 JS는 script fragment 안에 위치) ======================== -->
+    <script layout:fragment="script" th:inline="javascript">
+        // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
+        const learnerEnrollmentId = /*[[${learnerEnrollmentId}]]*/ null;
+        const today = /*[[${today}]]*/ null;
+        const isClassDay = /*[[${isClassDay}]]*/ false;
+        const todayParticipation = /*[[${todayParticipation}]]*/ null;
+        const attendanceRate = /*[[${attendanceRate}]]*/ 0;
+        const currentCourse = /*[[${currentCourse}]]*/ null;
+        const loginUser = /*[[${loginUser}]]*/ null;
+
+        // ======================== 전역 변수 선언 ========================
+        let currentDate = new Date(); // 캘린더 현재 표시 월
+        let participationData = {}; // 월별 출결 데이터 저장
+        let selectedVacationId = null; // 삭제할 휴가 ID
+
+        // ======================== 페이지 로드 시 초기화 ========================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 출결 조회 페이지 초기화 시작 ===');
+            console.log('기본 데이터:', { learnerEnrollmentId, today, isClassDay, currentCourse, todayParticipation });
+            console.log('현재 출석률:', attendanceRate + '%'); // attendanceRate 변수 사용
+
+            // 1. basic.html의 courseSelector 설정 (상단 과정 선택 드롭다운)
+            setupCourseSelector();
+
+            // 2. 입퇴실 버튼 상태 업데이트 (노션 로직 적용)
+            updateButtonStates();
+
+            // 3. 캘린더 초기화 및 렌더링
+            initializeCalendar();
+            renderCalendar();
+
+            // 4. Bootstrap 모달 사용 가능 여부 확인
+            if (typeof $ !== 'undefined') {
+                console.log('jQuery 및 Bootstrap 모달 사용 가능');
+            } else {
+                console.warn('jQuery가 로드되지 않았습니다.');
+            }
+
+            console.log('=== 출결 조회 페이지 초기화 완료 ===');
         });
 
-        // 다음 달로 이동
-        $(".nextMonth").click(function () {
-            makeCalendar(new Date(date.setMonth(date.getMonth() + 1)));
-        });
+        // ======================== basic.html의 courseSelector 설정 ========================
+        /**
+         * basic.html 레이아웃의 상단 과정 선택 드롭다운에 현재/과거 과정 목록 설정
+         * 실제 API(/participation/courses/{userId})를 호출하여 데이터 로드
+         */
+        function setupCourseSelector() {
+            console.log('=== courseSelector 설정 시작 ===');
 
-    });
+            // 로그인 사용자 정보 확인
+            if (!loginUser || !loginUser.id) {
+                console.warn('로그인 사용자 정보가 없습니다.');
+                return;
+            }
 
-    // 캘린더 출력
-    function makeCalendar(date) {
-        let currentYear  = new Date(date).getFullYear();
-        let currentMonth = new Date(date).getMonth() + 1;
+            // basic.html의 courseSelector 요소 찾기
+            const courseSelector = document.getElementById('courseSelector');
+            if (!courseSelector) {
+                console.warn('courseSelector 요소를 찾을 수 없습니다.');
+                return;
+            }
 
-        let firstDay = new Date(date.setDate(1)).getDay();
-        let lastDate = new Date(currentYear, currentMonth, 0).getDate();
+            // 과정 목록 API 호출
+            fetch(`/participation/courses/${loginUser.id}`)
+            .then(response => {
+                console.log('과정 목록 API 응답 상태:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('과정 목록 API 응답 데이터:', data);
 
-        let remainStart = firstDay + lastDate;
-        let remainEnd   = Math.ceil(remainStart / 7) * 7;
+                if (data.success) {
+                    // 기존 옵션 제거
+                    courseSelector.innerHTML = '';
 
-        let output = "";
+                    // 현재 진행 중인 과정 추가
+                    if (data.currentCourse) {
+                        const currentOption = document.createElement('option');
+                        currentOption.value = data.currentCourse.id;
+                        currentOption.textContent = `[진행중] ${data.currentCourse.name}`;
+                        currentOption.selected = true;
+                        courseSelector.appendChild(currentOption);
 
-        for (let i = 0; i < firstDay; i++) {
-            output += `<div class="noColor"></div>`;
+                        console.log('현재 과정 추가:', data.currentCourse.name);
+                    }
+
+                    // 과거 완료된 과정들 추가
+                    if (data.previousCourses && data.previousCourses.length > 0) {
+                        data.previousCourses.forEach(course => {
+                            const option = document.createElement('option');
+                            option.value = course.id;
+                            option.textContent = `[완료] ${course.name}`;
+                            courseSelector.appendChild(option);
+                        });
+
+                        console.log('과거 과정 추가:', data.previousCourses.length + '개');
+                    }
+
+                    console.log('courseSelector 설정 완료');
+                } else {
+                    console.error('과정 목록 조회 실패:', data.message);
+                    // 실패 시 현재 과정만 표시 (fallback)
+                    addFallbackCourse(courseSelector);
+                }
+            })
+            .catch(error => {
+                console.error('과정 목록 조회 오류:', error);
+                // 오류 시 현재 과정만 표시 (fallback)
+                addFallbackCourse(courseSelector);
+            });
         }
 
-        for (let i = 1; i <= lastDate; i++) {
-            let yyyy          = currentYear;
-            let mm            = String(currentMonth).padStart(2, "0");
-            let dd            = String(i).padStart(2, "0");
-            let formattedDate = `${yyyy}-${mm}-${dd}`;
-
-            output += `<div class="date" data-date="${formattedDate}">
-                    <p class="mb-2"><span class="text-lg text-dark">${i}</span><span class="ml-2">출석</span></p>
-                    <p class="mb-1 text-primary">입실 : <span>09:20</span></p>
-                    <p class="mb-1 text-danger">퇴실 : <span>18:20</span></p>
-                    </div>`;
+        /**
+         * API 호출 실패 시 현재 과정만 표시하는 fallback 함수
+         */
+        function addFallbackCourse(courseSelector) {
+            if (currentCourse) {
+                courseSelector.innerHTML = '';
+                const fallbackOption = document.createElement('option');
+                fallbackOption.value = currentCourse.id;
+                fallbackOption.textContent = `[진행중] ${currentCourse.name}`;
+                fallbackOption.selected = true;
+                courseSelector.appendChild(fallbackOption);
+                console.log('fallback 과정 설정:', currentCourse.name);
+            }
         }
 
-        for (let i = remainStart; i < remainEnd; i++) {
-            output += `<div class="noColor"></div>`;
+        // ======================== 시간 계산 유틸리티 함수 ========================
+        /**
+         * 시간에 분 추가하는 함수 (lesson_end_time + 10분 계산용)
+         * @param {string} timeString - "HH:MM" 형식의 시간
+         * @param {number} minutes - 추가할 분 수
+         * @returns {string} - "HH:MM" 형식의 결과 시간
+         */
+        function addMinutesToTime(timeString, minutes) {
+            const [hours, mins] = timeString.split(':').map(Number);
+            const totalMinutes = hours * 60 + mins + minutes;
+            const newHours = Math.floor(totalMinutes / 60);
+            const newMins = totalMinutes % 60;
+            return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
         }
 
-        $(".dateBoard").html(output);
-        $(".dateTitle").html(`<p>${currentYear}년 ${currentMonth}월</p>`);
-    }
+        // ======================== 버튼 상태 관리 ========================
+        /**
+         * 입실/퇴실 버튼의 활성화/비활성화 상태를 노션 로직에 따라 업데이트
+         * - 지각자는 lesson_end_time 전까지 퇴실 불가
+         * - lesson_end_time + 10분 후에는 모든 사람 퇴실 불가
+         * - 휴가 신청자는 입퇴실 불가
+         */
+        function updateButtonStates() {
+            console.log('=== 버튼 상태 업데이트 시작 ===');
+
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkOutBtn = document.getElementById('checkOutBtn');
+
+            // 기본 조건 확인
+            if (!isClassDay || !learnerEnrollmentId || !checkInBtn || !checkOutBtn) {
+                console.log('기본 조건 미충족:', {
+                    isClassDay,
+                    learnerEnrollmentId,
+                    checkInBtn: !!checkInBtn,
+                    checkOutBtn: !!checkOutBtn
+                });
+                return;
+            }
+
+            // 과정 정보 없으면 모든 버튼 비활성화
+            if (!currentCourse) {
+                console.log('과정 정보 없음 - 모든 버튼 비활성화');
+                checkInBtn.disabled = true;
+                checkOutBtn.disabled = true;
+                return;
+            }
+
+            console.log('현재 과정 정보:', currentCourse);
+            console.log('오늘 출결 정보:', todayParticipation);
+
+            // 현재 시간 정보
+            const now = new Date();
+            const currentTime = now.toTimeString().substring(0, 5); // HH:MM 형식
+            const lessonStartTime = currentCourse.lessonStartTime;
+            const lessonEndTime = currentCourse.lessonEndTime;
+
+            console.log('시간 정보:', { currentTime, lessonStartTime, lessonEndTime });
+
+            // 오늘 출결 기록이 있는 경우
+            if (todayParticipation) {
+                const hasCheckedIn = todayParticipation.checkIn;
+                const hasCheckedOut = todayParticipation.checkOut;
+                const dbStatus = todayParticipation.status;
+                const displayStatus = todayParticipation.displayStatus;
+
+                const isVacation = dbStatus === 'VACATION' || dbStatus === 'VACATION_PENDING';
+                const isLate = dbStatus === 'LATE';
+
+                console.log('출결 상태 상세:', {
+                    hasCheckedIn: !!hasCheckedIn,
+                    hasCheckedOut: !!hasCheckedOut,
+                    dbStatus,
+                    displayStatus,
+                    isVacation,
+                    isLate
+                });
+
+                // 입실 버튼: 이미 입실했거나 휴가면 비활성화
+                checkInBtn.disabled = hasCheckedIn || isVacation;
+                console.log('입실 버튼 상태:', checkInBtn.disabled ? '비활성화' : '활성화');
+
+                // 퇴실 버튼 로직
+                if (!hasCheckedIn) {
+                    checkOutBtn.disabled = true;
+                    console.log('퇴실 버튼 비활성화 - 입실하지 않음');
+                } else if (hasCheckedOut) {
+                    checkOutBtn.disabled = true;
+                    console.log('퇴실 버튼 비활성화 - 이미 퇴실함');
+                } else if (isVacation) {
+                    checkOutBtn.disabled = true;
+                    console.log('퇴실 버튼 비활성화 - 휴가');
+                } else {
+                    // 핵심 로직: 지각자는 lesson_end_time 전까지 퇴실 불가
+                    if (isLate && lessonEndTime && currentTime < lessonEndTime.substring(0, 5)) {
+                        checkOutBtn.disabled = true;
+                        console.log('퇴실 버튼 비활성화 - 지각자 수업시간 중 (lesson_end_time 전)');
+                        console.log(`현재시간 ${currentTime} < 수업종료시간 ${lessonEndTime.substring(0, 5)}`);
+                    } else {
+                        // lesson_end_time + 10분 후에는 모든 사람 퇴실 불가
+                        if (lessonEndTime) {
+                            const endTimePlus10 = addMinutesToTime(lessonEndTime, 10);
+                            if (currentTime > endTimePlus10) {
+                                checkOutBtn.disabled = true;
+                                console.log('퇴실 버튼 비활성화 - 시간 초과 (lesson_end_time + 10분 후)');
+                                console.log(`현재시간 ${currentTime} > 제한시간 ${endTimePlus10}`);
+                            } else {
+                                checkOutBtn.disabled = false;
+                                console.log('퇴실 버튼 활성화 - 퇴실 가능');
+                                console.log(`지각여부: ${isLate}, 현재시간: ${currentTime}, 수업종료: ${lessonEndTime.substring(0, 5)}, 제한시간: ${endTimePlus10}`);
+                            }
+                        } else {
+                            checkOutBtn.disabled = false;
+                            console.log('퇴실 버튼 활성화 - 시간 정보 없음');
+                        }
+                    }
+                }
+            } else {
+                // 오늘 출결 기록이 없는 경우
+                console.log('오늘 출결 정보 없음 - 기본 상태 설정');
+                checkInBtn.disabled = false;  // 입실 가능
+                checkOutBtn.disabled = true;  // 퇴실 불가
+            }
+
+            console.log('=== 최종 버튼 상태 ===');
+            console.log('입실 버튼:', checkInBtn.disabled ? '비활성화' : '활성화');
+            console.log('퇴실 버튼:', checkOutBtn.disabled ? '비활성화' : '활성화');
+        }
+
+        // ======================== 캘린더 관련 함수들 ========================
+        /**
+         * 캘린더 초기화 (현재 월 표시)
+         */
+        function initializeCalendar() {
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월',
+                                '7월', '8월', '9월', '10월', '11월', '12월'];
+
+            const currentMonthElement = document.getElementById('currentMonth');
+            if (currentMonthElement) {
+                currentMonthElement.textContent =
+                    `${currentDate.getFullYear()}년 ${monthNames[currentDate.getMonth()]}`;
+            }
+        }
+
+        /**
+         * 월 변경 함수 (이전/다음 버튼 클릭 시)
+         * @param {number} direction - -1(이전달) 또는 1(다음달)
+         */
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            initializeCalendar();
+            renderCalendar();
+        }
+
+        /**
+         * 캘린더 렌더링 (월별 출결 데이터 조회 후 달력 생성)
+         */
+        function renderCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            if (!calendarGrid || !learnerEnrollmentId) return;
+
+            // 로딩 스피너 표시
+            loadingSpinner.style.display = 'block';
+            calendarGrid.innerHTML = '';
+
+            // 요일 헤더 생성 (일~토)
+            const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
+            dayHeaders.forEach(day => {
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'calendar-day header';
+                headerDiv.textContent = day;
+                calendarGrid.appendChild(headerDiv);
+            });
+
+            // 월별 출결 데이터 API 조회
+            const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+
+            fetch(`/participation/monthly/${learnerEnrollmentId}/${dateStr}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('월별 출결 데이터 조회 결과:', data);
+
+                if (data.success) {
+                    // 출결 데이터를 날짜별로 정리
+                    participationData = {};
+                    data.participations.forEach(p => {
+                        participationData[p.participationDate] = p;
+                    });
+                }
+
+                // 현재 월의 날짜들만 생성 (이전/다음달 날짜 제외)
+                generateCurrentMonthDaysOnly();
+            })
+            .catch(error => {
+                console.error('월별 데이터 조회 오류:', error);
+                generateCurrentMonthDaysOnly();
+            })
+            .finally(() => {
+                // 로딩 스피너 숨김
+                loadingSpinner.style.display = 'none';
+            });
+        }
+
+        /**
+         * 현재 월의 날짜만 생성 (이전/다음달 날짜는 표시하지 않음)
+         */
+        function generateCurrentMonthDaysOnly() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // 현재 월의 첫째 날과 마지막 날
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            // 첫 주의 빈 칸 채우기 (일요일부터 시작)
+            const firstDayOfWeek = firstDay.getDay();
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'calendar-day';
+                emptyDiv.style.backgroundColor = '#f8f9fc';
+                calendarGrid.appendChild(emptyDiv);
+            }
+
+            // 현재 월의 날짜들만 생성
+            for (let date = 1; date <= lastDay.getDate(); date++) {
+                const currentDay = new Date(year, month, date);
+                const dayDiv = createCurrentMonthDayCell(currentDay, date);
+                calendarGrid.appendChild(dayDiv);
+            }
+
+            // 마지막 주의 빈 칸 채우기 (6주 완성)
+            const totalCells = calendarGrid.children.length - 7; // 헤더 제외
+            const remainingCells = 42 - 7 - totalCells; // 6주 * 7일 - 헤더 - 현재 셀
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'calendar-day';
+                emptyDiv.style.backgroundColor = '#f8f9fc';
+                calendarGrid.appendChild(emptyDiv);
+            }
+        }
+
+        /**
+         * 현재 월의 개별 날짜 셀 생성 (출결 정보 포함)
+         * @param {Date} date - 날짜 객체
+         * @param {number} dayNumber - 날짜 숫자
+         * @returns {HTMLElement} - 생성된 날짜 셀 요소
+         */
+        function createCurrentMonthDayCell(date, dayNumber) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+
+            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+            const isToday = dateStr === today;
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+            if (isToday) dayDiv.classList.add('today');
+            if (isWeekend) dayDiv.classList.add('weekend');
+
+            //  날짜와 상태를 같은 줄에 표시하는 헤더 div 생성
+            const dayHeaderDiv = document.createElement('div');
+            dayHeaderDiv.className = 'day-header';
+            dayHeaderDiv.style.display = 'flex';
+            dayHeaderDiv.style.justifyContent = 'space-between';
+            dayHeaderDiv.style.alignItems = 'center';
+            dayHeaderDiv.style.marginBottom = '6px';
+
+            // 날짜 번호
+            const dayNumberDiv = document.createElement('div');
+            dayNumberDiv.className = 'day-number';
+            dayNumberDiv.textContent = dayNumber;
+            dayNumberDiv.style.margin = '0'; // 기존 margin 제거
+            dayHeaderDiv.appendChild(dayNumberDiv);
+
+            // 출결 정보가 있는 경우 상태를 날짜 옆에 표시
+            if (participationData[dateStr]) {
+                const participation = participationData[dateStr];
+
+                if (participation.isStatusVisible) {
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = `attendance-status status-${participation.displayStatus.toLowerCase()}`;
+                    statusDiv.textContent = participation.displayStatusText;
+                    statusDiv.style.marginBottom = '0'; // 기존 margin 제거
+
+                    // 휴가인 경우 클릭하여 삭제 가능
+                    if (participation.status === 'VACATION') {
+                        statusDiv.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            selectedVacationId = participation.id;
+                            openVacationDeleteModal();
+                        });
+                        statusDiv.style.cursor = 'pointer';
+                        statusDiv.title = '클릭하여 휴가 삭제';
+                    }
+
+                    dayHeaderDiv.appendChild(statusDiv);
+                }
+            }
+
+            //  헤더(날짜+상태)를 dayDiv에 추가
+            dayDiv.appendChild(dayHeaderDiv);
+
+            //  입실/퇴실 시간을 각각 별도 줄로 표시
+            if (participationData[dateStr]) {
+                const participation = participationData[dateStr];
+
+                if (participation.checkIn || participation.checkOut) {
+                    // 입실 시간 표시
+                    if (participation.checkIn) {
+                        const checkInDiv = document.createElement('div');
+                        checkInDiv.className = 'time-display';
+                        const checkInTime = new Date(participation.checkIn);
+                        checkInDiv.textContent = `입실: ${checkInTime.getHours().toString().padStart(2, '0')}:${checkInTime.getMinutes().toString().padStart(2, '0')}`;
+                        dayDiv.appendChild(checkInDiv);
+                    }
+
+                    // 퇴실 시간 표시
+                    if (participation.checkOut) {
+                        const checkOutDiv = document.createElement('div');
+                        checkOutDiv.className = 'time-display';
+                        const checkOutTime = new Date(participation.checkOut);
+                        checkOutDiv.textContent = `퇴실: ${checkOutTime.getHours().toString().padStart(2, '0')}:${checkOutTime.getMinutes().toString().padStart(2, '0')}`;
+                        dayDiv.appendChild(checkOutDiv);
+                    }
+                }
+            }
+
+            return dayDiv;
+        }
 
 
-  </script>
-</th:block>
+        // ======================== 입실 처리 함수 ========================
+        /**
+         * 입실 처리 함수 (입실 성공 시 모달 표시)
+         */
+        function handleCheckIn() {
+            console.log('=== 입실 처리 시작 ===');
+
+            // 필수 데이터 검증
+            if (!learnerEnrollmentId || !today) {
+                alert('입실 처리를 위한 정보가 부족합니다.');
+                return;
+            }
+
+            const requestData = {
+                learnerEnrollmentId: learnerEnrollmentId,
+                participationDate: today
+            };
+
+            // 입실 API 호출
+            fetch('/participation/checkin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('입실 처리 결과:', data);
+
+                if (data.success) {
+                    // 성공 시 입실 완료 모달 표시
+                    if (typeof $ !== 'undefined') {
+                        $('#checkInModal').modal('show');
+
+                        // 2초 후 페이지 새로고침
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        // jQuery가 없는 경우 기본 alert 사용
+                        alert('입실이 정상 처리되었습니다.');
+                        location.reload();
+                    }
+                } else {
+                    alert('입실 처리에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('입실 처리 오류:', error);
+                alert('입실 처리 중 오류가 발생했습니다.');
+            });
+        }
+
+        // ======================== 퇴실 처리 함수들 ========================
+        /**
+         * 퇴실 처리 함수 (상황별 모달 메시지 표시)
+         */
+        function handleCheckOut() {
+            console.log('=== 퇴실 처리 시작 ===');
+
+            // 버튼 상태 재확인
+            const checkOutBtn = document.getElementById('checkOutBtn');
+            if (checkOutBtn && checkOutBtn.disabled) {
+                console.log('퇴실 버튼이 비활성화 상태입니다.');
+
+                // 지각자인 경우 구체적인 메시지
+                if (todayParticipation && todayParticipation.status === 'LATE') {
+                    alert('지각자는 수업 종료 시간까지 퇴실할 수 없습니다.');
+                } else {
+                    alert('현재 퇴실할 수 없는 상태입니다.');
+                }
+                return;
+            }
+
+            // 필수 데이터 검증
+            if (!learnerEnrollmentId || !today || !currentCourse) {
+                alert('퇴실 처리를 위한 정보가 부족합니다.');
+                return;
+            }
+
+            console.log('퇴실 상태 예측 API 호출');
+
+            // 현재 시간을 올바른 형식으로 변환 (타임존 문제 해결)
+            const now = new Date();
+            const timeString = now.getFullYear() + '-' +
+                               String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                               String(now.getDate()).padStart(2, '0') + 'T' +
+                               String(now.getHours()).padStart(2, '0') + ':' +
+                               String(now.getMinutes()).padStart(2, '0') + ':' +
+                               String(now.getSeconds()).padStart(2, '0');
+
+            console.log('예측에 사용할 시간:', timeString);
+
+            // 퇴실 상태 예측 API 호출
+            fetch('/participation/predict-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                                         learnerEnrollmentId: learnerEnrollmentId,
+                                         participationDate: today,
+                                         predictedCheckOut: timeString
+                                     })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('퇴실 상태 예측 결과:', data);
+
+                if (data.success) {
+                    let message = '퇴실하시겠습니까?';
+                    let headerClass = '';
+
+                    // 노션 로직에 따른 상황별 메시지 설정
+                    switch (data.predictedStatus) {
+                        case 'ABSENCE':
+                            message = '지금 퇴실하시면 결석처리됩니다. 진행하시겠습니까?';
+                            headerClass = 'bg-danger';
+                            break;
+                        case 'LEAVE_EARLY':
+                            message = '지금 퇴실하시면 조퇴처리됩니다. 진행하시겠습니까?';
+                            headerClass = 'bg-warning';
+                            break;
+                        case 'NOT_ALLOWED':
+                            alert('지각자는 수업 종료 시간 전까지 퇴실할 수 없습니다.');
+                            return;
+                        default:
+                            message = '퇴실하시겠습니까?';
+                            headerClass = '';
+                    }
+
+                    // 모달 메시지와 스타일 설정
+                    const messageElement = document.getElementById('checkOutModalMessage');
+                    const headerElement = document.getElementById('checkOutModalHeader');
+
+                    if (messageElement) {
+                        messageElement.textContent = message;
+                    }
+
+                    if (headerElement) {
+                        // 기존 클래스 제거 후 새 클래스 추가
+                        headerElement.className = 'modal-header';
+                        if (headerClass) {
+                            headerElement.classList.add(headerClass);
+                        }
+                    }
+
+                    // Bootstrap 모달 표시
+                    if (typeof $ !== 'undefined') {
+                        $('#checkOutModal').modal('show');
+                    } else {
+                        // jQuery가 없는 경우 기본 confirm 사용
+                        if (confirm(message)) {
+                            confirmCheckOut();
+                        }
+                    }
+                } else {
+                    alert('퇴실 상태 예측에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('퇴실 상태 예측 오류:', error);
+                alert('퇴실 처리 중 오류가 발생했습니다.');
+            });
+        }
+
+        /**
+         * 퇴실 확인 처리 (모달에서 확인 버튼 클릭 시)
+         */
+        function confirmCheckOut() {
+            console.log('퇴실 확인 처리');
+
+            // 모달 닫기
+            if (typeof $ !== 'undefined') {
+                $('#checkOutModal').modal('hide');
+            }
+
+            const requestData = {
+                learnerEnrollmentId: learnerEnrollmentId,
+                participationDate: today
+            };
+
+            // 퇴실 처리 API 호출
+            fetch('/participation/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('퇴실 처리 결과:', data);
+
+                if (data.success) {
+                    alert('퇴실 처리가 완료되었습니다.');
+                    location.reload();
+                } else {
+                    alert('퇴실 처리에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('퇴실 처리 오류:', error);
+                alert('퇴실 처리 중 오류가 발생했습니다.');
+            });
+        }
+
+        // ======================== 휴가 관련 함수들 ========================
+        /**
+         * 휴가 신청 모달 열기 (안전한 DOM 접근)
+         */
+        function openVacationModal() {
+            console.log('휴가 신청 모달 열기');
+
+            // DOM 요소 안전성 확인
+            const vacationDateElement = document.getElementById('vacationDate');
+            const vacationReasonElement = document.getElementById('vacationReason');
+
+            if (vacationDateElement) {
+                vacationDateElement.value = today || '';
+            } else {
+                console.error('vacationDate 요소를 찾을 수 없습니다.');
+            }
+
+            if (vacationReasonElement) {
+                vacationReasonElement.value = '';
+            } else {
+                console.error('vacationReason 요소를 찾을 수 없습니다.');
+            }
+
+            // Bootstrap 모달 표시
+            if (typeof $ !== 'undefined') {
+                $('#vacationModal').modal('show');
+            } else {
+                console.error('jQuery가 로드되지 않아 모달을 표시할 수 없습니다.');
+                alert('휴가 신청 모달을 열 수 없습니다.');
+            }
+        }
+
+        /**
+         * 휴가 삭제 모달 열기
+         */
+        function openVacationDeleteModal() {
+            if (typeof $ !== 'undefined') {
+                $('#vacationDeleteModal').modal('show');
+            } else {
+                // jQuery가 없는 경우 기본 confirm 사용
+                if (confirm('휴가를 삭제하시겠습니까?\n강사와 대면 상의 후 삭제해 주세요.')) {
+                    confirmVacationDelete();
+                }
+            }
+        }
+
+        /**
+         * 휴가 신청 처리
+         */
+        function submitVacation() {
+            const vacationDateElement = document.getElementById('vacationDate');
+            const vacationReasonElement = document.getElementById('vacationReason');
+
+            // DOM 요소 존재 확인
+            if (!vacationDateElement || !vacationReasonElement) {
+                alert('휴가 신청 폼 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            const vacationDate = vacationDateElement.value;
+            const vacationReason = vacationReasonElement.value.trim();
+
+            // 입력값 검증
+            if (!vacationDate || !vacationReason) {
+                alert('모든 필드를 입력해주세요.');
+                return;
+            }
+
+            const requestData = {
+                learnerEnrollmentId: learnerEnrollmentId,
+                vacationDate: vacationDate,
+                explanation: vacationReason
+            };
+
+            // 휴가 신청 API 호출
+            fetch('/vacation/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('휴가 신청이 완료되었습니다. 강사 승인을 기다려주세요.');
+
+                    // 모달 닫기
+                    if (typeof $ !== 'undefined') {
+                        $('#vacationModal').modal('hide');
+                    }
+
+                    location.reload();
+                } else {
+                    alert('휴가 신청에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('휴가 신청 오류:', error);
+                alert('휴가 신청 중 오류가 발생했습니다.');
+            });
+        }
+
+        /**
+         * 휴가 삭제 확인 처리
+         */
+        function confirmVacationDelete() {
+            if (!selectedVacationId) {
+                alert('삭제할 휴가 정보가 없습니다.');
+                return;
+            }
+
+            // 휴가 삭제 API 호출
+            fetch(`/vacation/${selectedVacationId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('휴가가 삭제되었습니다.');
+
+                    // 모달 닫기
+                    if (typeof $ !== 'undefined') {
+                        $('#vacationDeleteModal').modal('hide');
+                    }
+
+                    selectedVacationId = null;
+                    location.reload();
+                } else {
+                    alert('휴가 삭제에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('휴가 삭제 오류:', error);
+                alert('휴가 삭제 중 오류가 발생했습니다.');
+            });
+        }
+    </script>
 </body>
 </html>

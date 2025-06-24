@@ -1,7 +1,7 @@
 package com.goott5.lms.participation.util;
 
 import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
-import com.goott5.lms.participation.service.AttendanceService;
+import com.goott5.lms.participation.service.ParticipationService;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AttendanceScheduler {
 
-  private final AttendanceService attendanceService;
+  private final ParticipationService participationService;
   private final ParticipationCourseMapper participationCourseMapper;
 
   /**
@@ -27,7 +27,7 @@ public class AttendanceScheduler {
    * course_schedule 테이블 기반으로 수업이 있는 날에만 실행
    * 주말/공휴일/휴강일은 course_schedule에 데이터가 없으므로 아무것도 하지 않음
    */
-  @Scheduled(cron = "0 0 0 * * MON-FRI", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 52 9 * * MON-FRI", zone = "Asia/Seoul")
   public void createDailyAttendanceRecords() {
     LocalDate today = LocalDate.now();
     log.info("===== 출결 스케줄러 실행 시작: {} =====", today);
@@ -45,7 +45,7 @@ public class AttendanceScheduler {
       // 각 과정의 모든 수강생에게 출결 기록 생성
       int totalCreated = 0;
       for (Integer courseId : courseIds) {
-        int created = attendanceService.createDailyAttendanceForCourse(courseId, today);
+        int created = participationService.createDailyAttendanceForCourse(courseId, today);
         totalCreated += created;
         log.info("과정 {} 출결 기록 생성 완료: {}건", courseId, created);
       }

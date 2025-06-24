@@ -3,11 +3,11 @@ package com.goott5.lms.participation.controller;
 import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationVO;
 import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
-import com.goott5.lms.participation.service.AttendanceService;
+import com.goott5.lms.participation.service.ParticipationService;
 import com.goott5.lms.user.domain.UserVO;
-import jakarta.websocket.RemoteEndpoint.Async;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpSession;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * 출결(participation) 관련 웹 컨트롤러
+ * 교육생 출결(participation) 관련 웹 컨트롤러
  */
 @Controller
 @Slf4j
@@ -32,109 +32,268 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequiredArgsConstructor
 public class ParticipationController {
 
-  private final AttendanceService attendanceService;
+  private final ParticipationService participationService;
   private final ParticipationCourseMapper participationCourseMapper;
 
+  // ========== 페이지 렌더링 ==========
+
   /**
-   * 출결 조회 메인 페이지 (세션에서 로그인 사용자 정보 가져오기)
+   * 출결 조회 메인 페이지
    */
   @GetMapping("/participationView")
   public String participationView(Model model, HttpSession session) {
     try {
       // 세션에서 로그인 사용자 정보 가져오기
-      // UserVO로 캐스팅 변경
       UserVO loginUser = (UserVO) session.getAttribute("loginUser");
       if (loginUser == null) {
         log.warn("로그인 정보가 세션에 없습니다.");
         return "redirect:/login";
       }
 
-      Integer userId = loginUser.getId(); // UserVO의 getId() 메서드 사용
-      log.info("로그인한 사용자 ID: {}", userId);
+      Integer userId = loginUser.getId();
+      log.info("출결 조회 페이지 접근 - 사용자 ID: {}", userId);
 
-      // 사용자의 learnerEnrollmentId 조회
-      Integer learnerEnrollmentId = attendanceService.getLearnerEnrollmentIdByUserId(userId);
+      // 사용자의 현재 수강 정보 조회
+      Integer learnerEnrollmentId = participationCourseMapper.selectLearnerEnrollmentIdByUserId(userId);
       if (learnerEnrollmentId == null) {
-        log.warn("해당 사용자는 수강 중인 과정이 없습니다: userId={}", userId);
+        log.warn("수강 중인 과정이 없습니다 - userId: {}", userId);
         model.addAttribute("errorMessage", "수강 중인 과정이 없습니다.");
-
+        model.addAttribute("isClassDay", false);
+        model.addAttribute("attendanceRate", 0.0);
         return "participation/participationView";
       }
 
+      // 현재 과정 정보 조회
+      CourseVO currentCourse = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+
+      // 오늘 날짜 및 수업일 여부 확인
       LocalDate today = LocalDate.now();
-      boolean isClassDay = attendanceService.isClassDay(today);
+      boolean isClassDay = participationService.isClassDay(today);
 
-      model.addAttribute("isClassDay", isClassDay);
-      model.addAttribute("today", today);
-      model.addAttribute("learnerEnrollmentId", learnerEnrollmentId);
+      // 모델에 기본 정보 추가
       model.addAttribute("loginUser", loginUser);
+      model.addAttribute("currentCourse", currentCourse);
+      model.addAttribute("learnerEnrollmentId", learnerEnrollmentId);
+      model.addAttribute("today", today);
+      model.addAttribute("isClassDay", isClassDay);
 
+      // 수업일인 경우 오늘 출결 정보 조회
       if (isClassDay) {
-        ParticipationVO todayParticipation = attendanceService.getTodayParticipationWithDisplayStatus(
+        ParticipationVO todayParticipation = participationService.getTodayParticipationWithDisplayStatus(
             learnerEnrollmentId, today);
         model.addAttribute("todayParticipation", todayParticipation);
-
-        // 과정 정보 조회 (수업 시간 등)
-        CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
-        if (course != null) {
-          model.addAttribute("lessonEndTime", course.getLessonEndTime().toString());
-          model.addAttribute("lessonEndPlus10", course.getLessonEndTime().plusMinutes(10).toString());
-        }
       }
 
-      // 진행률 계산
-      double progressPercentage = attendanceService.getProgressPercentage(learnerEnrollmentId);
-      model.addAttribute("progressPercentage", progressPercentage);
+      // 출석률 계산
+      double attendanceRate = participationService.getAttendanceRate(learnerEnrollmentId);
+      model.addAttribute("attendanceRate", attendanceRate);
 
       return "participation/participationView";
 
     } catch (Exception e) {
       log.error("출결 조회 페이지 로드 중 오류 발생", e);
       model.addAttribute("errorMessage", "페이지 로드 중 오류가 발생했습니다.");
+      model.addAttribute("isClassDay", false);
+      model.addAttribute("attendanceRate", 0.0);
       return "participation/participationView";
     }
   }
 
+  // ========== 조회 API ==========
+
   /**
-   * 입실 처리 API
+   * 월별 출결 데이터 조회 (캘린더용)
+   */
+  @GetMapping("/monthly/{learnerEnrollmentId}/{date}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getMonthlyParticipation(
+      @PathVariable Integer learnerEnrollmentId,
+      @PathVariable String date) {
+    try {
+      LocalDate startDate = LocalDate.parse(date);
+      LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+      List<ParticipationVO> participations = participationService.getParticipationByLearnerEnrollmentIdAndDateRange(
+          learnerEnrollmentId, startDate, endDate);
+
+      log.debug("월별 출결 조회 성공 - learnerEnrollmentId: {}, 조회기간: {} ~ {}, 건수: {}",
+          learnerEnrollmentId, startDate, endDate, participations.size());
+
+      return ResponseEntity.ok(Map.of(
+          "success", true,
+          "participations", participations
+      ));
+
+    } catch (Exception e) {
+      log.error("월별 출결 조회 오류 - learnerEnrollmentId: {}, date: {}", learnerEnrollmentId, date, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "월별 출결 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  /**
+   * 사용자의 현재/이전 수강 과정 목록 조회
+   */
+  @GetMapping("/courses/{userId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getUserCourses(@PathVariable Integer userId) {
+    try {
+      CourseVO currentCourse = participationService.getCurrentCourseByUserId(userId);
+      List<CourseVO> previousCourses = participationService.getPreviousCoursesByUserId(userId);
+
+      log.debug("과정 목록 조회 성공 - userId: {}, 현재과정: {}, 이전과정수: {}",
+          userId, currentCourse != null ? currentCourse.getName() : "없음", previousCourses.size());
+
+      return ResponseEntity.ok(Map.of(
+          "success", true,
+          "currentCourse", currentCourse,
+          "previousCourses", previousCourses
+      ));
+
+    } catch (Exception e) {
+      log.error("과정 목록 조회 중 오류 발생 - userId: {}", userId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "과정 목록 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  /**
+   * 교육생 출석률 조회
+   */
+  @GetMapping("/attendance-rate/{learnerEnrollmentId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getAttendanceRate(@PathVariable Integer learnerEnrollmentId) {
+    try {
+      double attendanceRate = participationService.getAttendanceRate(learnerEnrollmentId);
+
+      log.debug("출석률 조회 성공 - learnerEnrollmentId: {}, 출석률: {}%", learnerEnrollmentId, attendanceRate);
+
+      return ResponseEntity.ok(Map.of(
+          "success", true,
+          "attendanceRate", attendanceRate
+      ));
+
+    } catch (Exception e) {
+      log.error("출석률 조회 중 오류 발생 - learnerEnrollmentId: {}", learnerEnrollmentId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "출석률 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  /**
+   * 과정 정보 조회
+   */
+  @GetMapping("/course/{courseId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getCourseInfo(@PathVariable Integer courseId) {
+    try {
+      CourseVO course = participationCourseMapper.selectCourseById(courseId);
+
+      if (course != null) {
+        log.debug("과정 조회 성공 - courseId: {}, 과정명: {}", courseId, course.getName());
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "course", course
+        ));
+      } else {
+        log.warn("존재하지 않는 과정 - courseId: {}", courseId);
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "존재하지 않는 과정입니다."
+        ));
+      }
+
+    } catch (Exception e) {
+      log.error("과정 조회 중 오류 발생 - courseId: {}", courseId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "과정 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  // ========== 출결 처리 API ==========
+
+  /**
+   * 입실 처리
    */
   @PostMapping("/checkin")
   @ResponseBody
-  public ResponseEntity<?> checkIn(@RequestBody Map<String, Object> request) {
+  public ResponseEntity<Map<String, Object>> checkIn(@RequestBody Map<String, Object> request) {
     try {
       Integer learnerEnrollmentId = (Integer) request.get("learnerEnrollmentId");
       LocalDate participationDate = LocalDate.parse((String) request.get("participationDate"));
       LocalDateTime checkInTime = LocalDateTime.now();
 
-      boolean result = attendanceService.processCheckIn(learnerEnrollmentId, checkInTime, participationDate);
+      log.info("입실 처리 시작 - learnerEnrollmentId: {}, participationDate: {}",
+          learnerEnrollmentId, participationDate);
+
+      boolean result = participationService.processCheckIn(learnerEnrollmentId, checkInTime, participationDate);
+
       if (result) {
-        ParticipationVO updated = attendanceService.getTodayParticipationWithDisplayStatus(
+        ParticipationVO updated = participationService.getTodayParticipationWithDisplayStatus(
             learnerEnrollmentId, participationDate);
-        return ResponseEntity.ok(
-            Map.of("success", true, "message", "입실 처리 완료", "participation", updated));
+
+        log.info("입실 처리 성공 - learnerEnrollmentId: {}", learnerEnrollmentId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "입실 처리가 완료되었습니다.",
+            "participation", updated
+        ));
       } else {
-        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "입실 처리 실패"));
+        log.warn("입실 처리 실패 - learnerEnrollmentId: {}", learnerEnrollmentId);
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "입실 처리에 실패했습니다."
+        ));
       }
+
     } catch (Exception e) {
       log.error("입실 처리 중 오류 발생", e);
-      return ResponseEntity.badRequest().body(Map.of("success", false, "message", "입실 처리 중 오류"));
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "입실 처리 중 오류가 발생했습니다."
+      ));
     }
   }
 
   /**
-   * 퇴실 예상 상태 예측 API
+   * 퇴실 예상 상태 예측
    */
   @PostMapping("/predict-status")
   @ResponseBody
-  public ResponseEntity<?> predictStatus(@RequestBody Map<String, Object> request) {
+  public ResponseEntity<Map<String, Object>> predictStatus(@RequestBody Map<String, Object> request) {
     try {
       Integer learnerEnrollmentId = (Integer) request.get("learnerEnrollmentId");
       LocalDate participationDate = LocalDate.parse((String) request.get("participationDate"));
-      LocalDateTime predictedCheckOut = request.containsKey("predictedCheckOut")
-          ? LocalDateTime.parse((String) request.get("predictedCheckOut"))
-          : LocalDateTime.now();
 
-      String predictedStatus = attendanceService.predictAttendanceStatus(
+      // ✅ 수정: 다양한 시간 형식 처리
+      LocalDateTime predictedCheckOut;
+      if (request.containsKey("predictedCheckOut")) {
+        String predictedCheckOutStr = (String) request.get("predictedCheckOut");
+        try {
+          // UTC 타임존이 포함된 경우 (예: 2025-06-23T06:44:27.135Z)
+          if (predictedCheckOutStr.endsWith("Z") || predictedCheckOutStr.contains("+")) {
+            predictedCheckOut = OffsetDateTime.parse(predictedCheckOutStr).toLocalDateTime();
+          } else {
+            // 일반적인 LocalDateTime 형식
+            predictedCheckOut = LocalDateTime.parse(predictedCheckOutStr);
+          }
+        } catch (Exception parseException) {
+          log.warn("시간 파싱 실패, 현재 시간으로 대체: {}", predictedCheckOutStr);
+          predictedCheckOut = LocalDateTime.now();
+        }
+      } else {
+        predictedCheckOut = LocalDateTime.now();
+      }
+
+      String predictedStatus = participationService.predictAttendanceStatus(
           learnerEnrollmentId, predictedCheckOut, participationDate);
 
       return ResponseEntity.ok(Map.of("success", true, "predictedStatus", predictedStatus));
@@ -144,80 +303,47 @@ public class ParticipationController {
     }
   }
 
+
   /**
-   * 퇴실 처리 API
+   * 퇴실 처리
    */
   @PostMapping("/checkout")
   @ResponseBody
-  public ResponseEntity<?> checkOut(@RequestBody Map<String, Object> request) {
+  public ResponseEntity<Map<String, Object>> checkOut(@RequestBody Map<String, Object> request) {
     try {
       Integer learnerEnrollmentId = (Integer) request.get("learnerEnrollmentId");
       LocalDate participationDate = LocalDate.parse((String) request.get("participationDate"));
       LocalDateTime checkOutTime = LocalDateTime.now();
 
-      boolean result = attendanceService.processCheckOut(learnerEnrollmentId, checkOutTime, participationDate);
+      log.info("퇴실 처리 시작 - learnerEnrollmentId: {}, participationDate: {}",
+          learnerEnrollmentId, participationDate);
+
+      boolean result = participationService.processCheckOut(learnerEnrollmentId, checkOutTime, participationDate);
+
       if (result) {
-        ParticipationVO updated = attendanceService.getTodayParticipationWithDisplayStatus(
+        ParticipationVO updated = participationService.getTodayParticipationWithDisplayStatus(
             learnerEnrollmentId, participationDate);
-        return ResponseEntity.ok(
-            Map.of("success", true, "message", "퇴실 처리 완료", "participation", updated));
+
+        log.info("퇴실 처리 성공 - learnerEnrollmentId: {}", learnerEnrollmentId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "퇴실 처리가 완료되었습니다.",
+            "participation", updated
+        ));
       } else {
-        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "퇴실 처리 실패"));
+        log.warn("퇴실 처리 실패 - learnerEnrollmentId: {}", learnerEnrollmentId);
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "퇴실 처리에 실패했습니다."
+        ));
       }
+
     } catch (Exception e) {
       log.error("퇴실 처리 중 오류 발생", e);
-      return ResponseEntity.badRequest().body(Map.of("success", false, "message", "퇴실 처리 중 오류"));
-    }
-  }
-
-  /**
-   * 관리자용 - 날짜별 전체 출결 현황 조회 API
-   */
-  @GetMapping("/admin/date/{date}")
-  @ResponseBody
-  public ResponseEntity<?> getAttendanceByDateForAdmin(@PathVariable String date) {
-    try {
-      LocalDate participationDate = LocalDate.parse(date);
-      List<ParticipationVO> participations = attendanceService.getParticipationByDateWithDisplayStatus(participationDate);
-
-      return ResponseEntity.ok(Map.of("success", true, "date", date, "participations", participations));
-    } catch (Exception e) {
-      log.error("날짜별 출결 조회 중 오류 발생: ", e);
-      return ResponseEntity.badRequest().body(Map.of("success", false, "message", "출결 조회에 실패했습니다."));
-    }
-  }
-
-  /**
-   * 교육생 수업 진행률 조회 API
-   */
-  @GetMapping("/progress/{learnerEnrollmentId}")
-  @ResponseBody
-  public ResponseEntity<?> getProgressPercentage(@PathVariable Integer learnerEnrollmentId) {
-    try {
-      double progressPercentage = attendanceService.getProgressPercentage(learnerEnrollmentId);
-      return ResponseEntity.ok(Map.of("success", true, "progressPercentage", progressPercentage));
-    } catch (Exception e) {
-      log.error("진행률 조회 중 오류 발생: ", e);
-      return ResponseEntity.badRequest().body(Map.of("success", false, "message", "진행률 조회에 실패했습니다."));
-    }
-  }
-
-  /**
-   * 과정 정보 조회 API (CourseController에서 이동)
-   */
-  @GetMapping("/course/{courseId}")
-  @ResponseBody
-  public ResponseEntity<?> getCourseInfo(@PathVariable Integer courseId) {
-    try {
-      CourseVO course = participationCourseMapper.selectCourseById(courseId);
-      if (course != null) {
-        return ResponseEntity.ok(Map.of("success", true, "course", course));
-      } else {
-        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "존재하지 않는 과정입니다."));
-      }
-    } catch (Exception e) {
-      log.error("과정 조회 중 오류 발생", e);
-      return ResponseEntity.badRequest().body(Map.of("success", false, "message", "과정 조회에 실패했습니다."));
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "퇴실 처리 중 오류가 발생했습니다."
+      ));
     }
   }
 }

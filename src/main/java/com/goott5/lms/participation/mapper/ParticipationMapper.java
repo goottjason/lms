@@ -1,5 +1,6 @@
 package com.goott5.lms.participation.mapper;
 
+import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationDTO;
 import com.goott5.lms.participation.domain.ParticipationVO;
 import java.time.LocalDate;
@@ -50,11 +51,33 @@ public interface ParticipationMapper {
   // 하드 딜리트 (완전 삭제) - 휴가용
   void deleteParticipation(Integer id);
 
-  // 진행률 계산용 메서드 추가
-  // 특정 교육생의 총 training_time 합계 조회
-  Integer selectTotalTrainingTimeByLearnerEnrollmentId(
-      @Param("learnerEnrollmentId") Integer learnerEnrollmentId);
+  /**
+   * 교육생의 출석일수 조회 (training_time > 0인 날의 개수)
+   */
+  Integer selectAttendanceDaysByLearnerEnrollmentId(@Param("learnerEnrollmentId") Integer learnerEnrollmentId);
 
-  // 새로 추가: 사용자 ID로 learnerEnrollmentId 조회
-  Integer selectLearnerEnrollmentIdByUserId(@Param("userId") Integer userId);
+  /**
+   * 교육생의 과정별 전체 수업일수 조회 (course_schedule 기반)
+   */
+  Integer selectTotalClassDaysByLearnerEnrollmentId(@Param("learnerEnrollmentId") Integer learnerEnrollmentId);
+
+
+  /**
+   * 사용자의 현재 수강 중인 과정 조회
+   */
+  CourseVO selectCurrentCourseByUserId(@Param("userId") Integer userId);
+
+  /**
+   * 사용자의 이전 수강 과정 목록 조회
+   */
+  List<CourseVO> selectPreviousCoursesByUserId(@Param("userId") Integer userId);
+
+  /**
+   * 특정 교육생의 날짜 범위별 출결 데이터 조회
+   */
+  List<ParticipationVO> selectByLearnerEnrollmentIdAndDateRange(
+      @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate);
+
 }

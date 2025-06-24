@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.goott5.lms.participation.domain.ParticipationVO;
-import com.goott5.lms.participation.service.AttendanceService;
+import com.goott5.lms.participation.service.ParticipationService;
 import com.goott5.lms.participation.service.VacationService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +24,7 @@ public class VacationTest {
   private VacationService vacationService;
 
   @Autowired
-  private AttendanceService attendanceService;
+  private ParticipationService participationService;
 
   @Test
   @DisplayName("휴가 신청 및 승인 테스트")
@@ -42,7 +42,7 @@ public class VacationTest {
     assertTrue(applyResult, "휴가 신청이 성공해야 함");
 
     // Then - 신청 후 상태 확인
-    ParticipationVO afterApply = attendanceService.getTodayParticipationWithDisplayStatus(
+    ParticipationVO afterApply = participationService.getTodayParticipationWithDisplayStatus(
         learnerEnrollmentId, vacationDate);
     assertNotNull(afterApply, "출결 기록이 존재해야 함");
     assertEquals("VACATION_PENDING", afterApply.getStatus(), "DB 상태는 VACATION_PENDING이어야 함");
@@ -61,7 +61,7 @@ public class VacationTest {
     assertTrue(approveResult, "휴가 승인이 성공해야 함");
 
     // Then - 승인 후 상태 확인
-    ParticipationVO afterApprove = attendanceService.getTodayParticipationWithDisplayStatus(
+    ParticipationVO afterApprove = participationService.getTodayParticipationWithDisplayStatus(
         learnerEnrollmentId, vacationDate);
     assertNotNull(afterApprove, "출결 기록이 존재해야 함");
     assertEquals("VACATION", afterApprove.getStatus(), "DB 상태는 VACATION이어야 함");
@@ -95,7 +95,7 @@ public class VacationTest {
         explanation);
     assertTrue(applyResult, "휴가 신청이 성공해야 함");
 
-    ParticipationVO afterApply = attendanceService.getTodayParticipationWithDisplayStatus(
+    ParticipationVO afterApply = participationService.getTodayParticipationWithDisplayStatus(
         learnerEnrollmentId, vacationDate);
     Integer participationId = afterApply.getId();
 
@@ -104,7 +104,7 @@ public class VacationTest {
     assertTrue(rejectResult, "휴가 거부가 성공해야 함");
 
     // Then - 거부 후 상태 확인 (기록이 삭제되어야 함)
-    ParticipationVO afterReject = attendanceService.getTodayParticipationWithDisplayStatus(
+    ParticipationVO afterReject = participationService.getTodayParticipationWithDisplayStatus(
         learnerEnrollmentId, vacationDate);
     assertNull(afterReject, "출결 기록이 삭제되어야 함");
 

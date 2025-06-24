@@ -1,238 +1,360 @@
 package com.goott5.lms.participation.service;
 
+import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationDTO;
 import com.goott5.lms.participation.domain.ParticipationVO;
+import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.mapper.ParticipationMapper;
+import com.goott5.lms.participation.util.TimeCalculationUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 출결(Participation) 기본 CRUD 서비스 구현체
- * 주로 AttendanceService에서 비즈니스 로직 처리하고, 이 클래스는 기본 CRUD만 제공
+ * 출결(participation) 서비스 구현체
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class ParticipationServiceImpl implements ParticipationService {
 
   private final ParticipationMapper participationMapper;
+  private final ParticipationCourseMapper participationCourseMapper;
 
   /**
-   * 출결 기록 생성 (기본 INSERT)
-   * @param dto 출결 정보 DTO
-   * @return 생성된 레코드 수
+   * 모든 과정의 출결 기록 생성 (course_schedule 기반)
    */
   @Override
-  public int createParticipation(ParticipationDTO dto) {
-    log.info("출결 기록 생성: learnerEnrollmentId={}, date={}",
-        dto.getLearnerEnrollmentId(), dto.getParticipationDate());
-    return participationMapper.insertParticipation(dto);
+  public void createDailyAttendanceForAllCourses(LocalDate participationDate) {
+    if (!isClassDay(participationDate)) {
+      log.info("오늘은 수업이 없는 날입니다: {}", participationDate);
+      return;
+    }
+
+    // course_schedule에서 해당 날짜에 수업이 있는 과정들 조회
+    List<Integer> courseIds = participationCourseMapper.selectCoursesBySchedule(participationDate);
+    log.info("오늘 수업이 있는 과정 수: {}", courseIds.size());
+
+    for (Integer courseId : courseIds) {
+      createDailyAttendanceForCourse(courseId, participationDate);
+    }
   }
 
   /**
-   * 출결 기록 단건 조회 (ID 기준)
-   * @param id 출결 기록 ID
-   * @return 출결 정보 VO
+   * 특정 과정의 출결 기록 생성
    */
   @Override
-  @Transactional(readOnly = true)
-  public ParticipationVO getParticipationById(Integer id) {
-    log.debug("출결 기록 조회: id={}", id);
-    return participationMapper.selectParticipationById(id);
-  }
-
-  /**
-   * 날짜별 출결 기록 전체 조회
-   * @param participationDate 조회할 날짜
-   * @return 해당 날짜의 모든 출결 기록 리스트
-   */
-  @Override
-  @Transactional(readOnly = true)
-  public List<ParticipationVO> getParticipationByDate(LocalDate participationDate) {
-    log.debug("날짜별 출결 기록 조회: date={}", participationDate);
-    return participationMapper.selectParticipationByDate(participationDate);
-  }
-
-  /**
-   * 전체 출결 기록 조회
-   * @return 모든 출결 기록 리스트
-   */
-  @Override
-  @Transactional(readOnly = true)
-  public List<ParticipationVO> getAllParticipation() {
-    log.debug("전체 출결 기록 조회");
-    return participationMapper.selectAllParticipation();
-  }
-
-  /**
-   * 전체 출결 기록 개수 조회
-   * @return 총 출결 기록 개수
-   */
-  @Override
-  @Transactional(readOnly = true)
-  public int getTotalCount() {
-    return participationMapper.countAll();
-  }
-
-  /**
-   * 특정 과정의 모든 수강생에게 출결 기록 일괄 생성
-   * 스케줄러에서 호출되며, 이미 출결 기록이 있는 학생은 건드리지 않음
-   * @param courseId 과정 ID
-   * @param participationDate 출결 날짜
-   * @return 생성된 출결 기록 개수
-   */
-  @Override
-  public int createDailyParticipationForCourse(Integer courseId, LocalDate participationDate) {
-    log.info("과정 {}의 모든 수강생에게 출결 기록 생성 시작: {}", courseId, participationDate);
-
-    // 해당 과정의 수강 중인 모든 learner_enrollment_id 조회
+  public int createDailyAttendanceForCourse(Integer courseId, LocalDate participationDate) {
     List<Integer> learnerEnrollmentIds = participationMapper.selectActiveLearnerEnrollmentIdsByCourse(courseId);
-    log.info("수강 중인 학생 수: {}", learnerEnrollmentIds.size());
-
     int createdCount = 0;
-    for (Integer learnerEnrollmentId : learnerEnrollmentIds) {
-      // 이미 오늘 출결 기록이 있는지 확인 (휴가 승인받은 학생 등 보호)
-      boolean exists = participationMapper.existsParticipationToday(learnerEnrollmentId, participationDate);
 
-      if (!exists) {
-        // 기본 출결 기록 생성 (결석 상태로 시작)
+    for (Integer learnerEnrollmentId : learnerEnrollmentIds) {
+      if (!participationMapper.existsParticipationToday(learnerEnrollmentId, participationDate)) {
+        // 출결 기록이 없을 때만 insert
         ParticipationDTO dto = ParticipationDTO.builder()
             .learnerEnrollmentId(learnerEnrollmentId)
-            .status("ABSENCE") // 기본값: 결석 (입실하면 변경됨)
-            .trainingTime(0) // 기본값: 0시간
+            .status("ABSENCE")
+            .trainingTime(0)
             .participationDate(participationDate)
             .build();
         participationMapper.insertParticipation(dto);
         createdCount++;
-        log.debug("출결 기록 생성: learnerEnrollmentId={}, participationId={}",
-            learnerEnrollmentId, dto.getId());
-      } else {
-        log.debug("이미 출결 기록 존재 (휴가 등): learnerEnrollmentId={}", learnerEnrollmentId);
       }
+      // 이미 출결 기록이 있으면 (휴가 승인받은 학생 등) 건드리지 않음
     }
 
-    log.info("과정 {}의 출결 기록 생성 완료: {}건", courseId, createdCount);
+    log.info("과정 {} 출결 기록 생성 완료: {}건", courseId, createdCount);
     return createdCount;
   }
 
   /**
-   * 특정 교육생의 특정 날짜 출결 기록 조회
-   * @param learnerEnrollmentId 교육생 수강 ID
-   * @param participationDate 조회할 날짜
-   * @return 해당 교육생의 출결 기록
+   * course_schedule 기반 수업일 여부 확인
    */
   @Override
   @Transactional(readOnly = true)
-  public ParticipationVO getTodayParticipation(Integer learnerEnrollmentId, LocalDate participationDate) {
-    log.debug("교육생 출결 기록 조회: learnerEnrollmentId={}, date={}", learnerEnrollmentId, participationDate);
-    return participationMapper.selectByLearnerEnrollmentIdAndDate(learnerEnrollmentId, participationDate);
+  public boolean isClassDay(LocalDate date) {
+    List<Integer> courseIds = participationCourseMapper.selectCoursesBySchedule(date);
+    return !courseIds.isEmpty();
   }
 
   /**
-   * 입실 처리 (간단 버전)
-   * 실제로는 AttendanceService의 processCheckIn 사용 권장
-   * @param learnerEnrollmentId 교육생 수강 ID
-   * @param checkInTime 입실 시간
-   * @param participationDate 출결 날짜
-   * @return 처리 성공 여부
+   * 사용자 ID로 learnerEnrollmentId 조회
    */
   @Override
-  public boolean processCheckIn(Integer learnerEnrollmentId, LocalDateTime checkInTime, LocalDate participationDate) {
-    log.info("입실 처리 시작: learnerEnrollmentId={}, checkInTime={}", learnerEnrollmentId, checkInTime);
+  @Transactional(readOnly = true)
+  public Integer getLearnerEnrollmentIdByUserId(Integer userId) {
+    return participationCourseMapper.selectLearnerEnrollmentIdByUserId(userId);
+  }
 
-    // 오늘의 출결 기록 조회
-    ParticipationVO participation = participationMapper.selectByLearnerEnrollmentIdAndDate(learnerEnrollmentId, participationDate);
-    if (participation == null) {
-      log.warn("출결 기록이 존재하지 않음: learnerEnrollmentId={}, date={}", learnerEnrollmentId, participationDate);
+  /**
+   * 입실 처리 (지각 여부 판단 후 적절한 상태 설정)
+   */
+  @Override
+  public boolean processCheckIn(Integer learnerEnrollmentId, LocalDateTime checkInTime,
+      LocalDate participationDate) {
+    ParticipationVO participation = participationMapper.selectByLearnerEnrollmentIdAndDate(
+        learnerEnrollmentId, participationDate);
+    if (participation == null || participation.getCheckIn() != null) {
       return false;
     }
 
-    if (participation.getCheckIn() != null) {
-      log.warn("이미 입실 처리됨: learnerEnrollmentId={}, 기존 입실시간={}", learnerEnrollmentId, participation.getCheckIn());
+    // ✅ 수정: 과정 정보 조회하여 지각 여부 판단
+    CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+    if (course == null) {
       return false;
     }
 
-    // 입실 시간 업데이트 (상태는 퇴실 시 최종 결정)
+    // ✅ 수정: 지각 여부 판단
+    LocalTime checkInTimeOnly = checkInTime.toLocalTime();
+    LocalTime lessonStartTime = course.getLessonStartTime();
+    boolean isLate = checkInTimeOnly.isAfter(lessonStartTime);
+
+    // ✅ 수정: 입실 시 상태 결정 (지각이면 LATE, 아니면 IN_STUDY)
+    String initialStatus = isLate ? "LATE" : "IN_STUDY";
+
     ParticipationDTO updateDto = ParticipationDTO.builder()
         .id(participation.getId())
         .learnerEnrollmentId(participation.getLearnerEnrollmentId())
-        .status("ABSENCE") // 퇴실 전까지는 결석 상태 유지
+        .status(initialStatus)  // ✅ 수정: 유동적 상태 설정
         .checkIn(checkInTime)
         .checkOut(participation.getCheckOut())
         .trainingTime(participation.getTrainingTime())
         .participationDate(participation.getParticipationDate())
         .build();
 
-    int result = participationMapper.updateParticipation(updateDto);
-    log.info("입실 처리 완료: learnerEnrollmentId={}, 결과={}", learnerEnrollmentId, result > 0 ? "성공" : "실패");
-    return result > 0;
+    return participationMapper.updateParticipation(updateDto) > 0;
   }
 
+
   /**
-   * 퇴실 처리 (간단 버전)
-   * 실제로는 AttendanceService의 processCheckOut 사용 권장 (복잡한 상태 판정 로직 포함)
-   * @param learnerEnrollmentId 교육생 수강 ID
-   * @param checkOutTime 퇴실 시간
-   * @param participationDate 출결 날짜
-   * @return 처리 성공 여부
+   * 퇴실 처리 (최종 상태/인정시간 계산)
    */
   @Override
   public boolean processCheckOut(Integer learnerEnrollmentId, LocalDateTime checkOutTime, LocalDate participationDate) {
-    log.info("퇴실 처리 시작: learnerEnrollmentId={}, checkOutTime={}", learnerEnrollmentId, checkOutTime);
-
-    // 오늘의 출결 기록 조회
     ParticipationVO participation = participationMapper.selectByLearnerEnrollmentIdAndDate(learnerEnrollmentId, participationDate);
-    if (participation == null) {
-      log.warn("출결 기록이 존재하지 않음: learnerEnrollmentId={}, date={}", learnerEnrollmentId, participationDate);
+    if (participation == null || participation.getCheckIn() == null || participation.getCheckOut() != null) {
       return false;
     }
 
-    if (participation.getCheckIn() == null) {
-      log.warn("입실 기록이 없어 퇴실 불가: learnerEnrollmentId={}", learnerEnrollmentId);
-      return false;
-    }
-
-    if (participation.getCheckOut() != null) {
-      log.warn("이미 퇴실 처리됨: learnerEnrollmentId={}, 기존 퇴실시간={}", learnerEnrollmentId, participation.getCheckOut());
-      return false;
-    }
-
-    // 퇴실 시간 업데이트 및 최종 상태 결정 (간단 버전)
-    // 실제로는 AttendanceService에서 복잡한 시간 계산 로직 사용
-    String finalStatus = "ATTENDANCE"; // 간단하게 출석으로 처리
-    Integer finalTrainingTime = 8; // 간단하게 8시간으로 처리
+    CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+    AttendanceResult result = calculateFinalAttendanceStatus(participation.getCheckIn(), checkOutTime, course);
 
     ParticipationDTO updateDto = ParticipationDTO.builder()
         .id(participation.getId())
         .learnerEnrollmentId(participation.getLearnerEnrollmentId())
-        .status(finalStatus)
+        .status(result.getStatus())
         .checkIn(participation.getCheckIn())
         .checkOut(checkOutTime)
-        .trainingTime(finalTrainingTime)
+        .trainingTime(result.getTrainingTime())
         .participationDate(participation.getParticipationDate())
         .build();
-
-    int result = participationMapper.updateParticipation(updateDto);
-    log.info("퇴실 처리 완료: learnerEnrollmentId={}, 최종상태={}, 인정시간={}시간, 결과={}",
-        learnerEnrollmentId, finalStatus, finalTrainingTime, result > 0 ? "성공" : "실패");
-    return result > 0;
+    return participationMapper.updateParticipation(updateDto) > 0;
   }
 
   /**
-   * 특정 과정의 수강 중인 교육생 ID 목록 조회
-   * @param courseId 과정 ID
-   * @return 수강 중인 교육생 수강 ID 리스트
+   * 오늘 출결 기록 + 화면 표시 상태 반환
    */
   @Override
   @Transactional(readOnly = true)
-  public List<Integer> getActiveLearnerEnrollmentIds(Integer courseId) {
-    log.debug("과정 {}의 수강 중인 교육생 ID 목록 조회", courseId);
-    return participationMapper.selectActiveLearnerEnrollmentIdsByCourse(courseId);
+  public ParticipationVO getTodayParticipationWithDisplayStatus(Integer learnerEnrollmentId, LocalDate participationDate) {
+    ParticipationVO participation = participationMapper.selectByLearnerEnrollmentIdAndDate(learnerEnrollmentId, participationDate);
+    if (participation != null) {
+      applyDisplayStatus(participation);
+    }
+    return participation;
   }
+
+  /**
+   * 날짜별 출결 기록 + 화면 표시 상태 반환
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public List<ParticipationVO> getParticipationByDateWithDisplayStatus(LocalDate participationDate) {
+    return participationMapper.selectParticipationByDate(participationDate)
+        .stream().map(this::applyDisplayStatus).collect(Collectors.toList());
+  }
+
+  /**
+   * 퇴실 예상 상태 예측
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public String predictAttendanceStatus(Integer learnerEnrollmentId, LocalDateTime predictedCheckOut, LocalDate participationDate) {
+    ParticipationVO participation = participationMapper.selectByLearnerEnrollmentIdAndDate(learnerEnrollmentId, participationDate);
+    if (participation == null || participation.getCheckIn() == null) {
+      return "ABSENCE";
+    }
+
+    CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+    if (course == null) {
+      return "ABSENCE";
+    }
+
+    // lesson_end_time, lesson_end_time+10 계산
+    LocalTime lessonEnd = course.getLessonEndTime();
+    LocalTime lessonEndPlus10 = lessonEnd.plusMinutes(10);
+    LocalTime nowTime = predictedCheckOut.toLocalTime();
+    boolean isLate = "LATE".equals(participation.getStatus());
+
+    // 지각자는 lesson_end_time 전까지 퇴실 불가
+    if (isLate && nowTime.isBefore(lessonEnd)) {
+      return "NOT_ALLOWED";
+    }
+
+    // lesson_end_time+10분 이후면 결석 처리
+    if (nowTime.isAfter(lessonEndPlus10)) {
+      return "ABSENCE";
+    }
+
+    // 실제 수업시간 계산
+    long actualMinutes = TimeCalculationUtil.calculateActualStudyMinutes(
+        participation.getCheckIn(), predictedCheckOut,
+        course.getLunchStartTime(), course.getLunchEndTime());
+    long actualHours = actualMinutes / 60;
+
+    if (actualHours >= 8) {
+      return "ATTENDANCE";
+    } else if (actualHours >= 4) {
+      return isLate ? "LATE" : "LEAVE_EARLY";
+    } else {
+      return "ABSENCE";
+    }
+  }
+
+  /**
+   * 교육생의 출석률 계산 (%)
+   * 출석일수 / 전체수업일수 * 100
+   * 기존 getProgressPercentage에서 getAttendanceRate로 변경
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public double getAttendanceRate(Integer learnerEnrollmentId) {
+    try {
+      // 교육생의 출석일수 조회 (training_time > 0인 날의 개수)
+      Integer attendanceDays = participationMapper.selectAttendanceDaysByLearnerEnrollmentId(learnerEnrollmentId);
+      if (attendanceDays == null) attendanceDays = 0;
+
+      // 해당 과정의 전체 수업일수 조회
+      Integer totalClassDays = participationMapper.selectTotalClassDaysByLearnerEnrollmentId(learnerEnrollmentId);
+      if (totalClassDays == null || totalClassDays == 0) {
+        return 0.0;
+      }
+
+      // 출석률 계산 (소수점 첫째자리까지)
+      double attendanceRate = (double) attendanceDays / totalClassDays * 100;
+      return Math.round(attendanceRate * 10.0) / 10.0;
+
+    } catch (Exception e) {
+      log.error("출석률 계산 중 오류 발생: learnerEnrollmentId={}", learnerEnrollmentId, e);
+      return 0.0;
+    }
+  }
+
+  // Private 메서드들
+  private AttendanceResult calculateFinalAttendanceStatus(LocalDateTime checkIn, LocalDateTime checkOut, CourseVO course) {
+    if (checkIn == null || checkOut == null || course == null) {
+      return new AttendanceResult("ABSENCE", 0);
+    }
+
+    long actualMinutes = TimeCalculationUtil.calculateActualStudyMinutes(
+        checkIn, checkOut, course.getLunchStartTime(), course.getLunchEndTime());
+    long actualHours = actualMinutes / 60;
+    boolean isLate = checkIn.toLocalTime().isAfter(course.getLessonStartTime());
+    String status = TimeCalculationUtil.determineAttendanceStatus(actualHours, isLate);
+    int trainingTime = TimeCalculationUtil.calculateTrainingTime(status);
+
+    return new AttendanceResult(status, trainingTime);
+  }
+
+  private ParticipationVO applyDisplayStatus(ParticipationVO participation) {
+    String dbStatus = participation.getStatus();
+    String displayStatus;
+    String displayStatusText;
+    boolean isStatusVisible;
+
+    if ("VACATION".equals(dbStatus)) {
+      displayStatus = "VACATION";
+      displayStatusText = "휴가";
+      isStatusVisible = true;
+    } else if ("VACATION_PENDING".equals(dbStatus)) {
+      displayStatus = "휴가_미승인";
+      displayStatusText = "";
+      isStatusVisible = false;
+    } else if (participation.getCheckOut() != null && !"ABSENCE".equals(dbStatus) && !"VACATION_PENDING".equals(dbStatus)) {
+      displayStatus = dbStatus;
+      displayStatusText = getStatusText(dbStatus);
+      isStatusVisible = true;
+    } else if (participation.getCheckIn() != null && participation.getCheckOut() == null) {
+      displayStatus = "IN_STUDY";
+      displayStatusText = "수업중";
+      isStatusVisible = true;
+    } else {
+      displayStatus = "PENDING";
+      displayStatusText = "";
+      isStatusVisible = false;
+    }
+
+    participation.setDisplayStatus(displayStatus);
+    participation.setDisplayStatusText(displayStatusText);
+    participation.setIsStatusVisible(isStatusVisible);
+    return participation;
+  }
+
+  private String getStatusText(String status) {
+    return switch (status) {
+      case "ATTENDANCE" -> "출석";
+      case "LATE" -> "지각";
+      case "LEAVE_EARLY" -> "조퇴";
+      case "VACATION" -> "휴가";
+      case "ABSENCE" -> "결석";
+      case "IN_STUDY" -> "수업중";
+      default -> "";
+    };
+  }
+
+  public static class AttendanceResult {
+    private final String status;
+    private final Integer trainingTime;
+
+    public AttendanceResult(String status, Integer trainingTime) {
+      this.status = status;
+      this.trainingTime = trainingTime;
+    }
+
+    public String getStatus() { return status; }
+    public Integer getTrainingTime() { return trainingTime; }
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CourseVO getCurrentCourseByUserId(Integer userId) {
+    return participationMapper.selectCurrentCourseByUserId(userId);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<CourseVO> getPreviousCoursesByUserId(Integer userId) {
+    return participationMapper.selectPreviousCoursesByUserId(userId);
+  }
+
+  /**
+   * 특정 교육생의 날짜 범위별 출결 데이터 조회
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public List<ParticipationVO> getParticipationByLearnerEnrollmentIdAndDateRange(
+      Integer learnerEnrollmentId, LocalDate startDate, LocalDate endDate) {
+    return participationMapper.selectByLearnerEnrollmentIdAndDateRange(learnerEnrollmentId, startDate, endDate)
+        .stream()
+        .map(this::applyDisplayStatus)
+        .collect(Collectors.toList());
+  }
+
 }
