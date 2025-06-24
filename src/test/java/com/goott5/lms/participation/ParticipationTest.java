@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationVO;
 import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
-import com.goott5.lms.participation.service.AttendanceService;
 import com.goott5.lms.participation.service.ParticipationService;
+import com.goott5.lms.participation.service.ParticipationServiceTest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ParticipationTest {
 
   @Autowired
-  private ParticipationService participationService;
+  private ParticipationServiceTest participationServiceTest;
 
   @Autowired
-  private AttendanceService attendanceService;
+  private ParticipationService participationService;
 
   @Autowired
 
@@ -43,13 +43,13 @@ public class ParticipationTest {
     System.out.println("=== 과정 " + courseId + "의 출결 기록 생성 테스트 시작 ===");
 
     // 먼저 해당 과정의 수강생 목록 확인
-    List<Integer> learnerEnrollmentIds = participationService.getActiveLearnerEnrollmentIds(
+    List<Integer> learnerEnrollmentIds = participationServiceTest.getActiveLearnerEnrollmentIds(
         courseId);
     System.out.println("과정 " + courseId + "의 수강 중인 학생 수: " + learnerEnrollmentIds.size());
     System.out.println("학생 목록: " + learnerEnrollmentIds);
 
     // When - 모든 수강생의 출결 기록 생성
-    int createdCount = participationService.createDailyParticipationForCourse(courseId, today);
+    int createdCount = participationServiceTest.createDailyParticipationForCourse(courseId, today);
 
     // Then
     assertTrue(createdCount >= 0, "출결 기록이 생성되어야 함");
@@ -57,7 +57,7 @@ public class ParticipationTest {
 
     // 각 학생의 출결 기록 확인
     for (Integer learnerEnrollmentId : learnerEnrollmentIds) {
-      ParticipationVO participation = participationService.getTodayParticipation(
+      ParticipationVO participation = participationServiceTest.getTodayParticipation(
           learnerEnrollmentId, today);
       assertNotNull(participation, "학생 " + learnerEnrollmentId + "의 출결 기록이 존재해야 함");
       assertEquals("ABSENCE", participation.getStatus(), "기본 상태는 결석이어야 함");
@@ -80,11 +80,11 @@ public class ParticipationTest {
     System.out.println("=== 학생 user_id=8 입퇴실 테스트 시작 ===");
 
     // 먼저 출결 기록 생성
-    participationService.createDailyParticipationForCourse(courseId, today);
+    participationServiceTest.createDailyParticipationForCourse(courseId, today);
 
     // user_id=8에 해당하는 learner_enrollment_id 찾기 (실제로는 조인 쿼리 필요)
     // 여기서는 임시로 course_id=3의 첫 번째 학생으로 가정
-    List<Integer> learnerEnrollmentIds = participationService.getActiveLearnerEnrollmentIds(
+    List<Integer> learnerEnrollmentIds = participationServiceTest.getActiveLearnerEnrollmentIds(
         courseId);
 
     if (learnerEnrollmentIds.isEmpty()) {
@@ -103,15 +103,15 @@ public class ParticipationTest {
 
     // When & Then - 입실 처리
     System.out.println("--- 입실 처리 ---");
-    ParticipationVO beforeCheckIn = participationService.getTodayParticipation(
+    ParticipationVO beforeCheckIn = participationServiceTest.getTodayParticipation(
         testLearnerEnrollmentId, today);
     System.out.println("입실 전 상태: " + beforeCheckIn);
 
-    boolean checkInResult = participationService.processCheckIn(testLearnerEnrollmentId,
+    boolean checkInResult = participationServiceTest.processCheckIn(testLearnerEnrollmentId,
         checkInTime, today);
     assertTrue(checkInResult, "입실 처리가 성공해야 함");
 
-    ParticipationVO afterCheckIn = participationService.getTodayParticipation(
+    ParticipationVO afterCheckIn = participationServiceTest.getTodayParticipation(
         testLearnerEnrollmentId, today);
     assertNotNull(afterCheckIn.getCheckIn(), "입실 시간이 기록되어야 함");
     assertEquals(checkInTime, afterCheckIn.getCheckIn(), "입실 시간이 일치해야 함");
@@ -119,11 +119,11 @@ public class ParticipationTest {
 
     // When & Then - 퇴실 처리
     System.out.println("--- 퇴실 처리 ---");
-    boolean checkOutResult = participationService.processCheckOut(testLearnerEnrollmentId,
+    boolean checkOutResult = participationServiceTest.processCheckOut(testLearnerEnrollmentId,
         checkOutTime, today);
     assertTrue(checkOutResult, "퇴실 처리가 성공해야 함");
 
-    ParticipationVO afterCheckOut = participationService.getTodayParticipation(
+    ParticipationVO afterCheckOut = participationServiceTest.getTodayParticipation(
         testLearnerEnrollmentId, today);
     assertNotNull(afterCheckOut.getCheckOut(), "퇴실 시간이 기록되어야 함");
     assertEquals(checkOutTime, afterCheckOut.getCheckOut(), "퇴실 시간이 일치해야 함");
@@ -144,11 +144,11 @@ public class ParticipationTest {
     System.out.println("=== 전체 출결 현황 조회 테스트 ===");
 
     // 출결 기록 생성
-    participationService.createDailyParticipationForCourse(courseId, today);
+    participationServiceTest.createDailyParticipationForCourse(courseId, today);
 
     // When
-    List<ParticipationVO> todayParticipations = participationService.getParticipationByDate(today);
-    int totalCount = participationService.getTotalCount();
+    List<ParticipationVO> todayParticipations = participationServiceTest.getParticipationByDate(today);
+    int totalCount = participationServiceTest.getTotalCount();
 
     // Then
     assertNotNull(todayParticipations, "오늘 출결 기록이 존재해야 함");
@@ -174,14 +174,14 @@ public class ParticipationTest {
 
     // 출결 기록 생성
 
-    attendanceService.createDailyAttendanceForCourse(courseId, today);
+    participationService.createDailyAttendanceForCourse(courseId, today);
 
     // When - 날짜별 출결 현황 조회
-    List<ParticipationVO> todayParticipations = attendanceService.getParticipationByDateWithDisplayStatus(
+    List<ParticipationVO> todayParticipations = participationService.getParticipationByDateWithDisplayStatus(
         today);
 
     // When - 과정별 수업일 확인
-//    boolean isClassDay = attendanceService.isClassDayForCourse(courseId, today);
+//    boolean isClassDay = participationService.isClassDayForCourse(courseId, today);
 
     // Then
     assertNotNull(todayParticipations, "오늘 출결 기록이 존재해야 함");

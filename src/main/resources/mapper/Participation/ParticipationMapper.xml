@@ -150,14 +150,73 @@
       AND deleted_at IS NULL
   </select>
 
-  <!-- 사용자 ID로 learnerEnrollmentId 조회 -->
-  <select id="selectLearnerEnrollmentIdByUserId" parameterType="int" resultType="Integer">
-    SELECT id
-    FROM learner_enrollment
-    WHERE user_id = #{userId}
-      AND completion_status = 'IN_PROGRESS'
-      AND deleted_at IS NULL
+  <!-- 사용자의 이전 수강 과정 목록 조회 -->
+  <select id="selectPreviousCoursesByUserId" parameterType="int" resultType="com.goott5.lms.participation.domain.CourseVO">
+    SELECT c.id, c.is_in_progress, c.name, c.start_date, c.end_date,
+           c.daily_hours, c.lesson_start_time, c.lesson_end_time,
+           c.lunch_start_time, c.lunch_end_time, c.break_time, c.total_hours
+    FROM course c
+           JOIN learner_enrollment le ON c.id = le.course_id
+    WHERE le.user_id = #{userId}
+      AND le.completion_status = 'COMPLETED'
+      AND c.deleted_at IS NULL
+      AND le.deleted_at IS NULL
+    ORDER BY c.end_date DESC
+  </select>
+
+  <!-- 사용자의 현재 수강 중인 과정 조회 -->
+  <select id="selectCurrentCourseByUserId" parameterType="int" resultType="com.goott5.lms.participation.domain.CourseVO">
+    SELECT c.id, c.is_in_progress, c.name, c.start_date, c.end_date,
+           c.daily_hours, c.lesson_start_time, c.lesson_end_time,
+           c.lunch_start_time, c.lunch_end_time, c.break_time, c.total_hours
+    FROM course c
+           JOIN learner_enrollment le ON c.id = le.course_id
+    WHERE le.user_id = #{userId}
+      AND le.completion_status = 'IN_PROGRESS'
+      AND c.deleted_at IS NULL
+      AND le.deleted_at IS NULL
     LIMIT 1
   </select>
+
+  <!-- 교육생의 과정별 전체 수업일수 조회 -->
+  <select id="selectTotalClassDaysByLearnerEnrollmentId" parameterType="int" resultType="Integer">
+    SELECT COUNT(DISTINCT cs.class_date)
+    FROM course_schedule cs
+    JOIN learner_enrollment le ON cs.course_id = le.course_id
+    WHERE le.id = #{learnerEnrollmentId}
+    AND cs.class_date &lt;= CURDATE()
+    AND le.deleted_at IS NULL
+  </select>
+
+  <!-- 교육생의 출석일수 조회 (training_time > 0인 날의 개수) -->
+  <select id="selectAttendanceDaysByLearnerEnrollmentId" parameterType="int" resultType="Integer">
+    SELECT COUNT(*)
+    FROM participation
+    WHERE learner_enrollment_id = #{learnerEnrollmentId}
+      AND training_time > 0
+      AND deleted_at IS NULL
+  </select>
+
+  <!-- ParticipationMapper.xml에 추가 -->
+  <!-- 교육생별 날짜 범위 출결 조회 -->
+  <select id="selectByLearnerEnrollmentIdAndDateRange"
+    resultType="com.goott5.lms.participation.domain.ParticipationVO">
+    SELECT id,
+           learner_enrollment_id,
+           status,
+           check_in,
+           check_out,
+           training_time,
+           participation_date,
+           created_at,
+           updated_at,
+           deleted_at
+    FROM participation
+    WHERE learner_enrollment_id = #{learnerEnrollmentId}
+      AND participation_date BETWEEN #{startDate} AND #{endDate}
+      AND deleted_at IS NULL
+    ORDER BY participation_date DESC
+  </select>
+
 
 </mapper>

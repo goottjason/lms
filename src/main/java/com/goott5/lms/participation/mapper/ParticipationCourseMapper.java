@@ -23,4 +23,10 @@ public interface ParticipationCourseMapper {
   // course_schedule 테이블에서 해당 날짜에 수업이 있는 과정 ID들 조회
   @Select("SELECT DISTINCT course_id FROM course_schedule WHERE class_date = #{today}")
   List<Integer> selectCoursesBySchedule(@Param("today") LocalDate today);
+
+  /**
+   * 사용자 ID로 현재 수강 중인 learner_enrollment_id 조회
+   */
+  Integer selectLearnerEnrollmentIdByUserId(@Param("userId") Integer userId);
+
 }

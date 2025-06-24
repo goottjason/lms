@@ -3,10 +3,12 @@ package com.goott5.lms.participation.util;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 출결 시간 계산 유틸리티 점심시간 제외, 인정시간/상태 판정 등
  */
+@Slf4j
 public class TimeCalculationUtil {
 
   /**
@@ -21,6 +23,12 @@ public class TimeCalculationUtil {
   public static long calculateActualStudyMinutes(LocalDateTime checkIn, LocalDateTime checkOut,
       LocalTime lunchStartTime, LocalTime lunchEndTime) {
     if (checkIn == null || checkOut == null) {
+      return 0;
+    }
+
+    // 같은 날인지 확인 추가
+    if (!checkIn.toLocalDate().equals(checkOut.toLocalDate())) {
+      log.warn("입실과 퇴실이 다른 날짜: checkIn={}, checkOut={}", checkIn, checkOut);
       return 0;
     }
 
