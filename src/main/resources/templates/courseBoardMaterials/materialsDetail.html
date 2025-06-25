@@ -95,26 +95,21 @@
         <th:block th:if="${fileDTOList != null}">
           <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
-                <div class="col-md-3 pl-2" th:if="${fileDTO.isImage != ''}">
-                <img
-                    th:src="@{/img/no-image.jpg}"
-                    class="img-fluid rounded-start"
-                    style="width: 100px; object-fit: cover;">
-              </div>
-              <div class="col-md-9 d-flex align-items-center">
-                <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}">
-                  <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
-                     th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
-                </div>
-                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">
-                  <a th:href="${fileDTO.getPath()}"
-                     th:data-file="${fileDTO.getNewName()}"
-                     th:attr="download=${fileDTO.getOriginalName()}">
-                    <img th:src="${fileDTO.getPath()}"
-                         style="width: 200px; height: 100px; object-fit: cover;">
-                    <div th:text="${fileDTO.getOriginalName()}"></div>
+              <div class="col-md-3 pe-0">
+                <th:block th:if="${fileDTO.getIsImage()}">
+                  <a th:href="${fileDTO.path}" target="_blank">
+                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 50px; height: 70px; object-fit: cover;">
                   </a>
-                </div>
+                </th:block>
+
+                <th:block th:unless="${fileDTO.getIsImage()}">
+                  <a th:href="${fileDTO.path}">
+                    <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start" style="width: 100px; height: 70px; object-fit: cover;">
+                  </a>
+                </th:block>
+              </div>
+              <div class="col-md-9 d-flex align-items-center ps-2">
+                <a class="card-title mb-0 text-truncate" th:text="${fileDTO.originalName}" th:href="${fileDTO.path}">첨부파일123.pdf</a>
               </div>
             </div>
           </div>
