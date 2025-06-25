@@ -54,6 +54,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseBoardMaterialsController {
 
     private final CourseBoardMaterialsService courseBoardMaterialsService;
+    private final CourseBoardMaterialsMapper courseBoardMaterialsMapper;
     private final UtilMapper utilMapper;
     private final UtilService utilService;
     private final S3Uploader s3Uploader;
@@ -91,25 +92,7 @@ public class CourseBoardMaterialsController {
             courseBoardMaterialsPagingRequestDTO.setPagingSize(10);
         }
 
-
         if (courseBoardMaterialsPagingRequestDTO.getCourseId() == null && !"ADMINISTRATOR".equals(loginUserType)) {
-        CommonReqDTO commonReqDTO = CommonReqDTO.builder()
-            .loginUserId(loginUserId)
-            .loginUserType(loginUserType)
-            .build();
-
-        PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = PageCourseReqDTO.<CourseReqDTO>builder()
-            .pageNo(null)
-            .pageSize(null)
-            .type(null)
-            .keyword(null)
-            .orderBy("name")
-            .orderDirection("ASC")
-            .build();
-
-        PageCourseRespDTO<CourseRespDTO> courses = courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
-
-        log.info("courses={}", courses);
 
             CommonReqDTO commonReqDTO = CommonReqDTO.builder()
                 .loginUserId(loginUser.getId())
@@ -117,7 +100,6 @@ public class CourseBoardMaterialsController {
                 .build();
             PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = PageCourseReqDTO.<CourseReqDTO>builder()
                 .orderBy("name").orderDirection("ASC").build();
-
 
             PageCourseRespDTO<CourseRespDTO> courses = courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
 
