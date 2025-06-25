@@ -28,54 +28,6 @@
         border-radius    : 3px;
       }
 
-      /* 전체화면 탈출 오버레이 */
-      #fsOverlay {
-        display         : none;
-        position        : fixed;
-        top             : 0;
-        left            : 0;
-        width           : 100vw;
-        height          : 100vh;
-        background      : rgba(0, 0, 0, 0.75);
-        z-index         : 1050;
-        align-items     : center;
-        justify-content : center;
-      }
-
-      /* 오버레이 내부 컨테이너 */
-      #fsOverlay .overlay-content {
-        background    : #ffffff;
-        padding       : 2rem;
-        border-radius : 0.5rem;
-        box-shadow    : 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
-        text-align    : center;
-        max-width     : 400px;
-        width         : 90%;
-      }
-
-      /* 메시지 스타일 */
-      #fsOverlay .overlay-content p {
-        font-size     : 1.25rem;
-        margin-bottom : 1.5rem;
-        color         : #333;
-      }
-
-      /* 버튼 스타일 (Bootstrap btn-primary 활용) */
-      #fsOverlay .overlay-content button {
-        padding          : 0.5rem 1.25rem;
-        font-size        : 1rem;
-        border           : none;
-        border-radius    : 0.25rem;
-        cursor           : pointer;
-        background-color : #4e73df;
-        color            : #fff;
-        transition       : background-color 0.2s;
-      }
-
-      #fsOverlay .overlay-content button:hover {
-        background-color : #2e59d9;
-      }
-
     </style>
   </head>
   <body>
@@ -185,16 +137,6 @@
       <iframe
           id="examFrame" src=""
           style="display: none; width: 100%; height: 100%; border: none;"></iframe>
-
-      <!-- 첫 번째 탈출 시 보여줄 오버레이 -->
-      <div id="fsOverlay">
-        <div class="overlay-content">
-          <p>시험 중에는 전체화면을 벗어날 수 없습니다!</p>
-          <button class="btn btn-primary" id="reenterFs">
-            전체화면 복귀
-          </button>
-        </div>
-      </div>
 
 
       <!--            <div class="card shadow mb-4">-->

@@ -6,6 +6,7 @@
     xmlns:th="http://www.thymeleaf.org">
   <head>
     <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
+    <script defer th:src="@{/js/test/testApi.js}"></script>
     <script defer th:src="@{/js/test/testCommon.js}"></script>
     <script defer th:src="@{/js/test/testList.js}"></script>
   </head>
@@ -14,7 +15,7 @@
       <!-- content header 시작 -->
       <div class="row align-items-center" id="admin-filter">
         <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">시험 조회</h1>
-          <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+        <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
         <div class="col d-flex justify-content-end">
           <form class="row col-12 mb-3">
             <div class="col-3">
@@ -43,15 +44,15 @@
             </div>
             <div class="col-auto">
 
-                <button
-                    class="btn btn-info btn-icon-split"
-                    data-current-page-no="1"
-                    id="test-register-btn">
+              <button
+                  class="btn btn-info btn-icon-split"
+                  data-current-page-no="1"
+                  id="test-register-btn">
               <span class="icon text-white-50">
                 <i class="fas fa-plus"></i>
               </span>
-                  <span class="text">시험 등록</span>
-                </button>
+                <span class="text">시험 등록</span>
+              </button>
 
             </div>
           </div>
