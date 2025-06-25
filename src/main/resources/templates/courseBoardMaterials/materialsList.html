@@ -126,7 +126,8 @@
             <tr th:each="dto : ${responseDTO.pinnedList}" class="pinned-post">
               <td class="text-center align-middle"><i class="fas fa-thumbtack text-primary"></i></td>
               <td class="title align-middle">
-                <a th:href="@{/courseBoardMaterials/materialsDetail(id=${dto.id})}" th:text="${dto.title}">고정글 제목</a>
+                <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
+                   th:text="${dto.title}">고정글 제목</a>
               </td>
               <td th:text="${dto.courseName}" class="title align-middle text-truncate" style="max-width: 200px;">과정명</td>
               <td th:text="${dto.writerName}" class="text-center align-middle">작성자</td>
@@ -327,34 +328,51 @@
 
     // 관리자 필터 호출
     function renderAdminCourseFilter(isInProgress = null) {
-      axios.get(`/api/admin/courses`, { params: { isInProgress: isInProgress } })
+      // 1. API 호출 주소를 '/api/management/courses'로 변경
+      axios.get(`/api/management/courses`, {
+        // 2. 이 API가 요구하는 파라미터들을 전송
+        params: {
+          loginUserId: loginUserId,       // 스크립트 상단에 이미 있는 변수
+          loginUserType: loginUserType,     // 스크립트 상단에 이미 있는 변수
+          isInProgress: isInProgress,
+          pagingSize: 1000                // 전체 과정을 다 가져오기 위해 충분히 큰 값 설정
+        }
+      })
       .then(function (response) {
-        console.log(response);
-        renderCourseFilterOptionsForAdmin("#course-select",
-            response.data.data);
+        // 3. 응답 데이터의 구조에 맞춰 과정 목록을 꺼냅니다.
+        // response.data -> ApiResponse
+        // response.data.data -> PageCourseRespDTO
+        // response.data.data.respDTOS -> 실제 과정 목록 (List<CourseRespDTO>)
+        const courses = response.data.data.respDTOS;
 
+        // 이 목록을 기존 함수에 그대로 전달하면 됩니다.
+        renderCourseFilterOptionsForAdmin("#course-select", courses);
       })
       .catch(function (error) {
-
+        console.error("관리자 과정 목록 API 호출 실패:", error);
       });
     }
 
     // 관리자 필터 생성
     function renderCourseFilterOptionsForAdmin(selector, data) {
+      const currentCourseId = new URLSearchParams(window.location.search).get("courseId");
       let $courseFilter = $(selector);
       $courseFilter.empty();
 
       let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
       $courseFilter.append(courseFilterPlaceholder);
 
-      $.each(data, function (index, el) {
+      // data는 이제 [{id: ..., name: ...}, ...] 형태의 객체 배열입니다.
+      $.each(data, function (index, course) {
+        // course 객체의 'id'를 option의 value로, 'name'을 표시되는 텍스트로 사용합니다.
+        let courseOption = `<option value="${course.id}">${course.name}</option>`;
 
-        console.log(el);
-
-        let courseOption = `<option value="${el}">${el}</option>`;
+        // 페이지가 리로드 되어도 선택했던 과정이 계속 선택된 상태로 보이게 하는 로직
+        if (course.id == currentCourseId) {
+          courseOption = `<option value="${course.id}" selected>${course.name}</option>`;
+        }
         $courseFilter.append(courseOption);
       });
-
     }
 
     // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
@@ -380,27 +398,29 @@
 
     // 과정별 필터 값을 바꾸었을 때 리스트 불러오기 (관리자)
     $("#course-select").on("change", function () {
-      console.log("과정별 필터!!!");
-      let courseName = $(this).val();
-
-      if (courseName === "") {
-
-        $progressFilter.val("");
-      }
-      console.log(courseName);
-      window.location.href=`/courseBoardMaterials/materialsList?courseName=${courseName}`;
+      const courseId = $(this).val();
+      // 검색 폼의 숨겨진 courseId 값을 변경하고 폼을 제출합니다.
+      $("#searchCourseId").val(courseId);
+      $("#searchForm").submit();
     });
 
     $("#materialsRegisterBtn").on("click", function (e) {
       e.preventDefault();
 
-      const courseName = new URLSearchParams(window.location.search).get("courseName");
-      console.log(courseName);
-
-      if (loginUserType === "ADMINISTRATOR") {
-
-        window.location.href = `/courseBoardMaterials/materialsRegister?courseId=0&courseName=${courseName}`;
+      let selectedCourseId;
+      if (loginUserType === 'ADMINISTRATOR') {
+        selectedCourseId = $("#course-select").val();
+      } else {
+        selectedCourseId = $("#courseSelector").val();
       }
+
+      if (!selectedCourseId) {
+        alert("먼저 과정을 선택해주세요.");
+        return;
+      }
+
+      $("#courseIdForRegister").val(selectedCourseId);
+      $("#registerForm").submit();
     });
 
 

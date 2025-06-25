@@ -7,7 +7,6 @@ import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsFlatDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPageDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingRequestDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO;
-import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -46,12 +45,12 @@ public interface CourseBoardMaterialsMapper {
   int softDeleteById(@Param("id") int id);
 
   // 고정 기능
-  int countFixedPosts();
+  int countFixedPosts(@Param("courseId") int courseId);
 
   List<CourseBoardMaterialsPageDTO> selectAllFixedPosts(CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO);
 
   // 과정 ID(PK) 가져오기
   @Select("SELECT id FROM course WHERE name = #{courseName} ")
-  int selectCourseId(String courseName);
+  Integer selectCourseId(String courseName);
 
 }
