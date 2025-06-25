@@ -168,12 +168,11 @@
     SELECT
     count(id)
     FROM
-    course_notice cn
+    course_notice
     WHERE
-    cn.is_fixed = true
-    AND cn.deleted_at IS NULL
-    ORDER BY
-    cn.created_at DESC
+    is_fixed = true
+    AND course_id = #{courseId}
+    AND deleted_at IS NULL
   </select>
 
   <select id="selectAllFixedPosts"

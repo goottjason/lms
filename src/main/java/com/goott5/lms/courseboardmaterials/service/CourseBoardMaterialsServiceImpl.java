@@ -38,7 +38,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
     // '고정'으로 설정하려는 경우에만 개수 체크 로직을 수행합니다.
     if (courseBoardMaterialsDTO.getIsFixed()) {
       // 현재 고정된 글의 총 개수를 DB에서 조회합니다.
-      int fixedCount = courseBoardMaterialsMapper.countFixedPosts();
+      int fixedCount = courseBoardMaterialsMapper.countFixedPosts(courseBoardMaterialsDTO.getCourseId());
       // 조회된 고정글이 5개 이상이면, 등록을 막고 실패(-1)를 반환합니다.
       if (fixedCount >= 5) {
         log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
@@ -48,8 +48,12 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
 
     if (courseBoardMaterialsDTO.getCourseId() == 0) {
 
-      int courseId = courseBoardMaterialsMapper.selectCourseId(
+      Integer courseId = courseBoardMaterialsMapper.selectCourseId(
           courseBoardMaterialsDTO.getCourseName());
+
+      if (courseId == null) {
+        throw new RuntimeException("해당하는 강의 ID를 찾을수 없습니다.");
+      }
 
       courseBoardMaterialsDTO.setCourseId(courseId);
     }
@@ -209,7 +213,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       // 3. 원래 고정글이 아니었던 글을 새로 고정하려는 경우
       if (originalPost != null && !originalPost.getIsFixed()) {
         // 4. 현재 고정된 글의 총 개수를 DB에서 조회합니다.
-        int fixedCount = courseBoardMaterialsMapper.countFixedPosts();
+        int fixedCount = courseBoardMaterialsMapper.countFixedPosts(courseBoardMaterialsDTO.getCourseId());
 
         // 5. 조회된 고정글이 5개 이상이면, 수정을 막고 실패(0)를 반환합니다.
         if (fixedCount >= 5) {

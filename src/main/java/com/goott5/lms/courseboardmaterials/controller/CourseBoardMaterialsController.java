@@ -91,7 +91,8 @@ public class CourseBoardMaterialsController {
             courseBoardMaterialsPagingRequestDTO.setPagingSize(10);
         }
 
-      if (!loginUserType.equals("ADMINISTRATOR")) {
+
+        if (courseBoardMaterialsPagingRequestDTO.getCourseId() == null && !"ADMINISTRATOR".equals(loginUserType)) {
         CommonReqDTO commonReqDTO = CommonReqDTO.builder()
             .loginUserId(loginUserId)
             .loginUserType(loginUserType)
@@ -110,12 +111,23 @@ public class CourseBoardMaterialsController {
 
         log.info("courses={}", courses);
 
-        log.info("pagingRequestDTO={}", courseBoardMaterialsPagingRequestDTO);
+            CommonReqDTO commonReqDTO = CommonReqDTO.builder()
+                .loginUserId(loginUser.getId())
+                .loginUserType(loginUserType)
+                .build();
+            PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = PageCourseReqDTO.<CourseReqDTO>builder()
+                .orderBy("name").orderDirection("ASC").build();
 
-        Integer courseId = courses.getRespDTOS().get(0).getId();
 
-        courseBoardMaterialsPagingRequestDTO.setCourseId(courseId);
-      }
+            PageCourseRespDTO<CourseRespDTO> courses = courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
+
+            // 조회된 과정이 있을 경우에만 첫 번째 과정 ID를 기본값으로 설정
+            if (courses != null && !courses.getRespDTOS().isEmpty()) {
+                Integer defaultCourseId = courses.getRespDTOS().get(0).getId();
+                courseBoardMaterialsPagingRequestDTO.setCourseId(defaultCourseId);
+                log.info("사용자 기본 과정 ID를 설정합니다: {}", defaultCourseId);
+            }
+        }
 
       CourseBoardMaterialsPagingResponseDTO<CourseBoardMaterialsPageDTO> responseDTO = courseBoardMaterialsService.getListWithSearch(courseBoardMaterialsPagingRequestDTO);
 
@@ -151,17 +163,14 @@ public class CourseBoardMaterialsController {
     @GetMapping("/materialsRegister")
     public String getMaterialsRegister(
         @RequestParam(required = false) Integer courseId,
-        @RequestParam(required = false) String courseName,
         Model model) {
 
-        log.info("courseName={}", courseName);
-
         CourseBoardMaterialsDTO dto = new CourseBoardMaterialsDTO();
-        dto.setCourseId(courseId); // 전달받은 courseId를 DTO에 설정
+        if (courseId != null) {
+            dto.setCourseId(courseId); // 목록에서 받은 courseId를 DTO에 설정
+        }
 
         model.addAttribute("courseBoardMaterialsDTO", dto);
-        model.addAttribute("currentCourseId", courseId);
-        model.addAttribute("currentCourseName", courseName);
         return "courseBoardMaterials/materialsRegister";
     }
 
@@ -278,7 +287,6 @@ public class CourseBoardMaterialsController {
 
         log.info("상세 페이지 요청 ID : {}", id);
 
-        // 서비스 호출 (디버깅용 try-catch 제거)
         CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(id);
 
         // 조회된 데이터가 없는 경우 목록으로 리다이렉트
