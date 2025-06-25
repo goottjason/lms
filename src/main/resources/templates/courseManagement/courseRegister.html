@@ -48,13 +48,13 @@
           <div class="row mb-2">
             <div class="col-md-9">
               <div class="form-group">
-                <label for="name-input">과정명</label>
+                <label for="name-input">과정명<span class="text-danger">*</span></label>
                 <input type="text" id="name-input" class="form-control" placeholder="과정명을 입력해주세요.">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="number-of-learner-input">등록인원</label>
+                <label for="number-of-learner-input">등록인원<span class="text-danger">*</span></label>
                 <input type="text" id="number-of-learner-input" class="form-control">
               </div>
             </div>
@@ -63,25 +63,25 @@
           <div class="row mb-2">
             <div class="col-md-3">
               <div class="form-group">
-                <label for="total-hours-input">총훈련시간</label>
+                <label for="total-hours-input">총훈련시간<span class="text-danger">*</span></label>
                 <input type="text" id="total-hours-input" class="form-control">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="total-days-input">총훈련일수</label>
+                <label for="total-days-input">총훈련일수<span class="text-danger">*</span></label>
                 <input type="text" id="total-days-input" class="form-control" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="daily-hours-input">일일훈련시간</label>
+                <label for="daily-hours-input">일일훈련시간<span class="text-danger">*</span></label>
                 <input type="text" id="daily-hours-input" class="form-control">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="break-time-input">쉬는시간</label>
+                <label for="break-time-input">쉬는시간<span class="text-danger">*</span></label>
                 <input type="text" id="break-time-input" class="form-control">
               </div>
             </div>
@@ -90,13 +90,13 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="start-date-input">과정시작일</label>
+                <label for="start-date-input">과정시작일<span class="text-danger">*</span></label>
                 <input type="date" id="start-date-input" class="form-control">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="end-date-input">과정종료일</label>
+                <label for="end-date-input">과정종료일<span class="text-danger">*</span></label>
                 <input type="date" id="end-date-input" class="form-control" readonly>
               </div>
             </div>
@@ -105,13 +105,13 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="lesson-start-time-input">훈련시작시간</label>
+                <label for="lesson-start-time-input">훈련시작시간<span class="text-danger">*</span></label>
                 <input type="time" id="lesson-start-time-input" class="form-control">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="lesson-end-time-input">훈련종료시간</label>
+                <label for="lesson-end-time-input">훈련종료시간<span class="text-danger">*</span></label>
                 <input type="time" id="lesson-end-time-input" class="form-control" readonly>
               </div>
             </div>
@@ -129,13 +129,13 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="lunch-start-time-input">식사 시작시간</label>
+                <label for="lunch-start-time-input">식사 시작시간<span class="text-danger">*</span></label>
                 <input type="time" id="lunch-start-time-input" class="form-control" readonly>
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="lunch-end-time-input">식사 종료시간</label>
+                <label for="lunch-end-time-input">식사 종료시간<span class="text-danger">*</span></label>
                 <input type="time" id="lunch-end-time-input" class="form-control" readonly>
               </div>
             </div>
@@ -144,7 +144,7 @@
           <div class="row mb-2">
             <div class="col-md-4">
               <div class="form-group">
-                <label for="instructor">강사명</label>
+                <label for="instructor">강사명<span class="text-danger">*</span></label>
                 <select id="instructor" class="form-control">
                   <option value="">강사선택</option>
                 </select>
@@ -152,7 +152,7 @@
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="administrator">관리자</label>
+                <label for="administrator">관리자<span class="text-danger">*</span></label>
                 <select id="administrator" class="form-control">
                   <option value="">관리자선택</option>
                 </select>
@@ -160,7 +160,7 @@
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="classroom">강의실</label>
+                <label for="classroom">강의실<span class="text-danger">*</span></label>
                 <select id="classroom" class="form-control">
                   <option value="">강의실선택</option>
                 </select>
@@ -182,11 +182,16 @@
             <table class="table">
               <thead>
               <tr class="text-center">
-                <th scope="col" class="align-middle" width="12%">순서</th>
-                <th scope="col" class="align-middle" width="22%">교과목명</th>
-                <th scope="col" class="align-middle" width="15%">시간</th>
-                <th scope="col" class="align-middle" width="45">교재명</th>
-                <th scope="col" class="align-middle" width="18%">저자명</th>
+                <th scope="col" class="align-middle" width="14%">순서<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="20%">교과목명<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="14%">시간<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="20%">교재명<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="17%">저자명<span class="text-danger">*
+                </span></th>
                 <th scope="col" class="align-middle" width="15%">선택</th>
               </tr>
               </thead>

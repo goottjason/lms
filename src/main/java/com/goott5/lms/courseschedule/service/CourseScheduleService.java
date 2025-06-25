@@ -17,4 +17,6 @@ public interface CourseScheduleService {
   List<ScheduleVO> getCourseSchedulesByWeek(ScheduleRequestDTO scheduleRequestDTO);
 
   List<CourseVO> getCoursesByUser(UserVO loginUser);
+
+  CourseVO getCourseByIdAndUser(int courseId, UserVO loginUser);
 }

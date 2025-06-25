@@ -117,29 +117,31 @@
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label for="reason">사유</label>
-            <span class="errMsg reasonErr"></span>
+            <label for="reason">사유<span class="text-danger">*</span></label>
+            <span class="errMsg reasonErr text-danger small"></span>
             <input type="text" id="reason" class="form-control">
           </div>
         </div>
         <div class="col-md-3">
           <div class="form-group">
-            <label for="cancel-date">휴강일자</label>
-            <span class="errMsg dateErr"></span>
+            <label for="cancel-date">휴강일자<span class="text-danger">*</span></label>
+            <span class="errMsg dateErr text-danger small"></span>
             <input type="date" id="cancel-date" class="form-control">
           </div>
         </div>
       </div>
 
-      <div class="row mb-2">
-        <div class="col-1 mb-2" style="min-width: 90px;">적용과정</div>
+      <div class="row mb-2 for-hide" style="display: none">
+        <div class="col-1 mb-2" style="min-width: 100px;">
+          적용과정<span class="text-danger">*</span>
+        </div>
         <div class="col form-check">
 
-          <span class="errMsg rangeErr"></span>
+          <span class="errMsg rangeErr text-danger small"></span>
         </div>
       </div>
 
-        <div id="courses-for-reg-cancel-date">
+        <div id="courses-for-reg-cancel-date" class="for-hide" style="display: none">
 
         </div>
 
@@ -310,6 +312,16 @@
                              }
                          });
               }
+
+          });
+
+          $("#is-all").change(function(){
+
+            if($(this).val() == 1){
+              $(".for-hide").hide();
+            } else if ($(this).val() == 0){
+              $(".for-hide").show();
+            }
 
           });
 
@@ -636,17 +648,17 @@
           let applyCount = $(".course-for-cancel-date:checked").length;
 
           if (cancelDate == "") {
-              showErr("dateErr", "* 날짜는 필수 항목입니다.");
+              showErr("dateErr", "날짜는 필수 항목입니다.");
               result = false;
           }
 
           if (reason == "") {
-              showErr("reasonErr", "* 사유는 필수 항목입니다.");
+              showErr("reasonErr", "사유는 필수 항목입니다.");
               result = false;
           }
 
           if ($("#is-all").val() == 0 && applyCount == 0) {
-              showErr("rangeErr", "* 최소 하나의 과정은 선택해야 합니다.");
+              showErr("rangeErr", "최소 하나의 과정은 선택해야 합니다.");
               result = false;
           }
 

@@ -10,6 +10,7 @@ import com.goott5.lms.courseregister.mapper.CourseRegisterMapper;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -47,20 +48,32 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
   }
 
   @Override
-  public void saveCourse(CourseSaveDTO courseSaveDTO) {
+  public boolean saveCourse(CourseSaveDTO courseSaveDTO) {
 
-    courseRegisterMapper.insertCourse(courseSaveDTO);
-    log.info("courseSaveDTO.getId() = {}", courseSaveDTO.getId());
-    courseRegisterMapper.insertStaffAssignment(courseSaveDTO);
-    courseRegisterMapper.insertClassroomAllocation(courseSaveDTO);
-    courseRegisterMapper.updateClassroom(courseSaveDTO);
+    boolean result = true;
+
+    if(courseRegisterMapper.insertCourse(courseSaveDTO) < 1){
+      result = false;
+    }
+
+    if(courseRegisterMapper.insertStaffAssignment(courseSaveDTO) < 1){
+      result = false;
+    }
+    if(courseRegisterMapper.insertClassroomAllocation(courseSaveDTO) < 1){
+      result = false;
+    }
+    if(courseRegisterMapper.updateClassroom(courseSaveDTO) < 1){
+      result = false;
+    }
 
     // 교과목 정렬
     courseSaveDTO.getSubjects().sort(Comparator.comparingInt(SubjectDTO::getSubjectOrder));
 
     for (SubjectDTO subjectDTO : courseSaveDTO.getSubjects()) {
       subjectDTO.setCourse_id(courseSaveDTO.getId());
-      courseRegisterMapper.insertCourseSubject(subjectDTO);
+      if(courseRegisterMapper.insertCourseSubject(subjectDTO) < 1){
+        result = false;
+      };
     }
     log.info("courseSaveDTO : {}", courseSaveDTO);
 
@@ -69,6 +82,7 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
     int subjectIdCount = 0;
     int lunchMinutes = (int) Duration.between(courseSaveDTO.getLunchStartTime(),
             courseSaveDTO.getLunchEndTime()).toMinutes();
+    List<ScheduleDTO> scheduleDTOS = new ArrayList<ScheduleDTO>();
 
     for (LocalDate lessonDay : courseSaveDTO.getLessonDays()) {
 
@@ -95,7 +109,7 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
                 .classDate(lessonDay)
                 .build();
 
-        courseRegisterMapper.insertCourseSchedule(scheduleDTO);
+        scheduleDTOS.add(scheduleDTO);
 
         if (scheduleDTO.getPeriodEndTime().equals(courseSaveDTO.getLunchStartTime())) {
           startTime = startTime.plusMinutes(60 - courseSaveDTO.getBreakTime() + lunchMinutes);
@@ -107,5 +121,22 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
 
       }
     }
+    if(courseRegisterMapper.insertCourseSchedule(scheduleDTOS) < 1){
+      result = false;
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean checkNameDuplicate(String name) {
+
+    boolean result = true;
+
+    if(courseRegisterMapper.selectCourseCountByName(name) == 0){
+      result = false;
+    };
+
+    return result;
   }
 }

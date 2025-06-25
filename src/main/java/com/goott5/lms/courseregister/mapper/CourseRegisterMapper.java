@@ -33,21 +33,23 @@ public interface CourseRegisterMapper {
 
   @Insert("insert into course(name, number_of_learner, start_date, end_date, total_hours, total_days, daily_hours, break_time, lesson_start_time, lesson_end_time, lunch_start_time, lunch_end_time) values(#{name}, #{numberOfLearner}, #{startDate}, #{endDate}, #{totalHours}, #{totalDays}, #{dailyHours}, #{breakTime}, #{lessonStartTime}, #{lessonEndTime}, #{lunchStartTime}, #{lunchEndTime})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
-  void insertCourse(CourseSaveDTO courseSaveDTO);
+  int insertCourse(CourseSaveDTO courseSaveDTO);
 
   @Insert("insert into staff_assignment(course_id, user_id) values(#{id}, #{instructorId}), (#{id}, #{administratorId})")
-  void insertStaffAssignment(CourseSaveDTO courseSaveDTO);
+  int insertStaffAssignment(CourseSaveDTO courseSaveDTO);
 
   @Insert("insert into classroom_allocation(course_id, classroom_id) values(#{id}, #{classroomId})")
-  void insertClassroomAllocation(CourseSaveDTO courseSaveDTO);
+  int insertClassroomAllocation(CourseSaveDTO courseSaveDTO);
 
   @Update("update classroom set is_active = 1 where id = #{classroomId}")
-  void updateClassroom(CourseSaveDTO courseSaveDTO);
+  int updateClassroom(CourseSaveDTO courseSaveDTO);
 
   @Insert("insert into course_subject(course_id, subject_order, name, hours, textbook_name, textbook_author) values(#{course_id}, #{subjectOrder}, #{name}, #{hours}, #{textbookName}, #{textbookAuthor})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
-  void insertCourseSubject(SubjectDTO subjectDTO);
+  int insertCourseSubject(SubjectDTO subjectDTO);
 
-  @Insert("insert into course_schedule(subject_id, course_id, class_date, period, period_start_time, period_end_time) values(#{subjectId}, #{courseId}, #{classDate}, #{period}, #{periodStartTime}, #{periodEndTime})")
-  void insertCourseSchedule(ScheduleDTO scheduleDTO);
+  int insertCourseSchedule(List<ScheduleDTO> scheduleDTOS);
+
+  @Select("select count(*) from course where name = #{name}")
+  int selectCourseCountByName(String name);
 }

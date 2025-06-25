@@ -3,6 +3,7 @@ let weekNum;
 let weekRange;
 let inProgressType = -1;
 const today = new Date();
+const params = new URLSearchParams(window.location.search);
 
 $(function(){
 
@@ -71,43 +72,53 @@ $(function(){
         });
     }
 
+
     // 첫 화면에 띄울 과정 결정
-    $.ajax({
-               url: "/courseSchedule/getFirstCourseByUser",
-               type    : "GET",
-               dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
-               // data       : JSON.stringify(courseId),
-               // contentType: "application/json; charset=utf-8",
-               async   : false, // 비동기옵션 off
-               success : function (data) { // 통신이 성공하면 수행할 함수
+    if(loginUser.type == "ADMINISTRATOR" && params.get("courseId") != null && params.get("courseId") != ""){
+
+        $.ajax({
+                   url: "/courseSchedule/getCourseByIdAndUser",
+                   type    : "GET",
+                   dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+                   data       : {
+                       courseId: params.get("courseId")
+                   },
+                   // contentType: "application/json; charset=utf-8",
+                   async   : false, // 비동기옵션 off
+                   success : function (data) { // 통신이 성공하면 수행할 함수
 
 
-                   if(data.id != 0){
-                       selectCourse = data;
-                       let todayStr = [today.getFullYear(),
-                                       String(today.getMonth() + 1).padStart(2, "0"),
-                                       String(today.getDate()).padStart(2, "0")].join("-");
-                       weekNum = calWeekNumber(selectCourse.startDate, selectCourse.endDate, todayStr);
-                       weekRange = calDateRangeOfWeek(selectCourse.startDate, selectCourse.endDate, weekNum);
-                       makeScheduleTable(selectCourse, weekRange);
-                       getAndShowSchedules(selectCourse, weekRange);
-                       $("#week-num").text(`${weekNum}주차`);
-                       $("#courseSelector").val(data.id);
-                       $("#course-type").val(data.id);
-                       // tmpCourse = data; // 교육생, 강사 코스선택 바인드
+                       if(data.id != 0){
+                           selectCourse = data;
+                           let todayStr = [today.getFullYear(),
+                                           String(today.getMonth() + 1).padStart(2, "0"),
+                                           String(today.getDate()).padStart(2, "0")].join("-");
+                           weekNum = calWeekNumber(selectCourse.startDate, selectCourse.endDate, todayStr);
+                           weekRange = calDateRangeOfWeek(selectCourse.startDate, selectCourse.endDate, weekNum);
+                           makeScheduleTable(selectCourse, weekRange);
+                           getAndShowSchedules(selectCourse, weekRange);
+                           $("#week-num").text(`${weekNum}주차`);
+                           $("#courseSelector").val(data.id);
+                           $("#course-type").val(data.id);
+                           // tmpCourse = data; // 교육생, 강사 코스선택 바인드
+                       }
+                       // data가 널일시(배정 한번도 없는 관리자)체크
+                       console.log(data);
 
+                   },
+                   error   : function () {
+                   },
+                   complete: function () {
                    }
+               });
 
 
-                   // data가 널일시(배정 한번도 없는 관리자)체크
-                   console.log(data.id == 0);
+    } else {
 
-               },
-               error   : function () {
-               },
-               complete: function () {
-               }
-           });
+        selectFirstCourse();
+
+    }
+
 
     $("#prev-btn").click(function(){
         if(weekNum <= 1){
@@ -260,6 +271,18 @@ function getAndShowSchedules(course, weekRange){
                }
            });
 
+    if(weekNum <= 1){
+        $("#prev-btn").hide();
+    } else {
+        $("#prev-btn").show();
+    }
+
+    if(weekNum >= calTotalWeeks(selectCourse.startDate, selectCourse.endDate)){
+        $("#next-btn").hide();
+    } else {
+        $("#next-btn").show();
+    }
+
 
 }
 
@@ -316,6 +339,47 @@ function getCoursesByInProgressType(){
 
                    });
                    $("#course-type").html(output);
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+           });
+}
+
+// 첫 화면에 띄울 과정 결정
+function selectFirstCourse(){
+
+    $.ajax({
+               url: "/courseSchedule/getFirstCourseByUser",
+               type    : "GET",
+               dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+               // data       : JSON.stringify(courseId),
+               // contentType: "application/json; charset=utf-8",
+               async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+
+                   if(data.id != 0){
+                       selectCourse = data;
+                       let todayStr = [today.getFullYear(),
+                                       String(today.getMonth() + 1).padStart(2, "0"),
+                                       String(today.getDate()).padStart(2, "0")].join("-");
+                       weekNum = calWeekNumber(selectCourse.startDate, selectCourse.endDate, todayStr);
+                       weekRange = calDateRangeOfWeek(selectCourse.startDate, selectCourse.endDate, weekNum);
+                       makeScheduleTable(selectCourse, weekRange);
+                       getAndShowSchedules(selectCourse, weekRange);
+                       $("#week-num").text(`${weekNum}주차`);
+                       $("#courseSelector").val(data.id);
+                       $("#course-type").val(data.id);
+                       // tmpCourse = data; // 교육생, 강사 코스선택 바인드
+
+                   }
+
+
+                   // data가 널일시(배정 한번도 없는 관리자)체크
+                   console.log(data.id == 0);
 
                },
                error   : function () {

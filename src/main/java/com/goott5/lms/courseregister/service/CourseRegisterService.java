@@ -16,5 +16,7 @@ public interface CourseRegisterService {
 
   List<ClassroomVO> getClassroom();
 
-  void saveCourse(CourseSaveDTO courseSaveDTO);
+  boolean saveCourse(CourseSaveDTO courseSaveDTO);
+
+  boolean checkNameDuplicate(String name);
 }

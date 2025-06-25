@@ -61,6 +61,9 @@ public interface CancelDateManagementMapper {
   @Select("select class_date from course_schedule where course_id = #{courseId} and class_date > #{cancelDate} group by class_date order by class_date")
   List<LocalDate> selectRemainClassDates(CancelDateDTO cancelDateDTO);
 
-  @Delete("delete from cancel_date where cancel_date = #{cancelDate}")
-  void deleteAllCancelDateByDate(LocalDate cancelDate);
+  @Delete("delete from cancel_date where cancel_date = #{cancelDate} and is_all != 1")
+  void deleteAllCancelDateByDateExceptIsAllTrue(LocalDate cancelDate);
+
+  @Select("select count(*) from course_schedule where course_id = #{courseId} and class_date = #{cancelDate}")
+  int selectCountOfSchedulesByCourseAndDate(CancelDateDTO cancelDateDTO);
 }
