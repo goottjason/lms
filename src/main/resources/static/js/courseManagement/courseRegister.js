@@ -417,7 +417,7 @@ function clearErr(nextErr) {
 function showErr(nextErr, errMsg) {
 
     if (!$(nextErr).prev().hasClass("errMsg")) {
-        $(nextErr).before("<span class='errMsg'></span>");
+        $(nextErr).before("<span class='text-danger small errMsg'></span>");
     }
     $(nextErr).prev().text(errMsg);
 }
@@ -440,7 +440,7 @@ function handleLoadCourseClick() {
 async function fetchAndDisplayView() {
 
     let coursesWithPagination = await apiGetRequest(
-        "/api/courses/all",
+        "/api/management/courses",
         {
             loginUserId  : loginUserId,
             loginUserType: loginUserType,
@@ -458,16 +458,16 @@ async function fetchAndInsertDetail() {
 
     let courseId = $(this).data("id");
     console.log(courseId);
-    let course = await apiGetRequest(
-        "/api/course",
+    let coursesWithPagination = await apiGetRequest(
+        "/api/management/courses",
         {
             loginUserId  : loginUserId,
             loginUserType: loginUserType,
             courseId     : courseId
         });
-    // let course = coursesWithPagination?.respDTOS || [];
+    let course = coursesWithPagination?.respDTOS || [];
     console.log(course);
-    insertContentBySelect(course);
+    insertContentBySelect(course[0]);
 }
 
 async function apiGetRequest(endpoint, additionalParams = {}) {
@@ -560,11 +560,12 @@ async function insertContentBySelect(course) {
     course.subjects.forEach(subject => {
         let rowHtml = `
       <tr class="subject-row">
-        <td class="text-center align-middle"><button class="remove-subject-row-btn">삭제</button><input type="text" value="${subject.subjectOrder}" class="form-control" data-id="${subject.id}"></td>
+        <td class="text-center align-middle"><input type="text" value="${subject.subjectOrder}" class="form-control" data-id="${subject.id}"></td>
         <td class="text-center align-middle"><input type="text" value="${subject.name}" class="form-control" data-id="${subject.id}"></td>
         <td class="text-center align-middle"><input type="text" value="${subject.hours}" class="form-control" data-id="${subject.id}"></td>
         <td class="text-center align-middle"><input type="text" value="${subject.textbookName}" class="form-control" data-id="${subject.id}"></td>
         <td class="text-center align-middle"><input type="text" value="${subject.textbookAuthor}" class="form-control" data-id="${subject.id}"></td>
+        <td class="text-center align-middle"><button class='btn btn-danger btn-icon-split btn-sm remove-subject-row-btn'><span class='text'>삭제</span></button></td>
       </tr>
     `;
         $("#subject-table").append(rowHtml);
@@ -655,6 +656,33 @@ function checkValid() {
     if ($("#name-input").val() == "") {
         showErr("#name-input", "과정명은 필수입니다.");
         result = false;
+
+    } else {
+
+        $.ajax({
+                   url: "/courseRegister/checkNameDuplicate", // 데이터가 송수신될 서버의
+                                                      // 주소
+                   type       : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                   dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                   data       : {
+                      name: $("#name-input").val()
+                   },
+                   // contentType: "application/json; charset=utf-8",
+                   // Content-Type헤더가 application/x-www-form-urlencoded;
+                   // charset=UTF-8로 자동 설정되는 것을 방지
+                   async   : false, // 비동기옵션 off
+                   success : function (data) { // 통신이 성공하면 수행할 함수
+
+                       if(data == "duplicateName"){
+                           showErr("#name-input", "중복된 과정명은 사용할 수 없습니다.")
+                           result = false;
+                       }
+                   },
+                   error   : function () {
+                   },
+                   complete: function () {
+                   }
+               });
     }
 
     if ($("#number-of-learner-input").val() == "") {

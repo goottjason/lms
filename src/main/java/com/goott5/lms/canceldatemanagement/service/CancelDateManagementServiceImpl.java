@@ -30,6 +30,8 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
   @Override
   public void saveHolidays(List<HolidayDTO> holidays) {
 
+    List<CancelDateVO> cancelDatesAllIsTrue = cancelDateManagementMapper.selectCancelDatesByIsAll();
+
     // 기존 휴강일들 받아오기
     List<CancelDateDTO> oldCancelDateDTOS = cancelDateManagementMapper.selectNowAndNextYearHolidays();
 
@@ -55,6 +57,22 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
 
       if (!isDuplicate) {
         cancelDateManagementMapper.insertHoliday(cancelDateDTO);
+
+        List<CourseVO> courseVOS = cancelDateManagementMapper.selectCoursesInProgressByDate(cancelDateDTO.getCancelDate());
+
+        for (CourseVO courseVO : courseVOS) {
+
+          CancelDateDTO oneCancelDateDTO = CancelDateDTO.builder()
+                  .isAll(false)
+                  .courseId(courseVO.getId())
+                  .isPublicHoliday(true)
+                  .cancelDate(cancelDateDTO.getCancelDate())
+                  .reason(cancelDateDTO.getReason())
+                  .build();
+
+          removeAndInsertSchedulesForSaveCancelDate(oneCancelDateDTO, cancelDatesAllIsTrue);
+        }
+
       }
 
     }
@@ -112,13 +130,13 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
     List<CancelDateVO> cancelDatesAllIsTrue = cancelDateManagementMapper.selectCancelDatesByIsAll();
 
     // 해당 날짜에 이미 개별 휴강일이 있던 강의들 조회
-    
-    cancelDateManagementMapper.deleteAllCancelDateByDate(cancelDateDTOS.get(0).getCancelDate());
 
     for (CancelDateDTO cancelDateDTO : cancelDateDTOS) {
       cancelDateManagementMapper.insertCancelDate(cancelDateDTO);
 
       if (cancelDateDTO.isAll()) { // 해당 날짜에 진행중인 과정 모두 시간표 업데이트
+
+        cancelDateManagementMapper.deleteAllCancelDateByDateExceptIsAllTrue(cancelDateDTOS.get(0).getCancelDate());
 
         List<CourseVO> courseVOS = cancelDateManagementMapper.selectCoursesInProgressByDate(
                 cancelDateDTO.getCancelDate());
@@ -161,6 +179,10 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
 
   private void removeAndInsertSchedulesForSaveCancelDate(CancelDateDTO cancelDateDTO,
           List<CancelDateVO> cancelDatesAllIsTrue) {
+
+    if(cancelDateManagementMapper.selectCountOfSchedulesByCourseAndDate(cancelDateDTO) < 1){
+      return;
+    };
 
     List<LocalDate> classDates = cancelDateManagementMapper.selectClassDates(cancelDateDTO);
 

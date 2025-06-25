@@ -12,9 +12,9 @@
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">수업 시간표</h1>
     <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
-    <div class="col d-flex justify-content-end"
-         th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
-      <form class="row col-12 mb-3">
+    <div class="col d-flex justify-content-end">
+      <form class="row col-12 mb-3"
+            th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
         <div class="col-4">
           <select id="in-progress-type" class="form-control">
             <option value="-1">진행상황별</option>
@@ -73,63 +73,7 @@
           </tr>
           </thead>
           <tbody id="schedule-table">
-          <tr>
-            <td class="text-center align-middle">1교시<p>(09:30 ~ 10:20)</p></td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-          </tr>
 
-          <tr>
-            <td class="text-center align-middle">2교시<p>(10:30 ~ 11:20)</p></td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-            <td class="text-center align-middle pt-3">
-              <p class="mb-0">백엔드 기초 Javascript</p>
-              <p>(5강의실)</p>
-              <p class="mb-0"><span>김소영</span>강사님</p>
-            </td>
-          </tr>
           </tbody>
         </table>
       </div>

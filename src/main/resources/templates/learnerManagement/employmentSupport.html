@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <style>
+    .form-group input[type="radio"][readonly],
+    .form-group input[type="radio"][readonly] + label {
+      pointer-events: none;
+    }
+  </style>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">취업 관리</h1>
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <div class="col d-flex justify-content-end">
+      <form class="row col-12 mb-3"
+            th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
+        <div class="col-3">
+          <select id="first-category" class="form-control">
+            <option value="-1">전체</option>
+            <option value="1">진행 중</option>
+            <option value="0">종료</option>
+          </select>
+        </div>
+        <div class="col">
+          <select id="second-category" class="form-control">
+            <option value="-1">전체</option>
+          </select>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <span class="h6 mr-2 font-weight-bold text-primary">취업 관리</span>
+        </div>
+        <div class="input-group col-6">
+          <div class="input-group">
+            <input id="search-input" type="text" class="form-control" placeholder="이름으로 검색하세요.">
+            <div class="input-group-append">
+              <button id="search-btn" class="btn btn-primary" type="button">
+                <i class="fas fa-search fa-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle" style="width: 10%">진행상황</th>
+            <th scope="col" class="align-middle" style="width: 45%">과정명</th>
+            <th scope="col" class="align-middle" style="width: 10%">강사</th>
+            <th scope="col" class="align-middle" style="width: 10%">교육생</th>
+            <th scope="col" class="align-middle" style="width: 15%">취업분류</th>
+            <th scope="col" class="align-middle" style="width: 10%">관리</th>
+          </tr>
+          </thead>
+          <tbody id="employment-support-list">
+
+          </tbody>
+        </table>
+
+        <nav aria-label="Page navigation example" class="col mt-4">
+          <ul id="paging-area" class="pagination justify-content-center">
+            <li class="page-item">
+              <span class="page-link">이전</span>
+            </li>
+            <li class="page-item active">
+              <span class="page-link">1</span>
+            </li>
+            <li class="page-item">
+              <span class="page-link">2</span>
+            </li>
+            <li class="page-item">
+              <span class="page-link">3</span>
+            </li>
+            <li class="page-item">
+              <span class="page-link page-move">다음</span>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+  <!-- 취업관리 모달 -->
+  <div
+        class="modal fade"
+        id="employmentModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="myModalLabel"
+        aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div id="employment-modal-header" class="modal-header card-header">
+          <h6 class="modal-title font-weight-bold text-primary" id="myModalLabel">취업
+                                                                                           관리</h6>
+          <button id="modify-employment-btn" class="btn btn-sm btn-info btn-icon-split">
+                <span class="icon text-white-50">
+                  <i class="fa fa-wrench"></i>
+                </span>
+            <span class="text">수정</span>
+          </button>
+          <button id="save-employment-btn" class="btn btn-sm btn-primary btn-icon-split">
+                <span class="icon text-white-50">
+                  <i class="fa fa-upload"></i>
+                </span>
+            <span class="text">저장</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- 취업 분류 -->
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <p>취업분류</p>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input employment-status" type="radio" name="employment-status"
+                        id="status-employed"
+                        value="EMPLOYED" readonly>
+                  <label class="form-check-label" for="status-employed">취업</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input employment-status" type="radio" name="employment-status"
+                        id="status-unemployed"
+                        value="UNEMPLOYED" readonly>
+                  <label class="form-check-label" for="status-unemployed">취업준비중</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input employment-status" type="radio" name="employment-status"
+                        id="status-studying"
+                        value="STUDYING" readonly>
+                  <label class="form-check-label" for="status-studying">학업</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input employment-status" type="radio" name="employment-status"
+                        id="status-not-seeking-job"
+                        value="NOT_SEEKING_JOB" readonly>
+                  <label class="form-check-label" for="status-not-seeking-job">취업의사없음</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 취업 업체 -->
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <p class="mb-1">취업업체 정보</p>
+              <div class="form-group row">
+                <div class="col-4">
+                  <label for="company-name" class="small">업체명</label>
+                  <input type="text" id="company-name" class="form-control" value="" readonly>
+                </div>
+                <div class="col-4">
+                  <label for="company-phone" class="small">업체전화번호</label>
+                  <input type="text" id="company-phone" class="form-control" value="" readonly>
+                </div>
+                <div class="col-4">
+                  <label for="company-address" class="small">주소</label>
+                  <input type="text" id="company-address" class="form-control" value="" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <!-- 상담 유무 -->
+            <div class="col-md-3">
+              <div class="form-group">
+                <p>상담유무</p>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input is-counseling-received" type="radio"
+                        name="is-counseling-received"
+                        id="counseling-received"
+                        value="1" readonly>
+                  <label class="form-check-label" for="counseling-received">유</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input
+                        class="form-check-input is-counseling-received" type="radio" name="is-counseling-received"
+                        id="not-counseling-received"
+                        value="0" readonly>
+                  <label class="form-check-label" for="not-counseling-received">무</label>
+                </div>
+              </div>
+            </div>
+            <!-- 메모 -->
+            <div class="col-md-9">
+              <div class="form-group">
+                <label for="counseling-details">메모</label>
+                <input type="text" id="counseling-details" class="form-control"
+                       value="" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const loginUser = [[${session.loginUser}]];
+  </script>
+  <script th:src="@{/js/learnerManagement/employmentSupport.js}" type="text/javascript"></script>
+
+</th:block>
+</body>
+</html>

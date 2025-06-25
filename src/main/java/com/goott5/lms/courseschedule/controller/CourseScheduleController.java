@@ -63,4 +63,13 @@ public class CourseScheduleController {
     return courseScheduleService.getCoursesByUser((UserVO)session.getAttribute("loginUser"));
   }
 
+  @GetMapping("/getCourseByIdAndUser")
+  @ResponseBody
+  public CourseVO getCourseByIdAndUser(int courseId, HttpSession session) {
+
+    UserVO loginUser =  (UserVO)session.getAttribute("loginUser");
+
+    return courseScheduleService.getCourseByIdAndUser(courseId, loginUser);
+  }
+
 }

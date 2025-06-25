@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.employmentsupport.mapper.EmploymentSupportMapper">
+
+  <select id="selectCoursesByInProgress" resultType="com.goott5.lms.employmentsupport.domain.CourseVO">
+
+    select id, name from course
+
+    <if test="inProgressType != -1">
+
+      where is_in_progress = #{inProgressType}
+
+    </if>
+
+    order by is_in_progress desc, end_date desc
+
+  </select>
+
+  <select id="selectCoursesByInProgressAndLoginUser" resultType="com.goott5.lms.employmentsupport.domain.CourseVO">
+
+    select c.id, c.name from course c join staff_assignment sa on c.id = sa.course_id join user u on u.id = sa.user_id
+
+    where u.id = #{loginUser.id}
+
+    <if test="inProgressType != -1">
+
+      and is_in_progress = #{inProgressType}
+
+    </if>
+
+    order by c.is_in_progress desc, c.end_date desc
+
+  </select>
+
+  <select id="selectEmploymentList" resultType="com.goott5.lms.employmentsupport.domain.CustomEmploymentVO">
+
+    select es.id, c.is_in_progress, c.name, instructor.fullname as instructor_fullname, learner.fullname as learner_fullname, es.employment_status
+    from course c join staff_assignment sa on sa.course_id = c.id
+    join user instructor on instructor.id = sa.user_id and instructor.type = 'INSTRUCTOR'
+    join learner_enrollment le on le.course_id = c.id
+    join user learner on learner.id = le.user_id
+    join employment_support es on es.learner_enrollment_id = le.id
+
+    <where>
+      <choose>
+        <when test="categorizeType == 1">
+          c.is_in_progress = #{firstCategory}
+        </when>
+        <when test="categorizeType == 2">
+          c.id = #{secondCategory}
+        </when>
+      </choose>
+      <if test="isWithSearch">
+        and learner.fullname like concat('%', #{keyword}, '%')
+      </if>
+    </where>
+    order by c.is_in_progress desc, c.end_date desc
+    limit #{skip}, #{pagingSize}
+
+  </select>
+
+  <select id="selectCountOfEmployment" resultType="int">
+
+    select count(*)
+    from course c join staff_assignment sa on sa.course_id = c.id
+    join user instructor on instructor.id = sa.user_id and instructor.type = 'INSTRUCTOR'
+    join learner_enrollment le on le.course_id = c.id
+    join user learner on learner.id = le.user_id
+    join employment_support es on es.learner_enrollment_id = le.id
+
+    <where>
+      <choose>
+        <when test="categorizeType == 1">
+          c.is_in_progress = #{firstCategory}
+        </when>
+        <when test="categorizeType == 2">
+          c.id = #{secondCategory}
+        </when>
+      </choose>
+      <if test="isWithSearch">
+        and learner.fullname like concat('%', #{keyword}, '%')
+      </if>
+    </where>
+
+  </select>
+
+</mapper>

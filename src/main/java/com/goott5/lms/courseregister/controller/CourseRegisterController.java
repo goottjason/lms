@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/courseRegister")
@@ -58,12 +59,25 @@ public class CourseRegisterController {
   }
 
   @PostMapping("/saveCourse")
-  @ResponseBody
-  public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO) {
+  public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO, RedirectAttributes redirectAttributes) {
 
     log.info("courseSaveDTO = {}", courseSaveDTO);
-    courseRegisterService.saveCourse(courseSaveDTO);
-    return "success";
+    boolean isSuccess = courseRegisterService.saveCourse(courseSaveDTO);
+    redirectAttributes.addFlashAttribute("isSaveSuccess", isSuccess);
+    return "redirect:/courseManagement/courseList";
+  }
+
+  @GetMapping("/checkNameDuplicate")
+  @ResponseBody
+  public String checkNameDuplicate(String name) {
+
+    log.info("name = {}", name);
+    boolean isDuplicate = courseRegisterService.checkNameDuplicate(name);
+    if(isDuplicate) {
+      return "duplicateName";
+    } else {
+      return "availableName";
+    }
   }
 
 

@@ -51,6 +51,16 @@ public class CourseScheduleServiceImpl implements CourseScheduleService {
     return courseScheduleMapper.selectcoursesByUser(loginUser);
   }
 
+  @Override
+  public CourseVO getCourseByIdAndUser(int courseId, UserVO loginUser) {
+
+    if(isGeneralManager(loginUser)){
+      return courseScheduleMapper.selectCourseById(courseId);
+    }
+
+    return courseScheduleMapper.selectCourseByIdAndUser(courseId, loginUser);
+  }
+
   public boolean isGeneralManager(UserVO loginUser){
 
 //    if ("LEARNER".equals(loginUser.getType()) || "INSTRUCTOR".equals(loginUser.getType())) {

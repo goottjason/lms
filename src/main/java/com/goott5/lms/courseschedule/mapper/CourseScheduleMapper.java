@@ -29,4 +29,10 @@ public interface CourseScheduleMapper {
   List<ScheduleVO> selectCourseSchedulesByWeek(ScheduleRequestDTO scheduleRequestDTO);
 
   List<CourseVO> selectcoursesByUser(UserVO loginUser);
+
+  @Select("select id, is_in_progress, name, number_of_learner, start_date, end_date, total_hours, total_days, daily_hours, break_time, lesson_start_time, lesson_end_time, lunch_start_time, lunch_end_time from course where id = #{courseId}")
+  CourseVO selectCourseById(int courseId);
+
+  @Select("select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c join staff_assignment sa on c.id = sa.course_id where sa.course_id = #{courseId} and sa.user_id = #{loginUser.id}")
+  CourseVO selectCourseByIdAndUser(@Param("courseId") int courseId, @Param("loginUser") UserVO loginUser);
 }
