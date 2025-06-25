@@ -20,7 +20,8 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="POST" action="/homework/homeworkModify" id="formSubmit" enctype="multipart/form-data">
+  <form class="mb-4" method="POST" action="/homework/homeworkModify" id="formSubmit"
+        enctype="multipart/form-data">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -35,7 +36,8 @@
             <div class="form-group">
               <label for="title">제목</label>
               <span id="titleError" style="color: red"></span>
-              <input type="text" id="title" class="form-control" name="title" th:value="${homeworkDTO.getTitle()}">
+              <input type="text" id="title" class="form-control" name="title"
+                     th:value="${homeworkDTO.getTitle()}">
             </div>
           </div>
         </div>
@@ -45,14 +47,16 @@
             <div class="form-group">
               <label for="startDate">제출기간 시작</label>
               <span id="startDateError" style="color: red"></span>
-              <input type="datetime-local" id="startDate" class="form-control" name="startDate" th:value="${homeworkDTO.getStartDate()}">
+              <input type="datetime-local" id="startDate" class="form-control" name="startDate"
+                     th:value="${homeworkDTO.getStartDate()}">
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
               <label for="endDate">제출기한 종료</label>
               <span id="endDateError" style="color: red"></span>
-              <input type="datetime-local" id="endDate" class="form-control" name="endDate" th:value="${homeworkDTO.getEndDate()}">
+              <input type="datetime-local" id="endDate" class="form-control" name="endDate"
+                     th:value="${homeworkDTO.getEndDate()}">
             </div>
           </div>
         </div>
@@ -68,7 +72,7 @@
                   style="min-height: 280px; white-space: pre-wrap;"
                   wrap="hard"
                   name="content"
-              th:text="${homeworkDTO.getContent()}"></textarea>
+                  th:text="${homeworkDTO.getContent()}"></textarea>
             </div>
           </div>
         </div>
@@ -77,36 +81,67 @@
             <div class="mb-2">첨부파일</div>
             <div class="custom-file">
               <input type="file" class="custom-file-input" id="files" multiple>
-              <label class="custom-file-label" for="files" >파일을 선택하세요.</label>
+              <label class="custom-file-label" for="files">파일을 선택하세요.</label>
             </div>
 
             <!--기존에 저장했던 파일 불러오기(x버튼 누르면 해당 파일 db에서 삭제할 리스트에 추가)-->
-            <th:block th:if="${beforeFileList != null}">
-              <div class="col-4 card mb-2" th:each="fileDTO : ${beforeFileList}">
-                <div class="row g-0 m-0">
-                  <div class="col-md-3 pl-2">
-                    <img
-                        th:src="@{/img/no-image.jpg}"
-                        class="img-fluid rounded-start"
-                        style="width: 60px; object-fit: cover;">
-                  </div>
-                  <div class="col-md-9 d-flex align-items-center">
-                    <div class="card-body p-0" style="position: relative;">
-                      <span style="position: absolute; right: 1px; top: 1px"
-                            th:class="softDeleteFile"
-                            th:data-file="${fileDTO.getId()}">X</span>
-                      <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
-                         th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
+            <!--조회된 파일 리스트가 있을 경우-->
+            <div class="card-footer">
+              <p class="mt-2">기존 파일</p>
+              <!--      <div class="row">-->
+              <div class="d-flex flex-column">
+
+                <th:block th:if="${beforeFileList != null}">
+                  <div class="col-4 card mb-2 mt-2" th:each="fileDTO : ${beforeFileList}">
+                    <div class="row g-0 m-0">
+
+                      <div class="col-md-9 d-flex align-items-center">
+                        <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}"
+                             style="position: relative;padding-right: 24px;">
+                  <span style="position: absolute; top: 1px; right: 2px;"
+                        th:class="softDeleteFile"
+                        th:data-file="${fileDTO.getId()}">X</span>
+                          <a class="card-title mb-1 text-truncate d-block"
+                             style="margin-right: 28px;" th:href="${fileDTO.getPath()}"
+                             th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
+                        </div>
+                        <div class="card-body p-0" th:if="${fileDTO.getIsImage()}"
+                             style="position: relative;">
+                    <span style="position: absolute; right: 1px; top: 1px"
+                          th:class="softDeleteFile"
+                          th:data-file="${fileDTO.getId()}">X</span>
+                          <a th:href="${fileDTO.getPath()}"
+                             th:data-file="${fileDTO.getNewName()}"
+                             th:attr="download=${fileDTO.getOriginalName()}">
+                            <img th:src="${fileDTO.getPath()}"
+                                 style="width: 300px; height: 100px; object-fit: cover;">
+                          </a>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
-                </div>
+                </th:block>
+
               </div>
-            </th:block>
+            </div>
+
+            <!--preview 단-->
+            <div class="card-footer">
+              <p class="mt-2">추가할 파일</p>
+              <div class="row">
+
+                <div id="preview"></div>
+
+              </div>
+            </div>
 
           </div>
         </div>
       </div>
     </div>
+
+
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
       <button id="submit" class="btn btn-primary btn-icon-split mr-2">
@@ -134,43 +169,114 @@
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
 
+    //---------파일 삭제 -------------------------
     // 삭제할 파일 리스트
     let deleteFileList = [];
     let fileList = [];
     const MAX_FILE_SIZE = 1024 * 1024 * 8;
 
     // 파일 삭제 function
-    function softDeleteFile(x){
+    function softDeleteFile(x) {
       // alert($(this).data("file"));
       $(x).parent().parent().parent().parent().remove();
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
-      console.log("deleteFileList",deleteFileList);
-      console.log("아이디 타입 확인",typeof($(x).data("file"))); //number
+      console.log("deleteFileList", deleteFileList);
+      console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
     }
 
-    //파일 넣는 function
-    function pushFileLIst(){
-      let files = document.getElementById("files").files;
-      fileList = [];
+    //---------파일 새로 넣기---------------
 
-      for(let file of files){
-        if(file){
+    //파일 넣는 function
+    function pushFileList() {
+      let files = document.getElementById("files").files;
+
+      for (let file of files) {
+        if (file) {
           //파일일 경우
-          if(file.size > MAX_FILE_SIZE){
+          if (file.size > MAX_FILE_SIZE) {
             alert("파일 사이즈가 초과하였습니다.");
-          }else{
+          } else {
             fileList.push(file);
-            console.log("file push",file);
+            console.log("file push", file);
           }
         }
       }
     }
 
+    //프리뷰
+    function previewFile(fileList) {
+      $("#preview").empty();
 
+      if (fileList != null) {
+        fileList.forEach(function (file, index) {
+          if (file.type.indexOf("image/") === -1) {
+            console.log("이미지 아님");
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (e) {
+              // 읽기 동작이 완료되었을 때!
+              let output = "";
+              output += `<div class="card mb-2 w-100">
+    <div class="row g-0 m-0">
+      <div class="col-md-9 d-flex align-items-center" style="position: relative;  padding-right: 24px;">
+        <div class="card-body p-0" style="position: relative; min-height: 100px;">
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" href="#">${file.name}</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+              $("#preview").append(output);
+            }
+
+          } else {
+            console.log("이미지 맞음");
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (e) {
+              // 읽기 동작이 완료되었을 때!
+              //e: 이미지 경로? data:image/....
+              //console.log("e.target.result", e.target.result); //엄청 길게 나옴
+              let output = "";
+              output += `<div class="card mb-2 w-100">
+    <div class="row g-0 m-0">
+      <div class="col-md-9 d-flex align-items-center">
+        <div class="card-body p-0" style="position: relative; min-height: 100px;">
+          <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;"
+             href="${e.target.result}"
+             download="${file.name}">
+            <img src="${e.target.result}"
+                 style="width: 300px; height: 100px; object-fit: cover;">
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+              $("#preview").append(output);
+            }
+          }
+        })
+      }
+      console.log("fileList", fileList);
+    }
+
+    //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
+    function removeFile(index) {
+      fileList.splice(index, 1);
+      previewFile(fileList);
+      console.log("fileList", fileList);
+    }
+
+    //-------$function----------------------
+
+    //$function 모음
     $(function () {
 
       let prevUrl = localStorage.getItem("sessionSaveUrl");
-      console.log("prevUrl",prevUrl);
+      console.log("prevUrl", prevUrl);
 
       // db에서 삭제할 파일id 배열에 담기
       $(".softDeleteFile").click(function () {
@@ -180,30 +286,34 @@
       // 새로운 파일 리스트에 넣기
       $("#files").change(function () {
         //파일 사이즈
-        pushFileLIst();
+        pushFileList();
+        previewFile(fileList);
       })
 
+
+
+      //-------------------폼 전송---------------------
+
       // 폼 전송
-      $("#submit").on("click",function (e) {
+      $("#submit").on("click", function (e) {
         e.preventDefault();
         let form = document.getElementById("formSubmit");
         let formData = new FormData(form);
 
         let homeworkId = [[${homeworkId}]];
 
-        formData.append("homeworkId",homeworkId);
+        formData.append("homeworkId", homeworkId);
 
         //updateAt
         let updatedAt = new Date().toISOString();
-        formData.append("updatedAt",updatedAt);
-
+        formData.append("updatedAt", updatedAt);
 
         fileList.forEach(function (file) {
-          formData.append("files",file);
+          formData.append("files", file);
         })
 
         deleteFileList.forEach(function (file) {
-          formData.append("deleteFiles",file); // id
+          formData.append("deleteFiles", file); // id
         })
 
         for (let [key, value] of formData.entries()) {
@@ -212,52 +322,49 @@
 
         axios.post("/homework/homeworkModify",
             formData
-        ).then(function(response){
+        ).then(function (response) {
           console.log(response)
           // location.href = "/homework/homeworkList";
           // window.history.go(-2); // 두 단계 뒤로 이동
           savePage = localStorage.getItem("savePage");
-          if(savePage && savePage !== "undefined" && savePage.trim() !== ""){
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
             // console.log("savePage",savePage);
             location.href = savePage;
-          }else{
+          } else {
             // console.log("savePage",savePage);
             location.href = "/homework/homeworkList";
           }
         }).catch(function (error) {
-          console.log("API 요청 실패",error);
+          console.log("API 요청 실패", error);
           errorMap = error.response.data.data;
-          console.log("errorMap",errorMap);
+          console.log("errorMap", errorMap);
 
-          if(errorMap.title){
+          if (errorMap.title) {
             $("#titleError").html(errorMap.title);
           } else {
             $("#titleError").html("");
           }
 
-          if(errorMap.startDate){
+          if (errorMap.startDate) {
             $("#startDateError").html(errorMap.startDate);
-          }else {
+          } else {
             $("#startDateError").html("");
           }
 
-          if(errorMap.endDate){
+          if (errorMap.endDate) {
             $("#endDateError").html(errorMap.endDate);
-          }else {
+          } else {
             $("#endDateError").html("");
           }
 
-          if(errorMap.content){
+          if (errorMap.content) {
             $("#contentError").html(errorMap.content);
-          }else {
+          } else {
             $("#contentError").html("");
           }
 
         })
       })
-
-
-
 
     });
 

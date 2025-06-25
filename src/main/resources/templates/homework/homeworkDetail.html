@@ -215,6 +215,15 @@
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
     let homeworkId = [[${homework.getId()}]];
+    let homeworkIdNull = /*[[${homeworkIdNull}]]*/ null;
+
+    // homeworkId가 null일때
+    function homeworkIdNullCheck(){
+      if(homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim() !== ""){
+        alert(homeworkIdNull);
+        location.href = "/homework/homeworkList";
+      }
+    }
 
     // 등록 버튼
     function registerBtn(){
@@ -222,6 +231,8 @@
     }
 
     $(function () {
+
+      homeworkIdNullCheck();
 
       // 삭제 모달창 뜨기
       $("#deleteHomework").on("click", function () {
@@ -247,7 +258,13 @@
             location.href = "/homework/homeworkList";
           }
         }).catch(function (error) {
+          let msg = error.response.data.message;
+          let errorCode = error.response.data.code;
           console.log(error);
+          alert(msg);
+          if (errorCode === 400) {
+            location.href = "/homework/homeworkList";
+          }
         })
       })
 

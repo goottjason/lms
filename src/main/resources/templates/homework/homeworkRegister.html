@@ -81,8 +81,22 @@
             </div>
           </div>
         </div>
+
+        <!--preview 단-->
+        <div class="card-footer">
+          <p class="mt-2">추가할 파일</p>
+          <div class="row">
+
+            <div id="preview"></div>
+
+          </div>
+        </div>
+
       </div>
     </div>
+
+
+
       <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
       <button id="submit" class="btn btn-primary btn-icon-split mr-2" type="submit">
@@ -125,9 +139,8 @@
     let fileList = [];
 
     //파일 넣는 function
-    function pushFileLIst(){
+    function pushFileList(){
       let files = document.getElementById("file").files;
-      fileList = [];
 
       for(let file of files){
         if(file){
@@ -141,15 +154,82 @@
 
         }
       }
-
     }
 
+    //프리뷰
+    function previewFile(fileList) {
+      $("#preview").empty();
 
+      if (fileList != null) {
+        fileList.forEach(function (file, index) {
+          if (file.type.indexOf("image/") === -1) {
+            console.log("이미지 아님");
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (e) {
+              // 읽기 동작이 완료되었을 때!
+              let output = "";
+              output += `<div class="card mb-2 w-100">
+    <div class="row g-0 m-0">
+      <div class="col-md-9 d-flex align-items-center" style="position: relative;  padding-right: 24px;">
+        <div class="card-body p-0" style="position: relative; min-height: 100px;">
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" href="#">${file.name}</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+              $("#preview").append(output);
+            }
+
+          } else {
+            console.log("이미지 맞음");
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (e) {
+              // 읽기 동작이 완료되었을 때!
+              //e: 이미지 경로? data:image/....
+              //console.log("e.target.result", e.target.result); //엄청 길게 나옴
+              let output = "";
+              output += `<div class="card mb-2 w-100">
+    <div class="row g-0 m-0">
+      <div class="col-md-9 d-flex align-items-center">
+        <div class="card-body p-0" style="position: relative; min-height: 100px;">
+          <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;"
+             href="${e.target.result}"
+             download="${file.name}">
+            <img src="${e.target.result}"
+                 style="width: 300px; height: 100px; object-fit: cover;">
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+              $("#preview").append(output);
+            }
+          }
+        })
+      }
+      console.log("fileList", fileList);
+    }
+
+   //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
+    function removeFile(index) {
+      fileList.splice(index, 1);
+      previewFile(fileList);
+      console.log("fileList", fileList);
+    }
+
+    // $function 모음
     $(function(){
 
       // file input될 때 마다 file 담기
       $("#file").on("change",function () {
-        pushFileLIst();
+        pushFileList();
+        previewFile(fileList);
       })
 
       // 폼 전송

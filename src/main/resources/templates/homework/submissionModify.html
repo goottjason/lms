@@ -77,19 +77,13 @@
         <th:block th:if="${beforeFiles != null}">
           <div class="col-4 card mb-2" th:each="fileDTO : ${beforeFiles}">
             <div class="row g-0 m-0">
-              <div class="col-md-3 pl-2">
-                <img
-                        th:src="@{/img/no-image.jpg}"
-                        class="img-fluid rounded-start"
-                        style="width: 60px; object-fit: cover;">
-              </div>
 
               <div class="col-md-9 d-flex align-items-center">
-                <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}" style="position: relative;">
-                  <span style="position: absolute; right: 1px; top: 1px"
+                <div class="card-body p-0"  th:unless="${fileDTO.getIsImage()}" style="position: relative;padding-right: 24px;">
+                  <span style="position: absolute; top: 1px; right: 2px;"
                         th:class="softDeleteFile"
                         th:data-file="${fileDTO.getId()}">X</span>
-                  <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
+                  <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" th:href="${fileDTO.getPath()}"
                      th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
                 </div>
                 <div class="card-body p-0" th:if="${fileDTO.getIsImage()}" style="position: relative;">
@@ -158,20 +152,20 @@
     // 삭제할 파일 리스트
     let deleteFileList = [];
 
-    // 파일 삭제 function
+    // 삭제할 파일 배열에 담기 + 조회 리스트에서 삭제
     function softDeleteFile(x){
       // alert($(this).data("file"));
-      $(x).parent().parent().parent().parent().remove();
+      $(x).parent().parent().parent().parent().remove(); //기존 파일 조회 리스트에서 삭제
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
       console.log("deleteFileList",deleteFileList);
       console.log("아이디 타입 확인",typeof($(x).data("file"))); //number
     }
 
 
-    //--------파일--------------------
+    //-------- 새로 넣을 파일--------------------
     let fileList = [];
 
-    const MAX_DILE_SIZE = 1024 * 1024 * 8;
+    const MAX_FILE_SIZE = 1024 * 1024 * 8;
 
     //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
     function removeFile(index) {
@@ -186,25 +180,19 @@
 
       if (fileList != null) {
         fileList.forEach(function (file, index) {
-          if (file.type.indexOf("image") === -1) {
+          if (file.type.indexOf("image/") === -1) {
             console.log("이미지 아님");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
               // 읽기 동작이 완료되었을 때!
               let output = "";
-              output += output += `<div class="card mb-2 w-100">
+              output += `<div class="card mb-2 w-100">
     <div class="row g-0 m-0">
-      <div class="col-md-3 pl-2">
-        <img
-          src="/img/no-image.jpg"
-          class="img-fluid rounded-start"
-          style="width: 60px; height: 60px; object-fit: cover;">
-      </div>
-      <div class="col-md-9 d-flex align-items-center">
+      <div class="col-md-9 d-flex align-items-center" style="position: relative;  padding-right: 24px;">
         <div class="card-body p-0" style="position: relative; min-height: 100px;">
           <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate" href="#">${file.name}</a>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" href="#">${file.name}</a>
         </div>
       </div>
     </div>
@@ -224,16 +212,10 @@
               let output = "";
               output += `<div class="card mb-2 w-100">
     <div class="row g-0 m-0">
-      <div class="col-md-3 pl-2">
-        <img
-          src="/img/no-image.jpg"
-          class="img-fluid rounded-start"
-          style="width: 60px; height: 60px; object-fit: cover;">
-      </div>
       <div class="col-md-9 d-flex align-items-center">
         <div class="card-body p-0" style="position: relative; min-height: 100px;">
-          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate"
+          <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
+          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;"
              href="${e.target.result}"
              download="${file.name}">
             <img src="${e.target.result}"
@@ -255,7 +237,7 @@
     //파일 넣을 때  사이즈 크면 막고 아니면 넣기
     function checkFileSize(files) {
       for (let file of files) { //유사배열?
-        if (file.size > MAX_DILE_SIZE) {
+        if (file.size > MAX_FILE_SIZE) {
           alert("8MB를 초과할 수 없습니다.")
         } else {
           fileList.push(file);
@@ -307,18 +289,6 @@
             $("#titleError").html(errorMap.title);
           } else {
             $("#titleError").html("");
-          }
-
-          if(errorMap.startDate){
-            $("#startDateError").html(errorMap.startDate);
-          }else {
-            $("#startDateError").html("");
-          }
-
-          if(errorMap.endDate){
-            $("#endDateError").html(errorMap.endDate);
-          }else {
-            $("#endDateError").html("");
           }
 
           if(errorMap.content){

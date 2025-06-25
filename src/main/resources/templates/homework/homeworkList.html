@@ -481,6 +481,7 @@
 
         // 전 페이지 세션에 저장(session 패키지와 연동)
         function prevPage(link) {
+            //현재 페이지를 저장 + link된 url로 이동
             let savePage = location.href;
             localStorage.setItem("savePage", savePage);
             console.log("저장된 savePage:", savePage);
@@ -614,7 +615,14 @@
                 }).catch(function (error) {
                     console.log(error);
                     //location.href = error.response.data.data;
-                    alert(error.response.data.message);
+                    let msg = error.response.data.message;
+                    let errorCode = error.response.data.code;
+                    alert(msg);
+                    if(errorCode === 401){
+                        location.href = "/";
+                    }else if(errorCode === 400){
+                        location.href = "/homework/homeworkList";
+                    }
                 })
 
             })

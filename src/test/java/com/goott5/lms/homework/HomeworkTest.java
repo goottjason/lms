@@ -30,15 +30,6 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 class HomeworkTest {
 
 
-  @Value("${cloud.aws.s3.bucketName}")
-  private String bucket;
-  @Value("${cloud.aws.credentials.accessKey}")
-  private String accessKey;
-  @Value("${cloud.aws.credentials.secretKey}")
-  private String secretKey;
-  @Value("${cloud.aws.region.static}")
-  private String region;
-
 
 
 
@@ -51,8 +42,6 @@ class HomeworkTest {
   @Autowired(required = true)
   ReadCountLogMapper readCountLogMapper;
 
-  @Autowired(required = true)
-//  S3Client s3Client;
 
 
   @Test
@@ -302,6 +291,16 @@ class HomeworkTest {
   }
 
   @Test
+  public void testDeleteHomeworkIsSubmissionExist(){
+   boolean result = homeworkMapper.selectHomeworkSubmissionIdByHomework(48);
+   if(result){
+     log.info("submission exist");
+   } else {
+     log.info("submission not exist");
+   }
+  }
+
+  @Test
   @Transactional(rollbackFor = Exception.class)
   public void testReadCount(){
     // 사용자 A가 처음으로 상세페이지 B에 접근했을 때
@@ -463,35 +462,24 @@ class HomeworkTest {
 
    }
 
-//
-//   @Test
-//   @Transactional
-//  public void testFile(){
-//
-//     //파일 삭제(일단 보류)
-//
-////        s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
-//
-//     String result = "";
-////       boolean isObjectExist = s3Client.headObject()
-////       if (isObjectExist) {
-////         s3Client.deleteObject(bucket, key);
-////       } else {
-////         result = "file not found";
-////       }
-////     } catch (Exception e) {
-////       log.debug("Delete File failed", e);
-////     }
-//
-//     HeadObjectResponse response = s3Client
-//         .headObject(builder -> builder.bucket(bucket).key("upload/homework/c7d3b29a-f5ad-44c6-a16f-94a902fab694_thumb_25df04b0-ec3b-417a-831c-9940d238ce85_1709801344_tmp콘다_이력서_양식.jpg"));
-//
-//     if(response != null){
-//       log.info("response:{}",response);
-//     } else {
-//       log.info("response is null");
-//     }
-//
-//
-//   }
+
+   @Test
+   @Transactional
+   public void updateSubmission(){
+    HomeworkEvalModifyDTO homeworkEvalModifyDTO = HomeworkEvalModifyDTO.builder()
+        .id(3)
+        .isPass(true)
+        .content("수고하셨습니다~")
+        .updatedAt(LocalDateTime.now())
+        .build();
+
+    int updateNum = homeworkMapper.updateEval(homeworkEvalModifyDTO);
+    if(updateNum == 1){
+      log.info("update success");
+    } else {
+      log.info("update fail");
+    }
+
+
+   }
 }
