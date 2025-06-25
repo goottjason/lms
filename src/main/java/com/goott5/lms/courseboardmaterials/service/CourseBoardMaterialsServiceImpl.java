@@ -73,21 +73,44 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
     // 고정글 목록을 조회
     List<CourseBoardMaterialsPageDTO> pinnedList = courseBoardMaterialsMapper.selectAllFixedPosts(courseBoardMaterialsPagingRequestDTO);
 
+    final String keyword = courseBoardMaterialsPagingRequestDTO.getKeyword();
+
+    // 검색어가 존재하고 비어있지 않을 경우에만 고정글 리스트를 필터링
+    if (keyword != null && !keyword.trim().isEmpty()) {
+      final String type = courseBoardMaterialsPagingRequestDTO.getType();
+
+      // Java Stream API를 사용하여 필터링 수행
+      pinnedList = pinnedList.stream()
+          .filter(post -> {
+            // 검색 타입이 지정되지 않았다면 제목과 작성자 모두에서 검색
+            boolean contentMatch = type.contains("c") && post.getContent() != null && post.getContent().contains(keyword);
+
+            if (type == null || type.trim().isEmpty()) {
+              boolean titleMatch = post.getTitle() != null && post.getTitle().contains(keyword);
+              boolean writerMatch = post.getWriterName() != null && post.getWriterName().contains(keyword);
+              return titleMatch || writerMatch || contentMatch;
+            }
+
+            // 검색 타입이 지정되었다면 해당 타입에 맞게 검색
+            boolean titleMatch = type.contains("t") && post.getTitle() != null && post.getTitle().contains(keyword);
+            boolean writerMatch = type.contains("w") && post.getWriterName() != null && post.getWriterName().contains(keyword);
+
+
+            return titleMatch || writerMatch || contentMatch;
+          })
+          .collect(java.util.stream.Collectors.toList());
+    }
 
     // 일반글 목록을 조회
     List<CourseBoardMaterialsVO> regularPostVOs = courseBoardMaterialsMapper.selectListWithSearch(courseBoardMaterialsPagingRequestDTO);
 
-
-    // 뷰에 전달할 DTO를 담을 새로운 빈 리스트를 생성
     List<CourseBoardMaterialsPageDTO> regularPostDTOs = new ArrayList<>();
-
-
     for (CourseBoardMaterialsVO vo : regularPostVOs) {
       CourseBoardMaterialsPageDTO dto = CourseBoardMaterialsPageDTO.builder()
           .id(vo.getId())
           .title(vo.getTitle())
           .content(vo.getContent())
-          .courseId(vo.getCourseId()) // VO에 courseId 필드가 있다면 추가
+          .courseId(vo.getCourseId())
           .courseName(vo.getCourseName())
           .writerName(vo.getWriterName())
           .readCount(vo.getReadCount())
@@ -100,17 +123,15 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       regularPostDTOs.add(dto);
     }
 
-
-    // 페이지네이션 계산을 위해 '일반글'의 총 개수만 조회합니다.
     int totalCount = courseBoardMaterialsMapper.selectTotalCountWithSearch(courseBoardMaterialsPagingRequestDTO);
 
 
     // 최종 결과를 ResponseDTO에 담아 반환합니다.
     return CourseBoardMaterialsPagingResponseDTO.<CourseBoardMaterialsPageDTO>allInfo()
         .courseBoardMaterialsPagingRequestDTO(courseBoardMaterialsPagingRequestDTO)
-        .pinnedList(pinnedList)         // 고정글 목록 설정
-        .dtoList(regularPostDTOs)       // 변환된 '일반글' DTO 목록 설정
-        .total(totalCount)              // '일반글' 기준으로 페이지네이션
+        .pinnedList(pinnedList)         // << 필터링이 적용된 고정글 목록
+        .dtoList(regularPostDTOs)
+        .total(totalCount)
         .build();
   }
 

@@ -5,7 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div layout:fragment="content">
@@ -88,28 +88,28 @@
     <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;" th:text="*{content}">
       여기에 내용이 들어옵니다~~~
     </div>
-    <!-- 첨부 파일 -->
+    <!-- 첨부 파일1 -->
     <div class="card-footer">
       <p class="mt-2">첨부파일</p>
       <div class="row">
         <th:block th:if="${fileDTOList != null}">
           <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
-              <div class="col-md-3 pe-0">
+              <div class="col-md-3 pl-2">
                 <th:block th:if="${fileDTO.getIsImage()}">
-                  <a th:href="${fileDTO.path}" target="_blank">
-                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 50px; height: 70px; object-fit: cover;">
-                  </a>
+                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
                 </th:block>
 
                 <th:block th:unless="${fileDTO.getIsImage()}">
-                  <a th:href="${fileDTO.path}">
                     <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start" style="width: 100px; height: 70px; object-fit: cover;">
-                  </a>
                 </th:block>
               </div>
               <div class="col-md-9 d-flex align-items-center ps-2">
-                <a class="card-title mb-0 text-truncate" th:text="${fileDTO.originalName}" th:href="${fileDTO.path}">첨부파일123.pdf</a>
+                <a class="card-title mb-0 text-truncate"
+                   th:text="${fileDTO.originalName}"
+                   th:href="@{/download(fileId=${fileDTO.id})}">
+                  첨부파일123.pdf
+                </a>
               </div>
             </div>
           </div>
@@ -227,19 +227,24 @@
           console.log("2. 가져온 게시글 ID:", materialId);
 
           if (!materialId) {
-            alert('게시글 ID를 찾을 수 없습니다.');
+            Swal.fire({
+              title: '게시글 ID를 찾을 수 없습니다.',
+              icon: "warning"
+            });
             return;
           }
 
           axios.delete(`/courseBoardMaterials/${materialId}`)
           .then(response => {
             $('#deleteConfirmModal').modal('hide'); // 모달 닫기
-            alert(response.data.message || '삭제되었습니다.');
-            location.href = '/courseBoardMaterials/materialsList';
+            Swal.fire(response.data.message || '삭제되었습니다.').then(()=>{location.href = '/courseBoardMaterials/materialsList'});
           })
           .catch(error => {
             $('#deleteConfirmModal').modal('hide'); // 모달 닫기
-            alert('삭제 처리 중 오류가 발생했습니다.');
+            Swal.fire({
+              title: '삭제 처리 중 오류가 발생했습니다.',
+              icon: "error"
+            });
             console.error(error);
           });
         });

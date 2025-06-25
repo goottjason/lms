@@ -179,7 +179,7 @@
     parameterType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingRequestDTO"
     resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPageDTO">
     SELECT
-    cn.id, cn.title, cn.is_fixed, cn.created_at, cn.read_count, cn.deleted_at,
+    cn.id, cn.title, cn.content, cn.is_fixed, cn.created_at, cn.read_count, cn.deleted_at,
     c.name AS courseName,
     u.fullname AS writerName,
     CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached

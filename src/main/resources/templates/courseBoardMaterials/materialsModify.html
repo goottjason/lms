@@ -5,7 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div layout:fragment="content">
@@ -147,21 +147,22 @@
 
             // 서버 응답 코드(code)가 200 (성공)일 경우
             if (response.data.code === 200) {
-              alert(response.data.message); // "수정 완료" 메시지를 알림창으로 띄웁니다.
+              Swal.fire(response.data.message).then(()=>{location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`});
 
               // 응답 데이터에 포함된 게시글 ID(id)를 가져옵니다.
               const materialId = response.data.data.id;
 
-              // 수정된 게시글의 상세 페이지로 이동합니다.
-              location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`;
             } else {
               // 성공이 아닐 경우 서버가 보낸 에러 메시지를 띄웁니다.
-              alert('수정 실패: ' + response.data.message);
+              Swal.fire('수정 실패: ' + response.data.message);
             }
           }).catch(function(error) {
             // 통신 중 에러가 발생했을 경우
             console.error(error);
-            alert('수정 중 오류가 발생했습니다.');
+            Swal.fire({
+              title: '수정 중 오류가 발생했습니다.',
+              icon: "error"
+            });
 
             // 유효성 검사(validation) 실패 시 에러 메시지 처리
             if (error.response && error.response.data && error.response.data.data) {
@@ -170,7 +171,7 @@
               for (const key in errorMap) {
                 errorMsg += `${errorMap[key]}\n`;
               }
-              alert(errorMsg);
+              Swal.fire(errorMsg);
             }
           });
         });

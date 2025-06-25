@@ -5,6 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .pinned-post {
       background-color: #fffbe6; /* 약간 누런색 배경 */
@@ -122,7 +123,7 @@
           </tr>
           </thead>
           <tbody>
-          <th:block th:if="${responseDTO.pagingRequestDTO.keyword == null or #strings.isEmpty(responseDTO.pagingRequestDTO.keyword)}">
+
             <tr th:each="dto : ${responseDTO.pinnedList}" class="pinned-post">
               <td class="text-center align-middle"><i class="fas fa-thumbtack text-primary"></i></td>
               <td class="title align-middle">
@@ -134,7 +135,7 @@
               <td th:text="${#temporals.format(dto.createdAt, 'yyyy-MM-dd')}" class="text-center align-middle">작성일</td>
               <td th:text="${dto.readCount}" class="text-center align-middle">조회수</td>
             </tr>
-          </th:block>
+
 
           <tr th:each="dto: ${responseDTO.dtoList}">
             <td th:text="${dto.id}" class="text-center align-middle">0</td>
@@ -415,7 +416,10 @@
       }
 
       if (!selectedCourseId) {
-        alert("먼저 과정을 선택해주세요.");
+        Swal.fire({
+          title: "먼저 과정을 선택해주세요.",
+          icon: "warning",
+        });
         return;
       }
 
