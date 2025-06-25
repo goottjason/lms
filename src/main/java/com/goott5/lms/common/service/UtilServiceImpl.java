@@ -28,6 +28,12 @@ public class UtilServiceImpl implements UtilService {
         // 확장자
         String ext = (separatorInt != -1)?fileDTO.getOriginalName().substring(separatorInt +1):"";
 
+        // 확장자 "exe" 걸러내기
+        if(ext.equals("exe")){
+            log.info("exe는 db 저장 불가합니다:{}",fileDTO.getOriginalName());
+            return 0; //file insert mapper 하기 전
+        }
+
         String[] extArr = {"jpg", "jpeg", "png", "gif", "bmp", "tiff", "svg", "webp", "heic"};
 
         fileDTO.setIsImage(false);

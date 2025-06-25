@@ -137,6 +137,10 @@ public interface HomeworkMapper {
   @Delete("delete from homework where id = #{id}")
   int deleteHomeworkById(int id);
 
+  @Select("select exists (select id from homework_submission where homework_id = #{homeworkId});")
+  boolean selectHomeworkSubmissionIdByHomework(int homeworkId);
+
+
   //------------ 조회수--------------
 
   //조회수 업데이트(homework)
@@ -150,12 +154,6 @@ public interface HomeworkMapper {
   //조회수 업데이트(homework_eval)
   @Update("update homework_eval  set read_count = read_count + 1 where id = #{tableId}")
   int updateReadCountForEval(int tableId);
-
-  //--------테스트용------------------------------------------------------------------------
-
-  //homework_submission insert(일단 더미데이터용)
-  @Insert("insert into homework_submission(homework_id,  title, content, learner_id) values(#{homeworkId}, #{title}, #{content}, #{learnerId})")
-  int insertHomeworkSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
 
   //-------submission용----------------------------------------------------
 
@@ -180,11 +178,17 @@ public interface HomeworkMapper {
       + "from homework where id = (select homework_id from homework_submission where id = #{submissionId})")
   HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId);
 
+  //--------테스트용 + insertSubmission------------------------------------------------------------------------
 
-  //insert homeworkSubmission
-  @Insert("insert into homework_submission (title,  content, course_id, learner_id )\n"
-      + "    values (#{title},  #{content}, #{courseId}, #{learnerId})")
-  HomeworkSubmissionDTO insertSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+  //homework_submission insert(일단 더미데이터용 => insertSubmission)
+  @Insert("insert into homework_submission(homework_id,  title, content, learner_id) values(#{homeworkId}, #{title}, #{content}, #{learnerId})")
+  int insertHomeworkSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
+
+
+//  //insert homeworkSubmission
+//  @Insert("insert into homework_submission (title,  content, course_id, learner_id )\n"
+//      + "    values (#{title},  #{content}, #{courseId}, #{learnerId})")
+//  HomeworkSubmissionDTO insertSubmission(HomeworkSubmissionDTO homeworkSubmissionDTO);
 
   //해당 과제의 과정에 속한 학생인지 확인
   @Select("select exists (select user_id from learner_enrollment where user_id = #{userId} and course_id = (select course_id from homework where id = #{homeworkId}))")
@@ -201,6 +205,17 @@ public interface HomeworkMapper {
   //submission delete
   @Delete("delete from homework_submission where id = #{id}")
   int deleteSubmissionById(int id);
+
+  @Insert("insert into homework_eval (hs_id, is_pass, content, instructor_id) values (#{hsId}, #{isPass}, #{content}, #{instructorId})")
+  int insertEval(HomeworkEvalDTO homeworkEvalDTO);
+
+  // updateEval
+  @Update("update homework_eval set is_pass = #{isPass}, content = #{content}, updated_at = #{updatedAt} where id = #{id}")
+  int updateEval(HomeworkEvalModifyDTO homeworkEvalModifyDTO);
+
+  //deleteEval
+  @Delete("delete from homework_eval where id = #{id}")
+  int deleteEvalById(int id);
 
 
 }

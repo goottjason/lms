@@ -1,4 +1,4 @@
-package com.goott5.lms.homework.session.controller;
+package com.goott5.lms.homework.session.service.controller;
 
 import com.goott5.lms.homework.session.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;

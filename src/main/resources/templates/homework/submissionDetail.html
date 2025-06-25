@@ -1,242 +1,271 @@
 <!DOCTYPE html>
 <html
-        lang="ko"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        xmlns:th="http://www.thymeleaf.org"
-        layout:decorate="~{layout/basic.html}">
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
-    <style>
-        #courseSelector {
-            display: none;
-        }
+  <script defer th:src="@{/js/homework/eval_submission_detail.js}"></script>
+  <style>
+    #courseSelector {
+      display: none;
+    }
 
 
-    </style>
+  </style>
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- content header 시작 -->
-    <div class="row align-items-center">
-        <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 상세</h1>
-    </div>
-    <!-- content header 끝 -->
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 상세</h1>
+  </div>
+  <!-- content header 끝 -->
 
-    <!-- content body 시작 -->
-    <!-- 상단 카드 시작-->
-    <div class="d-flex justify-content-end mb-4"
-         th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId()}">
-        <button id="modifySubmission" class="btn btn-info btn-icon-split mr-2">
+  <!-- content body 시작 -->
+  <!-- 상단 카드 시작-->
+  <div class="d-flex justify-content-end mb-4"
+       th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId()}">
+    <button id="modifySubmission" class="btn btn-info btn-icon-split mr-2">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-            <span class="text px-3">과제수정</span>
-        </button>
-        <button id="deleteSubmission" class="btn btn-danger btn-icon-split mr-2">
+      <span class="text px-3">과제수정</span>
+    </button>
+    <button id="deleteSubmission" class="btn btn-danger btn-icon-split mr-2">
       <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
-            <span class="text px-3">과제삭제</span>
-        </button>
+      <span class="text px-3">과제삭제</span>
+    </button>
+  </div>
+
+
+  <!-- 상단 카드 끝 -->
+
+  <!-- 본문 시작 -->
+  <div class="card shadow mb-4">
+    <!-- 제목 -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary" th:text="${submission.getTitle()}">여기에 제목이
+        들어옵니다~~</h6>
+    </div>
+    <!-- 내용 -->
+    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;"
+         th:text="${submission.getContent()}">
+      여기에 내용이 들어옵니다~~~
     </div>
 
+    <!-- 첨부 파일 -->
+    <div class="card-footer">
+      <p class="mt-2">첨부파일</p>
+      <div class="row">
 
-    <!-- 상단 카드 끝 -->
-
-    <!-- 본문 시작 -->
-    <div class="card shadow mb-4">
-        <!-- 제목 -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary" th:text="${submission.getTitle()}">여기에 제목이
-                들어옵니다~~</h6>
-        </div>
-        <!-- 내용 -->
-        <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;"
-             th:text="${submission.getContent()}">
-            여기에 내용이 들어옵니다~~~
-        </div>
-
-        <!-- 첨부 파일 -->
-        <div class="card-footer">
-            <p class="mt-2">첨부파일</p>
-            <div class="row">
-
-                <th:block th:if="${submissionFiles != null}">
-                    <div class="col-4 card mb-2" th:each="submissionFile : ${submissionFiles}">
-                        <div class="row g-0 m-0">
-                            <div class="col-md-3 pl-2">
-                                <img
-                                        th:src="@{/img/no-image.jpg}"
-                                        class="img-fluid rounded-start"
-                                        style="width: 60px; object-fit: cover;">
-                            </div>
-                            <div class="col-md-9 d-flex align-items-center">
-                                <div class="card-body p-0" th:unless="${submissionFile.getIsImage()}">
-                                    <a class="card-title mb-1 text-truncate"
-                                       th:text="${submissionFile.getOriginalName()}"
-                                       th:href="${submissionFile.getPath()}">첨부파일123.pdf</a>
-                                </div>
-                                <div class="card-body p-0" th:if="${submissionFile.getIsImage()}">
-                                    <a class="card-title mb-1 text-truncate"
-                                       th:text="${submissionFile.getOriginalName()}"
-                                       th:href="${submissionFile.getPath()}">
-                                        <img th:src="${submissionFile.getPath()}"
-                                             style="width: 300px; height: 100px; object-fit: cover;">
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </th:block>
-
+        <th:block th:if="${submissionFiles != null}">
+          <div class="col-4 card mb-2" th:each="submissionFile : ${submissionFiles}">
+            <div class="row g-0 m-0">
+              <div class="col-md-3 pl-2">
+                <img
+                    th:src="@{/img/no-image.jpg}"
+                    class="img-fluid rounded-start"
+                    style="width: 60px; object-fit: cover;">
+              </div>
+              <div class="col-md-9 d-flex align-items-center">
+                <div class="card-body p-0" th:unless="${submissionFile.getIsImage()}">
+                  <a class="card-title mb-1 text-truncate"
+                     th:text="${submissionFile.getOriginalName()}"
+                     th:href="${submissionFile.getPath()}">첨부파일123.pdf</a>
+                </div>
+                <div class="card-body p-0" th:if="${submissionFile.getIsImage()}">
+                  <a class="card-title mb-1 text-truncate"
+                     th:href="${submissionFile.getPath()}">
+                    <img th:src="${submissionFile.getPath()}"
+                         style="width: 300px; height: 100px; object-fit: cover;">
+                  </a>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </th:block>
+
+      </div>
     </div>
-    <!-- 본문 끝 -->
+  </div>
+  <!-- 본문 끝 -->
 
 
-    <!-- eval  시작 -->
-    <div class="container-fluid">
-        <div class="card shadow mb-4 justify-content-center mt-6" th:if="${eval != null}"
-             style="margin-top: 100px;">
-            <!-- 제목 -->
-            <!--      <span th:text="${eval.isPass}"></span>-->
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between "
-                 th:style="${eval.isPass} ? 'background-color: #d2e2fc;' : 'background-color: #fad5d5;'">
-                <!-- 수강생인 경우 PASS/FAIL 결과를 확인할 수 있도록 해주세요. (아래 주석 해제) -->
-                <div class="d-flex align-items-center">
+  <!-- eval  시작 -->
+  <div class="container" style="position: relative;">
+    <div class="toast" data-autohide="false" style="position: absolute; right: 100px; z-index: 1060; width: 600px; height: 200px;">
+      <div class="toast-header">
+        <strong class="mr-auto text-primary">평가 삭제</strong>
+        <small class="text-muted">5 mins ago</small>
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+      </div>
+      <div class="toast-body" style="position: relative; height: 100%;">
+        정말 삭제하시겠습니까?
+        <button class="btn btn-danger custom-danger-btn-sm" id="toastDeleteBtn" style="position: absolute; bottom: 50px; right: 10px;">예</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid" id="eval">
+    <div class="card shadow mb-4 justify-content-center mt-6" th:if="${eval != null}"
+         style="margin-top: 100px;">
+      <!-- 제목 -->
+      <!--      <span th:text="${eval.isPass}"></span>-->
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between "
+           th:style="${eval.isPass} ? 'background-color: #d2e2fc;' : 'background-color: #fad5d5;'">
+        <!-- 수강생인 경우 PASS/FAIL 결과를 확인할 수 있도록 해주세요. (아래 주석 해제) -->
+        <div class="d-flex align-items-center">
     <span class="btn btn-info btn-circle btn-sm mr-2" th:if="${eval.getIsPass()}">
       <i class="fas fa-check"></i>
     </span>
-                    <span class="btn btn-danger btn-circle btn-sm mr-2" th:unless="${eval.getIsPass()}">
+          <span class="btn btn-danger btn-circle btn-sm mr-2" th:unless="${eval.getIsPass()}">
       <i class="fas fa-times"></i>
     </span>
 
-                    <span class="font-weight-bold"
-                          th:classappend="${eval.getIsPass()} ? 'text-info' : 'text-danger'"
-                          th:text="${eval.getIsPass()} ? 'PASS' : 'FAIL'">결과</span>
-                </div>
-
-                <h6 class="m-0 font-weight-bold " th:text="${eval.getIsPass()}?'통과' :'미통과'">통과 여부</h6>
-            </div>
-            <!-- 내용 -->
-            <div class="card-body py-5 custom-textarea"
-                 style="min-height: 280px; white-space: pre-wrap; background-color: #f9f9f9; border-color: #bbb"
-                 th:text="${eval.getContent()}">
-                피드백
-            </div>
-
-            <!-- 첨부 파일 -->
-            <div class="card-footer container-fluid"
-                 th:style="${eval.isPass} ? 'background-color: #d2e2fc;' : 'background-color: #fad5d5;'">
-                <p class="mt-2">첨부파일</p>
-                <div class="row">
-
-                    <th:block th:if="${evalFiles != null}">
-                        <div class="col-4 card mb-2" th:each="evalFile : ${evalFiles}">
-                            <div class="row g-0 m-0">
-                                <div class="col-md-3 pl-2">
-                                    <img
-                                            th:src="@{/img/no-image.jpg}"
-                                            class="img-fluid rounded-start"
-                                            style="width: 60px; object-fit: cover;">
-                                </div>
-                                <div class="col-md-9 d-flex align-items-center">
-                                    <div class="card-body p-0" th:unless="${evalFile.getIsImage()}">
-                                        <a class="card-title mb-1 text-truncate" th:text="${evalFile.getOriginalName()}"
-                                           th:href="${evalFile.getPath()}">첨부파일123.pdf</a>
-                                    </div>
-                                    <div class="card-body p-0" th:if="${evalFile.getIsImage()}">
-                                        <a class="card-title mb-1 text-truncate" th:text="${evalFile.getOriginalName()}"
-                                           th:href="${evalFile.getPath()}">
-                                            <img th:src="${evalFile.getPath()}"
-                                                 style="width: 300px; height: 100px; object-fit: cover;">
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </th:block>
-
-                </div>
-            </div>
+          <span class="font-weight-bold"
+                th:classappend="${eval.getIsPass()} ? 'text-info' : 'text-danger'"
+                th:text="${eval.getIsPass()} ? 'PASS' : 'FAIL'">결과</span>
         </div>
+
+        <h6 class="m-0 font-weight-bold " th:text="${eval.getIsPass()}?'통과' :'미통과'">통과 여부</h6>
+      </div>
+      <!-- 내용 -->
+      <div class="card-body py-5 custom-textarea"
+           style="min-height: 280px; white-space: pre-wrap; background-color: #f9f9f9; border-color: #bbb"
+           th:text="${eval.getContent()}">
+        피드백
+      </div>
+
+      <!-- 첨부 파일 -->
+      <div class="card-footer container-fluid"
+           th:style="${eval.isPass} ? 'background-color: #d2e2fc;' : 'background-color: #fad5d5;'">
+        <p class="mt-2">첨부파일</p>
+        <div class="row">
+
+          <th:block th:if="${evalFiles != null}">
+            <div class="col-4 card mb-2" th:each="evalFile : ${evalFiles}">
+              <div class="row g-0 m-0">
+                <div class="col-md-3 pl-2">
+                  <img
+                      th:src="@{/img/no-image.jpg}"
+                      class="img-fluid rounded-start"
+                      style="width: 60px; object-fit: cover;">
+                </div>
+                <div class="col-md-9 d-flex align-items-center">
+                  <div class="card-body p-0" th:unless="${evalFile.getIsImage()}">
+                    <a class="card-title mb-1 text-truncate" th:text="${evalFile.getOriginalName()}"
+                       th:href="${evalFile.getPath()}">첨부파일123.pdf</a>
+                  </div>
+                  <div class="card-body p-0" th:if="${evalFile.getIsImage()}">
+                    <a class="card-title mb-1 text-truncate" th:href="${evalFile.getPath()}">
+                      <img th:src="${evalFile.getPath()}"
+                           style="width: 300px; height: 100px; object-fit: cover;">
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </th:block>
+
+        </div>
+      </div>
     </div>
-    <!-- eval 끝() -->
+  </div>
+  <!-- eval 끝() -->
 
-    <!--eval이 null && loginUser.getId() == homeworkDTO.instructorId() 일때만 eval 등록 폼 보이기-->
 
-    <!-- 목록 -->
-    <div class="col-12 d-flex justify-content-end mb-4">
+  <!--eval이 null && loginUser.getId() == homeworkDTO.instructorId() 일때만 eval 등록 폼 보이기-->
 
-        <th:block
-                th:if="${eval != null &&loginUser.getType() == 'INSTRUCTOR' && loginUser.getId() == eval.getInstructorId()}">
-            <button id="modifyEval" class="btn btn-info btn-icon-split mr-2">
+  <!-- 목록 -->
+  <div class="col-12 d-flex justify-content-end mb-4">
+
+    <th:block
+        th:if="${eval != null && loginUser.getType() == 'INSTRUCTOR' && loginUser.getId() == eval.getInstructorId()}">
+      <button id="modifyEval" class="btn btn-info btn-icon-split mr-2">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-                <a class="text px-3">평가 수정</a>
-            </button>
-            <button id="deleteEval" class="btn btn-danger btn-icon-split mr-2">
+        <span class="text px-3">평가 수정</span>
+      </button>
+      <button id="deleteEval" class="btn btn-danger btn-icon-split mr-2">
       <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
-                <span class="text px-3">평가 삭제</span>
-            </button>
-        </th:block>
+        <span class="text px-3" id="evalDelete">평가 삭제</span>
+      </button>
+    </th:block>
 
-        <button id="toList" class="btn btn-secondary btn-icon-split">
+    <button id="toList" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-            <span class="text px-4" th:href="@{/homework/homeworkList}">목록</span>
-        </button>
-    </div>
+      <span class="text px-4" th:href="@{/homework/homeworkList}">목록</span>
+    </button>
+  </div>
 
-    <!-- 평가 등록 시작 (동적 태그)-->
-    <div th:if="${loginUser.getType() == 'INSTRUCTOR' && eval == null}">
-        <div id="evalRegister"></div> <!-- 이 안에 card 전체 삽입 -->
-    </div>
-    <!-- 평가 등록 끝 -->
 
-    <!-- The Modal -->
-    <div class="modal delete" id="myModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
+  <!-- 평가 등록 시작 (동적 태그)-->
+  <div th:if="${loginUser.getType() == 'INSTRUCTOR' && eval == null}">
+    <div id="evalRegister"></div> <!-- 이 안에 card 전체 삽입 -->
+  </div>
+  <!-- 평가 등록 끝 -->
 
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <h4 class="modal-title">Modal Heading</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
+  <!-- The Modal -->
+  <div class="modal delete" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
 
-                <!-- Modal body -->
-                <div class="modal-body">
-                    정말 삭제하시겠습니까?
-                </div>
-
-                <!-- Modal footer -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger deleteBtn" data-dismiss="modal">예</button>
-                </div>
-
-            </div>
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
-    </div>
 
-    <!-- content body 끝 -->
+        <!-- Modal body -->
+        <div class="modal-body">
+          정말 삭제하시겠습니까?
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger deleteBtn" data-dismiss="modal">예</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!--평가용 삭제 모달-->
+
+
+  <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
-    <script>
+  <script>
 
-        let submissionId = [[${submission.id}]]
+    let savePage = ""; //후에 로컬스토리지에 저장된 페이지로 이동
 
-        let eval = [[${eval}]];
+    let instructorId = [[${homeworkDTO.instructorId}]]; // 추후 강사가 글 등록시 필요
 
-        // 평가가 null이면 평가 등록 페이지를 동적 쿼리로 생성
-        function evalRegister() {
+    let submissionId = [[${submission.id}]]
 
-            let output = `
-<form id="evalForm" method="post" enctype="multipart/form-data" action="/homework/evalRegister">
+    let evalDTO = /*[[${eval}]]*/ null; //eval은 내장함수랑 충돌 가능성
+
+    let evalId = /*[[${eval} != null? ${eval.id} : -1]]*/ -1; //: EL1007E: Property or field 'id' cannot be found on null
+
+    let evalFiles = /*[[${evalFiles}]]*/ null;
+
+    let fileList = []; // eval 등록 시 파일 담을 배열
+
+    const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+    // 평가가 null이면 평가 등록 페이지를 동적 쿼리로 생성
+    function evalRegister() {
+
+      let output = `<form id="evalForm" method="post" enctype="multipart/form-data" action="/homework/evalRegister">
   <div class="card shadow mb-4">
     <div class="card-header py-2">
       <div class="row align-items-center">
@@ -244,9 +273,10 @@
           <h6 class="m-0 font-weight-bold text-primary">평가</h6>
         </div>
         <div class="col-3 ml-auto d-flex justify-content-end align-items-center">
-          <select class="form-control">
-            <option>PASS</option>
-            <option>FAIL</option>
+        <label for="isPass"></label>
+          <select class="form-control" id = "isPass" name="isPass">
+            <option value="1">PASS</option>
+            <option value="0">FAIL</option>
           </select>
         </div>
       </div>
@@ -254,97 +284,238 @@
 
     <div class="card-body py-3">
       <div class="form-group">
-        <textarea id="evalContent" class="form-control" placeholder="평가 내용을 작성하세요."
-                  style="height: 200px;"></textarea>
+      <label for="content"></label>
+      <span id="contentError" style = "color: red;"></span>
+        <textarea id="content" class="form-control" placeholder="평가 내용을 작성하세요."
+                  style="height: 200px;" name="content"></textarea>
       </div>
       <div class="row mb-4">
         <div class="col-md-12">
           <div class="mb-2">첨부파일</div>
           <div class="custom-file">
-            <input type="file" class="custom-file-input" id="file" multiple>
-            <label class="custom-file-label" for="file">파일을 선택하세요.</label>
+            <input type="file" class="custom-file-input" id="evalFile" multiple>
+            <label class="custom-file-label" for="evalFile">파일을 선택하세요.</label>
           </div>
         </div>
       </div>
     </div>
 
+    <!--preview 단-->
+   <div id="preview"></div>
+
     <div class="card-footer d-flex justify-content-end">
-      <button class="btn btn-primary btn-icon-split mr-2">
+      <button class="btn btn-primary btn-icon-split mr-2" type="submit" id="submitBtn">
         <span class="icon text-white-50"><i class="fas fa-upload"></i></span>
         <span class="text px-3">평가등록</span>
-      </button>
-      <button class="btn btn-info btn-icon-split mr-2">
-        <span class="icon text-white-50"><i class="fa fa-wrench"></i></span>
-        <span class="text px-3">평가수정</span>
-      </button>
-      <button class="btn btn-danger btn-icon-split mr-2">
-        <span class="icon text-white-50"><i class="fa fa-times"></i></span>
-        <span class="text px-3">평가삭제</span>
       </button>
     </div>
   </div>
   </form>`;
-            $('#evalRegister').html(output);
+      $('#evalRegister').html(output);
 
+    }
+
+    //delete submission
+    function deleteDelete(url) {
+      axios.delete(url)
+      .then(function (response) {
+        savePage = localStorage.getItem("savePage");
+        if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+          // console.log("savePage",savePage);
+          location.href = savePage;
+        } else {
+          location.href = "/homework/homeworkList";
+        }
+      }).catch(function (error) {
+        let errorMsg = error.response.data.message;
+        let errorCode = error.response.data.code;
+
+        if (errorCode === 409) {
+          alert(errorMsg);
+          location.href = "/homework/submissionDetail?submissionId=" + submissionId;
+        } else if (errorCode === 401 || errorCode === 403 || errorCode === 404 || errorCode
+            === 500) {
+          savePage = localStorage.getItem("savePage");
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+            // console.log("savePage",savePage);
+            location.href = savePage;
+          } else {
+            location.href = "/homework/homeworkList";
+          }
         }
 
+        console.log(error);
+      })
+    }
 
+    // --------------------------eval 등록--------------------------
 
-        //delete submission
-        function deleteDelete(url) {
-          axios.delete(url)
-          .then(function (response) {
-            console.log(response);
-          }).catch(function (error) {
-            console.log(error);
-          })
+    // (강사가)evalDTO 등록(일단 바인딩)
+    function evalRegisterPost() {
+
+      let formData = new FormData(document.getElementById("evalForm"));
+
+      formData.append("instructorId", instructorId);
+      formData.append("hsId", submissionId);
+
+      fileList.forEach(function (file) {
+        formData.append("fileList", file);
+      })
+
+      axios.post("/homework/evalRegister", formData)
+      .then(function (response) {
+        console.log(response);
+        location.href = "/homework/submissionDetail?submissionId=" + submissionId;
+      }).catch(function (error) {
+        console.log("error", error);
+        let errorCode = error.response.data.code;
+        let errorMsg = error.response.data.message;
+        if (errorCode === 400) {
+          errorMap = error.response.data.data;
+          if (errorMap.content) {
+            $("#contentError").html(errorMap.content);
+          } else {
+            $("#contentError").html("");
+          }
+        } else if (errorCode === 401 || errorCode === 404 || errorCode === 500) {
+          alert(errorMsg); //모든 에러메세지가 나타남.
+          savePage = localStorage.getItem("savePage");
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+            // console.log("savePage",savePage);
+            location.href = savePage;
+          } else {
+            location.href = "/homework/homeworkList";
+          }
         }
+      })
+    }
 
+    //evalDTO 등록
+    function pushFileList(files) {
+      for (let file of files) {
+        if (file.size > MAX_FILE_SIZE) {
+          alert("파일 사이즈가 초과하였습니다.")
+        } else {
+          fileList.push(file);
+          console.log(fileList);
+        }
+      }
+    }
 
+    // eval 파일 프리뷰
+    function previewFile(fileList) {
+      $("#preview").empty();
 
+      if (fileList != null) {
+        fileList.forEach(function (file, index) {
+          if (file.type.indexOf("image/") === -1) {
+            //이미지가 아닐때
+            let fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = function (e) {
+              //읽기 동작 완료
+              let output = "";
+              output += `<div  class="card mb-2" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+  <div class="card-body p-0 d-flex align-items-center" style="position: relative; height: 100px; padding-right: 24px;">
+    <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
+    <a class="card-title mb-1 text-truncate d-block text-start" style="margin-right: 28px;">
+        ${file.name}
+      </a>
+    </div>
+  </div>`;
+              $("#preview").append(output);
 
-        // 세션에 저장된 페이지를 담을 변수
-        // let savePage = "";
-        //
-        $(function () {
-
-            // 평가 등록 보여주기
-            if (eval == null) {
-                evalRegister();
             }
+          } else {
+            //이미지일 때
+            let fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = function (e) {
+              //읽기 동작 완료
+              // console.log(e.target.result);
+              let output = "";
+              output += `<div  class="card mb-2" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+  <div class="card-body p-0 d-flex align-items-center" style="position: relative; height: 100px; padding-right: 24px;">
+    <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
+    <a class="card-title mb-1 text-truncate d-block text-start" style="margin-right: 28px;">
+        <img src="${e.target.result}"
+             style="width: 100%; height: 100px; object-fit: cover;">
+      </a>
+    </div>
+  </div>`;
+              $("#preview").append(output);
 
-            // 목록으로
-            $("#toList").click(function () {
-                location.href = "/homework/homeworkList";
-            })
-
-            // // 삭제 모달창 뜨기
-            $("#deleteSubmission").on("click", function () {
-              // alert("!");
-              $(".delete").modal("show");
-            })
-
-            // 수정 하기
-            $("#modifySubmission").on("click",function(){
-                location.href = "/homework/submissionModify?submissionId=" + submissionId;
-            })
-
-
-            // // 모달창 끄기
-            $(".close").on("click", function () {
-              $(".delete").modal("hide");
-            })
-
-            $(".deleteBtn").on("click", function () {
-              // console.log(submissionId);
-              let url = "/homework/submissionDelete?submissionId=" + submissionId;
-              deleteDelete(url);
-            })
-
-
+            }
+          }
         })
+      }
+      console.log("evalFile", $("#preview"));
+    }
 
-    </script>
+    //eval preview에서 파일 삭제
+    function removeFile(index) {
+      fileList.splice(index, 1);
+      previewFile(fileList);
+    }
+
+    $(function () {
+
+
+      console.log("eval",evalDTO); //평가가 null 일때 evalDTO를 못읽음
+
+      // 평가 등록 보여주기
+      if (evalDTO === null) {
+        evalRegister();
+        // alert("동작확인!");
+        // return;
+      }
+
+      // 목록으로
+      $("#toList").click(function () {
+        location.href = "/homework/homeworkList";
+      })
+
+      // // 삭제 모달창 뜨기
+      $("#deleteSubmission").on("click", function () {
+        // alert("!");
+        $(".delete").modal("show");
+      })
+
+      // 수정 하기
+      $("#modifySubmission").on("click", function () {
+        location.href = "/homework/submissionModify?submissionId=" + submissionId;
+      })
+
+      // // 모달창 끄기
+      $(".close").on("click", function () {
+        $(".delete").modal("hide");
+      })
+
+      $(".deleteBtn").on("click", function () {
+        // console.log(submissionId);
+        let url = "/homework/submissionDelete?submissionId=" + submissionId;
+        deleteDelete(url);
+      })
+
+      // (강사가) eval 제출!!!!!!
+      $("#submitBtn").click(function (e) {
+        e.preventDefault();
+        // alert("!");
+        evalRegisterPost();
+      })
+
+      // eval 등록- 파일 클릭 시 fileList에 push
+      $("#evalFile").on("change", function (e) {
+        e.preventDefault();
+        console.log(e.target.files);
+        let files = e.target.files;
+        pushFileList(files);
+        previewFile(fileList);
+      })
+
+    })
+
+  </script>
 </th:block>
 </div>
 </body>

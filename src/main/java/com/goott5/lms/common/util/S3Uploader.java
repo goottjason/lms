@@ -56,6 +56,15 @@ public class S3Uploader {
 
     //파일 업로드
     public String uploadFile(String dirName, InputStream inputStream, String originalFileName) throws IOException {
+
+        String ext = originalFileName.substring(originalFileName.lastIndexOf(".")+1);
+
+        //파일 확장자(ext)검사
+        if(ext.equalsIgnoreCase("exe")){
+            log.info("실행 파일은 서버 업로드 불가합니다:{}",originalFileName);
+            return "exe";
+        }
+
         String uuid = UUID.randomUUID().toString();
         String uploadFileName = dirName + "/" + uuid + "_" +originalFileName;
 
@@ -89,7 +98,7 @@ public class S3Uploader {
         // 실패....(이건 일부 컨트롤러에서 존재하니 삭제하실때 공유 부탁드립니다~!)
     }
 
-    //파일 삭제(일단 보류)
+    //파일 삭제(이제 가능)
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
 //        log.info("delete : {}",  s3Client.deleteObject(builder -> builder.bucket(bucket).key(key)));

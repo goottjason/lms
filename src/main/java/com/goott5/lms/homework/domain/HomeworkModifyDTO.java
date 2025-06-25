@@ -29,8 +29,6 @@ public class HomeworkModifyDTO {
   @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   private LocalDateTime endDate;
 
-  @NotBlank(message = "내용을 입력하세요.")
-  @Size(min = 100, max = 1000, message = "100자 이상 1000자 이하로 입력하세요.")
   private String content;
 
   private OffsetDateTime updatedAt;

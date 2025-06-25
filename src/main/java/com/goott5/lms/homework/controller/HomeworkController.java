@@ -237,7 +237,8 @@ public class HomeworkController {
     }
 
     if (homeworkId == null) {
-      return "redirect:/homework/homeworkList";
+      model.addAttribute("homeworkIdNull","해당 과제가 존재하지 않습니다.");
+      return "homework/homeworkDetail";
     }
 
     // homework 객체 전달
@@ -336,11 +337,10 @@ public class HomeworkController {
     }
 
     log.info("courseName:{}", courseName);
-    Boolean isRegister = true;
+    boolean isRegister = true;
     Map<String, Integer> resultMap = new HashMap<>();
 
     if (courseName != null) {
-
       // 해당 로그인한 강사의 현재 진행 중인 과정 id와 instructorId를 select(register 시 dto 매핑용)
       resultMap = homeworkService.selectIdCourse(URLDecoder.decode(courseName), loginUser.getId(),
           loginUser.getType());
@@ -381,11 +381,13 @@ public class HomeworkController {
       bindingResult.addError(new FieldError("homeworkDTO","content","글자를 입력해주세요."));
     }else {
           int contentLength = content.getBytes(StandardCharsets.UTF_8).length;
-      if (contentLength > 10000 || contentLength < 100) {
+      if (contentLength > 1000 || contentLength < 10) {
         bindingResult.addError(
             new FieldError("homeworkDTO", "content", "글자는 10자 이상 1000자 이하여야 합니다."));
       }
     }
+
+    log.info("content.getBytes:{}",content.getBytes(StandardCharsets.UTF_8).length);
 
     if (bindingResult.hasErrors()) {
       Map<String, String> errorMap = new HashMap<>();
@@ -435,7 +437,6 @@ public class HomeworkController {
         if (fileInsert == 1) {
           log.info("파일 db에 저장 성공:{}", fileDTO);
         }
-        ;
       }
 
     } else {
@@ -508,6 +509,19 @@ public class HomeworkController {
 
     if (deleteFiles != null) {
       log.info("전송 받은 deleteFiles:{}", deleteFiles);
+    }
+
+    //content와 관련된 필드에러 추가
+    String content = homeworkModifyDTO.getContent();
+    if (content == null || content.isEmpty()) {
+      bindingResult.addError(new FieldError("homeworkModifyDTO", "content", "내용을 입력해주세요."));
+//        log.info("content 에러:{}", bindingResult.getFieldErrors().get(0).getDefaultMessage());
+    } else {
+      int length = content.getBytes(StandardCharsets.UTF_8).length;
+      if (length < 10 || length > 1000) {
+        bindingResult.addError(
+            new FieldError("homeworkModifyDTO", "content", "10자 이상 1000자 이하로 입력해주세요."));
+      }
     }
 
     // 필드 에러 있을 경우
@@ -600,10 +614,18 @@ public class HomeworkController {
   @ResponseBody
   public ResponseEntity<MyResponseWithDataPYJ> deleteHomework(
       @RequestParam(required = false) Integer homeworkId) throws UnsupportedEncodingException {
-    log.info("deleteHomework homeworkId:{}", homeworkId);
+
 
     if (homeworkId == null) {
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "데이터 전송 실패", null));
+    }
+
+
+    // 참조하고 있는 homeworkSubmission이 있으면 삭제 불가
+    boolean isSubmission = homeworkService.selectHomeworkSubmissionIdByHomework(homeworkId);
+    if (isSubmission) {
+      // 존재하면 삭제 x
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(409, "해당 과제의 제출물이 존재합니다.", null));
     }
 
     // 파일 불러오기
@@ -616,7 +638,7 @@ public class HomeworkController {
 
           // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
           s3Uploader.deleteFile("upload/homework/" + URLDecoder.decode(selectDTO.getNewName(),"UTF-8"));
-          log.info("파일 서버 삭제 성공?"); // 성공 못함
+          log.info("파일 서버 삭제 성공");
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
             log.info("파일 db 삭제 성공"); // 성공
@@ -630,7 +652,7 @@ public class HomeworkController {
 
     if (deleteNum != 1) {
       return ResponseEntity.badRequest()
-          .body(new MyResponseWithDataPYJ(400, "게시글 삭제 실패", homeworkId));
+          .body(new MyResponseWithDataPYJ(404, "게시글 삭제 실패", homeworkId));
     } else {
       return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "데이터 전송 성공", homeworkId));
     }

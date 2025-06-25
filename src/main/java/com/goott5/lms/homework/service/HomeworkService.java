@@ -1,12 +1,15 @@
 package com.goott5.lms.homework.service;
 
 
+import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.homework.domain.*;
 
 import com.goott5.lms.common.domain.ReadCountLog;
 import java.util.List;
 import java.util.Map;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface HomeworkService {
 
@@ -69,6 +72,9 @@ public interface HomeworkService {
   // 해당 아이디의 과제 삭제
   int deleteHomeworkById(int id);
 
+  //해당 과제의 submission이 존재하는 지 확인
+  boolean selectHomeworkSubmissionIdByHomework(int homeworkId);
+
   //-------homework 조회수-------------
 
   // 조회수 업데이트(homework)
@@ -102,4 +108,22 @@ public interface HomeworkService {
 
   //homeworkSubmission delete
   boolean deleteSubmissionById(int id);
+
+  //---------과제 평가 등록----------------------------
+
+  //homeworkEval insert
+  int insertEval(HomeworkEvalDTO homeworkEvalDTO);
+
+  //----파일 서버 저장 + db 저장-------------------
+  void insertFileFor(List<MultipartFile> fileList,
+      String tableName, int tableId, String dirName);
+
+  // 파일 저장 서버 롤백
+  void deleteFileForRollback(List<String> keyList);
+
+  //----------과제 평가 수정----------------------
+  boolean updateEval(HomeworkEvalModifyDTO homeworkEvalModifyDTO);
+
+  //----------과제 평가 삭제-----------------------
+  boolean deleteEvalById(int id);
 }
