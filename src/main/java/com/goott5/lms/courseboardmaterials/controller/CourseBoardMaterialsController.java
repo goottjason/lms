@@ -309,7 +309,6 @@ public class CourseBoardMaterialsController {
 
         log.info("상세 정보 불러오기 성공 : {}", detail);
 
-
         return "courseBoardMaterials/materialsDetail";
     }
 
@@ -455,6 +454,7 @@ public class CourseBoardMaterialsController {
 
         return ResponseEntity.ok(new MyResponseWithData(200, "수정 완료", courseBoardMaterialsDTO));
     }
+
     @DeleteMapping("/{materialId}")
     @ResponseBody
     public ResponseEntity<MyResponseWithData> deleteMaterial(@PathVariable("materialId") int materialId) {

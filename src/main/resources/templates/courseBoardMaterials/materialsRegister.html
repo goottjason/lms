@@ -5,7 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div layout:fragment="content">
@@ -153,8 +153,7 @@
               headers: { 'Content-Type': 'multipart/form-data' }
             })
             .then(response => {
-              alert(response.data.message);
-              location.href = '/courseBoardMaterials/materialsList';
+              Swal.fire({title: response.data.message}).then(()=>{location.href = '/courseBoardMaterials/materialsList'});
             })
             .catch(error => {
               if (error.response && error.response.data && error.response.data.data) {
@@ -162,7 +161,10 @@
                 if (errorMap.title) titleError.textContent = errorMap.title;
                 if (errorMap.content) contentError.textContent = errorMap.content;
               } else {
-                alert('등록 중 서버 오류가 발생했습니다.');
+                Swal.fire({
+                  title: '등록 중 서버 오류가 발생했습니다.',
+                  icon: "error"
+                });
                 console.error(error);
               }
             });
@@ -240,7 +242,10 @@
         if(file){
           //파일일 경우
           if(file.size > MAX_FILE_SIZE){
-            alert("파일 사이즈가 초과하였습니다.")
+            Swal.fire({
+              title: "파일 사이즈가 초과하였습니다.",
+              icon: "warning"
+            });
           }else{
             fileList.push(file);
             console.log("file push",file);
@@ -283,23 +288,6 @@
           location.href = "/courseBoardMaterials/materialsList";
         }).catch(function (error) {
           console.log(error);
-          // errorMap = error.response.data.data;
-          // // errorMap = [[${errorResultMap}]];
-          // console.log("errorMap",errorMap);
-          // console.log("errorMap.title",errorMap.title);
-          //
-          // if(errorMap.title){
-          //   $("#titleError").html(errorMap.title);
-          // } else {
-          //   $("#titleError").html("");
-          // }
-          //
-          // if(errorMap.content){
-          //   $("#contentError").html(errorMap.content);
-          // }else {
-          //   $("#contentError").html("");
-          // }
-
         });
       });
 
