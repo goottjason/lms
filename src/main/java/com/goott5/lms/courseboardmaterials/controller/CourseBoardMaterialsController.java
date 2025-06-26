@@ -12,7 +12,6 @@ import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPageDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingRequestDTO;
 import com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsPagingResponseDTO;
 import com.goott5.lms.courseboardmaterials.domain.MyResponseWithData;
-import com.goott5.lms.courseboardmaterials.mapper.CourseBoardMaterialsMapper;
 import com.goott5.lms.courseboardmaterials.service.CourseBoardMaterialsService;
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -54,20 +52,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseBoardMaterialsController {
 
     private final CourseBoardMaterialsService courseBoardMaterialsService;
-    private final CourseBoardMaterialsMapper courseBoardMaterialsMapper;
     private final UtilMapper utilMapper;
     private final UtilService utilService;
     private final S3Uploader s3Uploader;
     private final CourseManagementService courseManagementService;
-
-    @Value("${cloud.aws.s3.bucketName}")
-    private String bucket;
-    @Value("${cloud.aws.credentials.accessKey}")
-    private String accessKey;
-    @Value("${cloud.aws.credentials.secretKey}")
-    private String secretKey;
-    @Value("${cloud.aws.region.static}")
-    private String region;
 
     // 리스트 페이지
     @GetMapping("/materialsList")
