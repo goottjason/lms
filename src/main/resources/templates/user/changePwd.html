@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Goott5 LMS시스템</title>
+
+  <link th:href="@{/vendor/fontawesome-free/css/all.min.css}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+  <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
+  <link th:href="@{/css/user/login.css}" rel="stylesheet">
+  <style>
+    #address[readonly] {
+      background-color: #fff !important;
+    }
+  </style>
+</head>
+<body id="">
+<div id="wrapper" class="py-5">
+  <div class="card o-hidden border-0 shadow-lg" style="height: auto; width: 1030px;">
+    <div class="card-body p-0">
+      <div class="row">
+        <div class="col">
+          <div class="p-5">
+            <div class="text-center">
+              <h2 class="h2 text-gray-900 mb-5">비밀번호 변경</h2>
+            </div>
+            <form
+              id="changePwdForm"
+              class="user"
+              th:action="@{/user/changePwdForSignup}"
+              method="POST">
+
+              <div class="row mb-2">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="fullname">이름<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+                    <span id="fullname-msg" class="text-danger small"></span>
+                    <input
+                      type="text"
+                      id="fullname"
+                      name="fullname"
+                      class="form-control"
+                      placeholder="이름을 입력하세요.">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label
+                      class="form-label"
+                      for="password">변경할 비밀번호(4자 ~ 20자)<span class="text-danger">*</span>&nbsp;
+                                      &nbsp;</label>
+                    <span id="password-msg" class="text-danger small"></span>
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      class="form-control"
+                      placeholder="영문,숫자,특수문자 중 2가지 이상을 혼합하여 입력하세요."/>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label
+                      class="form-label"
+                      for="password2">비밀번호 재입력<span class="text-danger">*</span>&nbsp;
+                                       &nbsp;</label>
+                    <span id="password2-msg" class="text-danger small"></span>
+                    <input
+                      type="password"
+                      id="password2"
+                      class="form-control"
+                      placeholder="비밀번호를 한번 더 입력하세요."/>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="email">이메일<span class="text-danger">*
+                    </span>&nbsp;&nbsp;</label>
+                    <span id="email-msg" class="text-danger small">이메일 주소 인증이 필요합니다.</span>
+                    <div class="input-group">
+                      <input
+                        type="text" id="email" name="email" class="form-control"
+                        placeholder="과정 신청 시 작성했던 이메일 주소를 입력하세요.">
+                      <div class="input-group-append">
+                        <button
+                          id="emailSendBtn"
+                          class="btn btn-outline-primary"
+                          type="button">이메일 인증</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label class="form-label" for="certificateNo">인증번호<span class="text-danger">*
+                    </span>&nbsp;&nbsp;</label>
+                    <span id="emailValid-msg" class="text-danger small"></span>
+                    <div class="input-group">
+                      <input
+                        type="text" id="certificateNo" class="form-control"
+                        placeholder="이메일로 발송된 인증번호를 입력하세요.">
+                      <div class="input-group-append">
+                        <button
+                          id="emailValidCheckBtn"
+                          class="btn btn-outline-primary"
+                          type="button" disabled>인증번호 확인</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end mb-3">
+                <button type="submit" id="changePwdBtn" class="btn btn-primary btn-icon-split mr-2">
+                  <span class="icon text-white-50">
+                      <i class="fas fa-address-book"></i>
+                  </span>
+                  <span class="text">비밀번호 변경</span>
+                </button>
+                <a class="btn btn-secondary btn-icon-split" th:href="@{/}">
+                  <span class="icon text-white-50">
+                    <i class="fa fa-times"></i>
+                  </span>
+                  <span class="text">취소</span>
+                </a>
+              </div>
+            </form>
+            <hr>
+            <div class="text-center">
+              <div class="copyright text-center my-auto">
+                <span class="small">Copyright &copy; Goott5 LMS 2025</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bootstrap core JavaScript-->
+<script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+<script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+<!-- Core plugin JavaScript-->
+<script th:src="@{/vendor/jquery-easing/jquery.easing.min.js}"></script>
+
+<!-- Custom scripts for all pages-->
+<script th:src="@{/js/sb-admin-2.min.js}"></script>
+
+<!-- axios -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<!-- 주소 검색 api -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+
+  let passwordValidate = false;
+
+  $("#password").on("blur", validatePassword);
+  $("#password2").on("blur", comparePasswords);
+
+  $("#email").on("keyup", function () {
+
+    emailValidate = false;
+
+    $("#emailSendBtn").prop("disabled", false);
+    $("#email-msg")
+    .text("인증번호 전송을 위해 이메일 발송을 클릭해주세요.")
+    .removeClass("text-info")
+    .addClass("text-danger");
+    $("#emailValid-msg").text("");
+  });
+
+  $("#emailSendBtn").on("click", validateEmail);
+
+  $("#emailValidCheckBtn").on("click", certificateAuthCode);
+
+  $("#changePwdForm").on("submit", function (e) {
+
+    if (!passwordValidate) {
+      console.log("비밀번호에 문제있음");
+      e.preventDefault();
+    }
+  });
+
+  function validatePassword() {
+    let password     = $("#password").val();
+    let $passwordMsg = $("#password-msg");
+
+    if (password.length < 4 || password.length > 20) {
+      $passwordMsg.text("비밀번호 글자수는 4자~20자로 작성해주세요.")
+                  .removeClass("text-info")
+                  .addClass("text-danger");
+      $("#password").focus();
+    } else {
+      let hasLetter  = /[a-zA-Z]/.test(password);
+      let hasNumber  = /[0-9]/.test(password);
+      let hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+      let count = [hasLetter, hasNumber, hasSpecial].filter(Boolean).length;
+
+      if (count < 2) {
+        $passwordMsg.text("영문,숫자,특수문자 중 2개 이상을 포함하세요.")
+                    .removeClass("text-info")
+                    .addClass("text-danger");
+        $("#password").focus();
+      } else {
+        $passwordMsg.text("사용가능한 비밀번호 입니다.")
+                    .removeClass("text-danger")
+                    .addClass("text-info");
+
+        if ($("#password2").val() != "") {
+          comparePasswords();
+        }
+      }
+    }
+  }
+
+  function comparePasswords() {
+    let password      = $("#password").val();
+    let password2     = $("#password2").val();
+    let $password2Msg = $("#password2-msg");
+
+    if (password2 == "") {
+      passwordValidate = false;
+
+    } else if (password != password2) {
+      passwordValidate = false;
+      $password2Msg
+      .text("비밀번호가 일치하지 않습니다.")
+      .removeClass("text-info")
+      .addClass("text-danger");
+
+    } else {
+      passwordValidate = true;
+      $password2Msg
+      .text("비밀번호가 일치합니다.")
+      .removeClass("text-danger")
+      .addClass("text-info");
+    }
+  }
+
+  function validateEmail() {
+    $("#emailSendBtn").prop("disabled", true);
+
+    let email          = $("#email").val();
+    let emailRegExp    = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    let $emailMsg      = $("#email-msg");
+    let $emailValidMsg = $("#emailValid-msg");
+
+    if (!emailRegExp.test(email)) {
+      $emailMsg
+      .text("유효하지 않은 이메일 주소입니다.")
+      .removeClass("text-info")
+      .addClass("text-danger");
+      $("#emailSendBtn").prop("disabled", false);
+    } else {
+      $emailMsg
+      .text("이메일 주소 확인 중입니다. 잠시만 기다려주세요.")
+      .removeClass("text-danger")
+      .addClass("text-info");
+
+      axios.post("/user/sendAuthCodeForSignup", {
+        email   : email,
+        fullname: $("#fullname").val(),
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $("#emailValidCheckBtn").prop("disabled", false);
+               $emailMsg
+               .text("유효한 이메일 주소입니다.")
+               .removeClass("text-danger")
+               .addClass("text-info");
+               startEmailTimer();
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+             if (error.response.data.code === 409) {
+               $emailMsg.text(error.response.data.data).removeClass("text-info")
+                        .addClass("text-danger");
+             } else {
+               $emailValidMsg.text("이메일 발송에 문제가 생겼습니다. 다시 한번 발송해주세요.").removeClass("text-info")
+                             .addClass("text-danger");
+             }
+             $("#emailSendBtn").prop("disabled", false);
+           });
+
+    }
+
+  }
+
+  function certificateAuthCode() {
+
+    axios.post("/user/certificateAuthCode", {
+      certificateNo: $("#certificateNo").val(),
+
+    })
+         .then(function (response) {
+           if (response.data.code === 200) {
+             clearInterval(timerId);
+             $("#emailValid-msg")
+             .text("인증 확인되었습니다.")
+             .removeClass("text-danger")
+             .addClass("text-info");
+             $("#emailValidCheckBtn").prop("disabled", true);
+
+             emailValidate = true;
+           }
+         })
+         .catch(function (error) {
+           console.log(error);
+           if (error.response.data.code === 409) {
+             $("#emailValid-msg").text(error.response.data.data).removeClass("text-info")
+                                 .addClass("text-danger");
+           } else {
+             $("#emailValid-msg").text("통신 에러가 생겼습니다. 다시 한번 시도해주세요.").removeClass("text-info")
+                                 .addClass("text-danger");
+           }
+         });
+
+  }
+
+  // 인증번호 입력에 대한 타이머 동작
+  let timerId;
+  let timeLeft = 180;
+
+  function startEmailTimer() {
+    clearInterval(timerId);
+    timeLeft           = 180;
+    let $emailValidMsg = $("#emailValid-msg");
+
+    $emailValidMsg.text(`이메일이 발송되었습니다.`).removeClass("text-danger")
+                  .addClass("text-info");
+
+    timerId = setInterval(function () {
+      timeLeft--;
+
+      let minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+      let seconds = String(timeLeft % 60).padStart(2, "0");
+
+      $emailValidMsg
+      .text(`인증번호를 입력해주세요(남은 시간: ${minutes}:${seconds})`);
+
+      if (timeLeft <= 0) {
+        clearInterval(timerId);
+        $emailValidMsg
+        .text("인증 시간이 만료되었습니다.")
+        .removeClass("text-info")
+        .addClass("text-danger");
+
+        removeCertificateNo();
+      }
+    }, 1000);
+  }
+
+  // 타이머 만료에 따른 인증번호 삭제
+  function removeCertificateNo() {
+
+    axios.post("/user/removeCertificateNo", {})
+         .then(function (response) {
+           if (response.data.code === 200) {
+
+             $("#emailValidCheckBtn").prop("disabled", true);
+             $("#emailSendBtn").prop("disabled", false);
+             $("#email-msg")
+             .html("이메일 인증을 다시 해주세요.")
+             .removeClass("text-info")
+             .addClass("text-danger");
+
+             emailVaild = false;
+
+           }
+         })
+         .catch(function (error) {
+           console.log(error);
+         });
+
+  }
+
+
+
+</script>
+</body>
+</html>

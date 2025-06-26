@@ -1,6 +1,7 @@
 package com.goott5.lms.user.controller;
 
 import com.goott5.lms.user.domain.ApiResponse;
+import com.goott5.lms.user.domain.ChangePwdDTO;
 import com.goott5.lms.user.domain.LoginDTO;
 import com.goott5.lms.user.domain.SignupDTO;
 import com.goott5.lms.user.domain.UserVO;
@@ -281,5 +282,21 @@ public class UserController {
 
   }
 
+
+  @GetMapping("/changePwd")
+  public String changePwd() {
+
+    return "user/changePwd";
+  }
+
+  @PostMapping("/changePwdForSignup")
+  public String changePwdForSignup(ChangePwdDTO changePwdDTO,
+          RedirectAttributes redirectAttributes) {
+
+    userService.changePwdForSignup(changePwdDTO);
+
+    redirectAttributes.addFlashAttribute("signupMsg", "비밀번호가 변경되었습니다. 로그인해주세요.");
+    return "redirect:/";
+  }
 
 }

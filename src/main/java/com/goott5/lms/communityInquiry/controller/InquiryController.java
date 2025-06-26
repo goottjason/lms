@@ -47,7 +47,7 @@ public class InquiryController {
 
     model.addAttribute("inquiryListResponse", inquiryListResponse);
 
-    return "/communityInquiry/inquiryList";
+    return "communityInquiry/inquiryList";
 
   }
 

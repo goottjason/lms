@@ -4,13 +4,13 @@ import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.common.service.SendEmailService;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
+import com.goott5.lms.user.domain.ChangePwdDTO;
 import com.goott5.lms.user.domain.LoginDTO;
 import com.goott5.lms.user.domain.SignupDTO;
 import com.goott5.lms.user.domain.UserVO;
 import com.goott5.lms.user.mapper.UserMapper;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import javax.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,8 @@ public class UserServiceImpl implements UserService {
 
     String title = "Goot5 LMS 회원가입을 위한 인증번호 메일입니다.";
 
-    String authCode = UUID.randomUUID().toString();
+//    String authCode = UUID.randomUUID().toString();
+    String authCode = Integer.toString((int) (Math.random() * 899999) + 100000);
     log.info("인증번호::::::::::::{}", authCode);
 
     String html = "<h1>회원가입을 환영합니다.</h1>";
@@ -181,6 +182,17 @@ public class UserServiceImpl implements UserService {
 
     return encryptedPwd;
 
+  }
+
+  @Override
+  public void changePwdForSignup(ChangePwdDTO changePwdDTO) {
+
+    String encryptedPwd = passwordEncoder.encode(changePwdDTO.getPassword());
+
+    UserVO userVO = userMapper.selectUserByEmail(changePwdDTO.getEmail());
+    int userId = userVO.getId();
+
+    userMapper.updateUserForPassword(userId, encryptedPwd);
   }
 
 }
