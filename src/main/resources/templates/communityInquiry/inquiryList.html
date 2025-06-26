@@ -146,6 +146,9 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+
+    $("#courseSelector").hide();
+
     let searchType = $("#searchTypeSelect").val();
     let keyword    = $("#keyword").val();
     let sort       = $("#sort").val();
