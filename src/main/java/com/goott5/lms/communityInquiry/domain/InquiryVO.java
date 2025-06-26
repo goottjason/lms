@@ -24,6 +24,7 @@ public class InquiryVO {
   private boolean isPosted;
   private boolean isAnswered;
   private boolean isAnsweredChecked;
+  private String answer;
   private int answerer;
   private String answererName;
   private LocalDateTime createdAt;

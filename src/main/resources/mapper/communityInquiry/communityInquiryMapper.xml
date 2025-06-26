@@ -8,7 +8,13 @@
     SELECT ci.*, u.fullname AS writer_name
     FROM community_inquiry ci
     JOIN user u ON ci.writer = u.id
-    <include refid="userCondition"/>
+    WHERE ci.is_posted = 1
+    <if test='userType == "INSTRUCTOR" or userType == "LEARNER"'>
+      AND ci.writer = #{userId}
+    </if>
+    <if test="id != -1">
+      AND ci.id = #{id}
+    </if>
     <if test="searchType != null and searchType != ''">
       <include refid="searchCondition"/>
     </if>
@@ -23,7 +29,8 @@
     <result property="writer" column="writer"/>
     <result property="isPosted" column="is_posted"/>
     <result property="isAnswered" column="is_answered"/>
-    <result property="isAnsweredChecked" column="is_answeredChecked"/>
+    <result property="isAnsweredChecked" column="is_answered_checked"/>
+    <result property="answer" column="answer"/>
     <result property="answerer" column="answerer"/>
     <result property="createdAt" column="created_at"/>
     <result property="answeredAt" column="answered_at"/>
@@ -32,17 +39,6 @@
     <!-- 조인된 fullname -->
     <result property="writerName" column="writer_name"/>
   </resultMap>
-
-  <sql id="userCondition">
-    <choose>
-      <when test='userType == "INSTRUCTOR" or userType == "LEARNER"'>
-        WHERE writer = #{userId}
-      </when>
-      <when test='userType == "ADMINISTRATOR"'>
-        WHERE writer IS NOT NULL
-      </when>
-    </choose>
-  </sql>
 
   <sql id="searchCondition">
     <choose>
@@ -57,43 +53,6 @@
       </when>
     </choose>
   </sql>
-
-
-  <!--  <select id="selectInquiryList" resultType="com.goott5.lms.communityInquiry.domain.InquiryVO">-->
-  <!--    select * from community_inquiry-->
-  <!--    <include refid="userCondition"></include>-->
-  <!--    <if test="searchType != null and searchType != ''">-->
-  <!--      <include refid="searchCondition"></include>-->
-  <!--    </if>-->
-  <!--    <include refid="orderCondition"></include>-->
-  <!--    limit #{skip}, #{pageSize}-->
-  <!--  </select>-->
-
-
-  <!--  <sql id="userCondition">-->
-  <!--    <choose>-->
-  <!--      <when test='userType == "INSTRUCTOR" or userType == "LEARNER"'>-->
-  <!--        where writer = #{userId}-->
-  <!--      </when>-->
-  <!--      <when test='userType == "ADMINISTRATOR"'>-->
-  <!--        where writer is not null-->
-  <!--      </when>-->
-  <!--    </choose>-->
-  <!--  </sql>-->
-
-  <!--  <sql id="searchCondition">-->
-  <!--    <choose>-->
-  <!--      <when test='searchType == "t"'>-->
-  <!--        and title like CONCAT('%', #{keyword}, '%')-->
-  <!--      </when>-->
-  <!--      <when test='searchType == "i"'>-->
-  <!--        and inquiry like CONCAT('%', #{keyword}, '%')-->
-  <!--      </when>-->
-  <!--      <when test='searchType == "w"'>-->
-  <!--        and writer like CONCAT('%', #{keyword}, '%')-->
-  <!--      </when>-->
-  <!--    </choose>-->
-  <!--  </sql>-->
 
 
   <sql id="orderCondition">
@@ -116,12 +75,15 @@
     </choose>
   </sql>
 
-  <select id="selectCountBoardWithSearchCondition" resultType="int">
 
+  <select id="selectCountBoard" resultType="int">
     SELECT count(*)
     FROM community_inquiry ci
     JOIN user u ON ci.writer = u.id
-    <include refid="userCondition"></include>
+    WHERE ci.is_posted = 1
+    <if test='userType == "INSTRUCTOR" or userType == "LEARNER"'>
+      AND writer = #{userId}
+    </if>
     <if test="searchType != null and searchType != ''">
       <include refid="searchCondition"></include>
     </if>
