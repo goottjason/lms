@@ -35,7 +35,8 @@
             <div class="form-group">
               <label for="title">제목</label>
               <span id="titleError" style="color: red"></span>
-              <input type="text" id="title" th:name="title" class="form-control" th:value="${submission.getTitle()}">
+              <input type="text" id="title" th:name="title" class="form-control"
+                     th:value="${submission.getTitle()}">
             </div>
           </div>
         </div>
@@ -71,34 +72,33 @@
     <!--조회된 파일 리스트가 있을 경우-->
     <div class="card-footer">
       <p class="mt-2">기존 파일</p>
-<!--      <div class="row">-->
+      <!--      <div class="row">-->
       <div class="d-flex flex-column">
 
         <th:block th:if="${beforeFiles != null}">
-          <div class="col-4 card mb-2" th:each="fileDTO : ${beforeFiles}">
-            <div class="row g-0 m-0">
-
-              <div class="col-md-9 d-flex align-items-center">
-                <div class="card-body p-0"  th:unless="${fileDTO.getIsImage()}" style="position: relative;padding-right: 24px;">
-                  <span style="position: absolute; top: 1px; right: 2px;"
-                        th:class="softDeleteFile"
-                        th:data-file="${fileDTO.getId()}">X</span>
-                  <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" th:href="${fileDTO.getPath()}"
-                     th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
-                </div>
-                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}" style="position: relative;">
-                    <span style="position: absolute; right: 1px; top: 1px"
-                          th:class="softDeleteFile"
-                          th:data-file="${fileDTO.getId()}">X</span>
-                  <a th:href="${fileDTO.getPath()}"
-                     th:data-file="${fileDTO.getNewName()}"
-                     th:attr="download=${fileDTO.getOriginalName()}">
-                    <img th:src="${fileDTO.getPath()}"
-                         style="width: 300px; height: 100px; object-fit: cover;">
-                  </a>
-                </div>
+          <div th:each="fileDTO : ${beforeFiles}">
+            <div class="card mb-2 w-100"
+                 style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;"
+                 th:unless="${fileDTO.getIsImage()}">
+              <div class="card-body d-flex align-items-center justify-content-between p-2">
+                      <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;"
+                            th:text="|📄 ${fileDTO.getOriginalName()}"></span>
+                <span style="cursor:pointer;"
+                      th:class="softDeleteFile"
+                      th:data-file="${fileDTO.getId()}">❌</span>
               </div>
-
+            </div>
+            <div class="card mb-2 w-100"
+                 style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;"
+                 th:if="${fileDTO.getIsImage()}">
+              <div class="card-body d-flex align-items-center justify-content-between p-2">
+                <img th:src="${fileDTO.getPath()}"
+                     class="img-fluid rounded-start"
+                     style="width: 200px; height: 70px; object-fit: contain;">
+                <span style="cursor:pointer;"
+                      th:class="softDeleteFile"
+                      th:data-file="${fileDTO.getId()}">❌</span>
+              </div>
             </div>
           </div>
         </th:block>
@@ -112,23 +112,23 @@
       <p class="mt-2">추가할 파일</p>
       <div class="row">
 
-    <div id="preview"></div>
+        <div id="preview"></div>
 
-    <!-- 버튼 -->
-    <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="submit" class="btn btn-primary btn-icon-split mr-2" type="submit">
+        <!-- 버튼 -->
+        <div class="col-12 d-flex justify-content-end mt-3">
+          <button id="submit" class="btn btn-primary btn-icon-split mr-2" type="submit">
           <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
           </span>
-        <span class="text px-5">등록</span>
-      </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+            <span class="text px-5">등록</span>
+          </button>
+          <button id="" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
-        <span class="text px-5">취소</span>
-      </button>
-    </div>
+            <span class="text px-5">취소</span>
+          </button>
+        </div>
   </form>
 
 
@@ -153,14 +153,13 @@
     let deleteFileList = [];
 
     // 삭제할 파일 배열에 담기 + 조회 리스트에서 삭제
-    function softDeleteFile(x){
+    function softDeleteFile(x) {
       // alert($(this).data("file"));
-      $(x).parent().parent().parent().parent().remove(); //기존 파일 조회 리스트에서 삭제
+      $(x).closest(".card.mb-2.w-100").remove(); //기존 파일 조회 리스트에서 삭제
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
-      console.log("deleteFileList",deleteFileList);
-      console.log("아이디 타입 확인",typeof($(x).data("file"))); //number
+      console.log("deleteFileList", deleteFileList);
+      console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
     }
-
 
     //-------- 새로 넣을 파일--------------------
     let fileList = [];
@@ -171,7 +170,7 @@
     function removeFile(index) {
       fileList.splice(index, 1);
       previewFile(fileList);
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //프리뷰
@@ -187,15 +186,11 @@
             reader.onload = function (e) {
               // 읽기 동작이 완료되었을 때!
               let output = "";
-              output += `<div class="card mb-2 w-100">
-    <div class="row g-0 m-0">
-      <div class="col-md-9 d-flex align-items-center" style="position: relative;  padding-right: 24px;">
-        <div class="card-body p-0" style="position: relative; min-height: 100px;">
-          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" href="#">${file.name}</a>
+              output += `<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+    <div class="card-body d-flex align-items-center justify-content-between p-2">
+          <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;">📄 ${file.name}</span>
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">❌</span>
         </div>
-      </div>
-    </div>
   </div>`;
 
               $("#preview").append(output);
@@ -210,21 +205,12 @@
               //e: 이미지 경로? data:image/....
               //console.log("e.target.result", e.target.result); //엄청 길게 나옴
               let output = "";
-              output += `<div class="card mb-2 w-100">
-    <div class="row g-0 m-0">
-      <div class="col-md-9 d-flex align-items-center">
-        <div class="card-body p-0" style="position: relative; min-height: 100px;">
-          <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;"
-             href="${e.target.result}"
-             download="${file.name}">
-            <img src="${e.target.result}"
-                 style="width: 300px; height: 100px; object-fit: cover;">
-          </a>
-        </div>
+              output += `<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+      <div class="card-body d-flex align-items-center justify-content-between p-2">
+              <img src="${e.target.result}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;" />
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">❌</span>
       </div>
-    </div>
-  </div>`;
+    </div>`;
 
               $("#preview").append(output);
             }
@@ -237,8 +223,20 @@
     //파일 넣을 때  사이즈 크면 막고 아니면 넣기
     function checkFileSize(files) {
       for (let file of files) { //유사배열?
+        let ext = file.name.split(".").pop().toLowerCase();
         if (file.size > MAX_FILE_SIZE) {
-          alert("8MB를 초과할 수 없습니다.")
+          // alert("8MB를 초과할 수 없습니다.")
+          Swal.fire({
+            title: '8MB를 초과할 수 없습니다.',
+            icon: 'error',
+            confirmButtonText: '예'
+          })
+        }else if(ext.trim() === "exe"){
+          Swal.fire({
+            title: '실행 파일은 업로드할 수 없습니다.',
+            icon: 'error',
+            confirmButtonText: '예'
+          })
         } else {
           fileList.push(file);
           console.log("fileList", fileList);
@@ -247,22 +245,18 @@
       }
     }
 
-
-
     //------------폼 데이터 보내기-----------------------
 
-    function register(){
+    function register() {
 
       let form = document.getElementById("formSubmit");
       let formData = new FormData(form);
-
 
       let params = new URLSearchParams(window.location.search);
       let submissionId = params.get("submissionId");
       formData.append("id", submissionId);
       formData.append("homeworkId", homeworkId);
-      formData.append("learnerId",learnerId);
-
+      formData.append("learnerId", learnerId);
 
       //파일 리스트 폼 데이터로 보내기
       fileList.forEach(function (file) {
@@ -278,52 +272,55 @@
       console.log("formData", formData);
 
       axios.post("/homework/submissionModify", formData)
-      .then(function(response){
-        console.log("response",response);
+      .then(function (response) {
+        console.log("response", response);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId
-      }).catch(function(error){
-        console.log("error",error);
-        if(error.response.data.code === 400){
+      }).catch(function (error) {
+        console.log("error", error);
+        if (error.response.data.code === 400) {
           errorMap = error.response.data.data;
-          if(errorMap.title){
+          if (errorMap.title) {
             $("#titleError").html(errorMap.title);
           } else {
             $("#titleError").html("");
           }
 
-          if(errorMap.content){
+          if (errorMap.content) {
             $("#contentError").html(errorMap.content);
-          }else {
+          } else {
             $("#contentError").html("");
           }
         }
-
 
       })
 
     }
 
     //----noAuth(검증)
-    function authRegister(){
-    if(noAuth != null && noAuth !== 'undefined'){
-      alert(noAuth);
-      location.href = "/homework/homeworkList";
+    function authRegister() {
+      if (noAuth != null && noAuth !== 'undefined') {
+        // alert(noAuth);
+        Swal.fire({
+          title: '수정할 수 없습니다',
+          text: noAuth,
+          icon: 'error',
+          confirmButtonText: '예',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            location.href = "/homework/homeworkList";
+          }
+        })
+      }
     }
-
-    }
-
-
-
 
     $(function () {
       //register 검증
       authRegister();
 
-
-      console.log("learnerId",learnerId);
-      console.log("submission",submission); //받아옴
-      console.log("beforeFiles",beforeFiles); //받아옴
-      console.log("noAuth",noAuth); //받아옴
+      console.log("learnerId", learnerId);
+      console.log("submission", submission); //받아옴
+      console.log("beforeFiles", beforeFiles); //받아옴
+      console.log("noAuth", noAuth); //받아옴
 
       // 파일 리스트에 파일 넣을때, 사이즈가 크면 막기
       // 파일 리스트에 파일 넣기 => 성공
@@ -343,13 +340,11 @@
       })
 
       //삭제할 파일 span 누르면 deleteFile 배열에 넣기 + 조회목록에서 삭제
-      $(".softDeleteFile").click(function(){
+      $(".softDeleteFile").click(function () {
         softDeleteFile(this);
       })
 
     })
-
-
 
 
   </script>

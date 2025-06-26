@@ -92,33 +92,26 @@
               <div class="d-flex flex-column">
 
                 <th:block th:if="${beforeFileList != null}">
-                  <div class="col-4 card mb-2 mt-2" th:each="fileDTO : ${beforeFileList}">
-                    <div class="row g-0 m-0">
-
-                      <div class="col-md-9 d-flex align-items-center">
-                        <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}"
-                             style="position: relative;padding-right: 24px;">
-                  <span style="position: absolute; top: 1px; right: 2px;"
-                        th:class="softDeleteFile"
-                        th:data-file="${fileDTO.getId()}">X</span>
-                          <a class="card-title mb-1 text-truncate d-block"
-                             style="margin-right: 28px;" th:href="${fileDTO.getPath()}"
-                             th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
-                        </div>
-                        <div class="card-body p-0" th:if="${fileDTO.getIsImage()}"
-                             style="position: relative;">
-                    <span style="position: absolute; right: 1px; top: 1px"
-                          th:class="softDeleteFile"
-                          th:data-file="${fileDTO.getId()}">X</span>
-                          <a th:href="${fileDTO.getPath()}"
-                             th:data-file="${fileDTO.getNewName()}"
-                             th:attr="download=${fileDTO.getOriginalName()}">
-                            <img th:src="${fileDTO.getPath()}"
-                                 style="width: 300px; height: 100px; object-fit: cover;">
-                          </a>
-                        </div>
+                  <div th:each="fileDTO : ${beforeFileList}">
+                    <div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;"
+                         th:unless="${fileDTO.getIsImage()}">
+                      <div class="card-body d-flex align-items-center justify-content-between p-2">
+                      <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;"
+                            th:text="|📄 ${fileDTO.getOriginalName()}"></span>
+                        <span style="cursor:pointer;"
+                              th:class="softDeleteFile"
+                              th:data-file="${fileDTO.getId()}">❌</span>
                       </div>
-
+                    </div>
+                    <div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;"
+                         th:if="${fileDTO.getIsImage()}">
+                      <div class="card-body d-flex align-items-center justify-content-between p-2">
+                        <img th:src="${fileDTO.getPath()}"
+                             class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                        <span style="cursor:pointer;"
+                              th:class="softDeleteFile"
+                              th:data-file="${fileDTO.getId()}">❌</span>
+                      </div>
                     </div>
                   </div>
                 </th:block>
@@ -178,7 +171,7 @@
     // 파일 삭제 function
     function softDeleteFile(x) {
       // alert($(this).data("file"));
-      $(x).parent().parent().parent().parent().remove();
+      $(x).closest(".card.mb-2.w-100").remove();
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
       console.log("deleteFileList", deleteFileList);
       console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
@@ -192,9 +185,21 @@
 
       for (let file of files) {
         if (file) {
+          let ext = file.name.split(".").pop().toLowerCase();
           //파일일 경우
           if (file.size > MAX_FILE_SIZE) {
-            alert("파일 사이즈가 초과하였습니다.");
+            // alert("파일 사이즈가 초과하였습니다.");
+            Swal.fire({
+              title: '파일 사이즈를 초과하였습니다.',
+              icon: 'error',
+              confirmButtonText: '예'
+            })
+          }else if(ext.trim() === "exe"){
+            Swal.fire({
+              title: '실행 파일은 업로드할 수 없습니다.',
+              icon: 'error',
+              confirmButtonText: '예'
+            })
           } else {
             fileList.push(file);
             console.log("file push", file);
@@ -216,15 +221,11 @@
             reader.onload = function (e) {
               // 읽기 동작이 완료되었을 때!
               let output = "";
-              output += `<div class="card mb-2 w-100">
-    <div class="row g-0 m-0">
-      <div class="col-md-9 d-flex align-items-center" style="position: relative;  padding-right: 24px;">
-        <div class="card-body p-0" style="position: relative; min-height: 100px;">
-          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;" href="#">${file.name}</a>
+              output += `<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+    <div class="card-body d-flex align-items-center justify-content-between p-2">
+          <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;">📄 ${file.name}</span>
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">❌</span>
         </div>
-      </div>
-    </div>
   </div>`;
 
               $("#preview").append(output);
@@ -239,21 +240,12 @@
               //e: 이미지 경로? data:image/....
               //console.log("e.target.result", e.target.result); //엄청 길게 나옴
               let output = "";
-              output += `<div class="card mb-2 w-100">
-    <div class="row g-0 m-0">
-      <div class="col-md-9 d-flex align-items-center">
-        <div class="card-body p-0" style="position: relative; min-height: 100px;">
-          <span style="position: absolute; top: 1px; right: 2px;" onclick="removeFile(${index});">X</span>
-          <a class="card-title mb-1 text-truncate d-block" style="margin-right: 28px;"
-             href="${e.target.result}"
-             download="${file.name}">
-            <img src="${e.target.result}"
-                 style="width: 300px; height: 100px; object-fit: cover;">
-          </a>
-        </div>
+              output +=`<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
+      <div class="card-body d-flex align-items-center justify-content-between p-2">
+              <img src="${e.target.result}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;" />
+          <span style="position: absolute; top: 1px; right: 2px" onclick="removeFile(${index});">❌</span>
       </div>
-    </div>
-  </div>`;
+    </div>`;
 
               $("#preview").append(output);
             }
@@ -267,7 +259,7 @@
     function removeFile(index) {
       fileList.splice(index, 1);
       previewFile(fileList);
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //-------$function----------------------
@@ -289,8 +281,6 @@
         pushFileList();
         previewFile(fileList);
       })
-
-
 
       //-------------------폼 전송---------------------
 

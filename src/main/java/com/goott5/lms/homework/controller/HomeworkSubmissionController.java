@@ -391,6 +391,7 @@ public class HomeworkSubmissionController {
         return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "게시글 저장 실패", null));
       }
 
+      log.info("제출 등록 성공");
       return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "homeworkDTO 무사히 받음", insertNum));
     }
 
@@ -438,6 +439,18 @@ public class HomeworkSubmissionController {
       if (homeworkDTO.getEndDate().isBefore(LocalDateTime.now())) {
         model.addAttribute("noAuth", "제출 기한이 지나 수정 불가합니다.");
         return "homework/submissionModify";
+      }
+    }
+
+    //해당 제출물의 평가가 존재할 때
+    Map<HomeworkSubmissionDTO, HomeworkEvalDTO> checkMap = homeworkService.selectSubmissionEval(
+        submissionId);
+    if (checkMap != null) {
+      if (!checkMap.isEmpty()) {
+        if (checkMap.get(submission) != null) {
+          model.addAttribute("noAuth", "평가가 존재해 수정이 불가합니다.");
+          return "homework/submissionModify";
+        }
       }
     }
 
@@ -532,6 +545,7 @@ public class HomeworkSubmissionController {
           .body(new MyResponseWithDataPYJ(e.getStatusCode(), e.getMessage(), e.getError()));
     }
 
+    log.info("제출 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "수정 데이터 전송 성공", homeworkSubmissionDTO));
   }
 
@@ -623,7 +637,8 @@ public class HomeworkSubmissionController {
       }
     }
 
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "게시글 삭제 성공", null));
+    log.info("제출 삭제 성공");
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "제출 삭제 성공", null));
   }
 
   // 평가 등록
@@ -714,7 +729,8 @@ public class HomeworkSubmissionController {
 
     }
 
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "데이터 전송 완료", null));
+    log.info("평가 등록 완료");
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 등록 완료", null));
   }
 
   @PostMapping("/modifyEvalPost")
@@ -772,7 +788,6 @@ public class HomeworkSubmissionController {
           .body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorModifyMap));
     }
 
-
     log.info("homeworkEvalModifyDTO:{}", homeworkEvalModifyDTO);
 //    log.info("id:{}",id);
 
@@ -812,6 +827,7 @@ public class HomeworkSubmissionController {
                 .body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", e.getMessage()));
           }
         }
+        log.info("파일 db 삭제 성공");
       }
     }
 
@@ -825,72 +841,75 @@ public class HomeworkSubmissionController {
           .body(new MyResponseWithDataPYJ(500, "파일 서버 저장 실패", e.getMessage()));
     }
 
+    log.info("평가 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 수정 성공", homeworkEvalModifyDTO));
   }
 
   @DeleteMapping("/deleteEval")
   public ResponseEntity<MyResponseWithDataPYJ> deleteEval(
-      @RequestBody HomeworkEvalDTO eval,HttpSession session) {
-
+      @RequestBody HomeworkEvalDTO eval, HttpSession session) {
 
     // 로그인한 아이디가 해당 평가 작성자와 일치하는 지 확인
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
       log.info("로그인한 유저가 아닙니다.");
-      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(401, "로그인한 유저가 아닙니다.", null));
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(401, "로그인한 유저가 아닙니다.", null));
     }
 
-    if(eval == null){
+    if (eval == null) {
       log.info("삭제할 평가가 넘어오지 않았습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "삭제할 평가가 넘어오지 않았습니다.", null));
     }
 
-    if(eval.getInstructorId() != loginUser.getId()){
+    if (eval.getInstructorId() != loginUser.getId()) {
       log.info("해당 과제를 삭제할 권한이 없습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "해당 과제를 삭제할 권한이 없습니다.", null));
     }
 
-
-
     //(받음)
-    log.info("eval:{}",eval);
+    log.info("eval:{}", eval);
+
+    // 기존 파일 삭제
+    List<FileSelectDTO> fileList = utilService.selectFileList("homework_eval", eval.getId());
+
+    // 기존 파일 리스트가 존재할때 => 파일 삭제
+    if (fileList != null) {
+      if (!fileList.isEmpty()) {
+        for (FileSelectDTO fileSelectDTO : fileList) {
+          try {
+            s3Uploader.deleteFile(
+                "upload/homework" + "/" + URLDecoder.decode(fileSelectDTO.getNewName(),
+                    "UTF-8")); // s3 버켓 안 파일 객체의 키가 들어가야함
+            // 서버 삭제 성공 시(키 이름 확인)
+            int dbDeleteNum = utilService.deleteFileById(fileSelectDTO.getId());
+            if (dbDeleteNum != 1) {
+              log.info("db 파일 삭제 실패");
+              return ResponseEntity.badRequest()
+                  .body(new MyResponseWithDataPYJ(409, "db 파일 삭제 실패", dbDeleteNum));
+            }
+          } catch (UnsupportedEncodingException e) {
+            log.info("파일 서버 삭제 실패");
+            return ResponseEntity.badRequest()
+                .body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", e.getMessage()));
+          }
+        }
+        log.info("db 파일 삭제 성공");
+      }
+    }
 
     //게시글 삭제
     boolean isDeleteEval = homeworkService.deleteEvalById(eval.getId());
-    if(!isDeleteEval){
+    if (!isDeleteEval) {
       log.info("과제 삭제 실패했습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "과제 삭제 실패했습니다.", eval));
     }
 
-    // 기존 파일 삭제
-    List<FileSelectDTO> fileList = utilService.selectFileList("homework_eval",eval.getId());
-
-    // 기존 파일 리스트가 존재할때 => 파일 삭제
-    if(fileList != null){
-      if(!fileList.isEmpty()){
-        for (FileSelectDTO fileSelectDTO : fileList) {
-          try {
-            s3Uploader.deleteFile("upload/homework" + "/" + URLDecoder.decode(fileSelectDTO.getNewName(),"UTF-8")); // s3 버켓 안 파일 객체의 키가 들어가야함
-            // 서버 삭제 성공 시(키 이름 확인)
-            int dbDeleteNum = utilService.deleteFileById(fileSelectDTO.getId());
-            if(dbDeleteNum != 1){
-              log.info("db 파일 삭제 실패");
-              return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(409,"db 파일 삭제 실패",dbDeleteNum));
-            }
-          } catch (UnsupportedEncodingException e) {
-            log.info("파일 서버 삭제 실패");
-            return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", e.getMessage()));
-          }
-        }
-      }
-    }
-
-
-
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 삭제 완료",eval));
+    log.info("평가 삭제 성공");
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 삭제 완료", eval));
   }
 
 

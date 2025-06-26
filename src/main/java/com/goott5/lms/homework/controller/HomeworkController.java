@@ -440,10 +440,11 @@ public class HomeworkController {
       }
 
     } else {
-      log.info("파일 전달 안됨.");
+      log.info("파일 등록 없는 insert 성공");
       return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkDTO));
     }
 
+    log.info("파일 등록 with insert 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkDTO));
 
   }
@@ -605,6 +606,7 @@ public class HomeworkController {
       }
     }
 
+    log.info("게시글 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "전송 성공", homeworkModifyDTO));
 
   }
@@ -654,7 +656,8 @@ public class HomeworkController {
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "게시글 삭제 실패", homeworkId));
     } else {
-      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "데이터 전송 성공", homeworkId));
+      log.info("게시글 삭제 성공");
+      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "게시글 삭제 성공", homeworkId));
     }
   }
 
