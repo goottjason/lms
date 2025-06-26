@@ -42,7 +42,7 @@ public class CourseManagementController {
   private final CourseManagementService courseManagementService;
   private final LearnerManagementService learnerManagementService;
 
-  @GetMapping("api/management/courses")
+  @GetMapping("/api/management/courses")
   @ResponseBody
   public ResponseEntity<ApiResponse<PageCourseRespDTO<CourseRespDTO>>> getCoursesAllorOne(
       @ModelAttribute CommonReqDTO commonReqDTO,
@@ -57,20 +57,8 @@ public class CourseManagementController {
   }
 
 
-  /*@GetMapping("api/course")
-  @ResponseBody
-  public ResponseEntity<ApiResponse<PageCourseRespDTO<CourseRespDTO>>> getCourse(
-      @ModelAttribute CourseGetReqDTO courseGetReqDTO
-  ) {
 
-    PageCourseRespDTO<CourseRespDTO> course =
-        courseManagementService.findCoursesAllorOne(courseGetReqDTO);
-
-    return ApiResponse.okResponse(200, "success", course);
-  }*/
-
-
-  @GetMapping("api/learners/enrolled")
+  @GetMapping("/api/learners/enrolled")
   @ResponseBody
   public List<UserRespDTO> getEnrolledLearnersByCourseId(
       @ModelAttribute PageUserReqDTO<UserReqDTO> pageUserReqDTO,
@@ -81,7 +69,7 @@ public class CourseManagementController {
   }
 
 
-  @GetMapping("api/learners/not-enrolled")
+  @GetMapping("/api/learners/not-enrolled")
   @ResponseBody
   public List<UserRespDTO> getNotEnrolledLearners(
       @ModelAttribute PageUserReqDTO<UserReqDTO> pageUserReqDTO,
@@ -92,7 +80,7 @@ public class CourseManagementController {
   }
 
 
-  @PostMapping("api/learner-enrollments")
+  @PostMapping("/api/learner-enrollments")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> addLearnerToCourse(
       @RequestBody Map<String, Object> payload
@@ -116,7 +104,7 @@ public class CourseManagementController {
   }
 
 
-  @DeleteMapping("api/learner-enrollments")
+  @DeleteMapping("/api/learner-enrollments")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeLearnerFromCourse(
       @RequestParam("loginUserId") Integer loginUserId,
@@ -136,7 +124,7 @@ public class CourseManagementController {
   }
 
 
-  @DeleteMapping("api/course")
+  @DeleteMapping("/api/course")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeCourse(
       @RequestBody CommonReqDTO commonReqDTO
@@ -156,13 +144,13 @@ public class CourseManagementController {
   }
 
 
-  @GetMapping("courseManagement/courseList")
+  @GetMapping("/courseManagement/courseList")
   public String courseList() {
     return "courseManagement/courseList";
   }
 
 
-  @GetMapping("courseManagement/courseDetail")
+  @GetMapping("/courseManagement/courseDetail")
   public String courseDetail(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
       Model model,
@@ -209,36 +197,7 @@ public class CourseManagementController {
   }
 
 
-  /*@GetMapping("courseManagement/courseModify")
-  public String courseModify(
-      @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
-      Model model,
-      HttpSession session
-  ) {
-
-    if (courseId == -1) { // 추후수정
-      return "courseManagement/courseList";
-    }
-
-    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    Integer loginUserId = Integer.valueOf(loginUser.getId());
-    String loginUserType = loginUser.getType();
-    CommonReqDTO commonReqDTO = CommonReqDTO.builder()
-        .loginUserId(loginUserId)
-        .loginUserType(loginUserType)
-        .courseId(courseId)
-        .isInProgress(null)
-        .build();
-    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
-    PageCourseRespDTO<CourseRespDTO> courses =
-        courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
-
-    model.addAttribute("course", courses.getRespDTOS().get(0));
-    return "courseManagement/courseModify";
-  }*/
-
-
-  @GetMapping("courseManagement/learnerAssignment")
+  @GetMapping("/courseManagement/learnerAssignment")
   public String learnerAssignment(HttpSession session, Model model) {
 
     model.addAttribute("loginUser", session.getAttribute("loginUser"));

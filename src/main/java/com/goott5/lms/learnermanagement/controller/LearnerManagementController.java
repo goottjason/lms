@@ -39,7 +39,7 @@ public class LearnerManagementController {
    *
    * @return
    */
-  @GetMapping("learnerManagement/learnerList")
+  @GetMapping("/learnerManagement/learnerList")
   public String learnerList() {
     return "learnerManagement/learnerList";
   }
@@ -54,7 +54,7 @@ public class LearnerManagementController {
    * @param isInProgress
    * @return
    */
-  @GetMapping("api/learners/all")
+  @GetMapping("/api/learners/all")
   @ResponseBody // value = "courseId", required = false
   public PageLearnerRespDTO<LearnerRespDTO> getLearnersAll(
       @ModelAttribute PageLearnerReqDTO<LearnerReqDTO> pageLearnerReqDTO,
@@ -72,7 +72,7 @@ public class LearnerManagementController {
     return learners;
   }
 
-  @GetMapping("api/management/learners")
+  @GetMapping("/api/management/learners")
   public ResponseEntity<ApiResponse<PageStaffRespDTO<StaffRespDTO>>> getLearnersAllorOne (
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageLearnerReqDTO<LearnerReqDTO> pageLernerReqDTO
@@ -93,7 +93,7 @@ public class LearnerManagementController {
    * @param leId
    * @return
    */
-  @GetMapping("api/participations")
+  @GetMapping("/api/participations")
   @ResponseBody
   public PageParticipationRespDTO<ParticipationRespDTO> getParticipations(
       @ModelAttribute PageParticipationReqDTO<ParticipationReqDTO> pageParticipationReqDTO,
@@ -119,7 +119,7 @@ public class LearnerManagementController {
    * @param session
    * @return
    */
-  @GetMapping("learnerManagement/learnerDetail")
+  @GetMapping("/learnerManagement/learnerDetail")
   public String learnerDetail(
       @RequestParam(value = "leId", defaultValue = "-1") Integer leId,
       @RequestParam(value = "isInProgress", required = false) Boolean isInProgress,
@@ -153,7 +153,7 @@ public class LearnerManagementController {
    * @param request
    * @return
    */
-  @PostMapping("api/learner-employment-support")
+  @PostMapping("/api/learner-employment-support")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> updateEmploymentSupport(
       @RequestBody EmploymentSupportUpdateReqDTO request) {
@@ -174,20 +174,20 @@ public class LearnerManagementController {
     }
   }
 
-  @GetMapping("learnerManagement/participationTemp")
+  @GetMapping("/learnerManagement/participationTemp")
   public String participationTemp() {
 
-      return "/learnerManagement/participationTemp";
+      return "learnerManagement/participationTemp";
   }
-  @GetMapping("learnerManagement/participationList")
+  @GetMapping("/learnerManagement/participationList")
   public String participationList() {
 
-    return "/learnerManagement/participationList";
+    return "learnerManagement/participationList";
   }
-  @GetMapping("learnerManagement/participationList2")
+  @GetMapping("/learnerManagement/participationList2")
   public String participationList2() {
 
-    return "/learnerManagement/participationList2";
+    return "learnerManagement/participationList2";
   }
 
 
@@ -209,7 +209,7 @@ public class LearnerManagementController {
   }
 
 
-  @GetMapping("api/management/participation/{pid}")
+  @GetMapping("/api/management/participation/{pid}")
   @ResponseBody
   public ResponseEntity<ApiResponse<ParticipationWithReason>> getPartInfoByPid(
       @PathVariable Integer pid
