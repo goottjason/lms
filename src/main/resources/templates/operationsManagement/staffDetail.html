@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">교직원 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 교직원 정보 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-2">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">교직원 정보</h6>
+        </div>
+        <div class="col-auto">
+          <button id="leave-btn" class="btn btn-sm btn-info btn-icon-split">
+            <span class="icon text-white-50">
+              <i class="fa fa-street-view"></i>
+            </span>
+            <span class="text">퇴사 처리</span>
+          </button>
+          <button id="leave-save-btn" class="btn btn-sm btn-danger btn-icon-split" style="display: none">
+            <span class="icon text-white-50">
+              <i class="fa fa-street-view"></i>
+            </span>
+            <span class="text">저장</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <tr class="text-center">
+            <th width="20%" class="text-center align-middle bg-gray-100">이름</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.fullname}"></td>
+            <th width="20%" class="text-center align-middle bg-gray-100">성별</th>
+            <td width="30%" class="text-left align-middle"
+                th:text="${staffs.gender == 'M '? '남성' : '여성'}">
+            </td>
+          </tr>
+          <tr>
+            <th width="20%" class="text-center align-middle bg-gray-100">분류</th>
+            <td width="30%" class="text-left align-middle"
+                th:text="${staffs.type == 'ADMINISTRATOR' ? '관리자' : '강사'}"></td>
+            <th width="20%" class="text-center align-middle bg-gray-100">직급</th>
+            <td width="30%" class="text-left align-middle"
+                th:text="${staffs.position == 'GENERAL_MANAGER' ? '총괄실장' :
+                          staffs.position == 'COURSE_HEAD' ? '학과장' :
+                          staffs.position == 'FULLTIME_INSTRUCTOR' ? '전임강사': '-'}"></td>
+          </tr>
+
+          <tr class="text-center">
+            <th width="20%" class="text-center align-middle bg-gray-100">생년월일</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.birthday}"></td>
+            <th width="20%" class="text-center align-middle bg-gray-100">휴대폰번호</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.mobile}"></td>
+          </tr>
+          <tr class="text-center">
+            <th width="20%" class="text-center align-middle bg-gray-100">이메일</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.email}"></td>
+            <th width="20%" class="text-center align-middle bg-gray-100">주소</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.address}"></td>
+          </tr>
+          <tr>
+            <th width="20%" class="text-center align-middle bg-gray-100">입사일자</th>
+            <td width="30%" class="text-left align-middle" th:text="${staffs.hireDate}">
+
+            </td>
+            <th width="20%" class="text-center align-middle bg-gray-100">퇴사일자</th>
+            <td>
+              <span class="leave-date-view" th:if="${staffs.leaveDate == null}">-</span>
+              <span class="leave-date-view" th:if="${staffs.leaveDate != null}" th:text="${staffs.leaveDate}"></span>
+              <input type="date" id="leave-date-input" name="leaveDate" class="form-control leave-date-input"
+                     th:value="${staffs.leaveDate}"
+                     style="display: none;"
+                     th:readonly="${staffs.leaveDate != null}">
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 과정이력 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">과정 이력</h6>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle" style="width: 15%">진행상황</th>
+            <th scope="col" class="align-middle" style="width: 45%">과정명</th>
+            <th scope="col" class="align-middle" style="width: 30%">훈련기간</th>
+            <th scope="col" class="align-middle" style="width: 10%">등록인원</th>
+          </tr>
+          </thead>
+          <tbody id="table-body">
+          </tbody>
+        </table>
+
+        <nav aria-label="Page navigation example" class="col mt-4" id="history-pagination">
+        </nav>
+      </div>
+
+    </div>
+    <!-- 버튼 -->
+
+  <!-- content body 끝 -->
+</div>
+  <div class="col-12 d-flex justify-content-end mb-4">
+      <a th:href="@{staffList}">
+        <button id="to-learner-list" class="btn btn-secondary btn-icon-split">
+          <span class="icon text-white-50">
+              <i class="fas fa-list"></i>
+          </span>
+          <span class="text px-4">목록</span>
+        </button>
+      </a>
+    </div>
+  </div>
+<th:block layout:fragment="script">
+
+  <!-- 외부 JS 파일 연결 -->
+  <script th:src="@{/js/operationsManagement/staffDetail.js}" type="text/javascript"></script>
+</th:block>
+</body>
+</html>

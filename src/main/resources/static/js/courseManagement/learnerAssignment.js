@@ -123,7 +123,7 @@ async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
     Swal.fire({
       icon: "error",
       title: "배정불가능!",
-      text: "정원을 초과하여 등록할 수 없습니다.",
+      text: "정원을 초과하였거나 배정할 과정이 없습니다.",
       footer: ''
     });
     return [];
@@ -160,7 +160,7 @@ function displayTables(enrolledLearners, notEnrolledLearners) {
               }
           </td>
           <td class="text-center align-middle">${learner.fullname}</td>
-          <td class="text-center align-middle">${learner.mobile}</td>
+          <td class="text-center align-middle">${learner.mobile ? learner.mobile : '-'}</td>
           <td class="text-center align-middle">
             <button class="btn btn-danger btn-icon-split btn-sm enrolled-remove-button" data-id="${learner.id}">
               <span class="text">삭제</span>
@@ -196,7 +196,7 @@ function displayTables(enrolledLearners, notEnrolledLearners) {
               }
             </td>
             <td class="text-center align-middle">${learner.fullname}</td>
-            <td class="text-center align-middle">${learner.mobile}</td>
+            <td class="text-center align-middle">${learner.mobile ? learner.mobile : '-'}</td>
             <td class="text-center align-middle">
               <button class="btn btn-info btn-icon-split btn-sm not-enrolled-add-button" data-id="${learner.id}">
                 <span class="text">추가</span>

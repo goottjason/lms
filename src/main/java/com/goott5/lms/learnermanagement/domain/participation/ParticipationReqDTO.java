@@ -15,6 +15,8 @@ public class ParticipationReqDTO {
   private Integer prId;
   private String pStatus;
   private LocalDate pParticipationDate;
+  private LocalDate pCheckIn;
+  private LocalDate pCheckOut;
   private Integer pTrainingTime;
   private String prExplanation;
 }

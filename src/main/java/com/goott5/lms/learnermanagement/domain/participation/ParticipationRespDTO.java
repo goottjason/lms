@@ -1,5 +1,6 @@
 package com.goott5.lms.learnermanagement.domain.participation;
 
+import java.time.LocalDateTime;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -16,6 +17,8 @@ public class ParticipationRespDTO {
   private Integer prId;
   private String pStatus;
   private LocalDate pParticipationDate;
+  private LocalDateTime pCheckIn;
+  private LocalDateTime pCheckOut;
   private Integer pTrainingTime;
   private String prExplanation;
 

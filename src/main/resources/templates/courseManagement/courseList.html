@@ -103,6 +103,25 @@
     <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script">
+  <script src="sweetalert2.all.min.js"></script>
+  <script th:if="${isSaveSuccess}" th:inline="javascript">
+    let isSaveSuccess = [[${isSaveSuccess}]];
+    if (isSaveSuccess) {
+      Swal.fire({
+                  icon: "success",
+                  title: "저장되었습니다!",
+                  text: "성공적으로 저장되었습니다.",
+                  footer: ''
+                });
+    } else {
+      Swal.fire({
+                  icon: "error",
+                  title: "수정불가능!",
+                  text: "과정 관련 DB 테이블을 확인해주세요.",
+                  footer: ''
+                });
+    }
+  </script>
   <!-- 외부 JS 파일 연결 -->
   <script th:src="@{/js/courseManagement/courseList.js}" type="text/javascript"></script>
 </th:block>

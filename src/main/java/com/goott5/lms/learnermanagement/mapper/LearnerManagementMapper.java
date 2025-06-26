@@ -1,8 +1,19 @@
 package com.goott5.lms.learnermanagement.mapper;
 
 import com.goott5.lms.coursemanagement.domain.PageListReqDTO;
+import com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo;
 import com.goott5.lms.learnermanagement.domain.*;
 
+import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
+import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
+import com.goott5.lms.learnermanagement.domain.integrated.HomeworkOverviewResp;
+import com.goott5.lms.learnermanagement.domain.table.EmploymentSupport;
+import com.goott5.lms.learnermanagement.domain.table.HomeworkWithSubEval;
+import com.goott5.lms.learnermanagement.domain.table.ParticipationWithReason;
+import com.goott5.lms.learnermanagement.domain.table.TestWithSub;
+import com.goott5.lms.learnermanagement.domain.table.User;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.util.List;
 
 import com.goott5.lms.learnermanagement.domain.homework.HomeworkRespDTO;
@@ -72,4 +83,34 @@ public interface LearnerManagementMapper {
     @Param("loginUserType") String loginUserType,
     @Param("leId") Integer leId,
     @Param("employmentSupportReqDTO") EmploymentSupportReqDTO employmentSupportReqDTO);
+
+  List<LearnerRespDTO> selectLearnersAllorOne(
+      @Param("base") BaseReqDTO base,
+      @Param("page") PageLearnerReqDTO<LearnerReqDTO> pageLernerReqDTO);
+
+  List<LearnerResponse> selectLearnersByAuth(
+      @Param("base") BaseReqDTO base,
+      @Param("page") PageLearnerRequest<LearnerRequest> page);
+
+
+
+
+
+  User selectUserById(Integer userId);
+
+  EmploymentSupport selectEmploymentSupportByLeId(Integer leId);
+
+  List<ParticipationWithReason> selectParticipationByLeId(Integer leId);
+
+  List<HomeworkWithSubEval> selectHomeworkByCourseIdAndUserId(
+      @Param("leCourseId") Integer leCourseId, @Param("leUserId") Integer leUserId);
+
+  List<TestWithSub> selectTestByCourseIdAndUserId(
+      @Param("leCourseId") Integer leCourseId, @Param("leUserId") Integer leUserId);
+
+  CourseWithAssignedInfo selectCourseByCourseId(Integer leCourseId);
+
+  String selectLoginUserPositionByUserId(Integer loginUserId);
+
+  ParticipationWithReason selectPartInfoByPid(Integer pid);
 }

@@ -11,9 +11,18 @@ const courseConfig = {
 };
 let isInProgress = null;
 
-const learnerConfig = {
+let topStatusCourseConfig = {
   pageNo: null,
   pageSize: null,
+  type: null,
+  keyword: null,
+  orderBy: 'is_in_progress',
+  orderDirection: 'DESC',
+}
+
+const learnerConfig = {
+  pageNo: 1,
+  pageSize: 8,
   type: null,
   keyword: null,
   orderBy: null,
@@ -24,21 +33,37 @@ let courseId = null;
 /* ================================================================================ */
 
 $(document).ready(() => {
-  // 관리자, 강사 모두 숨김
-  $("#courseSelector").hide();
 
-  getListState()
+
+  getListState();
+
+
+  /*강사일 때 초기화*/
+  if (loginUserType == "INSTRUCTOR") {
+    updateTopCourseSelector();
+    displayCardView();
+  }
+  /*관리자일 때 초기화*/
+  else {
+    $("#courseSelector").hide();
+
+    initCourseSelect();
+    displayCardView();
+    // 이벤트 핸들러 강제 실행
+    /*$("#course-select").trigger("change");
+
+    handleProgressStatusChange();
+    handleCourseSelectChange();*/
+  }
+  $(document).on('change', '#courseSelector', handleCourseSelectorChange)
+
+
+
   $("#is-in-progress").val(isInProgress == null ? '' : isInProgress);
   $("#course-select").val(courseId == null ? '' : courseId);
   $('#search-input').val(learnerConfig.keyword);
 
-  initCourseSelect();
 
-  // 이벤트 핸들러 강제 실행
-  $("#course-select").trigger("change");
-
-  handleProgressStatusChange();
-  handleCourseSelectChange();
 
   $('#is-in-progress').on('change', handleProgressStatusChange);
   $('#course-select').on('change', handleCourseSelectChange);
@@ -54,6 +79,54 @@ $(document).ready(() => {
 
 /* ================================================================================ */
 
+function handleCourseSelectorChange() {
+  courseId = $(this).val();
+  learnerConfig.pageNo = 1;
+  learnerConfig.pageSize = 8;
+  displayCardView();
+}
+async function updateTopCourseSelector() {
+  let coursesWithPagination = await apiGetRequestAboutCoursesByTop(
+      '/api/management/courses',
+      {
+        loginUserId: loginUserId,
+        loginUserType: loginUserType,
+        isInProgress: null});
+  let courses = coursesWithPagination?.respDTOS || [];
+  if (!Array.isArray(courses)) courses = [];
+  console.log(courses);
+  courseId = courses[0].id;
+  isInProgress = null;
+  saveListState();
+  updateTopCourseSelectorOption('#courseSelector', courses);
+}
+function updateTopCourseSelectorOption(selector, data) {
+  console.log(selector, data);
+  const $select = $(selector).empty();
+  data.forEach(course => {
+    const $option = $('<option>').val(course.id).text(course.name);
+    $select.append($option);
+    console.log(course.id, courseId);
+    if (course.id == courseId) {
+      console.log(courseId, "가 선택됨");
+      $option.prop('selected', true);
+    }
+  });
+}
+async function apiGetRequestAboutCoursesByTop(endpoint, additionalParams = {}) {
+  try {
+    const response = await axios.get(endpoint, {
+      params: { ...topStatusCourseConfig, ...additionalParams }
+    });
+    console.log(response.data);
+    return response.data.data;
+  } catch (error) {
+    console.error(`${endpoint} 요청 오류:`, error);
+    return [];
+  }
+}
+
+
 async function initCourseSelect() {
   let coursesWithPagination = await apiGetRequestAboutCourses(
     '/api/management/courses',
@@ -62,6 +135,7 @@ async function initCourseSelect() {
       loginUserType: loginUserType,
       isInProgress: isInProgress});
   courses = coursesWithPagination?.respDTOS || [];
+  console.log(courses);
   if (!Array.isArray(courses)) courses = [];
   updateSelectBox('#course-select', courses);
 }
@@ -123,7 +197,7 @@ async function apiGetRequestAboutLearners(endpoint, additionalParams = {}) {
 // 진행 상태 변경 핸들러
 async function handleProgressStatusChange() {
   learnerConfig.pageNo = 1;
-  learnerConfig.pageSize = 12;
+  learnerConfig.pageSize = 8;
   isInProgress = $('#is-in-progress').val() === '' ? null : $('#is-in-progress').val();
   saveListState();
 
@@ -143,7 +217,7 @@ async function handleProgressStatusChange() {
 
 function handleCourseSelectChange() {
   learnerConfig.pageNo = 1;
-  learnerConfig.pageSize = 12;
+  learnerConfig.pageSize = 8;
   /*learnerConfig.type = null;
   learnerConfig.keyword = null;
   $('#search-input').val('');*/
@@ -162,7 +236,7 @@ async function handleSearchChange() {
   initCourseSelect();
 
   learnerConfig.pageNo = 1;
-  learnerConfig.pageSize = 12;
+  learnerConfig.pageSize = 8;
   learnerConfig.keyword = $("#search-input").val();
   learnerConfig.type = 'fullname'; // learner API 호출을 위함
   displayCardView();
@@ -179,7 +253,7 @@ async function displayCardView() {
       loginUserType: loginUserType,
       courseId: courseId,
       isInProgress: isInProgress });
-
+  console.log(learnersWithPagination);
   let learners = Array.isArray(learnersWithPagination.respDTOS) ?
     learnersWithPagination.respDTOS : [learnersWithPagination.respDTOS];
   displayLearners(learners);
@@ -190,14 +264,17 @@ async function displayCardView() {
 function displayLearners(learners) {
   $('#card-list').empty();
   if(learners.length == 0) {
-    $("#card-list").html("<span class='text-center'>데이터가 없습니다.</span>");
+    $('#card-list').removeClass('row-cols-md-4');
+    $("#card-list").html(
+        "<p class='text-center w-100 pt-3'>교육생이 없습니다.</p>");
     return;
   }
+  $('#card-list').addClass('row-cols-md-4');
   learners.forEach(function(learner) {
     let rowHtml = `
         <div class="col mb-4">
           <div class="card text-center">
-            <img src="${learner.userProfileImg}" class="rounded-circle mt-3 mx-auto d-block" style="width: 150px; height: 150px; object-fit: cover;">
+            <img src="${learner.userProfileImg != null ? learner.userProfileImg : 'https://joon-s3upload.s3.ap-northeast-2.amazonaws.com/upload/user/avatar.png'}" class="rounded-circle mt-3 mx-auto d-block" style="width: 150px; height: 150px; object-fit: cover;">
             <div class="card-body">
               <h5 class="card-title mb-1">${learner.userFullname}</h5>
               <p class="card-text mb-1">${learner.userMobile || '-'}</p>

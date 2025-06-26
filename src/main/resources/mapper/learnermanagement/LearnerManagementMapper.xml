@@ -90,50 +90,52 @@
     )
   </select>
 
-  <!-- 리스트와 상세조회를 유연하게 사용할 수 있는 쿼리문 : 교육생 기본정보, 취업관리
-    (1) 상세조회
-      - le.id로 찾은 행의 user_id로 user 정보 조회
-      - le.id로 찾은 행의 course_id로 course 정보 조회 (서비스로직에서 classname과 instructor 가져오기)
-  -->
+
+
   <select id="selectLearnerListOrDetail" resultType="com.goott5.lms.learnermanagement.domain.LearnerRespDTO">
-    SELECT DISTINCT
-
-    le.id as leId,
-    le.completion_status as leCompletionStatus,
-
-    u.id as userId,
-    u.fullname as userFullname,
-    u.birthday as userBirthday,
-    u.mobile as userMobile,
-    u.email as userEmail,
-    u.address as userAddress,
-    u.gender as userGender,
-    u.profile_img as userProfileImg,
-
-    es.id as esId,
-    es.is_counseling_received as esIsCounselingReceived,
-    es.counseling_details as esCounselingDetails,
-    es.employment_status as esEmploymentStatus,
-    es.company_name as esCompanyName,
-    es.company_phone as esCompanyPhone,
-    es.company_address as esCompanyAddress,
-
-    c.id as courseId,
-    c.is_in_progress as courseIsInProgress,
-    c.name as courseName
+    SELECT
+    le.id AS leId,
+    le.completion_status AS leCompletionStatus,
+    u.id AS userId,
+    u.fullname AS userFullname,
+    u.birthday AS userBirthday,
+    u.mobile AS userMobile,
+    u.email AS userEmail,
+    u.address AS userAddress,
+    u.gender AS userGender,
+    u.profile_img AS userProfileImg,
+    es.id AS esId,
+    es.is_counseling_received AS esIsCounselingReceived,
+    es.counseling_details AS esCounselingDetails,
+    es.employment_status AS esEmploymentStatus,
+    es.company_name AS esCompanyName,
+    es.company_phone AS esCompanyPhone,
+    es.company_address AS esCompanyAddress,
+    c.id AS courseId,
+    c.is_in_progress AS courseIsInProgress,
+    c.name AS courseName,
+    c.lesson_start_time AS courseLessonStartTime,
+    c.lesson_end_time AS courseLessonEndTime,
+    <!-- 강사 정보를 서브쿼리로 안전하게 추출 -->
+    (
+    SELECT us.fullname
+    FROM staff_assignment sa_instructor
+    INNER JOIN staff_detail sd_instructor ON sa_instructor.user_id = sd_instructor.user_id
+    INNER JOIN user us ON sa_instructor.user_id = us.id
+    WHERE
+    sa_instructor.course_id = c.id
+    AND sd_instructor.position = 'FULLTIME_INSTRUCTOR'
+    LIMIT 1 <!-- 한 과정에 강사가 여러 명일 경우 첫 번째만 가져옴 -->
+    ) AS courseFulltimeInstructor
 
     FROM learner_enrollment le
-
     INNER JOIN user u ON le.user_id = u.id
     INNER JOIN course c ON le.course_id = c.id
-    LEFT JOIN employment_support es ON le.id = es.learner_enrollment_id <!--추후에는 INNER JOIN으로...?-->
-    LEFT JOIN staff_assignment sa ON le.course_id = sa.course_id
-    LEFT JOIN staff_detail sd ON sa.user_id = sd.user_id
-
+    LEFT JOIN employment_support es ON le.id = es.learner_enrollment_id
     WHERE
-    <!--수강이력의 대상 교육생이 직접 로그인할 때 또는 총괄관리자, 배정이력에 그 과정을 담당하는 학과장, 강사일 때만 조회 가능-->
     <include refid="authCondition"/>
 
+    <!-- 검색 조건 유지 -->
     <if test="pageLearnerReqDTO.keyword != null and pageLearnerReqDTO.keyword != ''">
       AND u.fullname LIKE CONCAT('%', #{pageLearnerReqDTO.keyword}, '%')
     </if>
@@ -146,13 +148,18 @@
     <if test="leId != null">
       AND le.id = #{leId}
     </if>
+
+    <!-- leId가 null일 때 그룹화 및 정렬 적용 -->
     <if test="leId == null">
-      ORDER BY ${pageLearnerReqDTO.orderBy} ${pageLearnerReqDTO.orderDirection}
+      GROUP BY le.id <!-- 교육생 ID 기준 그룹화로 중복 제거 -->
+      ORDER BY u.${pageLearnerReqDTO.orderBy} ${pageLearnerReqDTO.orderDirection}
       <if test="pageLearnerReqDTO.pageSize != null and pageLearnerReqDTO.pageNo != null">
         LIMIT #{pageLearnerReqDTO.offset}, #{pageLearnerReqDTO.pageSize}
       </if>
     </if>
   </select>
+
+
 
   <select id="selectTestsByIds" resultType="com.goott5.lms.learnermanagement.domain.test.TestRespDTO">
     SELECT
@@ -190,6 +197,8 @@
     p.id AS pId,
     pr.id AS prId,
     p.status AS pStatus,
+    p.check_in AS pCheckIn,
+    p.check_out AS pCheckOut,
     p.participation_date AS pParticipationDate,
     p.training_time AS pTrainingTime,
     pr.explanation AS prExplanation
@@ -197,11 +206,11 @@
     LEFT JOIN participation_reason pr ON p.id = pr.participation_id
     WHERE
     p.learner_enrollment_id = #{leId}
-    AND p.participation_date < date_add(NOW(), INTERVAL -1 DAY)
+
     ORDER BY participation_date DESC
     ]]>
   </select>
-
+  <!--AND p.participation_date < date_add(NOW(), INTERVAL -1 DAY)-->
   <select id="selectParticipationsByIdsWithPaging"
           resultType="com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO">
     <![CDATA[
@@ -209,6 +218,8 @@
     p.id AS pId,
     pr.id AS prId,
     p.status AS pStatus,
+    p.check_in AS pCheckIn,
+    p.check_out AS pCheckOut,
     p.participation_date AS pParticipationDate,
     p.training_time AS pTrainingTime,
     pr.explanation AS prExplanation
@@ -216,11 +227,11 @@
     LEFT JOIN participation_reason pr ON p.id = pr.participation_id
     WHERE
     p.learner_enrollment_id = #{leId}
-    AND p.participation_date < date_add(NOW(), INTERVAL -1 DAY)
+
     ORDER BY participation_date DESC LIMIT #{pageParticipationReqDTO.offset}, #{pageParticipationReqDTO.pageSize}
     ]]>
   </select>
-
+  <!--AND p.participation_date < date_add(NOW(), INTERVAL -1 DAY)-->
   <select id="selecttotalRecordsFromParticipation" resultType="Integer">
     <![CDATA[
     SELECT COUNT(*) FROM participation
@@ -231,17 +242,23 @@
   <sql id="authCondition">
     (
     u.id = #{loginUserId}
-    OR EXISTS (
-    SELECT 1 FROM staff_detail sd_check
-    WHERE sd_check.user_id = #{loginUserId}
-    AND sd_check.position = 'GENERAL_MANAGER'
+    OR EXISTS ( <!-- 총괄관리자 체크 -->
+    SELECT 1 FROM staff_detail
+    WHERE user_id = #{loginUserId}
+    AND position = 'GENERAL_MANAGER'
     )
-    OR (
-    sd.position IN ('COURSE_HEAD', 'FULLTIME_INSTRUCTOR')
-    AND sa.user_id = #{loginUserId}
+    OR EXISTS ( <!-- 학과장/강사 권한 체크 -->
+    SELECT 1
+    FROM staff_assignment sa_auth
+    INNER JOIN staff_detail sd_auth ON sa_auth.user_id = sd_auth.user_id
+    WHERE
+    sa_auth.course_id = le.course_id  <!-- 핵심: 메인 쿼리의 과정과 연결 -->
+    AND sd_auth.position IN ('COURSE_HEAD', 'FULLTIME_INSTRUCTOR')
+    AND sa_auth.user_id = #{loginUserId}
     )
     )
   </sql>
+
 
   <update id="updateEmploymentSupport">
     UPDATE employment_support
@@ -254,40 +271,266 @@
     counseling_details = #{employmentSupportReqDTO.counselingDetails}
     WHERE learner_enrollment_id = #{leId}
   </update>
-  <!-- 테스트 목록 조회
-  select
-  t.id as testId,
-  ts.id as tsId,
-  ts.submission_status as tsSubmissionStatus,
-  ts.score as tsScore
-  from test t
-  left join test_submission ts on t.id = ts.test_id
-  where t.course_id = #{courseId} and ts.learner_id = {learnerId};
-  -->
-  <!-- 과제 목록 조회
-  select
-  h.id as homeworkId,
-  hs.id as hsId,
-  he.id as heId,
-  he.is_pass as heIsPass
-  from homework h
-  left join homework_submission hs on h.id = hs.homework_id
-  left join homework_eval he on hs.id = he.hs_id
-  where h.course_id = 17 and (hs.learner_id = 12 OR hs.learner_id is NULL)
 
-  select
-  p.id as pId,
-  pr.id as prId,
-  p.status as pStatus,
-  p.participation_date as pParticipationDate,
-  p.training_time as pTrainingTime,
-  pr.explanation as prExplanation
-  from participation p
-  left join participation_reason pr on p.id = pr.participation_id
-  where p.learner_enrollment_id = 96
-  ORDER BY participation_date desc;
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
 
-  -->
+  <!--교육생 조회-->
+  <select id="selectLearnersByAuth"
+    resultType="com.goott5.lms.learnermanagement.domain.dto.LearnerResponse">
+    SELECT
+    userId,
+    userFullname,
+    leId,
+    leUserId,
+    leCourseId,
+    leCompletionStatus,
+    coIsInProgress,
+    coCourseHeadId,
+    coInstructorId,
+    coCourseHeadName,
+    coInstructorName
+    FROM (
+    SELECT
+    ul.id AS userId,
+    ul.fullname AS userFullname,
+    le.id AS leId,
+    le.user_id AS leUserId,
+    le.course_id AS leCourseId,
+    le.completion_status AS leCompletionStatus,
+    co.is_in_progress AS coIsInProgress,
+    cr.id AS coClassroomId,
+    cr.name AS coClassroomName,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN sa.user_id END) AS coCourseHeadId,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN sa.user_id END) AS coInstructorId,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN us.fullname END) AS coCourseHeadName,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN us.fullname END) AS coInstructorName
+    FROM user ul
+    LEFT JOIN learner_enrollment le ON ul.id = le.user_id
+    LEFT JOIN course co ON le.course_id = co.id
+    LEFT JOIN staff_assignment sa ON co.id = sa.course_id
+    LEFT JOIN user us ON sa.user_id = us.id
+    LEFT JOIN staff_detail sd ON us.id = sd.user_id
+    LEFT JOIN classroom_allocation ca ON ca.course_id = co.id
+    LEFT JOIN classroom cr ON cr.id = ca.classroom_id
+    WHERE ul.type = 'LEARNER'
+    GROUP BY ul.id, ul.fullname, le.id, le.user_id, le.course_id, le.completion_status, co.is_in_progress, cr.id, cr.name
+    ) AS origin
+    WHERE
+      <include refid="mapper.learnermanagement.CommonManagement.authForCourse"/>
+      <include refid="mapper.learnermanagement.CommonManagement.filteringForLearner"/>
+      <include refid="mapper.learnermanagement.CommonManagement.orderAndPaging"/>
+  </select>
+
+  <!--사용자 조회-->
+  <select id="selectUserById" resultType="com.goott5.lms.learnermanagement.domain.table.User">
+    SELECT
+      id AS userId,
+      type AS userType,
+      login_id AS userLoginId,
+      password AS userPassword,
+      fullname AS userFullname,
+      gender AS userGender,
+      birthday AS userBirthday,
+      mobile AS userMobile,
+      email AS userEmail,
+      address AS userAddress,
+      profile_img AS userProfileImg,
+      session_id AS userSessionId,
+      auto_login_limit AS userAutoLoginLimit,
+      wrong_password_count AS userWrongPasswordCount,
+      created_at AS userCreatedAt,
+      updated_at AS userUpdatedAt,
+      deleted_at AS userDeletedAt
+    FROM user
+    WHERE
+      id = #{userId}
+  </select>
+
+  <!--취업관리 조회-->
+  <select id="selectEmploymentSupportByLeId"
+    resultType="com.goott5.lms.learnermanagement.domain.table.EmploymentSupport">
+    SELECT
+      id AS esId,
+      learner_enrollment_id AS esLearnerEnrollmentId,
+      is_counseling_received AS esIsCounselingReceived,
+      counseling_details AS esCounselingDetails,
+      employment_status AS esEmploymentStatus,
+      company_name AS esCompanyName,
+      company_phone AS esCompanyPhone,
+      company_address AS esCompanyAddress,
+      created_at AS esCreatedAt,
+      updated_at AS esUpdatedAt,
+      deleted_at AS esDeletedAt
+    FROM employment_support
+    WHERE
+      learner_enrollment_id = #{leId}
+  </select>
+
+  <!--출결 조회-->
+  <select id="selectParticipationByLeId"
+    resultType="com.goott5.lms.learnermanagement.domain.table.ParticipationWithReason">
+    SELECT
+      pa.id AS partId,
+      pa.learner_enrollment_id AS partLearnerEnrollmentId,
+      pa.status AS partStatus,
+      pa.check_in AS partCheckIn,
+      pa.check_out AS partCheckOut,
+      pa.training_time AS partTrainingTime,
+      pa.participation_date AS partParticipationDate,
+      pa.created_at AS partCreatedAt,
+      pa.updated_at AS partUpdatedAt,
+      pa.deleted_at AS partDeletedAt,
+      pr.explanation AS partExplanation
+    FROM participation pa
+    LEFT JOIN participation_reason pr ON pr.participation_id = pa.id
+    WHERE
+      pa.learner_enrollment_id = #{leId}
+  </select>
+
+  <!--출결 조회(ByPid)-->
+  <select id="selectPartInfoByPid"
+    resultType="com.goott5.lms.learnermanagement.domain.table.ParticipationWithReason">
+    SELECT
+    pa.id AS partId,
+    pa.learner_enrollment_id AS partLearnerEnrollmentId,
+    pa.status AS partStatus,
+    pa.check_in AS partCheckIn,
+    pa.check_out AS partCheckOut,
+    pa.training_time AS partTrainingTime,
+    pa.participation_date AS partParticipationDate,
+    pa.created_at AS partCreatedAt,
+    pa.updated_at AS partUpdatedAt,
+    pa.deleted_at AS partDeletedAt,
+    pr.explanation AS partExplanation
+    FROM participation pa
+    LEFT JOIN participation_reason pr ON pr.participation_id = pa.id
+    WHERE
+    pa.id = #{pId}
+  </select>
+
+  <!--과제 조회-->
+  <select id="selectHomeworkByCourseIdAndUserId"
+    resultType="com.goott5.lms.learnermanagement.domain.table.HomeworkWithSubEval">
+    SELECT
+      ho.id AS hoId,
+      ho.title AS hoTitle,
+      ho.start_date AS hoStartDate,
+      ho.end_date AS hoEndDate,
+      ho.content AS hoContent,
+      ho.course_id AS hoCourseId,
+      ho.read_count AS hoReadCount,
+      ho.instructor_id AS hoInstructorId,
+      ho.created_at AS hoCreatedAt,
+      ho.updated_at AS hoUpdatedAt,
+      ho.deleted_at AS hoDeletedAt,
+
+      hs.id AS hsId,
+      hs.homework_id AS hsHomeworkId,
+      hs.title AS hsTitle,
+      hs.content AS hsContent,
+      hs.read_count AS hsReadCount,
+      hs.learner_id AS hsLearnerId,
+      hs.created_at AS hsCreatedAt,
+      hs.updated_at AS hsUpdatedAt,
+      hs.deleted_at AS hsDeletedAt,
+
+      he.id AS heId,
+      he.hs_id AS heHsId,
+      he.is_pass AS heIsPass,
+      he.content AS heContent,
+      he.read_count AS heReadCount,
+      he.instructor_id AS heInstructorId,
+      he.created_at AS heCreatedAt,
+      he.updated_at AS heUpdatedAt,
+      he.deleted_at AS heDeletedAt
+
+    FROM homework ho
+    LEFT JOIN homework_submission hs ON ho.id = hs.homework_id
+    LEFT JOIN homework_eval he ON hs.id = he.hs_id
+    WHERE
+      ho.course_id = #{leCourseId}
+      AND hs.learner_id = #{leUserId}
+  </select>
+
+  <!--시험 조회-->
+  <select id="selectTestByCourseIdAndUserId"
+    resultType="com.goott5.lms.learnermanagement.domain.table.TestWithSub">
+    SELECT
+      te.id AS teId,
+      te.instructor_id AS teInstructorId,
+      te.course_id AS teCourseId,
+      te.title AS teTitle,
+      te.start_date AS teStartDate,
+      te.end_date AS teEndDate,
+      te.test_time AS teTestTime,
+      te.total_score AS teTotalScore,
+      te.created_at AS teCreatedAt,
+      te.updated_at AS teUpdatedAt,
+      te.deleted_at AS teDeletedAt,
+
+      ts.id AS tsId,
+      ts.test_id AS tsTestId,
+      ts.learner_id AS tsLearnerId,
+      ts.submission_time AS tsSubmissionTime,
+      ts.submission_status AS tsSubmissionStatus,
+      ts.retry_count AS tsRetryCount,
+      ts.is_invalidated AS tsIsInvalidated,
+      ts.submission_reg_date AS tsSubmissionRegDate,
+      ts.score AS tsScore,
+      ts.created_at AS tsCreatedAt,
+      ts.updated_at AS tsUpdatedAt,
+      ts.deleted_at AS tsDeletedAt
+    FROM test te
+    LEFT JOIN test_submission ts ON te.id = ts.test_id
+    WHERE
+      te.course_id = #{leCourseId}
+      AND ts.learner_id = #{leUserId}
+  </select>
+
+  <!--과정 조회(ByLeCourseId)-->
+  <select id="selectCourseByCourseId"
+    resultType="com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo">
+    SELECT
+      co.id AS coId,
+      co.is_in_progress AS coIsInProgress,
+      co.name AS coName,
+      co.number_of_learner AS coNumberOfLearner,
+      co.start_date AS coStartDate,
+      co.end_date AS coEndDate,
+      co.total_hours AS coTotalHours,
+      co.total_days AS coTotalDays,
+      co.daily_hours AS coDailyHours,
+      co.break_time AS coBreakTime,
+      co.lesson_start_time AS coLessonStartTime,
+      co.lesson_end_time AS coLessonEndTime,
+      co.lunch_start_time AS coLunchStartTime,
+      co.lunch_end_time AS coLunchEndTime,
+      co.created_at AS coCreatedAt,
+      co.updated_at AS coUpdatedAt,
+      co.deleted_at AS coDeletedAt,
+      cr.id AS crId,
+      cr.name AS crName
+    FROM course co
+    LEFT JOIN classroom_allocation ca ON ca.course_id = co.id
+    LEFT JOIN classroom cr ON cr.id = ca.classroom_id
+    WHERE
+      co.id = #{leCourseId}
+  </select>
+
+  <!--로그인유저직급 조회-->
+  <select id="selectLoginUserPositionByUserId"
+    resultType="String">
+    SELECT
+      sd.position
+    FROM user u
+    LEFT JOIN staff_detail sd ON sd.user_id = u.id
+    WHERE
+      u.id = #{loginUserId}
+  </select>
 
 
 </mapper>

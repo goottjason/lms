@@ -141,8 +141,12 @@ async function apiGetRequest(endpoint, additionalParams = {}) {
 
 function renderCourseTable(participations) {
   $("#tbody-participation").empty();
+  let rowHtml = ``;
+  if(participations.length == 0) {
+    rowHtml += `<tr><td class="text-center" colspan="4">데이터가 없습니다.</td></tr>`;
+  }
   participations.forEach(function (item) {
-    let rowHtml = `
+    rowHtml += `
   <tr>
     <td class="text-center align-middle">${item.pparticipationDate}</td>
     <td class="text-center align-middle ${
@@ -169,8 +173,8 @@ function renderCourseTable(participations) {
     <td class="text-center align-middle">${item.ptrainingTime}H</td>
   </tr>
 `;
-    $("#tbody-participation").append(rowHtml);
   });
+  $("#tbody-participation").append(rowHtml);
 }
 function renderCoursePagination(data) {
   // 기록이 없을 때, 페이지네이션도 표시되지 않음

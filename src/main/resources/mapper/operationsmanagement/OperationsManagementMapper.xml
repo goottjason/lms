@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.operationsmanagement.mapper.OperationsManagementMapper">
+
+  <select id="selectStaffsAllorOne"
+    resultType="com.goott5.lms.operationsmanagement.domain.StaffRespDTO">
+    SELECT
+      u.id AS userId,
+      u.type, u.login_id, u.fullname, u.gender, u.birthday, u.mobile, u.email,
+      u.address, u.profile_img, u.session_id,
+      u.auto_login_limit, u. wrong_password_count, sd.position,
+      sd.hire_date, sd.leave_date,
+      GROUP_CONCAT(c.id) AS courseIdList,
+      GROUP_CONCAT(c.is_in_progress) AS courseIsInProgressList,
+      GROUP_CONCAT(c.name) AS courseNameList,
+      GROUP_CONCAT(c.number_of_learner) AS courseNumberOfLearnerList,
+      GROUP_CONCAT(c.start_date) AS courseStartDateList,
+      GROUP_CONCAT(c.end_date) AS courseEndDateList
+    FROM user u
+    INNER JOIN staff_detail sd ON u.id = sd.user_id
+    LEFT JOIN staff_assignment sa ON u.id = sa.user_id
+    LEFT JOIN course c ON sa.course_id = c.id
+    WHERE
+      EXISTS (
+      SELECT 1 FROM staff_detail
+      WHERE user_id = #{base.loginUserId})
+    <if test="page.staffType != null">
+      AND u.type = #{page.staffType}
+    </if>
+    <if test="page.staffPosition != null">
+      AND sd.position = #{page.staffPosition}
+    </if>
+    <if test="page.includeLeaveDate == null">
+      AND sd.leave_date IS NULL
+    </if>
+    <if test="page.keyword != null and page.keyword != ''">
+      AND u.fullname like concat('%', #{page.keyword}, '%')
+    </if>
+    <if test="page.staffId != null">
+      AND u.id = #{page.staffId}
+    </if>
+    GROUP BY u.id
+    ORDER BY u.${page.orderBy} ${page.orderDirection}
+    <if test="page.pageSize != null and page.pageNo != null">
+      LIMIT #{page.offset}, #{page.pageSize}
+    </if>
+  </select>
+
+
+
+  <select id="selectClassroomsAllorOne"
+    resultType="com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO">
+    SELECT
+    cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+    c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+    u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+    u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+    FROM classroom cr
+    LEFT JOIN classroom_allocation ca ON cr.id = ca.classroom_id
+    LEFT JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+    LEFT JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+    LEFT JOIN course c ON ca.course_id = c.id
+    WHERE
+    EXISTS (
+    SELECT 1 FROM user
+    WHERE id = #{base.loginUserId}
+    AND type = 'ADMINISTRATOR')
+    <if test="page.keyword != null and page.keyword != ''">
+      AND cr.name like concat('%', #{page.keyword}, '%')
+    </if>
+    ORDER BY ${page.orderBy} ${page.orderDirection}
+    <if test="page.pageSize != null and page.pageNo != null">
+      LIMIT #{page.offset}, #{page.pageSize}
+    </if>
+  </select>
+
+  <update id="updateClassroom">
+    UPDATE classroom SET
+    name = #{classroom.name}, primary_admin_id = #{classroom.primaryAdminId}, secondary_admin_id = #{classroom.secondaryAdminId}
+    WHERE
+    EXISTS (
+      SELECT 1 FROM user
+      WHERE id = #{base.loginUserId}
+      AND type = 'ADMINISTRATOR')
+    AND
+      id = #{classroom.id}
+  </update>
+
+  <delete id="deleteClassroom">
+    DELETE FROM classroom
+    WHERE
+    EXISTS (
+      SELECT 1 FROM user
+      WHERE id = #{base.loginUserId}
+      AND type = 'ADMINISTRATOR')
+    AND
+      id = #{classroom.id}
+  </delete>
+
+  <insert id="insertClassroom">
+    INSERT INTO classroom (name, primary_admin_id, secondary_admin_id)
+    VALUES (#{classroom.name}, #{classroom.primaryAdminId}, #{classroom.secondaryAdminId});
+  </insert>
+
+  <update id="updateLeaveDate">
+    UPDATE staff_detail
+    <if test="leaveDate == 'NULL'">
+      SET leave_date = NULL
+    </if>
+    <if test="leaveDate != 'NULL'">
+      SET leave_date = #{leaveDate}
+    </if>
+    WHERE user_id = #{staffId}
+  </update>
+</mapper>

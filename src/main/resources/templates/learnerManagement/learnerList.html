@@ -15,7 +15,7 @@
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">교육생 조회</h1>
     <div class="col d-flex justify-content-end">
-      <form class="row col-12 mb-3">
+      <form class="row col-12 mb-3" th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
         <div class="col-3">
           <select id="is-in-progress" class="form-control">
             <option value="">전체</option>

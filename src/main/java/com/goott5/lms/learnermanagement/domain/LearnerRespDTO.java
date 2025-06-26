@@ -4,6 +4,7 @@ import com.goott5.lms.learnermanagement.domain.homework.HomeworkRespDTO;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.test.TestRespDTO;
+import java.time.LocalTime;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -64,8 +65,11 @@ public class LearnerRespDTO {
 
   // Course 테이블 정보
   private Integer courseId;
-  private Boolean courseIsInProgress;
   private String courseName;
+  private Boolean courseIsInProgress;
+  private LocalTime courseLessonStartTime;
+  private LocalTime courseLessonEndTime;
+  private String courseFulltimeInstructor;
 
 
 }

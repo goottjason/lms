@@ -2,11 +2,19 @@ package com.goott5.lms.learnermanagement.controller;
 
 import com.goott5.lms.coursemanagement.domain.ApiResponse;
 import com.goott5.lms.learnermanagement.domain.*;
+import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
+import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationReqDTO;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationReqDTO;
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO;
+import com.goott5.lms.learnermanagement.domain.table.ParticipationWithReason;
 import com.goott5.lms.learnermanagement.service.LearnerManagementService;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
+import com.goott5.lms.operationsmanagement.domain.PageStaffRespDTO;
+import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +26,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @Slf4j
@@ -35,7 +41,7 @@ public class LearnerManagementController {
    */
   @GetMapping("learnerManagement/learnerList")
   public String learnerList() {
-    return "/learnerManagement/learnerList";
+    return "learnerManagement/learnerList";
   }
 
   /**
@@ -64,6 +70,17 @@ public class LearnerManagementController {
     log.info("learners: " + learners);
 
     return learners;
+  }
+
+  @GetMapping("api/management/learners")
+  public ResponseEntity<ApiResponse<PageStaffRespDTO<StaffRespDTO>>> getLearnersAllorOne (
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageLearnerReqDTO<LearnerReqDTO> pageLernerReqDTO
+  ) {
+    PageLearnerRespDTO<LearnerRespDTO> learners =
+        learnerManagementService.getLearnersAllorOne(baseReqDTO, pageLernerReqDTO);
+    log.info("■■■learners: " + learners);
+    return null;
   }
 
 
@@ -111,7 +128,7 @@ public class LearnerManagementController {
       HttpSession session
   ) {
     if (leId == -1) {
-      return "/learnerManagement/learnerList";
+      return "learnerManagement/learnerList";
     }
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     Integer loginUserId = Integer.valueOf(loginUser.getId());
@@ -127,7 +144,7 @@ public class LearnerManagementController {
     model.addAttribute("personal", personal.getRespDTOS().get(0));
     model.addAttribute("statusCountMap", statusCountMap);
     // model.addAttribute("participations",);
-    return "/learnerManagement/learnerDetail";
+    return "learnerManagement/learnerDetail";
   }
 
   /**
@@ -155,5 +172,50 @@ public class LearnerManagementController {
           409, "수정할 수 없습니다.", null, HttpStatus.CONFLICT
       );
     }
+  }
+
+  @GetMapping("learnerManagement/participationTemp")
+  public String participationTemp() {
+
+      return "/learnerManagement/participationTemp";
+  }
+  @GetMapping("learnerManagement/participationList")
+  public String participationList() {
+
+    return "/learnerManagement/participationList";
+  }
+  @GetMapping("learnerManagement/participationList2")
+  public String participationList2() {
+
+    return "/learnerManagement/participationList2";
+  }
+
+
+  @GetMapping("/api/learnermanagement/learners")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<PageLearnerResponse<LearnerOverviewResp>>> getLearnersByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageLearnerRequest<LearnerRequest> pageLearnerRequest
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    log.info("■baseReqDTO: " + baseReqDTO);
+    log.info("■pageLearnerRequest: " + pageLearnerRequest);
+    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
+        learnerManagementService.getLearnersByAuth(baseReqDTO, pageLearnerRequest);
+    return ApiResponse.okResponse(200, "success", learnersWithPagination);
+  }
+
+
+  @GetMapping("api/management/participation/{pid}")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<ParticipationWithReason>> getPartInfoByPid(
+      @PathVariable Integer pid
+  ) {
+    ParticipationWithReason partInfo = learnerManagementService.getPartInfoByPid(pid);
+    log.info("partInfo: " + partInfo);
+    return ApiResponse.okResponse(200, "success", partInfo);
   }
 }
