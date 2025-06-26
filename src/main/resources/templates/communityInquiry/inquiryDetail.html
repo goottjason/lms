@@ -151,6 +151,11 @@
         <span class="text px-3">질문삭제</span>
       </button>
     </div>
+    <div
+      class="col-12 d-flex justify-content-end mt-2 mb-4"
+      th:if="${session.loginUser.type != 'ADMINISTRATOR' and inquiryDetail.isAnswered}">
+      <p class="text-info small">* 답변이 달린 후에는 문의 내용을 수정 또는 삭제할 수 없습니다.</p>
+    </div>
   </div>
   <!-- 본문 끝 -->
 
@@ -215,8 +220,11 @@
           </span>
         <span class="text px-3">취소</span>
       </button>
-
-
+    </div>
+    <div
+      class="col-12 d-flex justify-content-end mt-0 mb-4"
+      th:if="${session.loginUser.type == 'ADMINISTRATOR' and inquiryDetail.isAnsweredChecked}">
+      <p class="text-info small">* 작성자가 답변을 확인 후에는 답변 내용을 수정 또는 삭제할 수 없습니다.</p>
     </div>
   </div>
 
@@ -330,6 +338,9 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+
+    $("#courseSelector").hide();
+
     $("#answerModifySaveBtn").hide();
     $("#answerModifyCancelBtn").hide();
 
