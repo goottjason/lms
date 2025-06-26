@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+</head>
+<body>
+  <div layout:fragment="content">
+    <h1>HOME</h1>
+      <!--<div>[[${pagingRequestDTO}]]</div>-->
+
+      <button id="wsBtn">입실체크</button>
+  </div>
+  <script layout:fragment="script" th:inline="javascript">
+     const url = "ws://localhost:8090/participationSocket";
+     let ws    = new WebSocket(url);
+
+     $("#wsBtn").click(function () { <!-- 버튼 클릭 이벤트 핸들러 등록 -->
+         console.log(ws); <!-- 웹소켓 객체 출력 -->
+         ws.onopen = function (evt) { <!-- 웹소켓 연결이 열렸을 때 실행 -->
+             console.log("서버와 연결하였습니다."); <!-- 연결 성공 메시지 출력 -->
+         };
+         ws.send("user_id 3번 입실"); <!-- 서버로 메시지 전송 -->
+     });
+
+     ws.onmessage = function (event) { <!-- 서버로부터 메시지를 받았을 때 실행 -->
+         console.log(event.data); <!-- 받은 메시지 콘솔 출력 -->
+         axios;
+         { <!-- axios 관련 코드가 미완성 상태 -->
+         }
+     };
+  </script>
+</body>
+</html>

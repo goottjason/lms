@@ -52,7 +52,6 @@ public class PageCourseRespDTO<T> {
       this.blockEndPage = Math.min(this.blockEndPage, this.lastPage);
 
     }
-
   }
 
 }

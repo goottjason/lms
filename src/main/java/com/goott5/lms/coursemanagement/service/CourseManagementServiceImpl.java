@@ -1,17 +1,28 @@
 package com.goott5.lms.coursemanagement.service;
 
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
-import com.goott5.lms.coursemanagement.domain.CourseGetReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseRespDTO;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseResponse;
+import com.goott5.lms.coursemanagement.domain.integrated.CourseOverviewResp;
+import com.goott5.lms.coursemanagement.domain.integrated.CourseScheduleOverviewResp;
+import com.goott5.lms.coursemanagement.domain.integrated.CourseSubjectOverviewResp;
+import com.goott5.lms.coursemanagement.domain.table.CourseSchedule;
+import com.goott5.lms.coursemanagement.domain.table.CourseSubject;
+import com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo;
 import com.goott5.lms.coursemanagement.mapper.CourseManagementMapper;
 import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +73,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       );
     }
 
-    // 페이징된 데이터 결과가 있으면, 배열을 순회하면서
+    // 페이징된 데이터 결과가 있으면, 배열을 순회하면서 교과목 정보 set
     if (!allCourses.isEmpty()) {
       for (CourseRespDTO course : allCourses) {
         course.setSubjects(courseManagementMapper.selectCourseSubjectById(course.getId()));
@@ -231,5 +242,92 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     return false;
   }
 
+
+  public PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
+      BaseReqDTO baseReqDTO,
+      PageCourseRequest pageCourseRequest
+  ) {
+    Integer originalPageNo = pageCourseRequest.getPageNo();
+    Integer originalPagesize = pageCourseRequest.getPageSize();
+    if (originalPageNo != null && originalPagesize != null) {
+      pageCourseRequest.setPageNo(null);
+      pageCourseRequest.setPageSize(null);
+    }
+    List<CourseWithAssignedInfo> courses = courseManagementMapper.selectCoursesByAuth(
+        baseReqDTO, pageCourseRequest
+    );
+    Integer totalRecords = courses.size();
+    if (originalPageNo != null && originalPagesize != null) {
+      pageCourseRequest.setPageNo(originalPageNo);
+      pageCourseRequest.setPageSize(originalPagesize);
+      courses = courseManagementMapper.selectCoursesByAuth(
+          baseReqDTO, pageCourseRequest
+      );
+    }
+
+    List<CourseOverviewResp> courseOverviewResps =
+        courses.stream().map(course -> {
+          CourseOverviewResp resp = new CourseOverviewResp();
+
+          if (course.getCoId() != null) {
+            // 1. 과정 정보 추가
+            resp.setCourseWithAssignedInfo(course);
+
+            // 2. 과정의 교과목 및 교재 정보 추가
+            resp.setSubjectOverview(
+                fetchSubjectOverview(course.getCoId())
+            );
+            // 3. 과정의 수업일자 정보 추가 (특정 과정만 선택한 경우)
+            if (pageCourseRequest.getCoId() != null) {
+              resp.setScheduleOverview(
+                  fetchScheduleOverview(course.getCoId(),
+                      course.getCoTotalDays())
+              );
+            }
+          }
+          return resp;
+        }).collect(Collectors.toList());
+    return PageCourseResponse.<CourseOverviewResp>withPageInfo()
+        .request(pageCourseRequest)
+        .totalRecords(totalRecords)
+        .records(courseOverviewResps)
+        .build();
+  }
+
+  private CourseScheduleOverviewResp<CourseSchedule> fetchScheduleOverview(Integer coId, Integer totalDays) {
+    List<CourseSchedule> details =
+        courseManagementMapper.selectScheduleByCoId(coId);
+
+    Set<LocalDate> classDates = new LinkedHashSet<>(); // 순서 유지, 중복 제거
+
+    LocalDate today = LocalDate.now();
+    Integer progressedCount = 0;
+    for (CourseSchedule detail : details) {
+      classDates.add(detail.getCsClassDate());
+    }
+    for (LocalDate classDate : classDates) {
+      if (classDate.isBefore(today)) {
+        progressedCount++;
+      }
+    }
+    // 과정진행률 (현재 날짜의 전일 기준, xx%)
+    Double courseProgressRate =
+        Math.round((progressedCount / (double) totalDays) * 100.0 * 100.0) / 100.0;
+
+    return CourseScheduleOverviewResp.<CourseSchedule>builder()
+        .scheduleList(details)
+        .totalCount(details.size())
+        .courseProgressRate(courseProgressRate)
+        .build();
+  }
+
+  private CourseSubjectOverviewResp<CourseSubject> fetchSubjectOverview(Integer coId) {
+    List<CourseSubject> details =
+        courseManagementMapper.selectSubjectByCoId(coId);
+    return CourseSubjectOverviewResp.<CourseSubject>builder()
+        .subjectList(details)
+        .totalCount(details.size())
+        .build();
+  }
 
 }

@@ -1,7 +1,15 @@
 const loginUserId = $('#login-user-id').val();
 const loginUserType = $('#login-user-type').val();
 let isInProgress =  '1';
-
+let courses = null;
+const courseConfig = {
+  pageNo: null,
+  pageSize: null,
+  type: null,
+  keyword: null,
+  orderBy: null,
+  orderDirection: null,
+};
 const config = {
   pageNo: 1,
   pageSize: 10, // 테스트
@@ -14,9 +22,14 @@ const config = {
 /* ================================================================================ */
 
 $(document).ready(function() {
-  // 관리자, 강사 모두 숨김
-  $("#courseSelector").hide();
 
+  // 관리자, 강사 모두 숨김
+  // $("#courseSelector").hide();
+  if (loginUserType == "INSTRUCTOR") {
+    updateTopCourseSelector();
+  } else {
+    $("#courseSelector").hide();
+  }
   getListState();
   $("#is-in-progress").val(isInProgress == null ? '' : isInProgress);
   $('#search-input').val(config.keyword);
@@ -36,9 +49,43 @@ $(document).ready(function() {
   $('#order-by').on('change', handleOrderByChange);
   $('#order-direction').on('change', handleOrderDirectionChange);
   $(document).on('click', '.page-link', handlePageBtnClick);
+  $(document).on('change', '#courseSelector', handleCourseSelectChange)
 });
 
 /* ================================================================================ */
+
+async function updateTopCourseSelector() {
+  let coursesWithPagination = await apiGetRequestAboutCourses(
+      '/api/management/courses',
+      {
+        loginUserId: loginUserId,
+        loginUserType: loginUserType,
+        isInProgress: null});
+  let courses = coursesWithPagination?.respDTOS || [];
+  if (!Array.isArray(courses)) courses = [];
+  console.log(courses)
+  updateTopCourseSelectorOption('#courseSelector', courses);
+}
+function updateTopCourseSelectorOption(selector, data) {
+  console.log(selector, data);
+  const $select = $(selector).empty();
+  data.forEach(course => {
+    $select.append($('<option>').val(course.id).text(course.name));
+  });
+}
+async function apiGetRequestAboutCourses(endpoint, additionalParams = {}) {
+  try {
+    const response = await axios.get(endpoint, {
+      params: { ...courseConfig, ...additionalParams }
+    });
+    console.log(response.data);
+    return response.data.data;
+  } catch (error) {
+    console.error(`${endpoint} 요청 오류:`, error);
+    return [];
+  }
+}
+
 
 
 function getListState() {
@@ -105,7 +152,7 @@ function renderCourseTable(courses) {
           <td class="text-center align-middle">${course.classroomName}</td>
           <td class="text-center align-middle">
             <button class="btn btn-primary btn-icon-split btn-sm">
-              <span class="text"><a href="/courseManagement/courseSchedule?courseId=${course.id}" onclick="saveListState()">조회</a></span>
+              <span class="text"><a href="/courseSchedule?courseId=${course.id}" onclick="saveListState()">조회</a></span>
             </button>
           </td>
         </tr>

@@ -7,10 +7,15 @@ import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseRespDTO;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseResponse;
+import com.goott5.lms.coursemanagement.domain.integrated.CourseOverviewResp;
 import com.goott5.lms.coursemanagement.service.CourseManagementService;
 import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
+import com.goott5.lms.learnermanagement.service.LearnerManagementService;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -35,6 +40,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class CourseManagementController {
 
   private final CourseManagementService courseManagementService;
+  private final LearnerManagementService learnerManagementService;
 
   @GetMapping("api/management/courses")
   @ResponseBody
@@ -164,7 +170,25 @@ public class CourseManagementController {
   ) {
 
     if (courseId == -1) {
-      return "courseManagement/courseList";
+      /// ///////////////////////////////////////////////////////
+      UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+      Integer loginUserId = Integer.valueOf(loginUser.getId());
+      String loginUserType = loginUser.getType();
+      CommonReqDTO commonReqDTO = CommonReqDTO.builder()
+          .loginUserId(loginUserId)
+          .loginUserType(loginUserType)
+          .courseId(null)
+          .isInProgress(null)
+          .build();
+      PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = PageCourseReqDTO.<CourseReqDTO>builder()
+          .orderBy("is_in_progress")
+          .orderDirection("DESC")
+          .build();
+      PageCourseRespDTO<CourseRespDTO> courses =
+          courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
+
+      model.addAttribute("course", courses.getRespDTOS().get(0));
+      return "courseManagement/courseDetail";
     }
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
@@ -185,7 +209,7 @@ public class CourseManagementController {
   }
 
 
-  @GetMapping("courseManagement/courseModify")
+  /*@GetMapping("courseManagement/courseModify")
   public String courseModify(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
       Model model,
@@ -211,7 +235,7 @@ public class CourseManagementController {
 
     model.addAttribute("course", courses.getRespDTOS().get(0));
     return "courseManagement/courseModify";
-  }
+  }*/
 
 
   @GetMapping("courseManagement/learnerAssignment")
@@ -222,5 +246,21 @@ public class CourseManagementController {
     return "courseManagement/learnerAssignment";
   }
 
+
+  @GetMapping("/api/coursemanagement/courses")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<PageCourseResponse<CourseOverviewResp>>>
+  getCoursesByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageCourseRequest pageCourseRequest
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageCourseResponse<CourseOverviewResp> coursesWithPagination =
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+    return ApiResponse.okResponse(200, "success", coursesWithPagination);
+  }
 
 }

@@ -5,9 +5,14 @@ import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.CourseSubjectRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageListReqDTO;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
+import com.goott5.lms.coursemanagement.domain.table.CourseSchedule;
+import com.goott5.lms.coursemanagement.domain.table.CourseSubject;
+import com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo;
 import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -155,4 +160,12 @@ public interface CourseManagementMapper {
   })
   int insertEmploymentSupport(@Param("leId") Integer leId);
 
+  List<CourseWithAssignedInfo> selectCoursesByAuth(
+      @Param("base") BaseReqDTO base,
+      @Param("page") PageCourseRequest page);
+
+
+  List<CourseSubject> selectSubjectByCoId(Integer coId);
+
+  List<CourseSchedule> selectScheduleByCoId(Integer coId);
 }

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.learnermanagement.CommonManagement">
+
+  <sql id="authForLearner">
+    <!-- 총괄 관리자: 모든 데이터 조회 -->
+    <if test="base.loginUserType == 'ADMINISTRATOR' and base.loginUserPosition == 'GENERAL_MANAGER'">
+      1 = 1
+    </if>
+    <!-- 과정 책임자: 담당 과정만 조회 -->
+    <if test="base.loginUserType == 'ADMINISTRATOR' and base.loginUserPosition == 'COURSE_HEAD'">
+      AND coCourseHeadId = #{base.loginUserId}
+    </if>
+    <!-- 전임 강사: 담당 강의만 조회 -->
+    <if test="base.loginUserType == 'INSTRUCTOR' and base.loginUserPosition == 'FULLTIME_INSTRUCTOR'">
+      AND coInstructorId = #{base.loginUserId}
+    </if>
+    <!-- 학습자: 본인 데이터만 조회 -->
+    <if test="base.loginUserType == 'LEARNER'">
+      AND userId = #{base.loginUserId}
+    </if>
+  </sql>
+
+  <sql id="authForCourse">
+    <!-- 총괄 관리자: 모든 데이터 조회 -->
+    <if test="base.loginUserType == 'ADMINISTRATOR' and base.loginUserPosition == 'GENERAL_MANAGER'">
+      1 = 1
+    </if>
+    <!-- 과정 책임자: 담당 과정만 조회 -->
+    <if test="base.loginUserType == 'ADMINISTRATOR' and base.loginUserPosition == 'COURSE_HEAD'">
+      coCourseHeadId = #{base.loginUserId}
+    </if>
+    <!-- 전임 강사: 담당 강의만 조회 -->
+    <if test="base.loginUserType == 'INSTRUCTOR' and base.loginUserPosition == 'FULLTIME_INSTRUCTOR'">
+      coInstructorId = #{base.loginUserId}
+    </if>
+    <!-- 학습자: 본인 데이터만 조회 -->
+    <if test="base.loginUserType == 'LEARNER'">
+      coId IN (
+      SELECT le.course_id
+      FROM learner_enrollment le
+      WHERE le.user_id = #{base.loginUserId}
+      )
+    </if>
+  </sql>
+
+  <sql id="filteringForLearner">
+    <!-- 과정 진행 상태 필터링 -->
+    <if test="page.coIsInProgress != null">
+      AND coIsInProgress = #{page.coIsInProgress}
+    </if>
+    <!-- 학생 이름 검색 -->
+    <if test="page.keyword != null and page.keyword != ''">
+      AND userFullname LIKE CONCAT('%', #{page.keyword}, '%')
+    </if>
+    <!-- 과정 ID 필터링 -->
+    <if test="page.leCourseId != null">
+      AND leCourseId = #{page.leCourseId}
+    </if>
+  </sql>
+
+  <sql id="filteringForCourse">
+    <!-- 과정 진행 상태 필터링 -->
+    <if test="page.coIsInProgress != null">
+      AND coIsInProgress = #{page.coIsInProgress}
+    </if>
+    <!-- 과정 ID 필터링 (단일항목) -->
+    <if test="page.coId != null">
+      AND coId = #{page.coId}
+    </if>
+    <!-- 과정 이름 검색 -->
+    <if test="page.keyword != null and page.keyword != ''">
+      AND coName LIKE CONCAT('%', #{page.keyword}, '%')
+    </if>
+  </sql>
+
+  <sql id="orderAndPaging">
+    <!-- 정렬 조건 -->
+    <if test="page.orderBy != null and page.orderBy != ''
+    and page.orderDirection != null and page.orderDirection != ''">
+      ORDER BY ${page.orderBy} ${page.orderDirection}
+    </if>
+    <!-- 페이징 처리 -->
+    <if test="page.pageNo != null and page.pageSize != null">
+      LIMIT #{page.offset}, #{page.pageSize}
+    </if>
+  </sql>
+
+</mapper>

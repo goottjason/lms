@@ -6,9 +6,13 @@ import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseRespDTO;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
+import com.goott5.lms.coursemanagement.domain.dto.PageCourseResponse;
+import com.goott5.lms.coursemanagement.domain.integrated.CourseOverviewResp;
 import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
+import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.util.List;
 
 public interface CourseManagementService {
@@ -73,4 +77,10 @@ public interface CourseManagementService {
    * @return
    */
   Boolean removeCourse(CommonReqDTO commonReqDTO);
+
+  PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
+      BaseReqDTO baseReqDTO,
+      PageCourseRequest pageCourseRequest
+  );
+
 }

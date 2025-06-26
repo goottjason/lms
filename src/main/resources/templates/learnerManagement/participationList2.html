@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+</head>
+<body>
+  <div layout:fragment="content">
+    <h1>HOME</h1>
+    <div style="margin: 20px 0;">
+      <button id="prev-btn">◀ 이전</button>
+      <span id="date-display" style="margin: 0 15px; font-weight: bold;"></span>
+      <button id="next-btn">다음 ▶</button>
+    </div>
+    <!-- 주 단위 이동 버튼 추가 -->
+    <div style="margin: 20px 0;">
+      <button id="prev-week-btn">◀ 이전 주</button>
+      <button id="next-week-btn">다음 주 ▶</button>
+    </div>
+    <span id="time-check">여기 시간 업데이트 하는 곳</span>
+    <button id="update-button">업데이트버튼</button>
+    <div id="course-info">
+      <!--과정별로 정보 볼 때 과정에 대한 정보-->
+    </div>
+  </div>
+  <script layout:fragment="script" th:inline="javascript">
+    $(function() {
+      const url = "ws://localhost:8090/participationSocket"; // 웹소켓 서버 URL 설정
+      let ws    = new WebSocket(url);
+      ws.onmessage = function (event) { <!-- 서버로부터 메시지를 받았을 때 실행 -->
+        console.log(event.data); <!-- 받은 메시지 콘솔 출력 -->
+        updateDateDisplay();
+      };
+      let currentDate = new Date();
+
+      // 한국어 요일 변환
+      function getKoreanDay(day) {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return days[day];
+      }
+
+      // 날짜 포맷팅 (YYYY년 MM월 DD일 (요일))
+      function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dayOfWeek = getKoreanDay(date.getDay());
+        return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`;
+      }
+
+      // 주말 건너뛰기 (월~금만 허용)
+      function adjustToWeekday(date) {
+        const day = date.getDay();
+        if (day === 0) date.setDate(date.getDate() + 1);
+        else if (day === 6) date.setDate(date.getDate() + 2);
+        return date;
+      }
+
+      // 주 단위 이동 시 월요일로 조정하는 함수
+      function adjustToMonday(date) {
+        const day = date.getDay();
+        // 일요일(0)일 경우 월요일로 이동
+        if (day === 0) {
+          date.setDate(date.getDate() + 1);
+        }
+        // 토요일(6)일 경우 월요일로 이동
+        else if (day === 6) {
+          date.setDate(date.getDate() + 2);
+        }
+        // 그 외 요일: 월요일로 이동
+        else {
+          date.setDate(date.getDate() - (day - 1));
+        }
+        return date;
+      }
+
+      // 날짜 업데이트 함수
+      function updateDateDisplay() {
+        currentDate = adjustToWeekday(currentDate);
+        $('#date-display').text(formatDate(currentDate));
+      }
+
+      // 초기 날짜 표시 (월요일로 조정)
+      currentDate = adjustToMonday(currentDate);
+      updateDateDisplay();
+
+      // 이전 버튼 클릭 (주말 건너뛰기)
+      $('#prev-btn').click(function() {
+        currentDate.setDate(currentDate.getDate() - 1);
+        if (currentDate.getDay() === 0) currentDate.setDate(currentDate.getDate() - 2);
+        else if (currentDate.getDay() === 6) currentDate.setDate(currentDate.getDate() - 1);
+        updateDateDisplay();
+      });
+
+      // 다음 버튼 클릭 (주말 건너뛰기)
+      $('#next-btn').click(function() {
+        currentDate.setDate(currentDate.getDate() + 1);
+        if (currentDate.getDay() === 0) currentDate.setDate(currentDate.getDate() + 1);
+        else if (currentDate.getDay() === 6) currentDate.setDate(currentDate.getDate() + 2);
+        updateDateDisplay();
+      });
+
+      // 이전 주 버튼 클릭 (주 단위 이동, 월요일 기준)
+      $('#prev-week-btn').click(function() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        currentDate = adjustToMonday(currentDate);
+        updateDateDisplay();
+      });
+
+      // 다음 주 버튼 클릭 (주 단위 이동, 월요일 기준)
+      $('#next-week-btn').click(function() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        currentDate = adjustToMonday(currentDate);
+        updateDateDisplay();
+      });
+
+      // 시간 업데이트 함수
+      function fetchLearner() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? '오후' : '오전';
+        const formattedHour = hours % 12 || 12;
+        const timeStr = `${ampm} ${formattedHour}:${minutes}`;
+        $('#time-check').text(`${formatDate(currentDate)} ${timeStr} 기준, 입·퇴실 현황 업데이트됨`);
+      }
+
+      // 초기 시간 표시
+      fetchLearner();
+
+      // 업데이트 버튼 클릭 시 시간 업데이트
+      $('#update-button').click(function() {
+        fetchLearner();
+      });
+    });
+  </script>
+</body>
+</html>

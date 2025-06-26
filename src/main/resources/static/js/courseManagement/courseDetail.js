@@ -2,14 +2,71 @@ const loginUserId   = $("#login-user-id").val();
 const loginUserType = $("#login-user-type").val();
 const params        = new URLSearchParams(window.location.search);
 const courseId      = params.get("courseId");
-
+const courseConfig = {
+    pageNo: null,
+    pageSize: null,
+    type: null,
+    keyword: null,
+    orderBy: 'is_in_progress',
+    orderDirection: 'DESC',
+};
 /* ================================================================================ */
 
 $(document).ready(function () {
+    if (loginUserType == "INSTRUCTOR" || loginUserType == "LEARNER") {
+        updateTopCourseSelector();
+    } else {
+        $("#courseSelector").hide();
+    }
+    $(document).on('change', '#courseSelector', handleCourseSelectorChange)
     $(document).on("click", "#remove-button", handleRemoveBtnClick);
 });
 
 /* ================================================================================ */
+
+function handleCourseSelectorChange() {
+    console.log('Course Selector changed.');
+    let selectedCourseId = $(this).val();
+    console.log(selectedCourseId);
+    window.location.href = `/courseManagement/courseDetail?courseId=${selectedCourseId}`;
+}
+async function updateTopCourseSelector() {
+    let coursesWithPagination = await apiGetRequestAboutCourses(
+        '/api/management/courses',
+        {
+            loginUserId: loginUserId,
+            loginUserType: loginUserType,
+            isInProgress: null});
+    let courses = coursesWithPagination?.respDTOS || [];
+    if (!Array.isArray(courses)) courses = [];
+    console.log(courses)
+    updateTopCourseSelectorOption('#courseSelector', courses);
+}
+function updateTopCourseSelectorOption(selector, data) {
+    console.log(selector, data);
+    const $select = $(selector).empty();
+    data.forEach(course => {
+        const $option = $('<option>').val(course.id).text(course.name);
+        $select.append($option);
+        console.log(course.id, courseId);
+        if (course.id == courseId) {
+            console.log(courseId, "가 선택됨");
+            $option.prop('selected', true);
+        }
+    });
+}
+async function apiGetRequestAboutCourses(endpoint, additionalParams = {}) {
+    try {
+        const response = await axios.get(endpoint, {
+            params: { ...courseConfig, ...additionalParams }
+        });
+        console.log(response.data);
+        return response.data.data;
+    } catch (error) {
+        console.error(`${endpoint} 요청 오류:`, error);
+        return [];
+    }
+}
 
 async function removeCourse() {
     let data             = await apiDeleteRequest(
