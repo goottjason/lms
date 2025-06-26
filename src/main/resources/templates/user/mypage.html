@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">개인정보 조회</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-2">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">개인정보 조회</h6>
+        </div>
+        <div class="col-auto">
+          <button
+            id=""
+            class="btn btn-sm btn-info btn-icon-split"
+            data-toggle="modal"
+            data-target="#passwordChangeModal">
+            <span class="icon text-white-50">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span class="text">비밀번호 변경</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-4">
+          <div class="card text-center">
+            <div id="imgArea">
+              <img
+                id="profileImg"
+                th:src="@{${session.loginUser.profileImg}}"
+                class="rounded-circle mt-3 mx-auto d-block"
+                style="width: 200px; height: 200px; object-fit: cover;">
+            </div>
+            <div class="card-body">
+              <h4 class="card-title mb-2"><span th:text="${session.loginUser.fullName}"></span>&nbsp;
+                <span th:if="${session.loginUser.type == 'ADMINISTRATOR'}">관리자</span>
+                <span th:if="${session.loginUser.type == 'INSTRUCTOR'}">강사</span>
+                <span th:if="${session.loginUser.type == 'LEARNER'}">교육생</span>
+              </h4>
+              <p class="text-muted mb-4">계정 생성일 : <span
+                th:text="${#temporals.format(session.loginUser.createdAt, 'yyyy-MM-dd')}"></span></p>
+              <button id="profileImgBtn" class="btn btn-primary w-60 mb-4">프로필 이미지 수정</button>
+              <div id="profileImgInput" class="custom-file row mb-4">
+                <input type="file" id="attachedFile" accept="image/*" style="display: none;"/>
+                <button type="button" id="customFileBtn" class="col-6 btn btn-info">이미지 선택</button>
+                <button id="profileImgSaveBtn" class="col-4 btn btn-primary">저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">이름</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.fullName}"></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">생년월일</p>
+                </div>
+                <div class="col-sm-8">
+                  <p
+                    class="text-muted mb-0"
+                    th:text="${#temporals.format(session.loginUser.birthday, 'yyyy-MM-dd')}"></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">로그인ID</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.loginId}"></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">이메일</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.email}"></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">휴대폰 번호</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.mobile}"></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">성별</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:if="${session.loginUser.gender == 'M'}">남성</p>
+                  <p class="text-muted mb-0" th:if="${session.loginUser.gender == 'F'}">여성</p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">주소</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.address}"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- content body 끝 -->
+  <!-- 비밀번호 변경 모달 -->
+  <div
+    class="modal fade"
+    id="passwordChangeModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">비밀번호 변경</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-2">
+            <div class="form-group">
+              <label
+                class="form-label"
+                for="currentPassword">현재 비밀번호<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+              <span id="currentPassword-msg" class="text-danger small"></span>
+              <input
+                type="password"
+                id="currentPassword"
+                name="currentPassword"
+                class="form-control"
+                placeholder="현재 비밀번호를 입력하세요."/>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="form-group">
+              <label
+                class="form-label"
+                for="password">변경할 비밀번호(4자 ~ 20자)<span class="text-danger">*</span>&nbsp;
+                &nbsp;</label>
+              <span id="password-msg" class="text-danger small"></span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                placeholder="영문,숫자,특수문자 중 2가지 이상을 혼합하여 입력하세요."/>
+            </div>
+          </div>
+          <div class="mb-2">
+            <div class="form-group">
+              <label
+                class="form-label"
+                for="password2">비밀번호 재입력<span class="text-danger">*</span>&nbsp;
+                &nbsp;</label>
+              <span id="password2-msg" class="text-danger small"></span>
+              <input
+                type="password"
+                id="password2"
+                class="form-control"
+                placeholder="비밀번호를 한번 더 입력하세요."/>
+            </div>
+          </div>
+
+
+        </div>
+        <div class="modal-footer">
+          <button id="passwordChangeBtn" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-save"></i>
+            </span>
+            <span class="text px-3">변경</span>
+          </button>
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+  <!-- 비밀번호 변경 성공 Modal-->
+  <div
+    class="modal fade"
+    id="changePasswordSuccessModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">비밀번호 변경 성공</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">비밀번호가 변경 되었습니다.</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+
+      $("#profileImgInput").hide();
+
+      $("#profileImgBtn").click(function () {
+        $("#profileImgInput").show();
+        $("#profileImgBtn").hide();
+      });
+
+      $(function () {
+        $("#customFileBtn").click(function () {
+          $("#attachedFile").click();
+        });
+
+        $(document).on("change", "#attachedFile", function () {
+          const files = this.files;
+          console.log("Files:", files);
+
+          if (!files || files.length === 0) {
+            console.warn("파일이 선택되지 않았습니다.");
+            return;
+          }
+
+          $("#imgArea").empty();
+
+          Array.from(files).forEach(file => {
+            if (!file.type.startsWith("image/")) {
+              return;
+            }
+
+            const reader  = new FileReader();
+            reader.onload = function (e) {
+              const img = $(
+                "<img class='rounded-circle mt-3 mx-auto d-block' style='object-fit: cover;'>")
+              .attr("src", e.target.result)
+              .css({
+                     width : "200px",
+                     height: "200px",
+                     border: "1px solid #ccc"
+                   });
+              $("#imgArea").append(img);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+      });
+
+      $("#profileImgSaveBtn").click(function () {
+        const file     = $("#attachedFile")[0].files[0];
+        const formData = new FormData();
+        formData.append("profileFile", file);
+
+        axios.post("/user/modifyProfileImg", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        })
+             .then(function (response) {
+               console.log("업로드 성공:", response);
+               location.reload();
+             })
+             .catch(function (error) {
+               console.error("업로드 실패:", error);
+             });
+      });
+
+      let passwordValidate = false;
+
+      $("#password").on("blur", validatePassword);
+      $("#password2").on("blur", comparePasswords);
+
+      function validatePassword() {
+        let password     = $("#password").val();
+        let $passwordMsg = $("#password-msg");
+
+        if (password.length < 4 || password.length > 20) {
+          $passwordMsg.text("비밀번호 글자수는 4자~20자로 작성해주세요.")
+                      .removeClass("text-info")
+                      .addClass("text-danger");
+          $("#password").focus();
+        } else {
+          let hasLetter  = /[a-zA-Z]/.test(password);
+          let hasNumber  = /[0-9]/.test(password);
+          let hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+          let count = [hasLetter, hasNumber, hasSpecial].filter(Boolean).length;
+
+          if (count < 2) {
+            $passwordMsg.text("영문,숫자,특수문자 중 2개 이상을 포함하세요.")
+                        .removeClass("text-info")
+                        .addClass("text-danger");
+            $("#password").focus();
+          } else {
+            $passwordMsg.text("사용가능한 비밀번호 입니다.")
+                        .removeClass("text-danger")
+                        .addClass("text-info");
+
+            if ($("#password2").val() != "") {
+              comparePasswords();
+            }
+          }
+        }
+      }
+
+      function comparePasswords() {
+        let password      = $("#password").val();
+        let password2     = $("#password2").val();
+        let $password2Msg = $("#password2-msg");
+
+        if (password2 == "") {
+          passwordValidate = false;
+
+        } else if (password != password2) {
+          passwordValidate = false;
+          $password2Msg
+          .text("비밀번호가 일치하지 않습니다.")
+          .removeClass("text-info")
+          .addClass("text-danger");
+
+        } else {
+          passwordValidate = true;
+          $password2Msg
+          .text("비밀번호가 일치합니다.")
+          .removeClass("text-danger")
+          .addClass("text-info");
+        }
+      }
+
+      $("#passwordChangeBtn").on("click", function (e) {
+        if (!passwordValidate) {
+          console.log("비밀번호에 문제있음");
+          return;
+        } else {
+          axios.post("/user/changePassword", {
+            currentPassword: $("#currentPassword").val(),
+            newPassword    : $("#password").val(),
+
+          })
+               .then(function (response) {
+                 if (response.data.code === 200) {
+                   $("#passwordChangeModal").modal("hide");
+                   $("#changePasswordSuccessModal").modal("show");
+
+                 }
+               })
+               .catch(function (error) {
+                 console.log(error);
+                 if (error.response.data.code === 409) {
+                   $("#currentPassword-msg").text(error.response.data.data).removeClass("text-info")
+                                            .addClass("text-danger");
+                 }
+               });
+
+        }
+      });
+
+  </script>
+</th:block>
+</body>
+</html>

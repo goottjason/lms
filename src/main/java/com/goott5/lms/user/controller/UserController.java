@@ -17,11 +17,14 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -31,13 +34,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UserController {
 
   private final UserService userService;
+  private final BCryptPasswordEncoder passwordEncoder;
 
   @PostMapping("/login")
   public String login(LoginDTO loginDTO,
-      HttpSession session,
-      HttpServletRequest request,
-      HttpServletResponse response,
-      RedirectAttributes redirectAttributes) {
+          HttpSession session,
+          HttpServletRequest request,
+          HttpServletResponse response,
+          RedirectAttributes redirectAttributes) {
 
     UserVO userVO = userService.findUserByLoginId(loginDTO.getLoginId());
     if (userVO != null) {
@@ -107,7 +111,7 @@ public class UserController {
 
   @GetMapping("/logout")
   public String logout(HttpServletRequest request, HttpServletResponse response,
-      HttpSession session) {
+          HttpSession session) {
 
     if (session.getAttribute("loginUser") != null) {
       int userId = ((UserVO) session.getAttribute("loginUser")).getId();
@@ -139,7 +143,7 @@ public class UserController {
 
   @PostMapping("/idDuplicateCheck")
   public ResponseEntity<ApiResponse<String>> idDuplicateCheck(
-      @RequestBody Map<String, String> data) {
+          @RequestBody Map<String, String> data) {
     String loginId = data.get("loginId");
     UserVO userVO = userService.findUserByLoginId(loginId);
     if (userVO == null) {
@@ -151,7 +155,7 @@ public class UserController {
 
   @PostMapping("/sendAuthCodeForSignup")
   public ResponseEntity<ApiResponse<String>> sendAuthCodeForSignup(
-      @RequestBody Map<String, String> data, HttpSession session) {
+          @RequestBody Map<String, String> data, HttpSession session) {
 
     String email = data.get("email");
     String fullname = data.get("fullname");
@@ -160,10 +164,10 @@ public class UserController {
 
     if (userVO == null) {
       return ApiResponse.respondFail(409, "없는 이메일", "과정 신청 시 등록된 이메일 주소가 아닙니다.",
-          HttpStatus.CONFLICT);
+              HttpStatus.CONFLICT);
     } else if (!userVO.getFullName().equals(fullname)) {
       return ApiResponse.respondFail(409, "사용자 이름 오류", "이메일 주소가 등록된 사용자 이름과 다릅니다.",
-          HttpStatus.CONFLICT);
+              HttpStatus.CONFLICT);
     } else {
       String authCode = null;
       try {
@@ -178,7 +182,7 @@ public class UserController {
 
   @PostMapping("/certificateAuthCode")
   public ResponseEntity<ApiResponse<String>> certificateAuthCode(
-      @RequestBody Map<String, String> data, HttpSession session) {
+          @RequestBody Map<String, String> data, HttpSession session) {
     String certificateNo = data.get("certificateNo");
 
     if (session.getAttribute("authCode") != null) {
@@ -208,7 +212,7 @@ public class UserController {
 
   @PostMapping("/mobileDuplicateCheck")
   public ResponseEntity<ApiResponse<String>> mobileDuplicateCheck(
-      @RequestBody Map<String, String> data) {
+          @RequestBody Map<String, String> data) {
 
     String mobile = data.get("mobile");
     UserVO userVO = userService.findUserByMobile(mobile);
@@ -232,5 +236,50 @@ public class UserController {
       throw new RuntimeException(e);
     }
   }
+
+  @GetMapping("/mypage")
+  public String mypage() {
+
+    return "user/mypage";
+  }
+
+  @PostMapping("/modifyProfileImg")
+  public ResponseEntity<ApiResponse<String>> modifyProfileImg(HttpServletRequest request,
+          @RequestParam("profileFile") MultipartFile profileFile) {
+
+    int userId = ((UserVO) request.getSession().getAttribute("loginUser")).getId();
+
+    try {
+      String insertPath = userService.modifyProfileImg(profileFile, userId);
+      ((UserVO) request.getSession().getAttribute("loginUser")).setProfileImg(insertPath);
+      return ApiResponse.respondOk(200, "success", "프로필 이미지 변경 성공");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  @PostMapping("/changePassword")
+  public ResponseEntity<ApiResponse<String>> changePassword(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+
+    String currentPassword = data.get("currentPassword");
+    String newPassword = data.get("newPassword");
+
+    int userId = ((UserVO) request.getSession().getAttribute("loginUser")).getId();
+    String userPassword = ((UserVO) request.getSession().getAttribute("loginUser")).getPassword();
+
+    if (!passwordEncoder.matches(currentPassword, userPassword)) {
+      return ApiResponse.respondFail(409, "비밀번호 오류", "현재 비밀번호가 올바르지 않습니다.", HttpStatus.CONFLICT);
+    } else {
+
+      String password = userService.changePassword(userId, newPassword);
+      ((UserVO) request.getSession().getAttribute("loginUser")).setPassword(password);
+
+      return ApiResponse.respondOk(200, "성공", "비밀번호가 변경되었습니다.");
+    }
+
+  }
+
 
 }
