@@ -30,7 +30,7 @@ $(document).ready(function () {
     });
   }
 
-  const pageNo = UrlUtils.getQueryParam("currentPage");
+  const pageNo = UrlUtils.getQueryParam("currentPageNo");
 
   $("#prev-page").data("page-no", pageNo);
 
@@ -48,7 +48,7 @@ $(document).ready(function () {
 
          $("#courseSelector").prop("disabled", true);
 
-         renderTestListPage(param, UrlUtils.getQueryParam("currentPage"));
+         renderTestListPage(param, UrlUtils.getQueryParam("currentPageNo"));
        })
        .catch(console.error);
 
@@ -562,8 +562,8 @@ $(document).on("click", "#confirm-modify", function (e) {
     .then((res) => {
       console.log(res);
 
-      const pageNo = UrlUtils.getQueryParam("currentPage");
-      window.location.href = `/test/testDetail/${testId}?currentPage=${pageNo}&modified=true`;
+      const pageNo = UrlUtils.getQueryParam("currentPageNo");
+      window.location.href = `/test/testDetail/${testId}?currentPageNo=${pageNo}&modified=true`;
 
     })
     .catch((err) => {
@@ -611,7 +611,7 @@ $(document).on("click", "#del-test-btn", function (e) {
     if (result.isConfirmed) {
 
       const testId = parseInt(UrlUtils.getPathSegment(2));
-      const currentPage = UrlUtils.getQueryParam("currentPage");
+      const currentPageNo = UrlUtils.getQueryParam("currentPageNo");
       apiCall("delete", `/api/tests/${testId}`, null, {}, {})
       .then((res) => {
         Swal.fire({
@@ -621,7 +621,7 @@ $(document).on("click", "#del-test-btn", function (e) {
         }).then((result) => {
           if (result.isConfirmed) {
 
-            window.location.href = `/test/testList?currentPage=${currentPage}&removed=true`;
+            window.location.href = `/test/testList?currentPageNo=${currentPageNo}&removed=true`;
           }
         });
       })
@@ -919,7 +919,7 @@ $("#prev-page").on("click", function () {
   let courseName = $courseSelector.val();
   console.log(courseName);
 
-  location.href = `/test/testList?currentPage=${prevPageNo}&courseName=${courseName}`;
+  location.href = `/test/testList?currentPageNo=${prevPageNo}&courseName=${courseName}`;
 });
 
 function renderQuestionResult(selector, quiz, userAnswer) {
