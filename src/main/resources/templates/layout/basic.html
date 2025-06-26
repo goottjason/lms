@@ -88,7 +88,7 @@
 
     <!-- Nav Item - 과정 조회 -->
     <li th:if="${session.loginUser.type != 'ADMINISTRATOR'}" class="nav-item nav-single">
-      <a class="nav-link" th:href="@{/courseManagement/courseList}">
+      <a class="nav-link" th:href="@{/courseManagement/courseDetail}">
         <i class="fa fa-graduation-cap"></i>
         <span>과정 조회</span></a>
     </li>

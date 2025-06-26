@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+  <style>
+    textarea[readonly] {
+      background-color: #fff !important;
+    }
+  </style>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">1:1문의 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 상단 카드 시작-->
+  <div class="row">
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow-sm py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                질문자
+              </div>
+              <div class="h6 mb-0 text-gray-800" th:text="${inquiryDetail.writerName}">
+              </div>
+
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-user fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                작성일</div>
+              <div
+                class="h6 mb-0 text-gray-800"
+                th:text="${#temporals.format(inquiryDetail.createdAt, 'yy-MM-dd')}">
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-calendar fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-info shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                답변상태</div>
+              <div
+                class="h6 mb-0 text-info" th:if="${inquiryDetail.isAnswered}"
+                th:text="${'답변 완료'}">
+              </div>
+              <div
+                class="h6 mb-0 text-secondary" th:if="${!inquiryDetail.isAnswered}"
+                th:text="${'답변 대기'}">
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-comments fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-info shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                답변일</div>
+              <div
+                class="h6 mb-0 text-info"
+                th:if="${inquiryDetail.answeredAt != null}"
+                th:text="${#temporals.format(inquiryDetail.answeredAt, 'yy-MM-dd')}">
+              </div>
+              <div
+                class="h6 mb-0 text-secondary"
+                th:if="${inquiryDetail.answeredAt == null}"
+                th:text="${'-'}">
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-calendar fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 상단 카드 끝 -->
+
+  <!-- 본문 시작 -->
+  <div class="card shadow mb-4">
+    <!-- 제목 -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary" th:text="${inquiryDetail.title}"></h6>
+    </div>
+    <!-- 내용 -->
+    <div
+      class="card-body py-5" th:text="${inquiryDetail.inquiry}"
+      style="white-space:
+    pre-wrap;">
+
+    </div>
+
+    <div
+      class="col-12 d-flex justify-content-end mt-3 mb-4"
+      th:if="${session.loginUser.id == inquiryDetail.writer and !inquiryDetail.isAnswered}">
+      <a th:href="|@{/communityInquiry/inquiryModify}?${inquiryRequestParam.getQueryString()}&id=${inquiryRequestParam.id}|">
+        <button
+          id="" class="btn btn-info btn-icon-split mr-2">
+        <span class="icon text-white-50">
+            <i class="fa fa-wrench"></i>
+        </span>
+          <span class="text px-3">질문수정</span>
+        </button>
+      </a>
+
+      <button
+        id="" class="btn btn-danger btn-icon-split mr-2" data-toggle="modal"
+        data-target="#inquiryDeleteModal">
+      <span class="icon text-white-50">
+          <i class="fa fa-times"></i>
+      </span>
+        <span class="text px-3">질문삭제</span>
+      </button>
+    </div>
+  </div>
+  <!-- 본문 끝 -->
+
+  <!-- 답변 (관리자) -->
+  <div class="card shadow mb-4" th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">답변</h6>
+    </div>
+    <div class="card-body py-3">
+      <div class="form-group" th:if="${!inquiryDetail.isAnswered}">
+        <textarea
+          id="answer"
+          class="form-control"
+          placeholder="답변을 작성하세요."
+          style="height: 200px; white-space: pre-wrap;" wrap="hard"></textarea>
+      </div>
+      <div class="form-group" th:if="${inquiryDetail.isAnswered}">
+        <textarea
+          id="registeredAnswer"
+          class="form-control"
+          th:text="${inquiryDetail.answer}"
+          style="height: 200px; white-space:
+          pre-wrap;" readonly></textarea>
+      </div>
+    </div>
+    <div class="col-12 d-flex justify-content-end mb-4">
+      <button
+        id="answerRegisterBtn" class="btn btn-primary btn-icon-split mr-2"
+        th:if="${!inquiryDetail.isAnswered}">
+        <span class="icon text-white-50">
+          <i class="fas fa-upload"></i>
+        </span>
+        <span class="text px-3">답변등록</span>
+      </button>
+      <button
+        id="answerModifyBtn" class="btn btn-info btn-icon-split mr-2"
+        th:if="${inquiryDetail.isAnswered and !inquiryDetail.isAnsweredChecked}">
+        <span class="icon text-white-50">
+          <i class="fa fa-wrench"></i>
+        </span>
+        <span class="text px-3">답변수정</span>
+      </button>
+      <button
+        id="deleteAnswerBtn"
+        class="btn btn-danger btn-icon-split mr-2"
+        th:if="${inquiryDetail.isAnswered and !inquiryDetail.isAnsweredChecked}" data-toggle="modal"
+        data-target="#answerDeleteModal">
+        <span class="icon text-white-50">
+          <i class="fa fa-times"></i>
+        </span>
+        <span class="text px-3">답변삭제</span>
+      </button>
+      <button id="answerModifySaveBtn" class="btn btn-primary btn-icon-split mr-2">
+          <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
+        <span class="text px-3">저장</span>
+      </button>
+      <button id="answerModifyCancelBtn" class="btn btn-secondary btn-icon-split">
+          <span class="icon text-white-50">
+              <i class="fas fa-times"></i>
+          </span>
+        <span class="text px-3">취소</span>
+      </button>
+
+
+    </div>
+  </div>
+
+
+  <!-- 답변 (교육생, 강사) -->
+  <div class="card shadow mb-4" th:if="${session.loginUser.type != 'ADMINISTRATOR'}">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+      <h6 class="m-0 font-weight-bold text-primary">답변</h6>
+    </div>
+    <div
+      class="card-body py-5" th:if="${inquiryDetail.answer == null}"
+      th:text="${'관리자가 확인 중입니다. 조금만 기다려주세요.'}">
+    </div>
+    <div
+      class="card-body py-5"
+      th:if="${inquiryDetail.answer != null}"
+      th:text="${inquiryDetail.answer}">
+    </div>
+  </div>
+
+  <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+    <a
+      id="goListBtn" class="btn btn-primary btn-icon-split"
+      th:href="|@{/communityInquiry/inquiryList}?${inquiryRequestParam.getQueryString()}|">
+      <button id="" class="btn btn-secondary btn-icon-split">
+          <span class="icon text-white-50">
+              <i class="fas fa-list"></i>
+          </span>
+        <span class="text px-5">목록</span>
+      </button>
+    </a>
+  </div>
+  <!-- content body 끝 -->
+
+  <!-- 질문삭제 Modal-->
+  <div
+    class="modal fade"
+    id="inquiryDeleteModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">질문삭제</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">질문을 삭제 하시겠습니까?</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+          <a
+            class="btn btn-danger"
+            th:href="@{/communityInquiry/inquiryDelete(id=${inquiryDetail.id})}">삭제</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 답변삭제 Modal-->
+  <div
+    class="modal fade"
+    id="answerDeleteModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">답변삭제</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">답변을 삭제 하시겠습니까?</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+          <button id="answerDeleteBtn" class="btn btn-danger" type="button">삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 답변작성 성공 Modal-->
+  <div
+    class="modal fade"
+    id="answerRegisterSuccessModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">답변 등록 성공</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">답변이 잘 저장되었습니다.</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input id="inquiryId" type="hidden" th:value="${inquiryDetail.id}">
+
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    $("#answerModifySaveBtn").hide();
+    $("#answerModifyCancelBtn").hide();
+
+    $("#answerRegisterBtn").click(function () {
+
+      axios.post("/communityInquiry/answerRegister", {
+        id    : $("#inquiryId").val(),
+        answer: $("#answer").val(),
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $("#answerRegisterSuccessModal").modal("show");
+
+               $("#answerRegisterSuccessModal").on("hidden.bs.modal", function () {
+                 location.reload();
+               });
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+
+           });
+    });
+
+    $("#answerModifyBtn").click(function () {
+      $("#answerModifyBtn").hide();
+      $("#deleteAnswerBtn").hide();
+      $("#answerModifySaveBtn").show();
+      $("#answerModifyCancelBtn").show();
+
+      $("#registeredAnswer").removeAttr("readonly");
+    });
+
+    $(document).on("click", "#answerModifySaveBtn", function () {
+
+      axios.post("/communityInquiry/answerRegister", {
+        id    : $("#inquiryId").val(),
+        answer: $("#registeredAnswer").val(),
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $("#answerRegisterSuccessModal").modal("show");
+
+               $("#answerRegisterSuccessModal").on("hidden.bs.modal", function () {
+                 location.reload();
+               });
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+
+           });
+
+    });
+
+    $(document).on("click", "#answerModifyCancelBtn", function () {
+      location.reload();
+    });
+
+    $("#answerRegisterBtn").click(function () {
+
+      axios.post("/communityInquiry/answerRegister", {
+        id    : $("#inquiryId").val(),
+        answer: $("#answer").val(),
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $("#answerRegisterSuccessModal").modal("show");
+
+               $("#answerRegisterSuccessModal").on("hidden.bs.modal", function () {
+                 location.reload();
+               });
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+
+           });
+    });
+
+    $("#answerDeleteBtn").click(function () {
+
+      axios.post("/communityInquiry/answerDelete", {
+        id: $("#inquiryId").val(),
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               location.reload();
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+
+           });
+    });
+
+
+
+
+
+  </script>
+</th:block>
+</body>
+</html>

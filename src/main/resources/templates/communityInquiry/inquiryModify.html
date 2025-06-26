@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">1:1문의 수정</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <form class="mb-4" method="POST" th:action="@{/communityInquiry/inquiryModify}">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="m-0 font-weight-bold text-primary">1:1문의 수정</h6>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="title">제목</label>
+              <input
+                type="text" id="title" name="title" class="form-control"
+                th:value="${inquiryDetail.title}">
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="inquiry">내용</label>
+              <textarea
+                id="inquiry"
+                name="inquiry"
+                class="form-control"
+                th:text="${inquiryDetail.inquiry}"
+                style="height: 280px; white-space: pre-wrap;" wrap="hard"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <input type="hidden" name="id" th:value="${inquiryDetail.id}">
+      <input type="hidden" name="pageNo" th:value="${inquiryRequestParam.pageNo}">
+      <input type="hidden" name="searchType" th:value="${inquiryRequestParam.searchType}">
+      <input type="hidden" name="keyword" th:value="${inquiryRequestParam.keyword}">
+      <input type="hidden" name="sort" th:value="${inquiryRequestParam.sort}">
+      <input type="hidden" name="orderBy" th:value="${inquiryRequestParam.orderBy}">
+    </div>
+    <!-- 버튼 -->
+    <div class="col-12 d-flex justify-content-end mt-3">
+      <button type="submit" id="" class="btn btn-primary btn-icon-split mr-2">
+          <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
+        <span class="text px-5">저장</span>
+      </button>
+      <a
+        id="goListBtn" class="btn btn-secondary btn-icon-split"
+        th:href="|@{/communityInquiry/inquiryDetail}?${inquiryRequestParam.getQueryString()}&id=${inquiryRequestParam.id}|">
+        <button id="" class="btn btn-secondary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+          <span class="text px-5">취소</span>
+        </button>
+      </a>
+    </div>
+  </form>
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+      // javascript 개발은 여기에...
+
+  </script>
+</th:block>
+</body>
+</html>

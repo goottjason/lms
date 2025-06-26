@@ -22,15 +22,13 @@
         <div class="col">
           <h6 class="m-0 font-weight-bold text-primary">1:1문의 조회</h6>
         </div>
-        <div class="col-auto">
-          <a th:href="@{/communityInquiry/inquiryRegister}">
-            <button id="" class="btn btn-info btn-icon-split">
-                <span class="icon text-white-50">
-                  <i class="fas fa-plus"></i>
-                </span>
-              <span class="text">1:1문의 등록</span>
-            </button>
-          </a>
+        <div class="col-auto" th:if="${session.loginUser.type != 'ADMINISTRATOR'}">
+          <button id="registerBtn" class="btn btn-info btn-icon-split">
+            <span class="icon text-white-50">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span class="text">1:1문의 등록</span>
+          </button>
         </div>
       </div>
     </div>
@@ -39,9 +37,8 @@
       <!-- 검색 / 정렬 영역 -->
       <form class="row mb-3">
         <div class="input-group col-6">
-          <div class="col-3">
+          <div class="col-4">
             <select id="searchTypeSelect" class="form-control">
-              <option value="">검색조건</option>
               <option value="t" th:selected="${inquiryRequestParam.searchType == 't'}">제목</option>
               <option value="i" th:selected="${inquiryRequestParam.searchType == 'i'}">내용</option>
               <option
@@ -49,7 +46,7 @@
                 th:if="${session.loginUser.type == 'ADMINISTRATOR'}">질문작성자</option>
             </select>
           </div>
-          <div class="col-9 input-group">
+          <div class="col-8 input-group">
             <input
               type="text" id="keyword" class="form-control" placeholder="검색어를 입력하세요."
               th:value="${inquiryRequestParam.keyword}">
@@ -80,22 +77,25 @@
         <table class="table">
           <thead>
           <tr class="text-center">
-            <th scope="col" class="align-middle">답변여부</th>
-            <th scope="col" class="align-middle">제목</th>
-            <th scope="col" class="align-middle">질문작성자</th>
-            <th scope="col" class="align-middle">질문작성일</th>
-            <th scope="col" class="align-middle">답변작성자</th>
-            <th scope="col" class="align-middle">답변일</th>
+            <th scope="col" class="align-middle" style="width: 15%">답변여부</th>
+            <th scope="col" class="align-middle" style="width: 35%">제목</th>
+            <th scope="col" class="align-middle" style="width: 10%">질문자</th>
+            <th scope="col" class="align-middle" style="width: 15%">질문작성일</th>
+            <th scope="col" class="align-middle" style="width: 10%">답변자</th>
+            <th scope="col" class="align-middle" style="width: 15%">답변일</th>
           </tr>
           </thead>
           <tbody>
+          <tr th:if="${inquiryListResponse.inquiryList.isEmpty()}">
+            <td colspan="6" class="text-center pt-5">조회된 데이터가 없습니다.</td>
+          </tr>
 
           <tr th:each="inquiry : ${inquiryListResponse.inquiryList}">
             <td
               class="text-center" th:text="${inquiry.isAnswered} ? '답변 완료' : '답변 대기'"
-              th:classappend="${inquiry.isAnswered} ? 'text-primary' : 'text-secondary'"></td>
+              th:classappend="${inquiry.isAnswered} ? 'text-primary' : 'text-danger'"></td>
             <td
-              class="title" th:text="${inquiry.title}" th:data-inquiryid="${inquiry.id}"
+              class="title" th:text="${inquiry.title}" th:data-id="${inquiry.id}"
               style="cursor: pointer;"></td>
             <td class="text-center" th:text="${inquiry.writerName}"></td>
             <td
@@ -106,7 +106,7 @@
               th:text="${inquiry.answererName}"></td>
             <td
               class="text-center"
-              th:text="${inquiry.answeredAt == 0 ? #temporals.format(inquiry.answeredAt, 'yy-MM-dd') : '-'}"></td>
+              th:text="${inquiry.answeredAt != null ? #temporals.format(inquiry.answeredAt, 'yy-MM-dd') : '-'}"></td>
           </tr>
 
 
@@ -115,22 +115,27 @@
       </div>
 
       <!-- 페이지 -->
-      <nav aria-label="Page navigation example" class="col mt-4">
+      <nav
+        aria-label="Page navigation example" class="col"
+        th:if="${!inquiryListResponse.inquiryList.isEmpty()}">
         <ul class="pagination justify-content-center">
-          <li class="page-item">
-            <span class="page-link">이전</span>
+          <li
+            class="page-item"
+            th:classappend="${!inquiryListResponse.prev}? 'disabled'">
+            <span
+              class="page-link page-move"
+              th:data-pageno="${inquiryListResponse.startPage - 1}">이전</span>
           </li>
-          <li class="page-item active">
-            <span class="page-link">1</span>
+          <li
+            class="page-item"
+            th:each="i : ${#numbers.sequence(inquiryListResponse.startPage, inquiryListResponse.endPage)}"
+            th:classappend="${inquiryRequestParam.pageNo == i}? 'active'">
+            <span class="page-link page-move" th:data-pageno="${i}" th:text="${i}"></span>
           </li>
-          <li class="page-item">
-            <span class="page-link">2</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link">3</span>
-          </li>
-          <li class="page-item">
-            <span class="page-link page-move">다음</span>
+          <li class="page-item" th:classappend="${!inquiryListResponse.next}? 'disabled'">
+            <span
+              class="page-link page-move"
+              th:data-pageno="${inquiryListResponse.endPage + 1}">다음</span>
           </li>
         </ul>
       </nav>
@@ -164,38 +169,44 @@
       getBoardList(1);
     });
 
+    $("#keyword").on("keydown", function (e) {
+      if (e.key === "Enter" || e.keyCode === 13) {
+        e.preventDefault();
+        $("#searchBtn").click();
+      }
+    });
+
     $("#searchBtn").click(function () {
 
-      if (searchType === "" && keyword !== "") {
-        alert("검색조건을 선택하세요.");
-      }
+      keyword = $("#keyword").val();
 
-      let pageSize = $("#pageSizeSelect").val();
-      getBoardList(1, pageSize);
+      getBoardList(1);
     });
 
     $(".page-move").click(function () {
-      let pageNo   = $(this).data("pageno");
-      let pageSize = $("#pageSizeSelect").val();
-      getBoardList(pageNo, pageSize);
+      let pageNo = $(this).data("pageno");
+      getBoardList(pageNo);
     });
 
-    // $(".title").click(function(){
-    //
-    //   let boardNo = $(this).data("boardno");
-    //   let pageNo = $(".page-item.active .page-move").data("pageno");
-    //   let pageSize = $("#pageSizeSelect").val();
-    //
-    //   location.href = `/board/detail?boardNo=${boardNo}&pageNo=${pageNo}&pageSize=${pageSize}&searchType=${searchType}&keyword=${keyword}`
-    // })
-    //
-    // $("#registerBtn").click(function(){
-    //
-    //   let pageNo = $(".page-item.active .page-move").data("pageno");
-    //   let pageSize = $("#pageSizeSelect").val();
-    //
-    //   location.href = `/board/register?pageNo=${pageNo}&pageSize=${pageSize}&searchType=${searchType}&keyword=${keyword}`;
-    // })
+    $(".title").click(function () {
+
+      let id     = $(this).data("id");
+      let pageNo = $(".page-item.active .page-move").data("pageno");
+
+      location.href =
+        `/communityInquiry/inquiryDetail?id=${id}&pageNo=${pageNo}&searchType=${searchType}&keyword=${keyword}&sort=${sort}&orderBy=${orderBy}`;
+    });
+
+    $("#registerBtn").click(function () {
+
+      let pageNo = $(".page-item.active .page-move").data("pageno");
+
+      if (pageNo == undefined) {
+        pageNo = 1;
+      }
+      location.href =
+        `/communityInquiry/inquiryRegister?pageNo=${pageNo}&searchType=${searchType}&keyword=${keyword}&sort=${sort}&orderBy=${orderBy}`;
+    });
 
     function getBoardList(pageNo) {
       location.href =
