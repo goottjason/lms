@@ -5,6 +5,7 @@ import com.goott5.lms.participation.domain.ParticipationVO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 출결(participation) 서비스 인터페이스
@@ -50,4 +51,25 @@ public interface ParticipationService {
 
   List<ParticipationVO> getParticipationByLearnerEnrollmentIdAndDateRange(
       Integer learnerEnrollmentId, LocalDate startDate, LocalDate endDate);
+
+  /**
+   * 이전 날짜의 미완료 출결 기록들을 결석 처리
+   */
+  void processIncompleteRecordsFromPreviousDays(LocalDate currentDate);
+
+  /**
+   * 어제까지의 출결 통계 조회
+   */
+  Map<String, Object> getAttendanceStatsUntilYesterday(Integer learnerEnrollmentId);
+
+  /**
+   * 어제까지의 과정 진행률 조회 (실제 진행일수 기준)
+   */
+  Map<String, Object> getCourseProgressUntilYesterday(Integer learnerEnrollmentId);
+
+  /**
+   * 사용자 ID와 과정 ID로 learnerEnrollmentId 조회
+   */
+  Integer getLearnerEnrollmentIdByUserIdAndCourseId(Integer userId, Integer courseId);
+
 }

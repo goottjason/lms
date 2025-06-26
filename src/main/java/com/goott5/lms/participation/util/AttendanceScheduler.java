@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * 출결 스케줄러 (course_schedule 기반)
- * 매일 자정에 수업이 있는 과정의 모든 수강생에게 기본 출결 기록 생성
- * 이미 출결 기록이 있는 학생(휴가 승인받은 학생 등)은 건드리지 않음
+ * 매일 자정에 다음 작업을 수행:
+ * 1. 전날까지 미완료된 출결 기록들을 결석 처리
+ * 2. 오늘 수업이 있는 과정의 모든 수강생에게 기본 출결 기록 생성
  */
 @Slf4j
 @Component
@@ -23,17 +24,26 @@ public class AttendanceScheduler {
   private final ParticipationCourseMapper participationCourseMapper;
 
   /**
-   * 매일 자정 00:00:00에 출결 기록 생성
+   * 매일 오전 00시 00분 (자정) 에 출결 관련 작업 수행
+   * 1. 전날까지 미완료 기록 결석 처리 (입실했지만 퇴실 안한 기록)
+   * 2. 오늘 수업이 있는 과정의 기본 출결 기록 생성
+   *
    * course_schedule 테이블 기반으로 수업이 있는 날에만 실행
    * 주말/공휴일/휴강일은 course_schedule에 데이터가 없으므로 아무것도 하지 않음
    */
-  @Scheduled(cron = "0 52 9 * * MON-FRI", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 15 15 * * MON-FRI", zone = "Asia/Seoul")
   public void createDailyAttendanceRecords() {
     LocalDate today = LocalDate.now();
     log.info("===== 출결 스케줄러 실행 시작: {} =====", today);
 
     try {
-      // course_schedule에서 오늘 수업이 있는 과정들 조회
+      // ✅ 1단계: 전날까지 미완료 출결 기록들을 결석 처리
+      log.info("1단계: 미완료 출결 기록 결석 처리 시작");
+      participationService.processIncompleteRecordsFromPreviousDays(today);
+      log.info("1단계 완료: 미완료 출결 기록 결석 처리 완료");
+
+      // ✅ 2단계: 오늘 수업이 있는 과정들 조회
+      log.info("2단계: 오늘 수업 과정 조회 및 출결 기록 생성 시작");
       List<Integer> courseIds = participationCourseMapper.selectCoursesBySchedule(today);
       log.info("오늘 수업이 있는 과정 수: {}", courseIds.size());
 
@@ -42,7 +52,7 @@ public class AttendanceScheduler {
         return;
       }
 
-      // 각 과정의 모든 수강생에게 출결 기록 생성
+      // ✅ 3단계: 각 과정의 모든 수강생에게 출결 기록 생성
       int totalCreated = 0;
       for (Integer courseId : courseIds) {
         int created = participationService.createDailyAttendanceForCourse(courseId, today);
@@ -58,4 +68,20 @@ public class AttendanceScheduler {
 
     log.info("===== 출결 스케줄러 실행 종료: {} =====", today);
   }
+
+  /**
+   * 수동 테스트용 메서드 (필요시 사용)
+   * 특정 날짜의 미완료 기록들을 수동으로 처리할 때 사용
+   */
+  public void manualProcessIncompleteRecords(LocalDate targetDate) {
+    log.info("수동 미완료 기록 처리 시작: {}", targetDate);
+    try {
+      participationService.processIncompleteRecordsFromPreviousDays(targetDate);
+      log.info("수동 미완료 기록 처리 완료: {}", targetDate);
+    } catch (Exception e) {
+      log.error("수동 미완료 기록 처리 중 오류: {}", targetDate, e);
+      throw e;
+    }
+  }
+
 }

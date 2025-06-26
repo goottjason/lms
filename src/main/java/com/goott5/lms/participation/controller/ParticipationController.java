@@ -5,9 +5,11 @@ import com.goott5.lms.participation.domain.ParticipationVO;
 import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.service.ParticipationService;
 import com.goott5.lms.user.domain.UserVO;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpSession;
@@ -59,7 +61,6 @@ public class ParticipationController {
         log.warn("수강 중인 과정이 없습니다 - userId: {}", userId);
         model.addAttribute("errorMessage", "수강 중인 과정이 없습니다.");
         model.addAttribute("isClassDay", false);
-        model.addAttribute("attendanceRate", 0.0);
         return "participation/participationView";
       }
 
@@ -84,20 +85,24 @@ public class ParticipationController {
         model.addAttribute("todayParticipation", todayParticipation);
       }
 
-      // 출석률 계산
-      double attendanceRate = participationService.getAttendanceRate(learnerEnrollmentId);
-      model.addAttribute("attendanceRate", attendanceRate);
+      // ✅ 수정: 어제까지의 출결 통계 데이터 (오늘 기본 결석 제외)
+      Map<String, Object> attendanceStats = participationService.getAttendanceStatsUntilYesterday(learnerEnrollmentId);
+      model.addAttribute("attendanceStats", attendanceStats);
+
+      // ✅ 수정: 어제까지의 과정 진행률 (실제 진행일수 기준)
+      Map<String, Object> courseProgress = participationService.getCourseProgressUntilYesterday(learnerEnrollmentId);
+      model.addAttribute("courseProgress", courseProgress);
 
       return "participation/participationView";
-
     } catch (Exception e) {
       log.error("출결 조회 페이지 로드 중 오류 발생", e);
       model.addAttribute("errorMessage", "페이지 로드 중 오류가 발생했습니다.");
       model.addAttribute("isClassDay", false);
-      model.addAttribute("attendanceRate", 0.0);
       return "participation/participationView";
     }
   }
+
+
 
   // ========== 조회 API ==========
 
@@ -108,11 +113,18 @@ public class ParticipationController {
   @ResponseBody
   public ResponseEntity<Map<String, Object>> getMonthlyParticipation(
       @PathVariable Integer learnerEnrollmentId,
-      @PathVariable String date) {
+      @PathVariable String date,
+      HttpServletResponse response) {
     try {
+      // 캐시 방지 헤더 설정
+      response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      response.setHeader("Pragma", "no-cache");
+      response.setHeader("Expires", "0");
+
       LocalDate startDate = LocalDate.parse(date);
       LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
+      //  최신 DB 상태를 반영한 출결 데이터 조회
       List<ParticipationVO> participations = participationService.getParticipationByLearnerEnrollmentIdAndDateRange(
           learnerEnrollmentId, startDate, endDate);
 
@@ -123,7 +135,6 @@ public class ParticipationController {
           "success", true,
           "participations", participations
       ));
-
     } catch (Exception e) {
       log.error("월별 출결 조회 오류 - learnerEnrollmentId: {}, date: {}", learnerEnrollmentId, date, e);
       return ResponseEntity.badRequest().body(Map.of(
@@ -157,6 +168,70 @@ public class ParticipationController {
       return ResponseEntity.badRequest().body(Map.of(
           "success", false,
           "message", "과정 목록 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  /**
+   * 특정 learnerEnrollmentId의 통계 조회
+   */
+  @GetMapping("/stats/{learnerEnrollmentId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getStats(@PathVariable Integer learnerEnrollmentId) {
+    try {
+      log.debug("통계 조회 요청 - learnerEnrollmentId: {}", learnerEnrollmentId);
+
+      // 어제까지의 출결 통계와 과정 진행률 조회
+      Map<String, Object> attendanceStats = participationService.getAttendanceStatsUntilYesterday(learnerEnrollmentId);
+      Map<String, Object> courseProgress = participationService.getCourseProgressUntilYesterday(learnerEnrollmentId);
+
+      // 합쳐서 반환
+      Map<String, Object> result = new HashMap<>(attendanceStats);
+      result.putAll(courseProgress);
+      result.put("success", true);
+
+      log.debug("통계 조회 성공 - learnerEnrollmentId: {}", learnerEnrollmentId);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      log.error("통계 조회 오류 - learnerEnrollmentId: {}", learnerEnrollmentId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "통계 조회에 실패했습니다."
+      ));
+    }
+  }
+
+  /**
+   * 특정 사용자와 과정 ID로 learnerEnrollmentId 조회
+   */
+  @GetMapping("/learner-enrollment/{userId}/{courseId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getLearnerEnrollmentId(
+      @PathVariable Integer userId,
+      @PathVariable Integer courseId) {
+    try {
+      log.debug("learnerEnrollmentId 조회 요청 - userId: {}, courseId: {}", userId, courseId);
+
+      Integer learnerEnrollmentId = participationService.getLearnerEnrollmentIdByUserIdAndCourseId(userId, courseId);
+
+      if (learnerEnrollmentId != null) {
+        log.debug("learnerEnrollmentId 조회 성공: {}", learnerEnrollmentId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "learnerEnrollmentId", learnerEnrollmentId
+        ));
+      } else {
+        log.warn("learnerEnrollmentId 조회 실패 - userId: {}, courseId: {}", userId, courseId);
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "해당 과정의 수강 정보를 찾을 수 없습니다."
+        ));
+      }
+    } catch (Exception e) {
+      log.error("learnerEnrollmentId 조회 오류 - userId: {}, courseId: {}", userId, courseId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "수강 정보 조회에 실패했습니다."
       ));
     }
   }
