@@ -17,7 +17,7 @@ const $testTableBody = $(".test-table-body");
 //------------------------------------------------------------------------------
 
 let selectedCourse;
-let currentPage = 1;
+let currentPageNo = 1;
 let detailPageUrl;
 
 //------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ function renderUserCourseOptions(selector, data) {
   }
 
   $adminCourseSelect.val(selectedCourse);
-  renderTestListPage(selectedCourse, currentPage);
+  renderTestListPage(selectedCourse, currentPageNo);
 }
 
 // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
@@ -184,8 +184,8 @@ function renderPagination(data) {
 
 function onPageChange(pageNo) {
 
-  currentPage = pageNo;
-  renderTestListPage(selectedCourse, currentPage);
+  currentPageNo = pageNo;
+  renderTestListPage(selectedCourse, currentPageNo);
 }
 
 //------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ function makeTestRow(userType, test) {
   return `
     <tr>
       <td class="text-center align-middle">${test.testId}</td>
-      <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?currentPage=${currentPage}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
+      <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
       <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
       <td class="text-center align-middle">${test.testStatus}</td>
@@ -216,14 +216,14 @@ function makeTestRow(userType, test) {
 //------------------------------------------------------------------------------
 
 // userType에 따른 화면 변화
-function renderPageByUserType(userType, currentPage = 1) {
+function renderPageByUserType(userType, currentPageNo = 1) {
 
   if (userType === "ADMINISTRATOR") {
     $courseSelect.remove();
     $testRegisterBtn.remove();
     getAdminCourses();
 
-    renderTestListPage("", currentPage);
+    renderTestListPage("", currentPageNo);
   } else {
 
     $adminCourseFilter.remove();
@@ -237,11 +237,11 @@ function renderPageByUserType(userType, currentPage = 1) {
 }
 
 // 시험 리스트 페이지 호출
-function renderTestListPage(courseName = "", currentPage = 1) {
+function renderTestListPage(courseName = "", currentPageNo = 1) {
 
   console.log(courseName);
 
-  fetchTests({ courseName: courseName, currentPage: currentPage })
+  fetchTests({ courseName: courseName, currentPageNo: currentPageNo })
   .then(function (response) {
     console.log(response);
 
@@ -331,12 +331,12 @@ $(document).ready(function () {
     });
   }
 
-  let currentPage;
+  let currentPageNo;
   if (new URLSearchParams(window.location.search)
-  .get("currentPage")) {
+  .get("currentPageNo")) {
 
-    currentPage = new URLSearchParams(window.location.search)
-    .get("currentPage");
+    currentPageNo = new URLSearchParams(window.location.search)
+    .get("currentPageNo");
 
   }
 
@@ -349,12 +349,12 @@ $(document).ready(function () {
     console.log(selectedCourse);
   }
 
-  fetchTests({ courseName: selectedCourse, currentPage: currentPage })
+  fetchTests({ courseName: selectedCourse, currentPageNo: currentPageNo })
   .then(function (response) {
     console.log(response);
 
     renderPageByUserType(response.data.message,
-        response.data.data.currentPage);
+        response.data.data.currentPageNo);
   })
   .catch(function (error) {
 
@@ -364,8 +364,8 @@ $(document).ready(function () {
 
 $testRegisterBtn.on("click", function () {
 
-  let currentPage = $(this).data("current-page-no");
+  let currentPageNo = $(this).data("current-page-no");
   // let courseName = $courseSelect.val();
 
-  location.href = `/test/register?currentPage=${currentPage}`;
+  location.href = `/test/register?currentPageNo=${currentPageNo}`;
 });
