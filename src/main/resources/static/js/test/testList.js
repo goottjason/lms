@@ -41,6 +41,7 @@ function getUserCourses() {
   fetchUserCourses()
   .then((res) => {
     renderUserCourseOptions("#courseSelector", res.data.data);
+
   })
   .catch((err) => Swal.fire("오류", "제출 중 오류가 발생했습니다. 다시 시도해주세요.", "error"));
 }
@@ -79,6 +80,7 @@ function renderUserCourseOptions(selector, data) {
   }
 
   $adminCourseSelect.val(selectedCourse);
+  renderTestListPage(selectedCourse, currentPage);
 }
 
 // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
@@ -226,7 +228,7 @@ function renderPageByUserType(userType, currentPage = 1) {
 
     $adminCourseFilter.remove();
     getUserCourses();
-    renderTestListPage();
+    // renderTestListPage();
 
     if (userType === "LEARNER") {
       $testRegisterBtn.remove();
@@ -329,14 +331,23 @@ $(document).ready(function () {
     });
   }
 
-  const currentPage = new URLSearchParams(window.location.search)
-  .get("currentPage");
-  console.log(currentPage);
+  let currentPage;
+  if (new URLSearchParams(window.location.search)
+  .get("currentPage")) {
 
-  selectedCourse = UrlUtils.getQueryParam("courseName")
-      ? UrlUtils.getQueryParam(
-          "courseName") : null;
-  console.log(selectedCourse);
+    currentPage = new URLSearchParams(window.location.search)
+    .get("currentPage");
+
+  }
+
+  if (UrlUtils.getQueryParam("courseName")) {
+
+    selectedCourse = UrlUtils.getQueryParam("courseName")
+        ? UrlUtils.getQueryParam(
+            "courseName") : null;
+    $courseSelect.val(selectedCourse);
+    console.log(selectedCourse);
+  }
 
   fetchTests({ courseName: selectedCourse, currentPage: currentPage })
   .then(function (response) {
