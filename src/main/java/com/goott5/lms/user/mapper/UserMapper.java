@@ -40,4 +40,10 @@ public interface UserMapper {
   int updateUserForSignup(SignupDTO signupDTO);
 
 
+  @Update("update user set profile_img = #{insertPath} where id = #{userId}")
+  int updateUserForProfileImg(@Param("userId") int userId, @Param("insertPath") String insertPath);
+
+  @Update("update user set password = #{encryptedPwd} where id = #{userId}")
+  void updateUserForPassword(@Param("userId") int userId,
+          @Param("encryptedPwd") String encryptedPwd);
 }

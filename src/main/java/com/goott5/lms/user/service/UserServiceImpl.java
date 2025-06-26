@@ -137,4 +137,50 @@ public class UserServiceImpl implements UserService {
     return false;
   }
 
+  @Override
+  public String modifyProfileImg(MultipartFile file, int userId) throws IOException {
+
+    if (file == null || file.isEmpty()) {
+      return null;
+    } else {
+
+      // 첨부 파일 서버에 저장 + 경로 저장
+      // putObject 뒤에 경로 반환
+      String insertPath = s3Uploader.uploadFile("upload/user", file.getInputStream(),
+              file.getOriginalFilename());
+
+      // 받은 파일 dto에 세팅
+      // db 에서 해당 테이블의 게시글 id 다시 받아오기
+      FileDTO fileDTO = FileDTO.builder()
+              .originalName(file.getOriginalFilename())
+              .newName(insertPath.substring(insertPath.lastIndexOf("/") + 1))
+              .path(insertPath)
+              .size((int) file.getSize())
+              .tableName("user")
+              .tableId(userId)
+              .build();
+
+      // 첨부 파일 db에 저장
+      int fileInsert = utilService.insertService(fileDTO);
+      if (fileInsert == 1) {
+        log.info("파일 db에 저장 성공:{}", fileDTO);
+      }
+
+      int result = userMapper.updateUserForProfileImg(userId, insertPath);
+      return insertPath;
+    }
+
+
+  }
+
+  @Override
+  public String changePassword(int userId, String newPassword) {
+
+    String encryptedPwd = passwordEncoder.encode(newPassword);
+    userMapper.updateUserForPassword(userId, encryptedPwd);
+
+    return encryptedPwd;
+
+  }
+
 }

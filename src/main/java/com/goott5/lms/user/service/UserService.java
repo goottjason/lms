@@ -6,6 +6,7 @@ import com.goott5.lms.user.domain.UserVO;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import javax.mail.MessagingException;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
@@ -24,4 +25,8 @@ public interface UserService {
   String sendAuthCodeForSignup(String email) throws MessagingException;
 
   boolean signup(SignupDTO signupDTO) throws IOException;
+
+  String modifyProfileImg(MultipartFile profileFile, int userId) throws IOException;
+
+  String changePassword(int userId, String newPassword);
 }
