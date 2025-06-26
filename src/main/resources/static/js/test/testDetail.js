@@ -34,15 +34,23 @@ $(document).ready(function () {
 
   $("#prev-page").data("page-no", pageNo);
 
-  $("#courseSelector").prop("disabled", true);
+  console.log(UrlUtils.getQueryParam("courseName"));
 
   axios.get(`/api/courses`)
        .then(function (response) {
-         // console.log(response);
+
          renderCourseFilterOptionsForAdminForUser(response.data.data);
+
+         const param = UrlUtils.getQueryParam("courseName");
+         if (param) {
+           $("#courseSelector").val(param);
+         }
+
+         $("#courseSelector").prop("disabled", true);
+
+         renderTestListPage(param, UrlUtils.getQueryParam("currentPage"));
        })
-       .catch(function (error) {
-       });
+       .catch(console.error);
 
   const parts = window.location.pathname.split("/");
   const testId = parseInt(UrlUtils.getPathSegment(2));
@@ -63,7 +71,7 @@ $(document).ready(function () {
     buildQuiz(originalQuiz, data.questions);
     renderQuestions(originalQuiz.questions);
     hideAllBtn(true);
-    renderTestModifyBtn(data.startDate);
+    renderTestModifyBtn(data.startDate, res.data.message);
   })
   .catch(error => console.log(error));
 
@@ -273,7 +281,13 @@ function hideAllBtn(isDisabled) {
 
 }
 
-function renderTestModifyBtn(startDate) {
+function renderTestModifyBtn(startDate, userType) {
+
+  if (userType === "ADMINISTRATOR") {
+    $modifyTestBtn.hide();
+    $("#del-test-btn").hide();
+  }
+
   const now = new Date();
   const start = new Date(startDate);
 
