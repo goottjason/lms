@@ -49,17 +49,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class OperationsManagementController {
   private final OperationsManagementService operationsManagementService;
 
-  @GetMapping("operationsManagement/staffList")
-  public String staffList() { return "/operationsManagement/staffList"; }
+  @GetMapping("/operationsManagement/staffList")
+  public String staffList() { return "operationsManagement/staffList"; }
 
-  @GetMapping("operationsManagement/staffDetail")
+  @GetMapping("/operationsManagement/staffDetail")
   public String staffDetail(
       @RequestParam(value = "staffId", defaultValue = "-1") Integer staffId,
       Model model,
       HttpSession session
   ) {
     if (staffId == -1) {
-      return "/operationsManagement/staffList";
+      return "operationsManagement/staffList";
     }
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
@@ -81,11 +81,11 @@ public class OperationsManagementController {
     log.info("staffList: {}", staffs);
 
     model.addAttribute("staffs", staffs.getStaffRepsDTOS().get(0));
-    return "/operationsManagement/staffDetail";
+    return "operationsManagement/staffDetail";
   }
 
 
-  @GetMapping("api/management/staffhistories")
+  @GetMapping("/api/management/staffhistories")
   public ResponseEntity<ApiResponse<PageStaffHistoryRespDTO<StaffHistoryResp>>> getStaffHistories (
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageStaffHistoryReqDTO<StaffHistoryReq> pageStaffHistoryReqDTO
@@ -114,7 +114,7 @@ public class OperationsManagementController {
     return ApiResponse.okResponse(200, "success", pageStaffHistoryRespDTO);
   }
 
-  @PatchMapping("api/management/staff")
+  @PatchMapping("/api/management/staff")
   public ResponseEntity<ApiResponse<StaffRespDTO>> updateLeaveDateByStaffId (
       @RequestParam("loginUserId") Integer loginUserId,
       @RequestParam("loginUserType") String loginUserType,
@@ -134,7 +134,7 @@ public class OperationsManagementController {
 
     }
   }
-  @GetMapping("api/management/staffs")
+  @GetMapping("/api/management/staffs")
   public ResponseEntity<ApiResponse<PageStaffRespDTO<StaffRespDTO>>> getStaffsAllorOne (
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageStaffReqDTO<StaffReqDTO> pageStaffReqDTO
@@ -148,10 +148,10 @@ public class OperationsManagementController {
     return ApiResponse.okResponse(200, "success", staffs);
   }
 
-  @GetMapping("operationsManagement/classroomList")
-  public String classroomList() { return "/operationsManagement/classroomList"; }
+  @GetMapping("/operationsManagement/classroomList")
+  public String classroomList() { return "operationsManagement/classroomList"; }
 
-  @GetMapping("api/management/classrooms")
+  @GetMapping("/api/management/classrooms")
   public ResponseEntity<ApiResponse<PageClassroomRespDTO<ClassroomRespDTO>>> getClassroomsAllorOne (
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageClassroomReqDTO<ClassroomReqDTO> pageClassroomReqDTO
@@ -164,7 +164,7 @@ public class OperationsManagementController {
     return ApiResponse.okResponse(200, "success", classrooms);
   }
 
-  @PatchMapping("api/management/classroom")
+  @PatchMapping("/api/management/classroom")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> updateClassroom(
       @RequestBody IntegratedReqDTO integratedReqDTO
@@ -182,7 +182,7 @@ public class OperationsManagementController {
     }
   }
 
-  @DeleteMapping("api/management/classroom")
+  @DeleteMapping("/api/management/classroom")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> deleteClassroom(
       @RequestBody IntegratedReqDTO integratedReqDTO
@@ -200,7 +200,7 @@ public class OperationsManagementController {
     }
   }
 
-  @PostMapping("api/management/classroom")
+  @PostMapping("/api/management/classroom")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> addClassroom(
       @RequestBody IntegratedReqDTO integratedReqDTO
