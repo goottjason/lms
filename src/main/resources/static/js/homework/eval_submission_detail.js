@@ -49,7 +49,7 @@ function showEvalModify() {
 
     if (file.isImage === false) {
       output += `
-    <div class="card mb-2 w-100" style="height: 60px;">
+    <div class="card mb-2 w-100" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;">📄 ${file.originalName}</span>
         <span style="cursor:pointer;" onclick="removeModifyBefore(this)" data-id="${file.id}">❌</span>
@@ -57,7 +57,7 @@ function showEvalModify() {
     </div>`;
     } else {
       output += `
-    <div class="card mb-2 w-100" style="height: 80px;">
+    <div class="card mb-2 w-100" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <img src="${file.path}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" />
         <span style="cursor:pointer;" onclick="removeModifyBefore(this)" data-id="${file.id}">❌</span>
@@ -107,8 +107,20 @@ function removeModifyBefore(x) {
 function pushFileListModify(files) {
 
   for (let file of files) {
+    let ext = file.name.split(".").pop().toLowerCase();
     if (file.size > MAX_FILE_SIZE) {
-      alert("파일 사이즈는 8MB를 초과할 수 없습니다.")
+      // alert("파일 사이즈는 8MB를 초과할 수 없습니다.")
+      Swal.fire({
+        title: '파일 사이즈는 8MB를 초과할 수 없습니다.',
+        icon: 'error',
+        confirmButtonText: '예'
+      })
+    } else if (ext.trim() === "exe") {
+      Swal.fire({
+        title: '실행 파일은 업로드할 수 없습니다.',
+        icon: 'error',
+        confirmButtonText: '예'
+      })
     } else {
       modifyFileList.push(file);
       console.log(modifyFileList);
@@ -130,7 +142,7 @@ function previewFileModify(modifyFileList) {
       fileReader.onload = function (e) {
         // console.log(e.target.result);
         let output = ``;
-        output += `<div class="card mb-2 w-100" style="height: 60px;">
+        output += `<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;">📄${file.name}</span>
         <span style="cursor:pointer;" onclick="removeModifyInsert(${index});">❌</span>
@@ -145,7 +157,7 @@ function previewFileModify(modifyFileList) {
       fileReader.onload = function (e) {
         // console.log(e.target.result);
         let output = ``;
-        output += `<div class="card mb-2 w-100" style="height: 80px;">
+        output += `<div class="card mb-2 w-100" style="height:80px; max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <img src="${e.target.result}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" />
         <span style="cursor:pointer;" onclick="removeModifyInsert(${index});">❌</span>
@@ -185,7 +197,7 @@ function modifyEvalPost() {
   axios.post("/homework/modifyEvalPost", formData)
   .then(function (response) {
     console.log(response)
-    console.log("submissionId",submissionId);
+    console.log("submissionId", submissionId);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
   }).catch(function (error) {
     console.log("error", error);
@@ -199,19 +211,40 @@ function modifyEvalPost() {
         $("#evalContentModify").html("");
       }
     } else if (errorCode === 401 || errorCode === 404) {
-      alert(errorMsg); //모든 에러메세지가 나타남.
-      savePage = localStorage.getItem("savePage");
-      if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
-        // console.log("savePage",savePage);
-        location.href = savePage;
-      } else {
-        location.href = "/homework/homeworkList";
-      }
-    } else if(errorCode === 500){
-      alert(errorMsg);
-      location.href = "homework/submissionDetail?submissionId=" + submissionId;
+      // alert(errorMsg); //모든 에러메세지가 나타남.
+      Swal.fire({
+        title: '평가를 수정할 수 없습니다',
+        text: errorMsg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '예',
+        cancelButtonText: '아니오'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          savePage = localStorage.getItem("savePage");
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+            // console.log("savePage",savePage);
+            location.href = savePage;
+          } else {
+            location.href = "/homework/homeworkList";
+          }
+        }
+      })
+    } else if (errorCode === 500) {
+      // alert(errorMsg);
+      Swal.fire({
+        title: '평가를 수정할 수 없습니다',
+        text: errorMsg,
+        icon: 'warning',
+        confirmButtonText: '예',
+        cancelButtonText: '아니오'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          location.href = "homework/submissionDetail?submissionId="
+              + submissionId;
+        }
+      })
     }
-
   })
 }
 
@@ -219,20 +252,30 @@ function modifyEvalPost() {
 function deleteEvalPost() {
 
   axios.delete("/homework/deleteEval", {
-      data:evalDTO
+    data: evalDTO
   })
   .then(function (response) {
     console.log(response);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
   }).catch(function (error) {
     console.log("error", error);
-    let errorMsg = error.response.data.message;
-    let errorCode = error.response.data.code;
-    alert(errorMsg);
-    if(errorCode === 401){
-      location.href = "/";
-    }
-
+    let errorMsg = error.response.data.message || "알 수 없는 오류가 발생했습니다.";
+    let errorCode = error.response.data.code || 500;
+    // alert(errorMsg);
+    Swal.fire({
+      title: '평가를 수정할 수 없습니다',
+      text: errorMsg,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '예',
+      cancelButtonText: '아니오'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (errorCode === 401) {
+          location.href = "/";
+        }
+      }
+    })
   })
 
 }
@@ -240,9 +283,9 @@ function deleteEvalPost() {
 $(function () {
   // console.log("eval_submission_detail_test:", "js 전송 성공");
 
-  console.log("eval",evalDTO);
-  console.log("id",evalId);
-  console.log("instructorId",instructorId);
+  console.log("eval", evalDTO);
+  console.log("id", evalId);
+  console.log("instructorId", instructorId);
 
   // 수정 버튼 클릭하면 수정 폼 나오기
   $("#modifyEval").click(function () {
@@ -259,7 +302,7 @@ $(function () {
   });
 
   // 폼 데이터 보내기
-  $(document).on("click","#evalModifyPost",function (e) {
+  $(document).on("click", "#evalModifyPost", function (e) {
     e.preventDefault();
 
     console.log("modifyFileList", modifyFileList);
@@ -274,16 +317,12 @@ $(function () {
   });
 
   //eval 정말 삭제
-  $("#toastDeleteBtn").on("click",function(e){
+  $("#toastDeleteBtn").on("click", function (e) {
     // alert("!"); //작동 ok
     e.preventDefault();
     deleteEvalPost();
 
   });
-
-
-
-
 
 });
 

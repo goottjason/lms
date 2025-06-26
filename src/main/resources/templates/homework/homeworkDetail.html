@@ -124,24 +124,22 @@
           <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
               <div class="col-md-3 pl-2">
-                <img
-                    th:src="@{/img/no-image.jpg}"
-                    class="img-fluid rounded-start"
-                    style="width: 60px; object-fit: cover;">
+                <th:block th:if="${fileDTO.getIsImage()}">
+                  <img th:src="${fileDTO.path}" class="img-fluid rounded-start"
+                       style="width: 200px; height: 70px; object-fit: contain;">
+                </th:block>
+
+                <th:block th:unless="${fileDTO.getIsImage()}">
+                  <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start"
+                       style="width: 100px; height: 70px; object-fit: cover;">
+                </th:block>
               </div>
-              <div class="col-md-9 d-flex align-items-center">
-                <div class="card-body p-0" th:unless="${fileDTO.getIsImage()}">
-                  <a class="card-title mb-1 text-truncate" th:href="${fileDTO.getPath()}"
-                     th:text="${fileDTO.getOriginalName()}">첨부파일123.pdf</a>
-                </div>
-                <div class="card-body p-0" th:if="${fileDTO.getIsImage()}">
-                  <a th:href="${fileDTO.getPath()}"
-                     th:data-file="${fileDTO.getNewName()}"
-                     th:attr="download=${fileDTO.getOriginalName()}">
-                    <img th:src="${fileDTO.getPath()}"
-                         style="width: 300px; height: 100px; object-fit: cover;">
-                  </a>
-                </div>
+              <div class="col-md-9 d-flex align-items-center ps-2">
+                <a class="card-title mb-0 text-truncate"
+                   th:text="${fileDTO.originalName}"
+                   th:href="@{/download(fileId=${fileDTO.id})}">
+                  첨부파일123.pdf
+                </a>
               </div>
             </div>
           </div>
@@ -172,13 +170,14 @@
       <span class="icon text-white-50">
         <i class="fas fa-upload"></i>
       </span>
-      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}" id = "registerBtn">과제 제출 등록</span>
+      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}"
+            id="registerBtn">과제 제출 등록</span>
     </button>
     <button id="toList" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-      <span class="text px-4" >목록</span>
+      <span class="text px-4">목록</span>
     </button>
   </div>
 
@@ -218,15 +217,27 @@
     let homeworkIdNull = /*[[${homeworkIdNull}]]*/ null;
 
     // homeworkId가 null일때
-    function homeworkIdNullCheck(){
-      if(homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim() !== ""){
-        alert(homeworkIdNull);
-        location.href = "/homework/homeworkList";
+    function homeworkIdNullCheck() {
+      if (homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim()
+          !== "") {
+        Swal.fire({
+          title: homeworkIdNull,
+          text: '과제가 존재하지 않아요',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: '예',
+          cancelButtonText: '아니오'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            location.href = "/homework/homeworkList";
+          }
+        })
+        // alert(homeworkIdNull);
       }
     }
 
     // 등록 버튼
-    function registerBtn(){
+    function registerBtn() {
       location.href = "/homework/submissionRegister?homeworkId=" + homeworkId;
     }
 
@@ -261,10 +272,19 @@
           let msg = error.response.data.message;
           let errorCode = error.response.data.code;
           console.log(error);
-          alert(msg);
-          if (errorCode === 400) {
-            location.href = "/homework/homeworkList";
-          }
+          Swal.fire({
+            title: '과제를 삭제할 수 없습니다',
+            text: msg,
+            icon: 'error',
+            confirmButtonText: '예'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              if (errorCode === 400) {
+                location.href = "/homework/homeworkList";
+              }
+            }
+          })
+          // alert(msg);
         })
       })
 
@@ -283,8 +303,6 @@
       $("#modify").click(function () {
         location.href = "/homework/homeworkModify?homeworkId=" + homeworkId;
       })
-
-
 
     })
 
