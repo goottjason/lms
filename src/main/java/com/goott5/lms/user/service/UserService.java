@@ -1,5 +1,6 @@
 package com.goott5.lms.user.service;
 
+import com.goott5.lms.user.domain.ChangePwdDTO;
 import com.goott5.lms.user.domain.LoginDTO;
 import com.goott5.lms.user.domain.SignupDTO;
 import com.goott5.lms.user.domain.UserVO;
@@ -29,4 +30,6 @@ public interface UserService {
   String modifyProfileImg(MultipartFile profileFile, int userId) throws IOException;
 
   String changePassword(int userId, String newPassword);
+
+  void changePwdForSignup(ChangePwdDTO changePwdDTO);
 }
