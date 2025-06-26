@@ -5,6 +5,7 @@ import com.goott5.lms.participation.domain.ParticipationDTO;
 import com.goott5.lms.participation.domain.ParticipationVO;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,7 +31,10 @@ public interface ParticipationMapper {
   // 출결 기록 총 개수
   int countAll();
 
-  // 특정 과정의 수강 중인 교육생 id 목록 조회
+  /**
+   * 특정 과정의 현재 수강 중인 교육생 ID 목록 조회
+   * COMPLETED(이수), DROPPED(중도탈락) 제외, IN_PROGRESS만 포함
+   */
   List<Integer> selectActiveLearnerEnrollmentIdsByCourse(@Param("courseId") Integer courseId);
 
   // 특정 교육생의 특정 날짜 출결 기록 조회
@@ -79,5 +83,42 @@ public interface ParticipationMapper {
       @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
+
+  /**
+   * 입실했지만 퇴실하지 않은 기록들 조회 (특정 날짜 이전)
+   */
+  List<ParticipationVO> selectIncompleteRecords(@Param("beforeDate") String beforeDate);
+
+  /**
+   * 과정의 총 수업일수 조회 (course_schedule 기반)
+   */
+  Integer selectTotalCourseDaysByLearnerEnrollmentId(@Param("learnerEnrollmentId") Integer learnerEnrollmentId);
+
+  /**
+   * 사용자 ID와 과정 ID로 learnerEnrollmentId 조회
+   */
+  Integer selectLearnerEnrollmentIdByUserIdAndCourseId(
+      @Param("userId") Integer userId,
+      @Param("courseId") Integer courseId
+  );
+
+  /**
+   * 특정 날짜까지의 출결 통계 조회 (해당 날짜 포함)
+   */
+  Map<String, Object> selectAttendanceStatsUntilDate(
+      @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
+      @Param("untilDate") String untilDate
+  );
+
+  /**
+   * 과정 시작일부터 특정 날짜까지 실제 진행된 수업일수 조회
+   */
+  Integer selectProgressedDaysUntilDate(
+      @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
+      @Param("untilDate") String untilDate
+  );
+
+
+
 
 }

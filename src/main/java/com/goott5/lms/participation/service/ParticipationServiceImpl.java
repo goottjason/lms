@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -273,39 +274,119 @@ public class ParticipationServiceImpl implements ParticipationService {
     return new AttendanceResult(status, trainingTime);
   }
 
+  /**
+   * 화면 표시 상태 적용
+   */
   private ParticipationVO applyDisplayStatus(ParticipationVO participation) {
     String dbStatus = participation.getStatus();
+    LocalDate participationDate = participation.getParticipationDate();
+    LocalDate today = LocalDate.now();
+
     String displayStatus;
     String displayStatusText;
     boolean isStatusVisible;
 
-    if ("VACATION".equals(dbStatus)) {
+    // ✅ 핵심: DB 상태를 우선적으로 확인
+    if ("ABSENCE".equals(dbStatus)) {
+      // ✅ 중요: 오늘 날짜이고 입실 기록이 없으면 상태 숨김
+      if (participationDate.equals(today) && participation.getCheckIn() == null) {
+        displayStatus = "PENDING";
+        displayStatusText = "";
+        isStatusVisible = false;
+      } else {
+        // 과거 날짜이거나 입실 기록이 있는 결석은 표시
+        displayStatus = "ABSENCE";
+        displayStatusText = "결석";
+        isStatusVisible = true;
+      }
+    } else if ("VACATION".equals(dbStatus)) {
+      // 휴가 상태
       displayStatus = "VACATION";
       displayStatusText = "휴가";
       isStatusVisible = true;
     } else if ("VACATION_PENDING".equals(dbStatus)) {
-      displayStatus = "휴가_미승인";
-      displayStatusText = "";
-      isStatusVisible = false;
-    } else if (participation.getCheckOut() != null && !"ABSENCE".equals(dbStatus) && !"VACATION_PENDING".equals(dbStatus)) {
-      displayStatus = dbStatus;
-      displayStatusText = getStatusText(dbStatus);
-      isStatusVisible = true;
-    } else if (participation.getCheckIn() != null && participation.getCheckOut() == null) {
-      displayStatus = "IN_STUDY";
-      displayStatusText = "수업중";
-      isStatusVisible = true;
-    } else {
+      // 휴가 대기 상태 (화면에 표시하지 않음)
       displayStatus = "PENDING";
       displayStatusText = "";
       isStatusVisible = false;
+    } else if ("ATTENDANCE".equals(dbStatus)) {
+      // 출석 완료
+      displayStatus = "ATTENDANCE";
+      displayStatusText = "출석";
+      isStatusVisible = true;
+    } else if ("LATE".equals(dbStatus)) {
+      // 지각 완료
+      displayStatus = "LATE";
+      displayStatusText = "지각";
+      isStatusVisible = true;
+    } else if ("LEAVE_EARLY".equals(dbStatus)) {
+      // 조퇴 완료
+      displayStatus = "LEAVE_EARLY";
+      displayStatusText = "조퇴";
+      isStatusVisible = true;
+    } else if ("IN_STUDY".equals(dbStatus)) {
+      // 수업 중 상태
+      if (participation.getCheckIn() != null && participation.getCheckOut() == null) {
+        displayStatus = "IN_STUDY";
+        displayStatusText = "수업중";
+        isStatusVisible = true;
+      } else {
+        // IN_STUDY인데 비정상적인 상태
+        displayStatus = "PENDING";
+        displayStatusText = "";
+        isStatusVisible = false;
+      }
+    } else {
+      // 기타 상태 처리
+      if (participation.getCheckIn() != null && participation.getCheckOut() == null) {
+        // 입실은 있지만 퇴실이 없는 경우
+        if ("ABSENCE".equals(dbStatus)) {
+          // ✅ 스케줄러에 의해 결석 처리된 경우 (과거 날짜)
+          if (participationDate.isBefore(today)) {
+            displayStatus = "ABSENCE";
+            displayStatusText = "결석";
+            isStatusVisible = true;
+          } else {
+            // 오늘 날짜라면 수업중으로 표시
+            displayStatus = "IN_STUDY";
+            displayStatusText = "수업중";
+            isStatusVisible = true;
+          }
+        } else {
+          // 아직 수업 중인 상태
+          displayStatus = "IN_STUDY";
+          displayStatusText = "수업중";
+          isStatusVisible = true;
+        }
+      } else if (participation.getCheckIn() != null && participation.getCheckOut() != null) {
+        // 입실과 퇴실이 모두 있는 경우 DB 상태 그대로 사용
+        displayStatus = dbStatus;
+        displayStatusText = getStatusText(dbStatus);
+        isStatusVisible = true;
+      } else {
+        // 입실도 하지 않은 상태
+        if ("ABSENCE".equals(dbStatus) && participationDate.isBefore(today)) {
+          // 과거 날짜의 결석은 표시
+          displayStatus = "ABSENCE";
+          displayStatusText = "결석";
+          isStatusVisible = true;
+        } else {
+          // 오늘 날짜이거나 아직 미정인 상태는 숨김
+          displayStatus = "PENDING";
+          displayStatusText = "";
+          isStatusVisible = false;
+        }
+      }
     }
 
     participation.setDisplayStatus(displayStatus);
     participation.setDisplayStatusText(displayStatusText);
     participation.setIsStatusVisible(isStatusVisible);
+
     return participation;
   }
+
+
 
   private String getStatusText(String status) {
     return switch (status) {
@@ -345,6 +426,64 @@ public class ParticipationServiceImpl implements ParticipationService {
   }
 
   /**
+   * 이전 날짜의 미완료 출결 기록들을 결석 처리
+   * 입실했지만 퇴실하지 않은 기록들을 자동으로 결석 처리함
+   */
+  @Override
+  @Transactional
+  public void processIncompleteRecordsFromPreviousDays(LocalDate currentDate) {
+    log.info("이전 날짜 미완료 출결 기록 처리 시작: {} 이전", currentDate);
+
+    try {
+      // ✅ 수정: LocalDate를 String으로 변환하여 전달
+      String currentDateStr = currentDate.toString(); // "2025-06-25" 형식
+
+      // 입실했지만 퇴실하지 않은 기록들 조회
+      List<ParticipationVO> incompleteRecords =
+          participationMapper.selectIncompleteRecords(currentDateStr); // ✅ String으로 전달
+
+      log.info("미완료 출결 기록 발견: {}건", incompleteRecords.size());
+
+      int processedCount = 0;
+      for (ParticipationVO record : incompleteRecords) {
+        try {
+          // 결석 처리로 업데이트
+          ParticipationDTO updateDto = ParticipationDTO.builder()
+              .id(record.getId())
+              .learnerEnrollmentId(record.getLearnerEnrollmentId())
+              .status("ABSENCE") // 결석 처리
+              .checkIn(record.getCheckIn()) // 입실 시간은 유지
+              .checkOut(null)  // 퇴실 시간은 null 유지
+              .trainingTime(0)  // 인정시간 0
+              .participationDate(record.getParticipationDate())
+              .build();
+
+          int updateResult = participationMapper.updateParticipation(updateDto);
+
+          if (updateResult > 0) {
+            processedCount++;
+            log.debug("미완료 기록 결석 처리 완료: participationId={}, learnerEnrollmentId={}, date={}",
+                record.getId(), record.getLearnerEnrollmentId(), record.getParticipationDate());
+          } else {
+            log.warn("미완료 기록 업데이트 실패: participationId={}", record.getId());
+          }
+        } catch (Exception e) {
+          log.error("개별 미완료 기록 처리 중 오류: participationId={}", record.getId(), e);
+        }
+      }
+
+      log.info("이전 날짜 미완료 출결 기록 처리 완료: 전체 {}건 중 {}건 처리",
+          incompleteRecords.size(), processedCount);
+
+    } catch (Exception e) {
+      log.error("미완료 출결 기록 처리 중 전체 오류 발생", e);
+      throw e; // 스케줄러에서 오류 로그를 볼 수 있도록 재throw
+    }
+  }
+
+
+
+  /**
    * 특정 교육생의 날짜 범위별 출결 데이터 조회
    */
   @Override
@@ -356,5 +495,105 @@ public class ParticipationServiceImpl implements ParticipationService {
         .map(this::applyDisplayStatus)
         .collect(Collectors.toList());
   }
+
+
+  /**
+   * 어제까지의 출결 통계 조회
+   * 스케줄러로 생성된 오늘의 기본 결석 상태는 포함하지 않음
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Map<String, Object> getAttendanceStatsUntilYesterday(Integer learnerEnrollmentId) {
+    try {
+      LocalDate yesterday = LocalDate.now().minusDays(1);
+      String yesterdayStr = yesterday.toString();
+
+      // 어제까지의 출결 통계 조회
+      Map<String, Object> stats = participationMapper.selectAttendanceStatsUntilDate(learnerEnrollmentId, yesterdayStr);
+
+      // null 값 처리
+      stats.put("attendanceCount", stats.getOrDefault("attendanceCount", 0));
+      stats.put("lateCount", stats.getOrDefault("lateCount", 0));
+      stats.put("earlyCount", stats.getOrDefault("earlyCount", 0));
+      stats.put("absenceCount", stats.getOrDefault("absenceCount", 0));
+      stats.put("vacationCount", stats.getOrDefault("vacationCount", 0));
+
+      log.debug("어제까지 출결 통계 조회 완료: learnerEnrollmentId={}, 기준일={}, stats={}",
+          learnerEnrollmentId, yesterday, stats);
+      return stats;
+    } catch (Exception e) {
+      log.error("어제까지 출결 통계 조회 중 오류: learnerEnrollmentId={}", learnerEnrollmentId, e);
+      return Map.of(
+          "attendanceCount", 0,
+          "lateCount", 0,
+          "earlyCount", 0,
+          "absenceCount", 0,
+          "vacationCount", 0
+      );
+    }
+  }
+
+  /**
+   * 사용자 ID와 과정 ID로 learnerEnrollmentId 조회
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Integer getLearnerEnrollmentIdByUserIdAndCourseId(Integer userId, Integer courseId) {
+    try {
+      Integer learnerEnrollmentId = participationMapper.selectLearnerEnrollmentIdByUserIdAndCourseId(userId, courseId);
+      log.debug("learnerEnrollmentId 조회 - userId: {}, courseId: {}, result: {}",
+          userId, courseId, learnerEnrollmentId);
+      return learnerEnrollmentId;
+    } catch (Exception e) {
+      log.error("learnerEnrollmentId 조회 중 오류 - userId: {}, courseId: {}", userId, courseId, e);
+      return null;
+    }
+  }
+
+  /**
+   * 어제까지의 과정 진행률 조회 (실제 진행일수 기준)
+   * 과정 시작일부터 어제까지 실제로 진행된 수업일수 / 총 수업일수 × 100
+   * 출결 상태와 관계없이 순수하게 "과정이 몇일째 진행되었는가"를 보여줌
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Map<String, Object> getCourseProgressUntilYesterday(Integer learnerEnrollmentId) {
+    try {
+      LocalDate yesterday = LocalDate.now().minusDays(1);
+      String yesterdayStr = yesterday.toString();
+
+      // 1. 총 수업일수 조회 (course_schedule 기반)
+      Integer totalDays = participationMapper.selectTotalCourseDaysByLearnerEnrollmentId(learnerEnrollmentId);
+      if (totalDays == null) totalDays = 0;
+
+      // 2. ✅ 새로운 계산: 과정 시작일부터 어제까지 실제 진행된 수업일수
+      Integer progressedDays = participationMapper.selectProgressedDaysUntilDate(learnerEnrollmentId, yesterdayStr);
+      if (progressedDays == null) progressedDays = 0;
+
+      // 3. 과정 진행률 계산 (실제 진행일수 기준)
+      double progressRate = totalDays > 0 ? (double) progressedDays / totalDays * 100 : 0.0;
+      progressRate = Math.round(progressRate * 10.0) / 10.0; // 소수점 첫째자리까지
+
+      Map<String, Object> progress = Map.of(
+          "totalDays", totalDays,                    // 총 수업일수
+          "progressedDays", progressedDays,          // ✅ 실제 진행일수
+          "progressRate", progressRate,              // 과정 진행률 (%)
+          "baseDate", yesterday                      // 기준 날짜 (어제)
+      );
+
+      log.debug("어제까지 과정 진행률 조회 완료: learnerEnrollmentId={}, 진행일수={}/{}, 진행률={}%, 기준일={}",
+          learnerEnrollmentId, progressedDays, totalDays, progressRate, yesterday);
+      return progress;
+    } catch (Exception e) {
+      log.error("어제까지 과정 진행률 조회 중 오류: learnerEnrollmentId={}", learnerEnrollmentId, e);
+      return Map.of(
+          "totalDays", 0,
+          "progressedDays", 0,
+          "progressRate", 0.0,
+          "baseDate", LocalDate.now().minusDays(1)
+      );
+    }
+  }
+
 
 }

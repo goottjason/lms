@@ -22,19 +22,6 @@
               border-left: 4px solid #4e73df;
             }
 
-            .course-info-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 15px;
-            }
-
-            .course-title {
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: #5a5c69;
-              margin: 0;
-            }
 
             /* 과정명 스타일 (이미지와 동일) */
             .course-name {
@@ -353,6 +340,196 @@
                 font-size: 0.75rem;
               }
             }
+
+            /* ✅ 추가: 출결 및 진도 현황 스타일 */
+            .attendance-progress-section {
+              margin-top: 20px;
+              padding: 20px;
+              background: #f8f9fc;
+              border-radius: 8px;
+              border: 1px solid #e3e6f0;
+            }
+
+            .section-header {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              margin-bottom: 20px;
+            }
+
+            .section-title {
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: #5a5c69;
+              margin: 0;
+            }
+
+            .section-date {
+              font-size: 0.9rem;
+              color: #858796;
+              font-weight: normal;
+            }
+
+            /* 출결 통계 (5개 원형) */
+            .attendance-stats {
+              display: flex;
+              justify-content: space-around;
+              margin-bottom: 25px;
+              padding: 0 10px;
+              flex-wrap: wrap; /* 작은 화면에서 줄바꿈 허용 */
+            }
+
+            .stat-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 8px;
+              flex: 1; /* 동일한 크기로 배치 */
+              min-width: 80px; /* 최소 너비 설정 */
+            }
+
+            .stat-circle {
+              width: 65px;
+              height: 65px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            /* 원형별 색상 */
+            .attendance-circle {
+              background: #6c7b8a; /* 이미지와 동일한 블루그레이 색상 */
+              color: white;
+            }
+
+            .late-circle {
+              background: #6c7b8a;
+              color: white;
+            }
+
+            .early-circle {
+              background: #6c7b8a;
+              color: white;
+            }
+
+            .absence-circle {
+              background: #6c7b8a;
+              color: white;
+            }
+
+            .vacation-circle {
+              background: #6c7b8a;
+              color: white;
+            }
+
+            .stat-number {
+              font-size: 1.6rem;;
+              font-weight: bold;
+            }
+
+            .stat-label {
+              font-size: 0.85rem;
+              color: #5a5c69;
+              font-weight: 500;
+            }
+
+            /* 과정 진행률 */
+            .course-progress {
+              margin-top: 15px;
+            }
+
+            .progress-text {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              margin-bottom: 10px;
+            }
+
+            .progress-label {
+              font-size: 1rem;
+              color: #5a5c69;
+              font-weight: 500;
+            }
+
+            .progress-percentage {
+              font-size: 1.1rem;
+              font-weight: bold;
+              color: #4e73df;
+            }
+
+            .progress-detail {
+              font-size: 0.9rem;
+              color: #858796;
+            }
+
+            /* 프로그레스 바 */
+            .progress-bar-container {
+              width: 100%;
+              height: 30px;
+              background: #e3e6f0;
+              border-radius: 15px;
+              overflow: hidden;
+              position: relative;
+            }
+
+            .progress-bar-fill {
+              height: 100%;
+              background: linear-gradient(90deg, #4e73df 0%, #36b9cc 100%);
+              border-radius: 15px;
+              transition: width 0.3s ease;
+              position: relative;
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+              padding-right: 10px;
+            }
+
+            .progress-bar-text {
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: white;
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            }
+
+            /* 반응형 */
+            @media (max-width: 768px) {
+              .attendance-stats {
+                flex-wrap: wrap;
+                gap: 15px;
+                justify-content: center;
+              }
+
+              .stat-item {
+                flex: 0 0 calc(50% - 10px); /* 2줄로 배치 (3+2) */
+                max-width: 150px;
+              }
+
+              .stat-circle {
+                width: 60px;
+                height: 60px;
+              }
+
+              .stat-number {
+                font-size: 1.4rem;
+              }
+            }
+
+            @media (max-width: 480px) {
+              .stat-item {
+                flex: 0 0 calc(33.33% - 10px); /* 작은 화면에서는 3개씩 2줄 */
+                min-width: 70px;
+              }
+
+              .stat-circle {
+                width: 55px;
+                height: 55px;
+              }
+            }
+
+
         </style>
 </head>
 
@@ -370,20 +547,82 @@
             </div>
 
             <!-- 수강과정 정보 카드 -->
-            <div class="course-info-card">
+<div class="course-info-card">
 
-                <!-- 과정명 표시 (basic.html의 courseSelector와 연동) -->
-                <div class="course-name" id="currentCourseName">
-                    <span th:if="${currentCourse}" th:text="${currentCourse.name}">과정명</span>
-                    <span th:unless="${currentCourse}">수강 중인 과정이 없습니다</span>
-                </div>
+    <!-- 과정명 표시 -->
+    <div class="course-name" id="currentCourseName">
+        <span th:if="${currentCourse}" th:text="${currentCourse.name}">과정명</span>
+        <span th:unless="${currentCourse}">수강 중인 과정이 없습니다</span>
+    </div>
 
-                <!-- 출석률 표시  -->
-                <div class="attendance-rate-display">
-                    <span class="rate-label">출석률</span>
-                    <span class="rate-value" th:text="${attendanceRate != null ? attendanceRate + '%' : '0.0%'}">0.0%</span>
-                </div>
+    <!-- 나의 출결 및 진도 현황 (어제 기준) -->
+<div class="attendance-progress-section">
+    <!-- 섹션 제목 (어제 날짜 표시) -->
+    <div class="section-header">
+        <h6 class="section-title">나의 출결 및 진도 현황</h6>
+        <span class="section-date" th:text="'(' + ${#temporals.format(#temporals.createNow().minusDays(1), 'yyyy.MM.dd')} + '기준)'">
+            (2025.06.23기준)
+        </span>
+    </div>
+
+    <!-- 출결 상태별 통계 (5개 원형 - 어제까지) -->
+    <div class="attendance-stats">
+        <div class="stat-item">
+            <div class="stat-circle attendance-circle">
+                <span class="stat-number" th:text="${attendanceStats.attendanceCount ?: 0}">109</span>
             </div>
+            <span class="stat-label">출석</span>
+        </div>
+        <div class="stat-item">
+            <div class="stat-circle late-circle">
+                <span class="stat-number" th:text="${attendanceStats.lateCount ?: 0}">2</span>
+            </div>
+            <span class="stat-label">지각</span>
+        </div>
+        <div class="stat-item">
+            <div class="stat-circle early-circle">
+                <span class="stat-number" th:text="${attendanceStats.earlyCount ?: 0}">3</span>
+            </div>
+            <span class="stat-label">조퇴</span>
+        </div>
+        <div class="stat-item">
+            <div class="stat-circle absence-circle">
+                <span class="stat-number" th:text="${attendanceStats.absenceCount ?: 0}">0</span>
+            </div>
+            <span class="stat-label">결석</span>
+        </div>
+        <div class="stat-item">
+            <div class="stat-circle vacation-circle">
+                <span class="stat-number" th:text="${attendanceStats.vacationCount ?: 0}">5</span>
+            </div>
+            <span class="stat-label">휴가</span>
+        </div>
+    </div>
+
+    <!-- 과정 진행률 (실제 진행일수 기준) -->
+    <div class="course-progress">
+        <div class="progress-text">
+            <span class="progress-label">과정진행률</span>
+            <span class="progress-percentage" th:text="${courseProgress.progressRate ?: '0.0'} + '%'">84.6%</span>
+            <span class="progress-detail" th:text="'(' + ${courseProgress.progressedDays ?: 0} + '/' + ${courseProgress.totalDays ?: 0} + '일)'">
+                (110/130일)
+            </span>
+        </div>
+
+        <!-- 프로그레스 바 -->
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill"
+                 th:style="'width: ' + ${courseProgress.progressRate ?: 0} + '%;'">
+                <span class="progress-bar-text" th:text="${courseProgress.progressRate ?: '0.0'} + '%'">84.6%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+
 
             <!-- 수업일인 경우: 입퇴실 버튼들  -->
             <div th:if="${isClassDay}" class="attendance-buttons">
@@ -541,6 +780,10 @@
 
     <!-- ======================== JavaScript 영역 (모든 JS는 script fragment 안에 위치) ======================== -->
     <script layout:fragment="script" th:inline="javascript">
+
+        const url = "ws://localhost:8090/participationSocket";
+        let ws    = new WebSocket(url);
+
         // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
         const learnerEnrollmentId = /*[[${learnerEnrollmentId}]]*/ null;
         const today = /*[[${today}]]*/ null;
@@ -557,9 +800,20 @@
 
         // ======================== 페이지 로드 시 초기화 ========================
         document.addEventListener('DOMContentLoaded', function() {
+            // ✅ 전역 변수 초기화
+            window.selectedCourseId = currentCourse?.id || null;
+            window.selectedLearnerEnrollmentId = learnerEnrollmentId || null;
+
             console.log('=== 출결 조회 페이지 초기화 시작 ===');
+            console.log('초기 전역 변수 설정:', {
+                selectedCourseId: window.selectedCourseId,
+                selectedLearnerEnrollmentId: window.selectedLearnerEnrollmentId,
+                currentCourse: currentCourse,
+                learnerEnrollmentId: learnerEnrollmentId
+            });
+
             console.log('기본 데이터:', { learnerEnrollmentId, today, isClassDay, currentCourse, todayParticipation });
-            console.log('현재 출석률:', attendanceRate + '%'); // attendanceRate 변수 사용
+            console.log('현재 출석률:', attendanceRate + '%');
 
             // 1. basic.html의 courseSelector 설정 (상단 과정 선택 드롭다운)
             setupCourseSelector();
@@ -570,13 +824,6 @@
             // 3. 캘린더 초기화 및 렌더링
             initializeCalendar();
             renderCalendar();
-
-            // 4. Bootstrap 모달 사용 가능 여부 확인
-            if (typeof $ !== 'undefined') {
-                console.log('jQuery 및 Bootstrap 모달 사용 가능');
-            } else {
-                console.warn('jQuery가 로드되지 않았습니다.');
-            }
 
             console.log('=== 출결 조회 페이지 초기화 완료 ===');
         });
@@ -601,6 +848,12 @@
                 console.warn('courseSelector 요소를 찾을 수 없습니다.');
                 return;
             }
+
+            if (courseSelector) {
+                courseSelector.addEventListener('change', handleCourseChange);
+            }
+
+
 
             // 과정 목록 API 호출
             fetch(`/participation/courses/${loginUser.id}`)
@@ -821,16 +1074,32 @@
         }
 
         /**
-         * 캘린더 렌더링 (월별 출결 데이터 조회 후 달력 생성)
+         * 완성된 캘린더 렌더링 (선택된 과정의 출결 데이터 표시)
          */
         function renderCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
-            if (!calendarGrid || !learnerEnrollmentId) return;
+            // ✅ 핵심: 선택된 과정의 learnerEnrollmentId 사용 (과거 과정 지원)
+            const currentLearnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
+
+            if (!calendarGrid || !currentLearnerEnrollmentId) {
+                console.warn('캘린더 렌더링 조건 미충족:', {
+                    calendarGrid: !!calendarGrid,
+                    learnerEnrollmentId: currentLearnerEnrollmentId
+                });
+                return;
+            }
+
+            console.log('캘린더 렌더링 시작:', {
+                currentLearnerEnrollmentId,
+                currentDate: currentDate.toDateString()
+            });
 
             // 로딩 스피너 표시
-            loadingSpinner.style.display = 'block';
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'block';
+            }
             calendarGrid.innerHTML = '';
 
             // 요일 헤더 생성 (일~토)
@@ -842,34 +1111,132 @@
                 calendarGrid.appendChild(headerDiv);
             });
 
-            // 월별 출결 데이터 API 조회
+            // 월별 출결 데이터 API 호출
             const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+            const timestamp = new Date().getTime(); // 캐시 방지
 
-            fetch(`/participation/monthly/${learnerEnrollmentId}/${dateStr}`)
-            .then(response => response.json())
+            console.log('월별 출결 데이터 요청:', {
+                learnerEnrollmentId: currentLearnerEnrollmentId,
+                dateStr,
+                apiUrl: `/participation/monthly/${currentLearnerEnrollmentId}/${dateStr}`
+            });
+
+            fetch(`/participation/monthly/${currentLearnerEnrollmentId}/${dateStr}?t=${timestamp}`)
+            .then(response => {
+                console.log('API 응답 상태:', response.status);
+                return response.json();
+            })
             .then(data => {
                 console.log('월별 출결 데이터 조회 결과:', data);
 
                 if (data.success) {
-                    // 출결 데이터를 날짜별로 정리
+                    // ✅ 핵심: 최신 데이터로 participationData 업데이트
                     participationData = {};
                     data.participations.forEach(p => {
                         participationData[p.participationDate] = p;
                     });
+
+                    console.log('업데이트된 participationData:', participationData);
+                    console.log('출결 데이터 개수:', data.participations.length);
+                } else {
+                    console.warn('월별 출결 데이터 조회 실패:', data.message);
+                    participationData = {}; // 실패 시 빈 객체로 초기화
                 }
 
-                // 현재 월의 날짜들만 생성 (이전/다음달 날짜 제외)
+                // 달력 날짜 생성
                 generateCurrentMonthDaysOnly();
             })
             .catch(error => {
                 console.error('월별 데이터 조회 오류:', error);
+                participationData = {}; // 오류 시 빈 객체로 초기화
                 generateCurrentMonthDaysOnly();
             })
             .finally(() => {
                 // 로딩 스피너 숨김
-                loadingSpinner.style.display = 'none';
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+                console.log('캘린더 렌더링 완료');
             });
         }
+
+        /**
+         * 과정 변경 처리
+         */
+        function handleCourseChange(event) {
+            const selectedCourseId = parseInt(event.target.value);
+
+            console.log('과정 변경:', selectedCourseId);
+
+            if (!selectedCourseId) return;
+
+            // ✅ 현재 과정 재선택한 경우
+            if (selectedCourseId == currentCourse?.id) {
+                window.selectedLearnerEnrollmentId = learnerEnrollmentId; // 기본값으로 복원
+                updateStatsForSelectedCourse(); // 기존 함수 재활용
+                renderCalendar(); // 기존 함수 재활용
+                return;
+            }
+
+            // ✅ 다른 과정 선택한 경우
+            fetch(`/participation/learner-enrollment/${loginUser.id}/${selectedCourseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.selectedLearnerEnrollmentId = data.learnerEnrollmentId;
+                    updateStatsForSelectedCourse(); // 기존 함수 재활용
+                    renderCalendar(); // 기존 함수 재활용
+                } else {
+                    alert('해당 과정의 수강 정보를 찾을 수 없습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('과정 정보 조회 오류:', error);
+                alert('과정 정보 조회 중 오류가 발생했습니다.');
+            });
+        }
+
+        /**
+         * ✅ 권장: 선택된 과정의 통계 업데이트 (안전성 + 디버깅)
+         */
+        function updateStatsForSelectedCourse() {
+            const learnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
+
+            console.log('통계 업데이트 시작:', learnerEnrollmentId);
+
+            // 통계 API 호출
+            fetch(`/participation/stats/${learnerEnrollmentId}`)
+            .then(response => {
+                console.log('통계 API 응답 상태:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('통계 API 응답 데이터:', data);
+
+                if (data.success) {
+                    // 화면의 숫자들 업데이트
+                    document.querySelector('.stat-item:nth-child(1) .stat-number').textContent = data.attendanceCount || 0;
+                    document.querySelector('.stat-item:nth-child(2) .stat-number').textContent = data.lateCount || 0;
+                    document.querySelector('.stat-item:nth-child(3) .stat-number').textContent = data.earlyCount || 0;
+                    document.querySelector('.stat-item:nth-child(4) .stat-number').textContent = data.absenceCount || 0;
+                    document.querySelector('.stat-item:nth-child(5) .stat-number').textContent = data.vacationCount || 0;
+
+                    // 과정진행률 업데이트
+                    document.querySelector('.progress-percentage').textContent = `${data.progressRate || 0.0}%`;
+                    document.querySelector('.progress-detail').textContent = `(${data.progressedDays || 0}/${data.totalDays || 0}일)`;
+                    document.querySelector('.progress-bar-fill').style.width = `${data.progressRate || 0}%`;
+                    document.querySelector('.progress-bar-text').textContent = `${data.progressRate || 0.0}%`;
+
+                    console.log('통계 업데이트 완료');
+                } else {
+                    console.error('통계 조회 실패:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('통계 조회 오류:', error);
+            });
+        }
+
 
         /**
          * 현재 월의 날짜만 생성 (이전/다음달 날짜는 표시하지 않음)
@@ -1006,6 +1373,11 @@
         function handleCheckIn() {
             console.log('=== 입실 처리 시작 ===');
 
+            ws.onopen = function (evt) {
+                console.log("connect success!");
+            };
+            ws.send("checkIn Click");
+
             // 필수 데이터 검증
             if (!learnerEnrollmentId || !today) {
                 alert('입실 처리를 위한 정보가 부족합니다.');
@@ -1055,6 +1427,11 @@
          */
         function handleCheckOut() {
             console.log('=== 퇴실 처리 시작 ===');
+
+            ws.onopen = function (evt) {
+                console.log("connect success!");
+            };
+            ws.send("checkOut Click");
 
             // 버튼 상태 재확인
             const checkOutBtn = document.getElementById('checkOutBtn');
