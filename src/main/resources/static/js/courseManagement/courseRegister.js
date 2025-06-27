@@ -143,9 +143,15 @@ $(document).ready(function () {
                }
            });
 
-    $("#cancel-btn").click(function(e){
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    $("#start-date-input").attr("min", `${tomorrow.getFullYear()}-${String(
+        tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate())
+    .padStart(2, "0")}`);
+
+    $("#cancel-btn").click(function (e) {
         e.preventDefault();
-       location.href = "/courseManagement/courseList";
+        location.href = "/courseManagement/courseList";
     });
 
     $("#total-hours-input").blur(function () {
@@ -160,25 +166,25 @@ $(document).ready(function () {
 
     });
 
-    $("#daily-hours-input").blur(function () {
+    $("#daily-hours-input").change(function () {
 
         clearErr(this);
 
-        if (!checkInt($(this).val())) {
-            showErr(this, "잘못된 입력입니다.");
+        if ($(this).val() == "") {
+            showErr(this, "필수 입력입니다.");
         }
         calTotalDays();
         calEndDate();
         showWhenLunch();
     });
 
-    $("#break-time-input").blur(function () {
+    $("#break-time-input").change(function () {
         $("#lunch-start-time-input").val("");
         $("#lunch-end-time-input").val("");
         clearErr(this);
         let breakTime = $("#break-time-input").val();
-        if (breakTime >= 60 || !checkInt(breakTime)) {
-            showErr(this, "잘못된 입력입니다.");
+        if (breakTime == "") {
+            showErr(this, "필수 입력입니다.");
             return;
         }
         if ($("#when-lunch").val() == "") {
@@ -216,6 +222,8 @@ $(document).ready(function () {
 
     $("#lesson-start-time-input").change(function () {
 
+        $("#lunch-start-time-input").val("");
+        $("#lunch-end-time-input").val("");
         $("#lesson-end-time-input").val("");
         clearErr(this);
         let totalDays = $("#total-days-input").val();
@@ -465,7 +473,7 @@ async function fetchAndInsertDetail() {
             loginUserType: loginUserType,
             courseId     : courseId
         });
-    let course = coursesWithPagination?.respDTOS || [];
+    let course                = coursesWithPagination?.respDTOS || [];
     console.log(course);
     insertContentBySelect(course[0]);
 }
@@ -638,7 +646,8 @@ function registerCourse(e) {
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
                        console.log(data);
-                       location.href = "/courseManagement/courseList";
+                       let result = (data == "success" ? true : false);
+                       location.href = `/courseRegister/saveSuccess?isSuccess=${result}`;
                    },
                    error   : function () {
                    },
@@ -661,11 +670,11 @@ function checkValid() {
 
         $.ajax({
                    url: "/courseRegister/checkNameDuplicate", // 데이터가 송수신될 서버의
-                                                      // 주소
-                   type       : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
-                   dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
-                   data       : {
-                      name: $("#name-input").val()
+                   // 주소
+                   type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
+                   dataType: "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                   data    : {
+                       name: $("#name-input").val()
                    },
                    // contentType: "application/json; charset=utf-8",
                    // Content-Type헤더가 application/x-www-form-urlencoded;
@@ -673,8 +682,8 @@ function checkValid() {
                    async   : false, // 비동기옵션 off
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
-                       if(data == "duplicateName"){
-                           showErr("#name-input", "중복된 과정명은 사용할 수 없습니다.")
+                       if (data == "duplicateName") {
+                           showErr("#name-input", "중복된 과정명은 사용할 수 없습니다.");
                            result = false;
                        }
                    },

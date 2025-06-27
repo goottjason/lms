@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -59,12 +60,13 @@ public class CourseRegisterController {
   }
 
   @PostMapping("/saveCourse")
-  public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO, RedirectAttributes redirectAttributes) {
+  @ResponseBody
+  public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO) {
 
     log.info("courseSaveDTO = {}", courseSaveDTO);
     boolean isSuccess = courseRegisterService.saveCourse(courseSaveDTO);
-    redirectAttributes.addFlashAttribute("isSaveSuccess", isSuccess);
-    return "redirect:/courseManagement/courseList";
+
+    return isSuccess ? "success" : "fail";
   }
 
   @GetMapping("/checkNameDuplicate")
@@ -78,6 +80,12 @@ public class CourseRegisterController {
     } else {
       return "availableName";
     }
+  }
+  @GetMapping("saveSuccess")
+  public String saveSuccess(@RequestParam boolean isSuccess, RedirectAttributes redirectAttributes) {
+
+    redirectAttributes.addFlashAttribute("isSaveSuccess", isSuccess);
+    return "redirect:/courseManagement/courseList";
   }
 
 

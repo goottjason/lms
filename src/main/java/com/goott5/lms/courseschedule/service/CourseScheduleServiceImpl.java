@@ -61,7 +61,7 @@ public class CourseScheduleServiceImpl implements CourseScheduleService {
     return courseScheduleMapper.selectCourseByIdAndUser(courseId, loginUser);
   }
 
-  public boolean isGeneralManager(UserVO loginUser){
+  private boolean isGeneralManager(UserVO loginUser){
 
 //    if ("LEARNER".equals(loginUser.getType()) || "INSTRUCTOR".equals(loginUser.getType())) {
 //      return false;

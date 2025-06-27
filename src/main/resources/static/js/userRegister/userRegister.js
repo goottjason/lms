@@ -23,7 +23,7 @@ $(function(){
                       <span class="text-danger">*</span>&nbsp;&nbsp;
                       <span id="position-msg" class="text-danger small error-box"></span>
                     </p>
-                    <select id="position" class="form-control">
+                    <select id="position" class="form-control" name="position">
                       <option value="">선택</option>
                       <option value="FULLTIME_INSTRUCTOR">전임강사</option>
                     </select>
@@ -35,7 +35,7 @@ $(function(){
                       <input
                         type="date"
                         id="hire-date"
-                        name="hire-date"
+                        name="hireDate"
                         class="form-control"
                         >
                     </div>
