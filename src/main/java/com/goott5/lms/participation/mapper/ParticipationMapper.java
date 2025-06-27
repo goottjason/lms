@@ -118,6 +118,23 @@ public interface ParticipationMapper {
       @Param("untilDate") String untilDate
   );
 
+  /**
+   * 특정 과정의 수업일 목록 조회 (특정 기간)
+   */
+  List<LocalDate> selectScheduledDatesForCourse(
+      @Param("courseId") Integer courseId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate
+  );
+
+  /**
+   * 이미 출결 기록이 있는 날짜 목록 조회
+   */
+  List<LocalDate> selectExistingParticipationDates(
+      @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate
+  );
 
 
 

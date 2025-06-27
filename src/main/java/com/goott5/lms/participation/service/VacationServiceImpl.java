@@ -1,11 +1,14 @@
 package com.goott5.lms.participation.service;
 
+import com.goott5.lms.participation.domain.CourseVO;
 import com.goott5.lms.participation.domain.ParticipationDTO;
 import com.goott5.lms.participation.domain.ParticipationReasonDTO;
 import com.goott5.lms.participation.domain.ParticipationReasonVO;
 import com.goott5.lms.participation.domain.ParticipationVO;
+import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.mapper.ParticipationMapper;
 import com.goott5.lms.participation.mapper.ParticipationReasonMapper;
+import com.goott5.lms.participation.util.TimeCalculationUtil;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,7 @@ public class VacationServiceImpl implements VacationService {
 
   private final ParticipationMapper participationMapper;
   private final ParticipationReasonMapper participationReasonMapper;
+  private final ParticipationCourseMapper participationCourseMapper;
 
   /**
    * 휴가 신청 (VACATION_PENDING 상태로 participation/사유서 생성) 변경 없음
@@ -69,7 +73,7 @@ public class VacationServiceImpl implements VacationService {
   }
 
   /**
-   * 휴가 승인 (VACATION_PENDING → VACATION) 변경 없음
+   * 휴가 승인 (VACATION_PENDING → VACATION, 과정별 daily_hours 반영)
    */
   @Override
   public boolean approveVacation(Integer participationId) {
@@ -77,31 +81,38 @@ public class VacationServiceImpl implements VacationService {
 
     try {
       ParticipationVO participation = participationMapper.selectParticipationById(participationId);
-
       if (participation == null || !"VACATION_PENDING".equals(participation.getStatus())) {
         log.warn("승인 처리할 수 없는 출결 기록: participationId={}, status={}", participationId,
             participation != null ? participation.getStatus() : "null");
         return false;
       }
 
+      // 해당 교육생의 과정 정보 조회
+      CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(participation.getLearnerEnrollmentId());
+
+      // 과정별 daily_hours를 사용하여 휴가 인정시간 계산
+      int vacationTrainingTime = TimeCalculationUtil.calculateTrainingTime("VACATION",
+          course != null ? course.getDailyHours() : null);
+
       ParticipationDTO updateDTO = ParticipationDTO.builder()
           .id(participation.getId())
           .learnerEnrollmentId(participation.getLearnerEnrollmentId())
           .status("VACATION")
-          .trainingTime(8)
+          .trainingTime(vacationTrainingTime) // 과정별 일일훈련시간 적용
           .participationDate(participation.getParticipationDate())
           .build();
 
       participationMapper.updateParticipation(updateDTO);
 
-      log.info("휴가 승인 처리 완료: participationId={}", participationId);
+      log.info("휴가 승인 처리 완료: participationId={}, 인정시간={}시간 (과정 일일훈련시간: {}시간)",
+          participationId, vacationTrainingTime, course != null ? course.getDailyHours() : "unknown");
       return true;
-
     } catch (Exception e) {
       log.error("휴가 승인 처리 실패: {}", e.getMessage());
       return false;
     }
   }
+
 
   /**
    * 휴가 거부 (VACATION_PENDING → 하드 딜리트) 수정: deleteParticipation/deleteParticipationReason이 하드 딜리트로
