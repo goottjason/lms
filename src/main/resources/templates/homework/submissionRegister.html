@@ -7,7 +7,9 @@
 <head>
   <style>
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
   </style>
 </head>
@@ -95,9 +97,24 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+    let courseName = /*[[${courseName ?: ''}]]*/ null; //과정명 상단에 출력
+
     let learnerId = [[${learnerId}]];
 
     let noAuth = [[${noAuth}]];
+
+    // 상단 과정명 출력
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
+
+
 
     //--------파일--------------------
     let fileList = [];
@@ -246,6 +263,9 @@
     $(function () {
       //register 검증
       authRegister();
+
+      //과정명 상단에 출력
+      showCourseSelector();
 
       // 파일 리스트에 파일 넣을때, 사이즈가 크면 막기
       // 파일 리스트에 파일 넣기 => 성공

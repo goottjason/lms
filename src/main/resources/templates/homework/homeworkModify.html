@@ -7,7 +7,9 @@
 <head>
   <style>
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
   </style>
 </head>
@@ -143,7 +145,7 @@
           </span>
         <span class="text px-5">저장</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <button id="reset" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
@@ -156,11 +158,28 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+    //homeworkId
+    let homeworkId = /*[[${homeworkId}]]*/ null;
+
     // 빈 에러맵 형성
     let errorMap = new Map();
 
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
+
+    //과정명
+    let courseName = /*[[${courseName ?: ''}]]*/ null;
+
+    //----과정명 출력-----------
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
 
     //---------파일 삭제 -------------------------
     // 삭제할 파일 리스트
@@ -267,6 +286,9 @@
     //$function 모음
     $(function () {
 
+      //과정명 출력
+      showCourseSelector();
+
       let prevUrl = localStorage.getItem("sessionSaveUrl");
       console.log("prevUrl", prevUrl);
 
@@ -282,6 +304,14 @@
         previewFile(fileList);
       })
 
+      //취소 버튼 클릭 시 상세로 이동
+      $("#reset").on("click", function (e) {
+        e.preventDefault();
+        let params = new URLSearchParams(window.location.search);
+        let homeworkId = params.get("homeworkId");
+        location.href = "/homework/homeworkDetail?homeworkId=" + homeworkId;
+      });
+
       //-------------------폼 전송---------------------
 
       // 폼 전송
@@ -290,7 +320,7 @@
         let form = document.getElementById("formSubmit");
         let formData = new FormData(form);
 
-        let homeworkId = [[${homeworkId}]];
+
 
         formData.append("homeworkId", homeworkId);
 
@@ -314,16 +344,7 @@
             formData
         ).then(function (response) {
           console.log(response)
-          // location.href = "/homework/homeworkList";
-          // window.history.go(-2); // 두 단계 뒤로 이동
-          savePage = localStorage.getItem("savePage");
-          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
-            // console.log("savePage",savePage);
-            location.href = savePage;
-          } else {
-            // console.log("savePage",savePage);
-            location.href = "/homework/homeworkList";
-          }
+         location.href = "/homework/homeworkDetail?homeworkId=" + homeworkId;
         }).catch(function (error) {
           console.log("API 요청 실패", error);
           errorMap = error.response.data.data;
@@ -353,8 +374,12 @@
             $("#contentError").html("");
           }
 
+
         })
       })
+
+
+
 
     });
 

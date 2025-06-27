@@ -202,8 +202,11 @@ public class HomeworkSubmissionController {
 
         //submissionId로 homeworkDTO도 모델 바인딩
         HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOBySubmissionId(submissionId);
+        String courseName = "";
         if (homeworkDTO != null) {
           model.addAttribute("homeworkDTO", homeworkDTO);
+          courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+          model.addAttribute("courseName", courseName);
         }
 //        log.info("에러 확인"); //문제x
 
@@ -298,7 +301,10 @@ public class HomeworkSubmissionController {
 
     // 제출 기한이 지났을 때
     HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOById(homeworkId);
+    String courseName = "";
     if (homeworkDTO != null) {
+      courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+      model.addAttribute("courseName", courseName);
       if (homeworkDTO.getEndDate().isBefore(LocalDateTime.now())) {
         model.addAttribute("noAuth", "제출 기한이 지났습니다.");
         return "homework/submissionRegister";
@@ -434,8 +440,10 @@ public class HomeworkSubmissionController {
 
     //해당 제출물의 과제의 제출기한이 오늘보다 적을 때
     HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOById(submission.getHomeworkId());
-
+    String courseName = "";
     if (homeworkDTO != null) {
+      courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+      model.addAttribute("courseName", courseName);
       if (homeworkDTO.getEndDate().isBefore(LocalDateTime.now())) {
         model.addAttribute("noAuth", "제출 기한이 지나 수정 불가합니다.");
         return "homework/submissionModify";

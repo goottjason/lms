@@ -85,8 +85,8 @@
             <option th:value="desc" th:selected="${order == 'desc'}">내림차순</option>
           </select>
           <select id="sortBy" class="form-control col-3">
-            <option value="title" th:selected="${sortBy == 'title'}">과제명</option>
             <option value="endDate" th:selected="${sortBy == 'endDate'}">제출기한</option>
+            <option value="title" th:selected="${sortBy == 'title'}">과제명</option>
           </select>
         </div>
       </form>
@@ -112,6 +112,7 @@
                 <a th:text="${homework.getTitle()}"
                    th:onclick="|prevPage('/homework/homeworkDetail?homeworkId=${homework.getId()}')|"
                    style="cursor:pointer;"></a>
+                <span th:if="${homeworkFileMap != null && homeworkFileMap[homework.id] != null}">💾</span>
               </td>
               <td class="title align-middle text-truncate" style="max-width: 200px;"
                   th:text="${courseNameMap.get(homework.getCourseId())}">[1회] 자바 웹 서비스와 CI/CD 자동화를
@@ -197,6 +198,7 @@
               <tbody id="submission">
               </tbody>
             </table>
+            <div id="paginationArea"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -291,7 +293,7 @@
 
       // 값이 바뀐 경우에만 이동
       if (nameForLt !== currentCourse) {
-        params.set('nameForLt', nameForLt ? encodeURIComponent(nameForLt) : '');
+        params.set('nameForLt', nameForLt ? encodeURIComponent(nameForLt.trim()) : '');
         params.set('keyword', ''); // 검색어 초기화 (선택사항)
 
         location.href = `${url.pathname}?${params.toString()}`;
@@ -405,7 +407,6 @@
         submissionList.forEach(function (submission) {
           // console.log(submission.id);
 
-          output += `<table class="table">`
           output += `<tr>
                 <td class="text-center align-middle">${submission.id}</td>
                 <td class="text-center align-middle">${homeworkName}</td>
@@ -418,19 +419,20 @@
                 </td>
               </tr>`
 
-          output += `</table>`;
-
         })
-        output += `<nav aria-label="Page navigation example" class="col mt-4">
+
+        let pagingOutput = "";
+
+        pagingOutput += `<nav aria-label="Page navigation example " class="col mt-4">
         <ul class="pagination justify-content-center">`;
 
         if (pagingData.prev) {
-          output += `<li class="page-item">
+          pagingOutput += `<li class="page-item">
             <a class="page-link" onclick="updateModal(${homeworkId},${pagingData.start
           - 1},${pagingData.pageSize})">이전</a>
           </li>`
         } else {
-          output += `<li class="page-item">
+          pagingOutput += `<li class="page-item">
             <a class="page-link" style="color: grey">이전</a>
           </li>`;
 
@@ -440,26 +442,27 @@
 
           let isActive = (i === pagingData.pageNo) ? "active" : "";
 
-          output += `<li class="page-item ${isActive}">
+          pagingOutput += `<li class="page-item ${isActive}">
             <a class="page-link"
             onclick="updateModal(${homeworkId},${i},${pagingData.pageSize})">${i}</a>
           </li>`;
         }
 
         if (pagingData.next) {
-          output += `<li class="page-item">
+          pagingOutput += `<li class="page-item">
             <a class="page-link page-move" onclick="updateModal(${homeworkId},${pagingData.end
           + 1},${pagingData.pageSize})" >다음</a>
           </li>`
         } else {
-          output += `<li class="page-item">
+          pagingOutput += `<li class="page-item">
             <a class="page-link page-move" style="color: grey">다음</a>
           </li>`
 
         }
-        output += `</ul></nav>`
+        pagingOutput += `</ul></nav>`
 
         $("#submission").html(output);
+        $("#paginationArea").html(pagingOutput);
         $("#myModal").modal("show");
 
       }).catch(function (error) {
@@ -499,6 +502,15 @@
       // })
 
       location.href = link;
+    }
+
+    //검색 function
+    function keywordSearch() {
+      let keyword = $("#keyword").val().trim();
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      params.set("keyword", keyword);
+      location.href = `${url.pathname}?${params.toString()}`;
     }
 
     //$function 모음
@@ -562,23 +574,20 @@
         let courseName = courseSelector.val(); //select한 과정명 보내기
         console.log("courseName", courseName);
 
-        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(courseName);
+        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(courseName.trim());
       })
 
       // 검색 버튼(엔터키)
-      $(".search").keypress(function (e) {
-        if (e.keyCode === 13) {
-          $(".search").click(); //나중에 하기
+      $("#keyword").on("keypress", function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          keywordSearch();//나중에 하기
         }
       })
 
       // 검색 버튼
       $(".search").on("click", function () {
-        let keyword = $("#keyword").val().trim();
-        const url = new URL(window.location.href);
-        const params = url.searchParams;
-        params.set("keyword", keyword);
-        location.href = `${url.pathname}?${params.toString()}`;
+        keywordSearch();
       });
 
       // 제출 과제 보기용 버튼

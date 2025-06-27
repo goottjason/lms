@@ -7,8 +7,11 @@
 <head>
   <script defer th:src="@{/js/homework/eval_submission_detail.js}"></script>
   <style>
+
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
 
 
@@ -95,7 +98,7 @@
     <div class="toast" data-autohide="false" style="position: absolute; right: 100px; z-index: 1060; width: 600px; height: 200px;">
       <div class="toast-header">
         <strong class="mr-auto text-primary">평가 삭제</strong>
-        <small class="text-muted">5 mins ago</small>
+        <small class="text-muted">delete</small>
         <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
       </div>
       <div class="toast-body" style="position: relative; height: 100%;">
@@ -215,7 +218,7 @@
 
         <!-- Modal Header -->
         <div class="modal-header">
-          <h4 class="modal-title">Modal Heading</h4>
+          <h4 class="modal-title">제출물이 삭제됩니다.</h4>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
 
@@ -241,6 +244,8 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+    let courseName = /*[[${courseName ?: ''}]]*/ null; //과정명 상단에 출력
+
     let savePage = ""; //후에 로컬스토리지에 저장된 페이지로 이동
 
     let instructorId = [[${homeworkDTO.instructorId}]]; // 추후 강사가 글 등록시 필요
@@ -251,11 +256,23 @@
 
     let evalId = /*[[${eval} != null? ${eval.id} : -1]]*/ -1; //: EL1007E: Property or field 'id' cannot be found on null
 
+
     let evalFiles = /*[[${evalFiles}]]*/ null;
 
     let fileList = []; // eval 등록 시 파일 담을 배열
 
     const MAX_FILE_SIZE = 1024 * 1024 * 8;
+
+    // 상단 과정명 출력
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
 
     // 평가가 null이면 평가 등록 페이지를 동적 쿼리로 생성
     function evalRegister() {
@@ -483,6 +500,8 @@
 
     $(function () {
 
+      //상단 과정명 출력
+      showCourseSelector();
 
       console.log("eval",evalDTO); //평가가 null 일때 evalDTO를 못읽음
 

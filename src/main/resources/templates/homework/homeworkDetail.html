@@ -7,7 +7,9 @@
 <head>
   <style>
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
   </style>
 </head>
@@ -166,12 +168,12 @@
       </span>
       <span class="text px-3">과제삭제</span>
     </button>
-    <button id="" class="btn btn-primary btn-icon-split mr-2">
+    <button id="" class="btn btn-primary btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'LEARNER'}">
       <span class="icon text-white-50">
         <i class="fas fa-upload"></i>
       </span>
-      <span class="text px-3" th:if="${loginUser.getType() == 'LEARNER'}"
-            id="registerBtn">과제 제출 등록</span>
+      <span class="text px-3" id="registerBtn">과제 제출 등록</span>
     </button>
     <button id="toList" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
@@ -188,7 +190,7 @@
 
         <!-- Modal Header -->
         <div class="modal-header">
-          <h4 class="modal-title">Modal Heading</h4>
+          <h4 class="modal-title">과제가 삭제됩니다.</h4>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
 
@@ -211,10 +213,23 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+    // $("#courseSelector").val(hom)
+
     // 세션에 저장된 페이지를 담을 변수
     let savePage = "";
-    let homeworkId = [[${homework.getId()}]];
-    let homeworkIdNull = /*[[${homeworkIdNull}]]*/ null;
+    let homeworkId = /*[[${homework.id ?: ''}]]*/ null;
+    let homeworkIdNull = /*[[${homeworkIdNull ?: ''}]]*/ null;
+    let courseName = /*[[${courseName ?: ''}]]*/ null;
+
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
 
     // homeworkId가 null일때
     function homeworkIdNullCheck() {
@@ -243,6 +258,10 @@
 
     $(function () {
 
+      //과정명 나오게
+      showCourseSelector();
+
+      //과제 아이디 체크
       homeworkIdNullCheck();
 
       // 삭제 모달창 뜨기

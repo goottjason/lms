@@ -7,7 +7,9 @@
 <head>
   <style>
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
   </style>
 </head>
@@ -122,13 +124,15 @@
           </span>
             <span class="text px-5">등록</span>
           </button>
-          <button id="" class="btn btn-secondary btn-icon-split">
+          <button id="reset" class="btn btn-secondary btn-icon-split">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
             <span class="text px-5">취소</span>
           </button>
         </div>
+      </div>
+    </div>
   </form>
 
 
@@ -136,6 +140,8 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+
+    let courseName = /*[[${courseName ?: ''}]]*/ null; //과정명 상단에 출력
 
     let homeworkId = [[${submission.homeworkId}]];
 
@@ -146,6 +152,17 @@
     let submission = [[${submission}]];
 
     let beforeFiles = [[${beforeFiles}]];
+
+    // 상단 과정명 출력
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
 
     //-------삭제할 파일---------------
 
@@ -231,7 +248,7 @@
             icon: 'error',
             confirmButtonText: '예'
           })
-        }else if(ext.trim() === "exe"){
+        } else if (ext.trim() === "exe") {
           Swal.fire({
             title: '실행 파일은 업로드할 수 없습니다.',
             icon: 'error',
@@ -240,7 +257,6 @@
         } else {
           fileList.push(file);
           console.log("fileList", fileList);
-
         }
       }
     }
@@ -317,6 +333,9 @@
       //register 검증
       authRegister();
 
+      //상단 과정명
+      showCourseSelector();
+
       console.log("learnerId", learnerId);
       console.log("submission", submission); //받아옴
       console.log("beforeFiles", beforeFiles); //받아옴
@@ -342,6 +361,13 @@
       //삭제할 파일 span 누르면 deleteFile 배열에 넣기 + 조회목록에서 삭제
       $(".softDeleteFile").click(function () {
         softDeleteFile(this);
+      })
+
+      //취소 버튼 누르면 다시 detail로
+      $("#reset").click(function () {
+        let params = new URLSearchParams(window.location.search);
+        let submissionId = params.get("submissionId");
+        location.href = "/homework/submissionDetail?submissionId=" + submissionId;
       })
 
     })
