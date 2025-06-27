@@ -26,7 +26,7 @@ public class DummyTestDataGenerator {
 
       for (int i = 1; i <= 1000; i++) {
         int instructorId = 7;
-        int courseId = 10;
+        int courseId = 38;
         String title = "더미 시험 " + i;
 
         LocalDateTime startDate = baseDate.plusDays(i);
