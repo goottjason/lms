@@ -23,6 +23,8 @@ public interface UserService {
 
   int saveAutoLogin(int userId, String sessionId, LocalDateTime localDateTime);
 
+  void clearAutoLogin(LoginDTO loginDTO);
+
   String sendAuthCodeForSignup(String email) throws MessagingException;
 
   boolean signup(SignupDTO signupDTO) throws IOException;
@@ -32,4 +34,6 @@ public interface UserService {
   String changePassword(int userId, String newPassword);
 
   void changePwdForSignup(ChangePwdDTO changePwdDTO);
+
+  UserVO checkAutoLogin(String sessionId);
 }

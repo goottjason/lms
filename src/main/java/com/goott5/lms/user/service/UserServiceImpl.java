@@ -73,6 +73,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public void clearAutoLogin(LoginDTO loginDTO) {
+
+    userMapper.updateUserAutoLoginClear(loginDTO);
+  }
+
+  @Override
   public String sendAuthCodeForSignup(String email) throws MessagingException {
 
     String title = "Goot5 LMS 회원가입을 위한 인증번호 메일입니다.";
@@ -193,6 +199,11 @@ public class UserServiceImpl implements UserService {
     int userId = userVO.getId();
 
     userMapper.updateUserForPassword(userId, encryptedPwd);
+  }
+
+  @Override
+  public UserVO checkAutoLogin(String sessionId) {
+    return userMapper.checkAutoLogin(sessionId);
   }
 
 }
