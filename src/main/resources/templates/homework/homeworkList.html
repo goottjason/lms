@@ -113,7 +113,7 @@
                    th:onclick="|prevPage('/homework/homeworkDetail?homeworkId=${homework.getId()}')|"
                    style="cursor:pointer;"></a>
                 <span
-                    th:if="${homeworkFileMap != null && homeworkFileMap[homework.id] != null}">💾</span>
+                    th:if="${homeworkFileMap != null && homeworkFileMap[homework.id] != null}"><i class="fas fa-cog text-secondary"></i></span>
               </td>
               <td class="title align-middle text-truncate" style="max-width: 200px;"
                   th:text="${courseNameMap.get(homework.getCourseId())}">[1회] 자바 웹 서비스와 CI/CD 자동화를
