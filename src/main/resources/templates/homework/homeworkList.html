@@ -80,13 +80,13 @@
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
-          <select id="order" class="form-control col-3 mr-3">
-            <option th:value="asc" th:selected="${order == 'asc'}">오름차순</option>
-            <option th:value="desc" th:selected="${order == 'desc'}">내림차순</option>
-          </select>
-          <select id="sortBy" class="form-control col-3">
+          <select id="sortBy" class="form-control col-3 mr-3">
             <option value="endDate" th:selected="${sortBy == 'endDate'}">제출기한</option>
             <option value="title" th:selected="${sortBy == 'title'}">과제명</option>
+          </select>
+          <select id="order" class="form-control col-3">
+            <option th:value="asc" th:selected="${order == 'asc'}">오름차순</option>
+            <option th:value="desc" th:selected="${order == 'desc'}">내림차순</option>
           </select>
         </div>
       </form>
@@ -112,7 +112,8 @@
                 <a th:text="${homework.getTitle()}"
                    th:onclick="|prevPage('/homework/homeworkDetail?homeworkId=${homework.getId()}')|"
                    style="cursor:pointer;"></a>
-                <span th:if="${homeworkFileMap != null && homeworkFileMap[homework.id] != null}">💾</span>
+                <span
+                    th:if="${homeworkFileMap != null && homeworkFileMap[homework.id] != null}">💾</span>
               </td>
               <td class="title align-middle text-truncate" style="max-width: 200px;"
                   th:text="${courseNameMap.get(homework.getCourseId())}">[1회] 자바 웹 서비스와 CI/CD 자동화를
@@ -369,6 +370,7 @@
         } else {
           params.set('progress', progress);
           params.set('nameForAdmin', nameForAdmin);
+          params.set('pageNo', '1');
           params.set('keyword', '');
 
           if (nameForAdmin === '') {
@@ -510,6 +512,7 @@
       const url = new URL(window.location.href);
       const params = url.searchParams;
       params.set("keyword", keyword);
+      params.set("pageNo", "1");
       location.href = `${url.pathname}?${params.toString()}`;
     }
 
@@ -525,8 +528,10 @@
       //강사,학생용 select 조회
       createOptionForLT();
 
-      // 강사 학생용 data 보내기
-      //sendNameForLt(courseSelector.val());
+      // 강사 학생용 data 보내기  //프론트의 디폴트값
+      if (courseSelector.val() != null && courseSelector.val().trim() !== '') {
+        sendNameForLt(courseSelector.val());
+      }
 
       //관리자용 boolean 값 보내기
       sendBooleanForAdmin();
@@ -534,7 +539,7 @@
       //관리자용 select-과정명을 조회
       //createOptionForAdminName();
 
-      //관리자용 select 박스 적용한 pagingresoinse 출력
+      //관리자용 select 박스 적용한 pagingresponse 출력
       //sendForAdminName();
 
       // 현재 진행 중이 없는 강사가 등록할 때
@@ -574,7 +579,8 @@
         let courseName = courseSelector.val(); //select한 과정명 보내기
         console.log("courseName", courseName);
 
-        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(courseName.trim());
+        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(
+            courseName.trim());
       })
 
       // 검색 버튼(엔터키)

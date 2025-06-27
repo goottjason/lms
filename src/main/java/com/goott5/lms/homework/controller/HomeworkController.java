@@ -85,17 +85,20 @@ public class HomeworkController {
     PagingResponseDTO<HomeworkDTO> pagingResponseDTO = null;
     List<String> menuListForLt = new ArrayList<>();
 
+    //디폴트 nameForLt (현재 듣는 과정의 과제가 디폴트로 출력되게)
+
+
     if (nameForLt == null) {
       nameForLt = "";
     }
     if (keyword == null) {
       keyword = "";
     }
-    if (order == null) {
-      order = "";
+    if (order == null || order.trim().isEmpty()) {
+      order = "asc"; //추후 프론트에서 설정해주는게 편하면 바꾸기
     }
-    if (sortBy == null) {
-      sortBy = "";
+    if (sortBy == null || sortBy.trim().isEmpty()) {
+      sortBy = "endDate"; //추후 프론트에서 설정해주는게 편하면 바꾸기
     }
     if (progress == null) {
       progress = "";
