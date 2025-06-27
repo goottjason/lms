@@ -67,9 +67,15 @@ public class UserController {
     if (loginUser != null) {
       session.setAttribute("loginUser", loginUser);
 
-      // autoLogin 체크한 유저...
+      // autoLogin 체크여부...
       if (loginDTO.isAutoLogin()) {
         saveAutoLogin(request, response);
+      } else {
+        userService.clearAutoLogin(loginDTO);
+        Cookie cookie = new Cookie("autoLogin", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
       }
 
       String redirectUrl = "";

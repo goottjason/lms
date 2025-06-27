@@ -1,5 +1,6 @@
 package com.goott5.lms.user.mapper;
 
+import com.goott5.lms.user.domain.LoginDTO;
 import com.goott5.lms.user.domain.SignupDTO;
 import com.goott5.lms.user.domain.UserVO;
 import java.time.LocalDateTime;
@@ -35,6 +36,9 @@ public interface UserMapper {
   int updateUserAutoLogin(@Param("userId") int userId, @Param("sessionId") String sessionId,
           @Param("localDateTime") LocalDateTime localDateTime);
 
+  @Update("update user set session_id = null, auto_login_limit = null where login_id = #{loginId}")
+  void updateUserAutoLoginClear(LoginDTO loginDTO);
+
   @Update("update user set login_id = #{loginId}, password = #{password}, mobile = #{mobile}, email = #{email}, "
           + "address = #{address}, profile_img = #{profileImg}, updated_at = now() where id = #{id}")
   int updateUserForSignup(SignupDTO signupDTO);
@@ -46,4 +50,8 @@ public interface UserMapper {
   @Update("update user set password = #{encryptedPwd} where id = #{userId}")
   void updateUserForPassword(@Param("userId") int userId,
           @Param("encryptedPwd") String encryptedPwd);
+
+  @Select("select id, type, login_id, password, fullname, gender, birthday, mobile, email, address, "
+          + "profile_img, session_id, auto_login_limit, wrong_password_count, created_at, updated_at, deleted_at from user where session_id = #{sessionId} and auto_login_limit > now()")
+  UserVO checkAutoLogin(@Param("sessionId") String sessionId);
 }
