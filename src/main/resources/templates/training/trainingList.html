@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+  <style>
+    #courseSelector {
+      display: none;
+    }
+
+
+    #content {
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+    }
+
+    /* 전체 컨테이너 스타일 */
+    .attendance-container {
+      padding: 20px;
+      background-color: #f8f9fc;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* 수강과정 정보 카드 (이미지와 동일한 디자인) */
+    .course-info-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      border-left: 4px solid #4e73df;
+    }
+
+
+    /* 과정명 스타일 (이미지와 동일) */
+    .course-name {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #4e73df;
+      margin-bottom: 15px;
+    }
+
+    /* 캘린더 컨테이너 (이미지와 동일한 디자인) */
+    .calendar-container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    /* 캘린더 헤더 (이전/다음 버튼과 월 표시) */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e3e6f0;
+    }
+
+    .calendar-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #5a5c69;
+      margin: 0;
+    }
+
+    .calendar-nav-btn {
+      background: #4e73df;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .calendar-nav-btn:hover {
+      background: #375cd3;
+      transform: translateY(-1px);
+    }
+
+    /* 캘린더 그리드 (7열 달력 형태) */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      border: 1px solid #e3e6f0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e3e6f0;
+    }
+
+    /* 캘린더 개별 날짜 셀 */
+    .calendar-day {
+      min-height: 100px;
+      padding: 8px;
+      background: white;
+      position: relative;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .calendar-day:hover {
+      background: #f8f9fc;
+    }
+
+    /* 요일 헤더 (일~토) */
+    .calendar-day.header {
+      background: #f8f9fc;
+      color: #5a5c69;
+      font-weight: 600;
+      text-align: center;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+    }
+
+    /* 오늘 날짜 표시 (이미지의 23일처럼 파란 테두리) */
+    .calendar-day.today {
+      background: #eef2ff;
+      border: 2px solid #4e73df;
+    }
+
+    /* 주말 날짜 스타일 */
+    .calendar-day.weekend {
+      background: #f8f9fa;
+      color: #858796;
+    }
+
+    /* 날짜 숫자 스타일 */
+    .day-number {
+      font-weight: 600;
+      margin-bottom: 0; /* 기존 6px에서 0으로 변경 */
+      color: #5a5c69;
+      font-size: 0.9rem;
+    }
+
+
+
+  </style>
+</head>
+<body>
+<div layout:fragment="content" id="content">
+  <!-- content header 시작 -->
+
+
+  <!-- ======================== 메인 컨텐츠 영역 ======================== -->
+  <div class="attendance-container">
+
+    <!-- 페이지 제목 -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">출결 조회</h1>
+    </div>
+
+    <!-- 수강과정 정보 카드 -->
+    <div class="course-info-card">
+
+      <!-- 과정명 표시 -->
+      <div class="course-name" id="currentCourseName">
+        <span >과정명</span>
+        <span >수강 중인 과정이 없습니다</span>
+      </div>
+
+
+
+
+
+
+
+
+    <!-- 출결 캘린더  -->
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+          <i class="fas fa-chevron-left mr-1"></i>이전
+        </button>
+        <h4 class="calendar-title" id="currentMonth">2025년 6월</h4>
+        <button class="calendar-nav-btn" onclick="changeMonth(1)">
+          다음<i class="fas fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+
+
+      <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
+      <div class="calendar-grid" id="calendarGrid">
+        <!-- JavaScript에서 요일 헤더와 날짜들을 동적으로 생성 -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================== 모달들 ======================== -->
+
+
+
+
+
+
+
+
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+
+
+    // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
+
+    const today = /*[[${today}]]*/ null;
+    const currentCourse = /*[[${currentCourse}]]*/ null;
+    const loginUser = /*[[${loginUser}]]*/ null;
+
+    // ======================== 전역 변수 선언 ========================
+    let currentDate = new Date(); // 캘린더 현재 표시 월
+
+
+    // ======================== 페이지 로드 시 초기화 ========================
+    document.addEventListener('DOMContentLoaded', function() {
+      // ✅ 전역 변수 초기화
+      // window.selectedCourseId = currentCourse?.id || null;
+      // window.selectedLearnerEnrollmentId = learnerEnrollmentId || null;
+
+
+
+      // 3. 캘린더 초기화 및 렌더링
+      initializeCalendar();
+      renderCalendar();
+      // generateCurrentMonthDaysOnly();
+
+      console.log('=== 출결 조회 페이지 초기화 완료 ===');
+    });
+
+    // ======================== basic.html의 courseSelector 설정 ========================
+
+
+
+    /**
+     * API 호출 실패 시 현재 과정만 표시하는 fallback 함수
+     */
+
+
+    // ======================== 캘린더 관련 함수들 ========================
+    /**
+     * 캘린더 초기화 (현재 월 표시)
+     */
+    function initializeCalendar() {
+      const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월',
+        '7월', '8월', '9월', '10월', '11월', '12월'];
+
+      const currentMonthElement = document.getElementById('currentMonth');
+      if (currentMonthElement) {
+        currentMonthElement.textContent =
+            `${currentDate.getFullYear()}년 ${monthNames[currentDate.getMonth()]}`;
+      }
+    }
+
+    /**
+     * 월 변경 함수 (이전/다음 버튼 클릭 시)
+     * @param {number} direction - -1(이전달) 또는 1(다음달)
+     */
+    function changeMonth(direction) {
+      currentDate.setMonth(currentDate.getMonth() + direction);
+      initializeCalendar();
+      renderCalendar();
+    }
+
+    /**
+     * 완성된 캘린더 렌더링 (선택된 과정의 출결 데이터 표시)
+     */
+    function renderCalendar() {
+      const calendarGrid = document.getElementById('calendarGrid');
+
+
+      console.log('캘린더 렌더링 시작:', {
+        currentDate: currentDate.toDateString()
+      });
+
+
+      calendarGrid.innerHTML = '';
+
+      // 요일 헤더 생성 (일~토)
+      const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
+      dayHeaders.forEach(day => {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'calendar-day header';
+        headerDiv.textContent = day;
+        calendarGrid.appendChild(headerDiv);
+      });
+
+
+        // 달력 날짜 생성
+        generateCurrentMonthDaysOnly();
+
+    }
+
+
+    /**
+     * 현재 월의 날짜만 생성 (이전/다음달 날짜는 표시하지 않음)
+     */
+    function generateCurrentMonthDaysOnly() {
+      const calendarGrid = document.getElementById('calendarGrid');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      // 현재 월의 첫째 날과 마지막 날
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      // 첫 주의 빈 칸 채우기 (일요일부터 시작)
+      const firstDayOfWeek = firstDay.getDay();
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'calendar-day';
+        emptyDiv.style.backgroundColor = '#f8f9fc';
+        calendarGrid.appendChild(emptyDiv);
+      }
+
+      // 현재 월의 날짜들만 생성
+      for (let date = 1; date <= lastDay.getDate(); date++) {
+        const currentDay = new Date(year, month, date);
+        const dayDiv = createCurrentMonthDayCell(currentDay, date);
+        calendarGrid.appendChild(dayDiv);
+      }
+
+      // 마지막 주의 빈 칸 채우기 (6주 완성)
+      const totalCells = calendarGrid.children.length - 7; // 헤더 제외
+      const remainingCells = 42 - 7 - totalCells; // 6주 * 7일 - 헤더 - 현재 셀
+      for (let i = 0; i < remainingCells; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'calendar-day';
+        emptyDiv.style.backgroundColor = '#f8f9fc';
+        calendarGrid.appendChild(emptyDiv);
+      }
+    }
+
+    /**
+     * 현재 월의 개별 날짜 셀 생성 (출결 정보 포함)
+     * @param {Date} date - 날짜 객체
+     * @param {number} dayNumber - 날짜 숫자
+     * @returns {HTMLElement} - 생성된 날짜 셀 요소
+     */
+    function createCurrentMonthDayCell(date, dayNumber) {
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'calendar-day';
+
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+      const isToday = dateStr === today;
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+      if (isToday) dayDiv.classList.add('today');
+      if (isWeekend) dayDiv.classList.add('weekend');
+
+      //  날짜와 상태를 같은 줄에 표시하는 헤더 div 생성
+      const dayHeaderDiv = document.createElement('div');
+      dayHeaderDiv.className = 'day-header';
+      dayHeaderDiv.style.display = 'flex';
+      dayHeaderDiv.style.justifyContent = 'space-between';
+      dayHeaderDiv.style.alignItems = 'center';
+      dayHeaderDiv.style.marginBottom = '6px';
+
+      // 날짜 번호
+      const dayNumberDiv = document.createElement('div');
+      dayNumberDiv.className = 'day-number';
+      dayNumberDiv.textContent = dayNumber;
+      dayNumberDiv.style.margin = '0'; // 기존 margin 제거
+      dayHeaderDiv.appendChild(dayNumberDiv);
+
+
+
+      //  헤더(날짜+상태)를 dayDiv에 추가
+      dayDiv.appendChild(dayHeaderDiv);
+
+
+      return dayDiv;
+
+    }
+
+
+  </script>
+</th:block>
+</body>
+</html>

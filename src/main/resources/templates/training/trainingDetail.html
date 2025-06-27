@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+  <style>
+    #courseSelector {
+      display: none;
+    }
+
+
+    #content {
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .clickable-name {
+      cursor: pointer;
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+<div layout:fragment="content" id="content">
+  <!-- content header 시작 -->
+
+  <div class="container bg-white shadow rounded p-4">
+
+    <!-- 상단 버튼 -->
+    <div class="d-flex justify-content-between mb-3">
+      <div>
+        <button class="btn btn-outline-success btn-sm">결재반</button>
+      </div>
+      <div>
+        <button class="btn btn-dark btn-sm">조회</button>
+      </div>
+    </div>
+
+    <!-- 과정 정보 -->
+    <div class="form-row mb-3">
+      <div class="form-group col-md-4">
+        <label><strong>과정명</strong></label>
+        <input type="text" class="form-control" readonly value="조회">
+      </div>
+      <div class="form-group col-md-4">
+        <label><strong>훈련 일자</strong></label>
+        <input type="text" class="form-control" readonly value="조회">
+      </div>
+      <div class="form-group col-md-4">
+        <label><strong>총 수강생 수</strong></label>
+        <input type="text" class="form-control" readonly value="조회">
+      </div>
+    </div>
+
+    <!-- 출석 정보 -->
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered text-center">
+        <thead class="thead-light">
+        <tr>
+          <th>출석 수</th>
+          <th>결석</th>
+          <th>조퇴</th>
+          <th>휴가</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>조회</td>
+          <td>조회</td>
+          <td>조회</td>
+          <td>조회</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 훈련생 이름 -->
+    <div class="mb-4">
+      <span class="clickable-name" onclick="alert('박철수')">박 ○○</span>,
+      <span class="clickable-name" onclick="alert('김민수')">김 ○○</span>
+      <small class="text-muted ml-2">(클릭 or 호버하면 이름 조회되게)</small>
+    </div>
+
+    <!-- 훈련 과목 -->
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered text-center">
+        <thead class="thead-light">
+        <tr>
+          <th>교시</th>
+          <th>훈련 과목</th>
+          <th>훈련 특이사항</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 1~7교시 -->
+
+        <tr>
+          <td>1</td>
+          <td>조회</td>
+          <td>조회</td>
+        </tr>
+
+        <!-- 위는 서버 렌더링용. HTML만 원하시면 아래 코드로 대체하세요. -->
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div class="text-right">
+      <button class="btn btn-primary">수정</button>
+      <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">삭제</button>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 모달 -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content text-center">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">삭제하시겠습니까?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          (모달 or 토스트 창)
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-danger">네</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+
+
+  </script>
+</th:block>
+</body>
+</html>
