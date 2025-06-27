@@ -95,6 +95,16 @@ function showEvalModify() {
 
 }
 
+// passValue 고정
+function passValue() {
+  if (evalDTO != null) {
+    let isPass = /*[[${evalDTO?.isPass != null ?evalDTO.isPass :false}]]*/ false;
+    console.log("isPass", isPass);
+    console.log("isPass select 박스값 존재 여부",$("#isPass").length);
+    $("#isPass").val(isPass ? "1" : "0");
+  }
+}
+
 //평가 수정 란의 기존 파일 삭제
 function removeModifyBefore(x) {
   $(x).closest(".card.mb-2").remove();
@@ -277,7 +287,6 @@ function deleteEvalPost() {
       }
     })
   })
-
 }
 
 $(function () {
@@ -290,6 +299,7 @@ $(function () {
   // 수정 버튼 클릭하면 수정 폼 나오기
   $("#modifyEval").click(function () {
     showEvalModify();
+    passValue();
   });
 
   $(document).on("change", "#evalModifyFile", function (e) {

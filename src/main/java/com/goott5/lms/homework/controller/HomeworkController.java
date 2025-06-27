@@ -180,18 +180,28 @@ public class HomeworkController {
 
     //pagingResponseDTO에 따른 과정명 출력
     String courseName = "";
-    Map<Integer,String> courseNameMap = new HashMap<>();
-    for(HomeworkDTO homeworkDTO:pagingResponseDTO.getDtoList()){
+    Map<Integer, String> courseNameMap = new HashMap<>();
+    for (HomeworkDTO homeworkDTO : pagingResponseDTO.getDtoList()) {
       courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
-      courseNameMap.put(homeworkDTO.getCourseId(),homeworkService.courseNameById(homeworkDTO.getCourseId()));
+      courseNameMap.put(homeworkDTO.getCourseId(), courseName);
     }
-    model.addAttribute("courseNameMap",courseNameMap);
+    model.addAttribute("courseNameMap", courseNameMap);
+
+    //homework에 따른 파일 여부 판단 (map:homeworkId = fileList)
+    Map<Integer, List<FileSelectDTO>> homeworkFileMap = new HashMap<>();
+    pagingResponseDTO.getDtoList().forEach(homeworkDTO -> {
+      if (utilService.selectFileList("homework", homeworkDTO.getId()) != null) {
+        if (!utilService.selectFileList("homework", homeworkDTO.getId()).isEmpty()) {
+          homeworkFileMap.put(homeworkDTO.getId(),
+              utilService.selectFileList("homework", homeworkDTO.getId()));
+        }
+      }
+    });
+    model.addAttribute("homeworkFileMap", homeworkFileMap);
+
 
     return "homework/homeworkList";
   }
-
-
-
 
 
   @GetMapping("/homeworkForAdminBoolean")
@@ -237,16 +247,20 @@ public class HomeworkController {
     }
 
     if (homeworkId == null) {
-      model.addAttribute("homeworkIdNull","해당 과제가 존재하지 않습니다.");
+      model.addAttribute("homeworkIdNull", "해당 과제가 존재하지 않습니다.");
       return "homework/homeworkDetail";
     }
 
     // homework 객체 전달
     HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOById(homeworkId);
+    String courseName = "";
 
     String instructorLoginId = "";
     if (homeworkDTO != null) {
       model.addAttribute("homework", homeworkDTO);
+      //현재 과제가 속해있는 강의명 전달
+      courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+      model.addAttribute("courseName", courseName);
       // 작성자 loginId 전달
       instructorLoginId = homeworkService.selectLoginId(homeworkDTO.getInstructorId());
       if (instructorLoginId != null) {
@@ -283,44 +297,6 @@ public class HomeworkController {
     return "homework/homeworkDetail";
   }
 
-  //일단 보류
-//  @GetMapping("/imgDownload")
-//  public ResponseEntity<InputStreamResource> imgDownload(@RequestParam(required = false) String fileName){
-//
-//    try {
-////      String key = Paths.get()
-//      if(fileName == null || fileName.isBlank()){
-//        return ResponseEntity.badRequest().body(null);
-//      }
-//
-//      Path fildPath = s3Uploader.downloadFile("upload/homework" + "/" + fileName,"C:/downloads/" + fileName); //실패...
-//
-//      InputStream inputStream = Files.newInputStream(fildPath);
-//      InputStreamResource resource = new InputStreamResource(inputStream);
-//
-//      String encodeFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
-//
-//      HttpHeaders headers = new HttpHeaders();
-//      headers.add("Content-Disposition",
-//          "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodeFileName);
-//      headers.add(HttpHeaders.CONTENT_TYPE,Files.probeContentType(fildPath));
-//
-//      log.info("파일 다운로드 성공:{}","upload/homework" + "/" + fileName);
-//
-//      return ResponseEntity.ok().headers(headers).body(resource);
-//
-//    } catch (IOException e) {
-//      log.error("imgDownload error:{}",e.getMessage());
-//      return ResponseEntity.badRequest().body(null);
-//    }
-//
-//  }
-
-
-
-
-
-
 
   @GetMapping("/homeworkRegister")
   public String homeworkRegister(HttpSession session, Model model,
@@ -347,13 +323,13 @@ public class HomeworkController {
     }
 
     // 선택한 과정이 진행 중 x or 과정명이 선택한 과정 x or 해당 과정이 등록된 유저 아이디가 로그인 유저 아이디x or 유저 타입이 instructor x
-      if (resultMap == null || resultMap.get("course_id") == null || resultMap.get("user_id") == null) {
-        isRegister = false;
-        redirectAttributes.addFlashAttribute("isRegister", isRegister);
+    if (resultMap == null || resultMap.get("course_id") == null
+        || resultMap.get("user_id") == null) {
+      isRegister = false;
+      redirectAttributes.addFlashAttribute("isRegister", isRegister);
 
-        return "redirect:/homework/homeworkList";
-      }
-
+      return "redirect:/homework/homeworkList";
+    }
 
     model.addAttribute("resultMap", resultMap);
     model.addAttribute("courseId", resultMap.get("course_id"));
@@ -375,19 +351,41 @@ public class HomeworkController {
 
     log.info("등록한 homeworkDTO:{}", homeworkDTO);
 
+    if (homeworkDTO == null) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(404, "등록한 과제 전달 실패했습니다.", null));
+    }
+
     //content와 관련된 bindingresult 추가
     String content = homeworkDTO.getContent();
-    if(content == null || content.isBlank()){
-      bindingResult.addError(new FieldError("homeworkDTO","content","글자를 입력해주세요."));
-    }else {
-          int contentLength = content.getBytes(StandardCharsets.UTF_8).length;
+    if (content == null || content.isBlank()) {
+      bindingResult.addError(new FieldError("homeworkDTO", "content", "글자를 입력해주세요."));
+    } else {
+      int contentLength = content.getBytes(StandardCharsets.UTF_8).length;
       if (contentLength > 1000 || contentLength < 10) {
         bindingResult.addError(
             new FieldError("homeworkDTO", "content", "글자는 10자 이상 1000자 이하여야 합니다."));
       }
     }
 
-    log.info("content.getBytes:{}",content.getBytes(StandardCharsets.UTF_8).length);
+    // 제출 기한과 관련된 bindingResult 추가
+    //1. 과제 시작 날짜가 now 이상
+    LocalDateTime startDate = homeworkDTO.getStartDate();
+    if (startDate != null) {
+      if (startDate.isBefore(LocalDateTime.now())) {
+        bindingResult.addError(new FieldError("homeworkDTO", "startDate", "과제 시작일은 오늘 이후여야 합니다."));
+      }
+    }
+
+    //과제 마감 날짜가 시작일 이전일 때
+    LocalDateTime endDate = homeworkDTO.getEndDate();
+    if (endDate != null) {
+      if (endDate.isBefore(startDate)) {
+        bindingResult.addError(new FieldError("homeworkDTO", "endDate", "과제 마감일은 시작일 이후여야 합니다."));
+      }
+    }
+
+    log.info("content.getBytes:{}", content.getBytes(StandardCharsets.UTF_8).length);
 
     if (bindingResult.hasErrors()) {
       Map<String, String> errorMap = new HashMap<>();
@@ -483,9 +481,11 @@ public class HomeworkController {
 
     // 해당 homeworkDTO 가져와서 수정해주기
     HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOById(homeworkId);
-
+    String courseName = "";
     if (homeworkDTO != null) {
       model.addAttribute("homeworkDTO", homeworkDTO);
+      courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
+      model.addAttribute("courseName", courseName);
     }
     model.addAttribute("homeworkId", homeworkId);
 
@@ -501,6 +501,11 @@ public class HomeworkController {
       @RequestParam(required = false) List<Integer> deleteFiles,
       @RequestParam(required = false) Integer homeworkId,
       Model model) throws IOException {
+
+    if (homeworkModifyDTO == null) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(404, "수정할 과제 전달 실패했습니다.", null));
+    }
 
     log.info("전송 받은 homeworkModifyDTO", homeworkModifyDTO);
 
@@ -522,6 +527,17 @@ public class HomeworkController {
       if (length < 10 || length > 1000) {
         bindingResult.addError(
             new FieldError("homeworkModifyDTO", "content", "10자 이상 1000자 이하로 입력해주세요."));
+      }
+    }
+
+    // 제출 기한과 관련된 bindingResult 추가
+    LocalDateTime startDate = homeworkModifyDTO.getStartDate();
+
+    //과제 마감 날짜가 시작일 이전일 때(수정일 때만)
+    LocalDateTime endDate = homeworkModifyDTO.getEndDate();
+    if (endDate != null && startDate != null) {
+      if (endDate.isBefore(startDate)) {
+        bindingResult.addError(new FieldError("homeworkDTO", "endDate", "과제 마감일은 시작일 이후여야 합니다."));
       }
     }
 
@@ -565,7 +581,8 @@ public class HomeworkController {
         // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
         for (FileSelectDTO selectDTO : deleteFileList) {
           log.info("selectDTO.getPath:{}", selectDTO.getPath());
-          s3Uploader.deleteFile("upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
+          s3Uploader.deleteFile(
+              "upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
           log.info("파일 서버 삭제 성공"); // 성공 못함
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
@@ -617,17 +634,16 @@ public class HomeworkController {
   public ResponseEntity<MyResponseWithDataPYJ> deleteHomework(
       @RequestParam(required = false) Integer homeworkId) throws UnsupportedEncodingException {
 
-
     if (homeworkId == null) {
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "데이터 전송 실패", null));
     }
-
 
     // 참조하고 있는 homeworkSubmission이 있으면 삭제 불가
     boolean isSubmission = homeworkService.selectHomeworkSubmissionIdByHomework(homeworkId);
     if (isSubmission) {
       // 존재하면 삭제 x
-      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(409, "해당 과제의 제출물이 존재합니다.", null));
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(409, "해당 과제의 제출물이 존재합니다.", null));
     }
 
     // 파일 불러오기
@@ -639,7 +655,8 @@ public class HomeworkController {
         for (FileSelectDTO selectDTO : fileList) {
 
           // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
-          s3Uploader.deleteFile("upload/homework/" + URLDecoder.decode(selectDTO.getNewName(),"UTF-8"));
+          s3Uploader.deleteFile(
+              "upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
           log.info("파일 서버 삭제 성공");
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
