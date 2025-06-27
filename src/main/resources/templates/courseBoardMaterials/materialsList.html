@@ -94,15 +94,13 @@
             <option value="false" th:selected="${responseDTO?.pagingRequestDTO?.hasAttachment == false}">파일 없음</option>
           </select>
             <select id="orderBy" name="orderBy" class="form-control col-3 mr-3">
-              <option value="">정렬 기준</option>
               <option value="createdAt" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'createdAt'}">작성일</option>
               <option value="readCount" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'readCount'}">조회수</option>
               <option value="title" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'title'}">제목</option>
             </select>
           <select id="orderDirection" name="orderDirection" class="form-control col-3">
-            <option value="">정렬 방향</option>
-            <option value="asc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'asc'}">오름차순</option>
             <option value="desc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'desc'}">내림차순</option>
+            <option value="asc" th:selected="${responseDTO?.pagingRequestDTO?.orderDirection == 'asc'}">오름차순</option>
           </select>
         </div>
         <input type="hidden" name="pagingSize" th:value="${responseDTO?.pagingRequestDTO?.pagingSize}">
