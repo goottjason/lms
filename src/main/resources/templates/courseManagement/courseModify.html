@@ -11,6 +11,7 @@
 <div layout:fragment="content">
   <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
   <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+  <input type="hidden" th:value="${course.id}" id="course-id">
 
     <!-- content header 시작 -->
   <div class="row align-items-center">
@@ -36,14 +37,14 @@
           <div class="row mb-2">
             <div class="col-md-9">
               <div class="form-group">
-                <label for="a">과정명</label>
-                <input type="text" id="a" class="form-control" th:value="${course.name}">
+                <label for="name-input">과정명<span class="text-danger">*</span></label>
+                <input type="text" id="name-input" class="form-control" th:value="${course.name}">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="b">등록인원</label>
-                <input type="text" id="b" class="form-control" th:value="${course.numberOfLearner}">
+                <label for="number-of-learner-input">등록인원<span class="text-danger">*</span></label>
+                <input type="text" id="number-of-learner-input" class="form-control" th:value="${course.numberOfLearner}">
               </div>
             </div>
           </div>
@@ -51,16 +52,16 @@
           <div class="row mb-2">
             <div class="col-md-3">
               <div class="form-group">
-                <label for="c">총훈련시간</label>
-                <input type="text" id="c" class="form-control" th:value="${course.totalHours}">
+                <label for="total-hours-input">총훈련시간<span class="text-danger">*</span></label>
+                <input type="text" id="total-hours-input" class="form-control" th:value="${course.totalHours}">
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="d">총훈련일수</label>
+                <label for="total-days-input">총훈련일수<span class="text-danger">*</span></label>
                 <input
                     type="text"
-                    id="d"
+                    id="total-days-input"
                     class="form-control"
                     th:value="${course.totalDays}"
                     readonly>
@@ -68,82 +69,109 @@
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="e">일일훈련시간</label>
-                <input type="text" id="e" class="form-control" th:value="${course.dailyHours}">
+                <label for="daily-hours-input">일일훈련시간<span class="text-danger">*</span></label>
+                <select id="daily-hours-input" class="form-control">
+                  <option value="">선택</option>
+                  <option value="6" th:selected="${course.dailyHours == 6}">6</option>
+                  <option value="8" th:selected="${course.dailyHours == 8}">8</option>
+                </select>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="f">쉬는시간</label>
-                <input type="text" id="f" class="form-control" th:value="${course.breakTime}">
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="g">과정시작일</label>
-                <input type="date" id="g" class="form-control" th:value="${course.startDate}">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="h">과정종료일</label>
-                <input
-                    type="date"
-                    id="h"
-                    class="form-control"
-                    th:value="${course.endDate}"
-                    readonly>
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="i">훈련시작시간</label>
-                <input type="time" id="i" class="form-control" th:value="${course.lessonStartTime}">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="j">훈련종료시간</label>
-                <input type="time" id="j" class="form-control" th:value="${course.lessonEndTime}">
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="k">식사시작시간</label>
-                <input type="time" id="k" class="form-control" th:value="${course.lunchStartTime}">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="l">식사종료시간</label>
-                <input type="time" id="l" class="form-control" th:value="${course.lunchEndTime}">
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="m">강사명</label>
-                <select id="m" class="form-control">
-                  <option th:value="${course.fulltimeInstructorFullname}"></option>
+                <label for="break-time-input">쉬는시간(분)<span class="text-danger">*</span></label>
+                <select id="break-time-input" class="form-control">
+                  <option value="">선택</option>
+                  <option value="10" th:selected="${course.breakTime} == 10">10</option>
+                  <option value="15" th:selected="${course.breakTime} == 15">15</option>
+                  <option value="20" th:selected="${course.breakTime} == 20">20</option>
                 </select>
               </div>
             </div>
+          </div>
+
+          <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="n">강의실</label>
-                <select id="n" class="form-control">
-                  <option th:value="${course.classroomName}"></option>
+                <label for="start-date-input">과정시작일<span class="text-danger">*</span></label>
+                <input type="date" id="start-date-input" class="form-control" th:value="${course.startDate}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="end-date-input">과정종료일<span class="text-danger">*</span></label>
+                <input type="date" id="end-date-input" class="form-control" readonly th:value="${course.endDate}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="lesson-start-time-input">훈련시작시간<span class="text-danger">*</span></label>
+                <input type="time" id="lesson-start-time-input" class="form-control" th:value="${course.lessonStartTime}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="lesson-end-time-input">훈련종료시간<span class="text-danger">*</span></label>
+                <input type="time" id="lesson-end-time-input" class="form-control" readonly th:value="${course.lessonEndTime}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="when-lunch">식사시간</label>
+                <select id="when-lunch" class="form-control">
+                  <option value>선택</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="lunch-start-time-input">식사 시작시간<span class="text-danger">*</span></label>
+                <input type="time" id="lunch-start-time-input" class="form-control" readonly th:value="${course.lunchStartTime}">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="lunch-end-time-input">식사 종료시간<span class="text-danger">*</span></label>
+                <input type="time" id="lunch-end-time-input" class="form-control" readonly th:value="${course.lunchEndTime}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="instructor">강사명<span class="text-danger">*</span></label>
+                <select id="instructor" class="form-control">
+                  <option value="">강사선택</option>
+                  <option th:value="${course.instructorId}"
+                          th:text="${course.fulltimeInstructorFullname}"
+                          th:selected="true"></option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="administrator">관리자<span class="text-danger">*</span></label>
+                <select id="administrator" class="form-control">
+                  <option value="">관리자선택</option>
+                  <option th:value="${course.administratorId}"
+                          th:text="${course.courseHeadFullname}"
+                          th:selected="true"></option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="classroom">강의실<span class="text-danger">*</span></label>
+                <select id="classroom" class="form-control">
+                  <option th:value="${course.classroomId}"
+                          th:text="${course.classroomName}" th:selected="true"></option>
                 </select>
               </div>
             </div>
@@ -164,47 +192,56 @@
             <table class="table">
               <thead>
               <tr class="text-center">
-                <th scope="col" class="align-middle">수업순서</th>
-                <th scope="col" class="align-middle">교과목명</th>
-                <th scope="col" class="align-middle">시간</th>
-                <th scope="col" class="align-middle">교재명</th>
-                <th scope="col" class="align-middle">저자명</th>
+                <th scope="col" class="align-middle" width="14%">순서<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="20%">교과목명<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="14%">시간<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="20%">교재명<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="17%">저자명<span class="text-danger">*
+                </span></th>
+                <th scope="col" class="align-middle" width="15%">선택</th>
               </tr>
               </thead>
-              <tbody>
-              <tr
+              <tbody id="subject-table">
+              <tr class="subject-row"
                   th:if="${course.subjects != null and not #lists.isEmpty(course.subjects)}"
                   th:each="subject : ${course.subjects}">
                 <td class="text-center align-middle"><input
                     type="text"
-                    id=""
+                    data-id=""
                     class="form-control"
                     th:value="${subject.subjectOrder}"></td>
                 <td class="text-center align-middle"><input
                     type="text"
-                    id=""
+                    data-id=""
                     class="form-control"
                     th:value="${subject.name}"></td>
                 <td class="text-center align-middle"><input
                     type="text"
-                    id=""
+                    data-id=""
                     class="form-control"
                     th:value="${subject.hours}"></td>
                 <td class="text-center align-middle"><input
                     type="text"
-                    id=""
+                    data-id=""
                     class="form-control"
                     th:value="${subject.textbookName}"></td>
                 <td class="text-center align-middle"><input
                     type="text"
-                    id=""
+                    data-id=""
                     class="form-control"
                     th:value="${subject.textbookAuthor}"></td>
+                <td class="text-center align-middle"><button
+                    class='btn btn-danger btn-icon-split btn-sm remove-subject-row-btn'><span
+                    class='text'>삭제</span></button></td>
               </tr>
               </tbody>
             </table>
             <div class="text-center">
-              <button id="" class="btn btn-sm btn-info btn-icon-split">
+              <button id="add-subject-row-btn" class="btn btn-sm btn-info btn-icon-split">
                 <span class="icon text-white-50">
                   <i class="fas fa-plus"></i>
                 </span>
@@ -218,13 +255,14 @@
 
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <button id="" class="btn btn-primary btn-icon-split mr-2">
+      <button id="register-btn" class="btn btn-primary btn-icon-split mr-2"
+              onclick="modifyCourse(event)">
         <span class="icon text-white-50">
             <i class="fas fa-upload"></i>
         </span>
-        <span class="text px-5">저장</span>
+        <span class="text px-5">등록</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <button id="cancel-btn" class="btn btn-secondary btn-icon-split">
         <span class="icon text-white-50">
             <i class="fas fa-times"></i>
         </span>

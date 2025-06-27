@@ -31,6 +31,10 @@
       text-decoration: none;
     }
 
+    a:hover {
+      text-decoration: none;
+    }
+
     .pagination {
       cursor: pointer;
     }
@@ -147,7 +151,7 @@
         <div class="bg-white py-2 collapse-inner rounded">
           <a class="collapse-item" th:href="@{/courseBoardQnA/qnaList}">Q&A</a>
           <a class="collapse-item" th:href="@{/courseBoardMaterials/materialsList}">공지 및 수업자료</a>
-          <a class="collapse-item" href="#">토론 게시판</a>
+          <a class="collapse-item" th:href="@{/courseBoardDebate/debateList}">토론 게시판</a>
         </div>
       </div>
     </li>
