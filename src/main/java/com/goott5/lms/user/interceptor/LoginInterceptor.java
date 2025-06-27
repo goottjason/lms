@@ -38,6 +38,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
       if (autoLoginUser != null) {
         session.setAttribute("loginUser", autoLoginUser);
+
         if (requestURI.equals("/")) {
 
           String redirectUrl = "";
@@ -58,8 +59,12 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         }
       } else {
+        Cookie cookie = new Cookie("autoLogin", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
         response.sendRedirect("/");
-        return false;
+        return true;
       }
     } else {
       if (session == null || session.getAttribute("loginUser") == null) {
@@ -89,7 +94,6 @@ public class LoginInterceptor implements HandlerInterceptor {
         } else {
           return true;
         }
-
       }
     }
 
