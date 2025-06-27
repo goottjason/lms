@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.courseboardqna.mapper.QnARegisterMapper">
+
+  <select id="selectQnAPost"
+    parameterType="com.goott5.lms.courseboardqna.domain.pagination.QnARequestVO"
+    resultType="com.goott5.lms.courseboardqna.domain.list.QnAListVO">
+    SELECT
+    q.id AS id,
+    q.title AS title,
+    c.name AS course_name,
+    u.fullname AS writer_name,
+    q.created_at AS created_at,
+    q.is_answer AS is_answer,
+    q.is_secret AS is_secret
+    FROM course_qna q
+    JOIN course c ON c.id = q.course_id
+    JOIN user u ON u.id = q.writer_id
+    <where>
+      <include refid="search"/>
+    </where>
+
+    <if test="searchOptions.sortBy != null and searchOptions.sortBy != ''">
+      ORDER BY ${searchOptions.sortBy} ${searchOptions.sortOrder}
+    </if>
+
+    LIMIT #{pageSize} OFFSET #{skip}
+  </select>
+
+  <sql id="search">
+    <!-- 진행 중 강의 필터 -->
+    <if test="searchOptions != null and searchOptions.isInProgress">
+      AND c.is_in_progress = 1
+    </if>
+    <!-- 강좌명 필터 -->
+    <if
+      test="searchOptions != null and searchOptions.courseName != null and searchOptions.courseName != ''">
+      AND c.name = #{searchOptions.courseName}
+    </if>
+    <!-- 키워드 검색 (제목|내용|작성자) -->
+    <if
+      test="searchOptions != null and searchOptions.keyWord != null and searchOptions.keyWord != ''">
+      <choose>
+        <when test="searchOptions.searchType == 'title'">
+          AND q.title LIKE CONCAT('%', #{searchOptions.keyWord}, '%')
+        </when>
+        <when test="searchOptions.searchType == 'content'">
+          AND q.content LIKE CONCAT('%', #{searchOptions.keyWord}, '%')
+        </when>
+        <when test="searchOptions.searchType == 'writer'">
+          AND u.fullname LIKE CONCAT('%', #{searchOptions.keyWord}, '%')
+        </when>
+      </choose>
+    </if>
+    <!-- 답변 상태 필터 -->
+<!--    <if test="searchOptions != null and searchOptions.answerStatus == 'answered'">-->
+<!--      AND q.is_answer = 'Y'-->
+<!--    </if>-->
+<!--    <if test="searchOptions != null and searchOptions.answerStatus == 'unanswered'">-->
+<!--      AND q.is_answer = 'N'-->
+<!--    </if>-->
+  </sql>
+
+  <select id="selectQnAPostCount"
+    parameterType="com.goott5.lms.courseboardqna.domain.pagination.QnARequestVO">
+    SELECT COUNT(*)
+    FROM course_qna q
+    JOIN course c ON c.id = q.course_id
+    JOIN user u ON u.id = q.writer_id
+    <where>
+      <include refid="search"/>
+    </where>
+  </select>
+
+</mapper>
