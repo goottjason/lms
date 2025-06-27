@@ -72,9 +72,8 @@
         <div class="input-group col-6">
           <div class="col-3">
             <select id="" name="type" class="form-control">
-              <option value="">선택</option>
-              <option value="c" th:selected="${responseDTO?.pagingRequestDTO?.type == 'c' or (responseDTO?.pagingRequestDTO?.type != null and #strings.contains(responseDTO.pagingRequestDTO.type, 'c'))}">내용</option>
               <option value="t" th:selected="${responseDTO?.pagingRequestDTO?.type == 't' or (responseDTO?.pagingRequestDTO?.type != null and #strings.contains(responseDTO.pagingRequestDTO.type, 't'))}">제목</option>
+              <option value="c" th:selected="${responseDTO?.pagingRequestDTO?.type == 'c' or (responseDTO?.pagingRequestDTO?.type != null and #strings.contains(responseDTO.pagingRequestDTO.type, 'c'))}">내용</option>
               <option value="w" th:selected="${responseDTO?.pagingRequestDTO?.type == 'w' or (responseDTO?.pagingRequestDTO?.type != null and #strings.contains(responseDTO.pagingRequestDTO.type, 'w'))}">작성자</option>
             </select>
           </div>
@@ -172,7 +171,15 @@
         <ul class="pagination justify-content-center">
           <li class="page-item" th:classappend="${!responseDTO.prev} ? 'disabled'">
             <a class="page-link"
-               th:href="|/courseBoardMaterials/materialsList?pageNo=${responseDTO.start - 1}${responseDTO?.pagingRequestDTO?.generateLinkExceptPageNo()}|"
+               th:href="@{/courseBoardMaterials/materialsList(pageNo=${responseDTO.start - 1},
+                                                             type=${responseDTO.pagingRequestDTO.type},
+                                                             keyword=${responseDTO.pagingRequestDTO.keyword},
+                                                             courseId=${responseDTO.pagingRequestDTO.courseId},
+                                                             isInProgress=${responseDTO.pagingRequestDTO.isInProgress},
+                                                             hasAttachment=${responseDTO.pagingRequestDTO.hasAttachment},
+                                                             orderBy=${responseDTO.pagingRequestDTO.orderBy},
+                                                             orderDirection=${responseDTO.pagingRequestDTO.orderDirection},
+                                                             pagingSize=${responseDTO.pagingRequestDTO.pagingSize})}"
                aria-label="Previous">
               <span aria-hidden="true">이전</span>
             </a>
@@ -180,12 +187,28 @@
           <li class="page-item" th:each="i : ${#numbers.sequence(responseDTO.start, responseDTO.end)}"
               th:classappend="${i == responseDTO.pageNo} ? 'active'">
             <a class="page-link"
-               th:href="|/courseBoardMaterials/materialsList?pageNo=${i}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}|"
+               th:href="@{/courseBoardMaterials/materialsList(pageNo=${i},
+                                                             type=${responseDTO.pagingRequestDTO.type},
+                                                             keyword=${responseDTO.pagingRequestDTO.keyword},
+                                                             courseId=${responseDTO.pagingRequestDTO.courseId},
+                                                             isInProgress=${responseDTO.pagingRequestDTO.isInProgress},
+                                                             hasAttachment=${responseDTO.pagingRequestDTO.hasAttachment},
+                                                             orderBy=${responseDTO.pagingRequestDTO.orderBy},
+                                                             orderDirection=${responseDTO.pagingRequestDTO.orderDirection},
+                                                             pagingSize=${responseDTO.pagingRequestDTO.pagingSize})}"
                th:text="${i}">1</a>
           </li>
           <li class="page-item" th:classappend="${!responseDTO.next} ? 'disabled'">
             <a class="page-link"
-               th:href="|/courseBoardMaterials/materialsList?pageNo=${responseDTO.end + 1}${responseDTO?.pagingRequestDTO?.generateLinkExceptPageNo()}|"
+               th:href="@{/courseBoardMaterials/materialsList(pageNo=${responseDTO.end + 1},
+                                                             type=${responseDTO.pagingRequestDTO.type},
+                                                             keyword=${responseDTO.pagingRequestDTO.keyword},
+                                                             courseId=${responseDTO.pagingRequestDTO.courseId},
+                                                             isInProgress=${responseDTO.pagingRequestDTO.isInProgress},
+                                                             hasAttachment=${responseDTO.pagingRequestDTO.hasAttachment},
+                                                             orderBy=${responseDTO.pagingRequestDTO.orderBy},
+                                                             orderDirection=${responseDTO.pagingRequestDTO.orderDirection},
+                                                             pagingSize=${responseDTO.pagingRequestDTO.pagingSize})}"
                aria-label="Next">
               <span aria-hidden="true">다음</span>
             </a>
