@@ -14,10 +14,10 @@ public class TimeCalculationUtil {
   /**
    * 실제 수업 시간(분) 계산 (점심시간 제외)
    *
-   * @param checkIn        입실 시간
-   * @param checkOut       퇴실 시간
+   * @param checkIn 입실 시간
+   * @param checkOut 퇴실 시간
    * @param lunchStartTime 점심시작시간 (course.lunch_start_time)
-   * @param lunchEndTime   점심종료시간 (course.lunch_end_time)
+   * @param lunchEndTime 점심종료시간 (course.lunch_end_time)
    * @return 실제 수업 시간(분)
    */
   public static long calculateActualStudyMinutes(LocalDateTime checkIn, LocalDateTime checkOut,
@@ -46,33 +46,60 @@ public class TimeCalculationUtil {
   }
 
   /**
-   * 출결 상태 판정 (출석, 결석, 지각, 조퇴)
+   * 출결 상태 판정 (과정별 daily_hours 반영)
    *
    * @param actualHours 실제 수업 시간(시간 단위)
-   * @param isLate      지각 여부
+   * @param isLate 지각 여부
+   * @param dailyHours 해당 과정의 일일 훈련시간 (course.daily_hours)
    * @return 출결 상태 (ATTENDANCE, LATE, LEAVE_EARLY, ABSENCE)
    */
-  public static String determineAttendanceStatus(long actualHours, boolean isLate) {
-    if (actualHours >= 8) {
-      return "ATTENDANCE";
-    } else if (actualHours >= 4) {
-      return isLate ? "LATE" : "LEAVE_EARLY";
+  public static String determineAttendanceStatus(long actualHours, boolean isLate, Integer dailyHours) {
+    // dailyHours가 null이거나 0인 경우 기본값 8시간 사용
+    int courseHours = (dailyHours != null && dailyHours > 0) ? dailyHours : 8;
+    int halfCourseHours = courseHours / 2;
+
+    if (actualHours >= courseHours) {
+      return "ATTENDANCE"; // ✅ 과정 일일시간 이상: 출석
+    } else if (actualHours >= halfCourseHours) {
+      return isLate ? "LATE" : "LEAVE_EARLY"; // ✅ 과정 일일시간의 절반 이상: 지각/조퇴
     } else {
-      return "ABSENCE";
+      return "ABSENCE"; // ✅ 과정 일일시간의 절반 미만: 결석
     }
   }
 
   /**
-   * 상태별 인정 시간 계산
+   * ✅ 기존 메서드 유지 (하위 호환성)
+   * @deprecated 새로운 determineAttendanceStatus(long, boolean, Integer) 사용 권장
+   */
+  @Deprecated
+  public static String determineAttendanceStatus(long actualHours, boolean isLate) {
+    return determineAttendanceStatus(actualHours, isLate, 8); // 기본값 8시간으로 호출
+  }
+
+  /**
+   * 상태별 인정 시간 계산 (과정별 daily_hours 반영)
    *
    * @param status 출결 상태
+   * @param dailyHours 해당 과정의 일일 훈련시간 (course.daily_hours)
    * @return 인정 시간(시간 단위)
    */
-  public static int calculateTrainingTime(String status) {
+  public static int calculateTrainingTime(String status, Integer dailyHours) {
+    // dailyHours가 null이거나 0인 경우 기본값 8시간 사용
+    int courseHours = (dailyHours != null && dailyHours > 0) ? dailyHours : 8;
+
     return switch (status) {
-      case "ATTENDANCE", "VACATION" -> 8;
-      case "LATE", "LEAVE_EARLY" -> 4;
+      case "ATTENDANCE", "VACATION" -> courseHours; // ✅ 과정별 일일훈련시간
+      case "LATE", "LEAVE_EARLY" -> courseHours / 2; // ✅ 과정별 일일훈련시간의 1/2
       default -> 0;
     };
+  }
+
+  /**
+   * ✅ 기존 메서드 유지 (하위 호환성)
+   * @deprecated 새로운 calculateTrainingTime(String, Integer) 사용 권장
+   */
+  @Deprecated
+  public static int calculateTrainingTime(String status) {
+    return calculateTrainingTime(status, 8); // 기본값 8시간으로 호출
   }
 }

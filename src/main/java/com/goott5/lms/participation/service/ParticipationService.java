@@ -72,4 +72,11 @@ public interface ParticipationService {
    */
   Integer getLearnerEnrollmentIdByUserIdAndCourseId(Integer userId, Integer courseId);
 
+  /**
+   * 휴가 신청 가능한 날짜 목록 조회
+   * (오늘 이후 + course_schedule에 있는 날짜 + 과정 종료일 이전)
+   */
+  List<LocalDate> getAvailableVacationDates(Integer learnerEnrollmentId);
+
+
 }

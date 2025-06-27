@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpSession;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -421,4 +422,39 @@ public class ParticipationController {
       ));
     }
   }
+
+  /**
+   * 휴가 신청 가능한 날짜 목록 조회
+   */
+  @GetMapping("/available-vacation-dates/{learnerEnrollmentId}")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getAvailableVacationDates(
+      @PathVariable Integer learnerEnrollmentId) {
+    try {
+      log.debug("휴가 신청 가능 날짜 조회 - learnerEnrollmentId: {}", learnerEnrollmentId);
+
+      List<LocalDate> availableDates = participationService.getAvailableVacationDates(learnerEnrollmentId);
+
+      // 문자열 형태로 변환 (JavaScript에서 사용하기 위해)
+      List<String> availableDateStrings = availableDates.stream()
+          .map(LocalDate::toString)
+          .collect(Collectors.toList());
+
+      log.debug("휴가 신청 가능 날짜 개수: {}", availableDates.size());
+
+      return ResponseEntity.ok(Map.of(
+          "success", true,
+          "availableDates", availableDateStrings
+      ));
+    } catch (Exception e) {
+      log.error("휴가 신청 가능 날짜 조회 오류 - learnerEnrollmentId: {}", learnerEnrollmentId, e);
+      return ResponseEntity.badRequest().body(Map.of(
+          "success", false,
+          "message", "휴가 신청 가능 날짜 조회에 실패했습니다."
+      ));
+    }
+  }
+
+
+
 }

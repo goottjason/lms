@@ -95,7 +95,7 @@ public class ParticipationServiceImpl implements ParticipationService {
   }
 
   /**
-   * 입실 처리 (지각 여부 판단 후 적절한 상태 설정)
+   * 입실 처리 (과정별 지각 기준 적용)
    */
   @Override
   public boolean processCheckIn(Integer learnerEnrollmentId, LocalDateTime checkInTime,
@@ -106,24 +106,24 @@ public class ParticipationServiceImpl implements ParticipationService {
       return false;
     }
 
-    // ✅ 수정: 과정 정보 조회하여 지각 여부 판단
+    // 과정 정보 조회하여 지각 여부 판단
     CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
     if (course == null) {
       return false;
     }
 
-    // ✅ 수정: 지각 여부 판단
+    // 지각 여부 판단
     LocalTime checkInTimeOnly = checkInTime.toLocalTime();
     LocalTime lessonStartTime = course.getLessonStartTime();
     boolean isLate = checkInTimeOnly.isAfter(lessonStartTime);
 
-    // ✅ 수정: 입실 시 상태 결정 (지각이면 LATE, 아니면 IN_STUDY)
+    // 입실 시 상태 결정 (지각이면 LATE, 아니면 IN_STUDY)
     String initialStatus = isLate ? "LATE" : "IN_STUDY";
 
     ParticipationDTO updateDto = ParticipationDTO.builder()
         .id(participation.getId())
         .learnerEnrollmentId(participation.getLearnerEnrollmentId())
-        .status(initialStatus)  // ✅ 수정: 유동적 상태 설정
+        .status(initialStatus) // 유동적 상태 설정
         .checkIn(checkInTime)
         .checkOut(participation.getCheckOut())
         .trainingTime(participation.getTrainingTime())
@@ -183,7 +183,7 @@ public class ParticipationServiceImpl implements ParticipationService {
   }
 
   /**
-   * 퇴실 예상 상태 예측
+   * 퇴실 예상 상태 예측 (과정별 daily_hours 반영)
    */
   @Override
   @Transactional(readOnly = true)
@@ -198,11 +198,16 @@ public class ParticipationServiceImpl implements ParticipationService {
       return "ABSENCE";
     }
 
-    // lesson_end_time, lesson_end_time+10 계산
+    // 과정별 시간 기준 사용
     LocalTime lessonEnd = course.getLessonEndTime();
     LocalTime lessonEndPlus10 = lessonEnd.plusMinutes(10);
     LocalTime nowTime = predictedCheckOut.toLocalTime();
     boolean isLate = "LATE".equals(participation.getStatus());
+
+    // 과정별 daily_hours 가져오기
+    Integer dailyHours = course.getDailyHours();
+    int courseHours = (dailyHours != null && dailyHours > 0) ? dailyHours : 8;
+    int halfCourseHours = courseHours / 2;
 
     // 지각자는 lesson_end_time 전까지 퇴실 불가
     if (isLate && nowTime.isBefore(lessonEnd)) {
@@ -220,9 +225,10 @@ public class ParticipationServiceImpl implements ParticipationService {
         course.getLunchStartTime(), course.getLunchEndTime());
     long actualHours = actualMinutes / 60;
 
-    if (actualHours >= 8) {
+    // 과정별 기준으로 상태 판정
+    if (actualHours >= courseHours) {
       return "ATTENDANCE";
-    } else if (actualHours >= 4) {
+    } else if (actualHours >= halfCourseHours) {
       return isLate ? "LATE" : "LEAVE_EARLY";
     } else {
       return "ABSENCE";
@@ -258,7 +264,9 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
   }
 
-  // Private 메서드들
+  /**
+   * 최종 출결 상태 및 인정시간 계산 (과정별 daily_hours 반영)
+   */
   private AttendanceResult calculateFinalAttendanceStatus(LocalDateTime checkIn, LocalDateTime checkOut, CourseVO course) {
     if (checkIn == null || checkOut == null || course == null) {
       return new AttendanceResult("ABSENCE", 0);
@@ -268,8 +276,15 @@ public class ParticipationServiceImpl implements ParticipationService {
         checkIn, checkOut, course.getLunchStartTime(), course.getLunchEndTime());
     long actualHours = actualMinutes / 60;
     boolean isLate = checkIn.toLocalTime().isAfter(course.getLessonStartTime());
-    String status = TimeCalculationUtil.determineAttendanceStatus(actualHours, isLate);
-    int trainingTime = TimeCalculationUtil.calculateTrainingTime(status);
+
+    // ✅ 수정: 과정별 daily_hours를 전달
+    String status = TimeCalculationUtil.determineAttendanceStatus(actualHours, isLate, course.getDailyHours());
+
+    // ✅ 수정: 과정별 daily_hours를 전달
+    int trainingTime = TimeCalculationUtil.calculateTrainingTime(status, course.getDailyHours());
+
+    log.debug("출결 상태 계산 완료 - 실제시간: {}시간, 지각여부: {}, 최종상태: {}, 인정시간: {}시간, 과정일일시간: {}시간",
+        actualHours, isLate, status, trainingTime, course.getDailyHours());
 
     return new AttendanceResult(status, trainingTime);
   }
@@ -305,10 +320,10 @@ public class ParticipationServiceImpl implements ParticipationService {
       displayStatusText = "휴가";
       isStatusVisible = true;
     } else if ("VACATION_PENDING".equals(dbStatus)) {
-      // 휴가 대기 상태 (화면에 표시하지 않음)
-      displayStatus = "PENDING";
-      displayStatusText = "";
-      isStatusVisible = false;
+      // 휴가 승인대기 상태
+      displayStatus = "VACATION_PENDING";
+      displayStatusText = "휴가(미승인)";
+      isStatusVisible = true;
     } else if ("ATTENDANCE".equals(dbStatus)) {
       // 출석 완료
       displayStatus = "ATTENDANCE";
@@ -388,17 +403,22 @@ public class ParticipationServiceImpl implements ParticipationService {
 
 
 
+  /**
+   * 상태별 텍스트 반환
+   */
   private String getStatusText(String status) {
     return switch (status) {
       case "ATTENDANCE" -> "출석";
       case "LATE" -> "지각";
       case "LEAVE_EARLY" -> "조퇴";
       case "VACATION" -> "휴가";
+      case "VACATION_PENDING" -> "휴가(미승인)";
       case "ABSENCE" -> "결석";
       case "IN_STUDY" -> "수업중";
       default -> "";
     };
   }
+
 
   public static class AttendanceResult {
     private final String status;
@@ -549,6 +569,52 @@ public class ParticipationServiceImpl implements ParticipationService {
       return null;
     }
   }
+
+  /**
+   * 휴가 신청 가능한 날짜 목록 조회
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public List<LocalDate> getAvailableVacationDates(Integer learnerEnrollmentId) {
+    try {
+      log.debug("휴가 신청 가능 날짜 조회 시작 - learnerEnrollmentId: {}", learnerEnrollmentId);
+
+      // 1. 과정 정보 조회 (종료일 확인용)
+      CourseVO course = participationCourseMapper.selectCourseByLearnerEnrollmentId(learnerEnrollmentId);
+      if (course == null) {
+        log.warn("과정 정보를 찾을 수 없음 - learnerEnrollmentId: {}", learnerEnrollmentId);
+        return List.of();
+      }
+
+      LocalDate today = LocalDate.now();
+      LocalDate courseEndDate = course.getEndDate();
+
+      log.debug("과정 종료일: {}, 오늘: {}", courseEndDate, today);
+
+      // 2. course_schedule에서 해당 과정의 수업일 목록 조회 (오늘 이후)
+      List<LocalDate> scheduledDates = participationMapper.selectScheduledDatesForCourse(
+          course.getId(), today, courseEndDate);
+
+      // 3. 이미 출결 기록이 있는 날짜 제외
+      List<LocalDate> excludeDates = participationMapper.selectExistingParticipationDates(
+          learnerEnrollmentId, today, courseEndDate);
+
+      // 4. 최종 가능한 날짜 필터링
+      List<LocalDate> availableDates = scheduledDates.stream()
+          .filter(date -> !excludeDates.contains(date))
+          .sorted()
+          .collect(Collectors.toList());
+
+      log.debug("휴가 신청 가능 날짜 조회 완료 - 전체: {}개, 가능: {}개",
+          scheduledDates.size(), availableDates.size());
+
+      return availableDates;
+    } catch (Exception e) {
+      log.error("휴가 신청 가능 날짜 조회 중 오류 - learnerEnrollmentId: {}", learnerEnrollmentId, e);
+      return List.of();
+    }
+  }
+
 
   /**
    * 어제까지의 과정 진행률 조회 (실제 진행일수 기준)

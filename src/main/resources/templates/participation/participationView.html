@@ -53,13 +53,24 @@
             /* 입퇴실 버튼 영역 (이미지와 동일한 3개 버튼) */
             .attendance-buttons {
               display: flex;
-              gap: 15px;
-              margin-bottom: 25px;
-              justify-content: center;
+              justify-content: center; /* 버튼들을 중앙 정렬 */
+              gap: 15px; /* 버튼 간 간격 */
+              align-items: center;
+              margin: 20px 0;
+              transition: opacity 0.3s ease, visibility 0.3s ease;
+              opacity: 1;
+              visibility: visible;
+            }
+
+            .attendance-buttons.hidden {
+              opacity: 0;
+              visibility: hidden;
+              pointer-events: none; /* 클릭 방지 */
             }
 
             .btn-attendance {
-              flex: 1;
+              flex: 0 0 auto; /* 버튼이 자동으로 늘어나지 않게 */
+              min-width: 120px; /* 최소 너비 설정 */
               max-width: 150px;
               padding: 12px 20px;
               border: none;
@@ -239,6 +250,12 @@
             .status-vacation { background: #e2e3ff; color: #8b5cf6; }
             .status-absence { background: #fadbd8; color: #ef4444; }
             .status-in_study { background: #cfe2ff; color: #4e73df; } /* 이미지의 "수업중" */
+            .status-vacation_pending {
+              background: #fff3cd;
+              color: #856404;
+              border: 1px dashed #ffc107; /* 점선 테두리로 미승인 상태 구분 */
+            }
+
 
             /* 시간 표시 (이미지의 "입실 09:17" 같은 정보) */
             .time-display {
@@ -314,11 +331,14 @@
             @media (max-width: 768px) {
               .attendance-buttons {
                 flex-direction: column;
+                gap: 12px;
+                margin: 15px 0;
               }
 
               .btn-attendance {
-                max-width: none;
-                margin-bottom: 10px;
+                min-width: auto;
+                max-width: 100%;
+                width: 100%;
               }
 
               .attendance-rate-display {
@@ -338,6 +358,17 @@
               .calendar-day {
                 min-height: 80px;
                 font-size: 0.75rem;
+              }
+            }
+
+            @media (max-width: 480px) {
+              .attendance-buttons {
+                gap: 10px;
+              }
+
+              .btn-attendance {
+                padding: 10px 16px;
+                font-size: 0.9rem;
               }
             }
 
@@ -529,6 +560,27 @@
               }
             }
 
+            /* 에러 메시지 스타일 */
+            .error-message {
+              margin-top: 5px;
+              font-size: 0.875rem;
+            }
+
+            .error-message .text-danger {
+              font-weight: 500;
+            }
+
+            /* 필수 입력 표시 */
+            .text-danger {
+              color: #e74a3b !important;
+            }
+
+            /* 날짜 입력 필드 비활성화 시 스타일 */
+            input[type="date"]:disabled {
+              background-color: #f8f9fa;
+              cursor: not-allowed;
+            }
+
 
         </style>
 </head>
@@ -622,21 +674,20 @@
 </div>
 
 
+            <!--수업일인 경우: 입퇴실 버튼들, 항상 렌더링하되 조건부 표시 -->
+<div class="attendance-buttons"
+     th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
+    <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
+        <i class="fas fa-sign-in-alt"></i> 입실
+    </button>
+    <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
+        <i class="fas fa-sign-out-alt"></i> 퇴실
+    </button>
+    <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
+        <i class="fas fa-calendar-alt"></i> 휴가신청
+    </button>
+</div>
 
-
-            <!-- 수업일인 경우: 입퇴실 버튼들  -->
-            <div th:if="${isClassDay}" class="attendance-buttons">
-
-                <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
-                    <i class="fas fa-sign-in-alt"></i>입실
-                </button>
-                <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
-                    <i class="fas fa-sign-out-alt"></i>퇴실
-                </button>
-                <button class="btn-attendance btn-vacation" onclick="openVacationModal()">
-                    <i class="fas fa-calendar-alt"></i>휴가신청
-                </button>
-            </div>
 
             <!-- 수업 없는 날 알림 -->
             <div th:unless="${isClassDay}" class="no-class-alert">
@@ -719,37 +770,46 @@
         </div>
 
         <!-- 휴가 신청 모달 -->
-        <div class="modal fade" id="vacationModal" tabindex="-1" role="dialog" aria-labelledby="vacationModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="vacationModalLabel">
-                            <i class="fas fa-calendar-alt mr-2"></i>휴가 신청
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+<div class="modal fade" id="vacationModal" tabindex="-1" role="dialog" aria-labelledby="vacationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vacationModalLabel">
+                    <i class="fas fa-calendar-alt mr-2"></i>휴가 신청
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="vacationForm">
+                    <div class="form-group">
+                        <label for="vacationDate" class="font-weight-bold">일자 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="vacationDate" required>
+                        <!-- 날짜 에러 메시지 -->
+                        <div id="dateError" class="error-message" style="display: none;">
+                            <span class="text-danger">* 일자는 필수입력사항입니다.</span>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form id="vacationForm">
-                            <div class="form-group">
-                                <label for="vacationDate" class="font-weight-bold">일자</label>
-                                <input type="date" class="form-control" id="vacationDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="vacationReason" class="font-weight-bold">사유</label>
-                                <textarea class="form-control" id="vacationReason" rows="4"
-                                          placeholder="휴가 사유를 입력해주세요" required></textarea>
-                            </div>
-                        </form>
+                    <div class="form-group">
+                        <label for="vacationReason" class="font-weight-bold">사유 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="vacationReason" rows="4"
+                                  placeholder="휴가 사유를 입력해주세요" required></textarea>
+                        <!-- 사유 에러 메시지 -->
+                        <div id="reasonError" class="error-message" style="display: none;">
+                            <span class="text-danger">* 사유는 필수입력사항입니다.</span>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="submitVacation()">신청</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
-                    </div>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitVacation()">신청</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
             </div>
         </div>
+    </div>
+</div>
+
 
         <!-- 휴가 삭제 모달 -->
         <div class="modal fade" id="vacationDeleteModal" tabindex="-1" role="dialog" aria-labelledby="vacationDeleteModalLabel" aria-hidden="true">
@@ -781,8 +841,6 @@
     <!-- ======================== JavaScript 영역 (모든 JS는 script fragment 안에 위치) ======================== -->
     <script layout:fragment="script" th:inline="javascript">
 
-        const url = "ws://localhost:8090/participationSocket";
-        let ws    = new WebSocket(url);
 
         // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
         const learnerEnrollmentId = /*[[${learnerEnrollmentId}]]*/ null;
@@ -797,6 +855,7 @@
         let currentDate = new Date(); // 캘린더 현재 표시 월
         let participationData = {}; // 월별 출결 데이터 저장
         let selectedVacationId = null; // 삭제할 휴가 ID
+        let availableVacationDates = [];
 
         // ======================== 페이지 로드 시 초기화 ========================
         document.addEventListener('DOMContentLoaded', function() {
@@ -821,9 +880,21 @@
             // 2. 입퇴실 버튼 상태 업데이트 (노션 로직 적용)
             updateButtonStates();
 
+            // 초기 로드 시 현재 과정이므로 버튼들 표시
+            showActionButtons();
+
             // 3. 캘린더 초기화 및 렌더링
             initializeCalendar();
             renderCalendar();
+
+            const vacationReason = document.getElementById('vacationReason');
+            if (vacationReason) {
+                vacationReason.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        document.getElementById('reasonError').style.display = 'none';
+                    }
+                });
+            }
 
             console.log('=== 출결 조회 페이지 초기화 완료 ===');
         });
@@ -884,7 +955,7 @@
                         data.previousCourses.forEach(course => {
                             const option = document.createElement('option');
                             option.value = course.id;
-                            option.textContent = `[완료] ${course.name}`;
+                            option.textContent = `[종료] ${course.name}`;
                             courseSelector.appendChild(option);
                         });
 
@@ -1175,6 +1246,10 @@
                 window.selectedLearnerEnrollmentId = learnerEnrollmentId; // 기본값으로 복원
                 updateStatsForSelectedCourse(); // 기존 함수 재활용
                 renderCalendar(); // 기존 함수 재활용
+                // 현재 과정이므로 버튼들 표시
+                showActionButtons();
+                // 현재 과정명으로 복원
+                updateCourseNameDisplay(currentCourse.name);
                 return;
             }
 
@@ -1186,6 +1261,12 @@
                     window.selectedLearnerEnrollmentId = data.learnerEnrollmentId;
                     updateStatsForSelectedCourse(); // 기존 함수 재활용
                     renderCalendar(); // 기존 함수 재활용
+
+                    // 과거 과정이므로 버튼들 숨김
+                    hideActionButtons();
+
+                    // 선택된 과정의 정보 조회하여 과정명 업데이트
+                    updateSelectedCourseInfo(selectedCourseId);
                 } else {
                     alert('해당 과정의 수강 정보를 찾을 수 없습니다.');
                 }
@@ -1197,7 +1278,109 @@
         }
 
         /**
-         * ✅ 권장: 선택된 과정의 통계 업데이트 (안전성 + 디버깅)
+         * 선택된 과정의 상세 정보 조회 및 화면 업데이트
+         */
+        function updateSelectedCourseInfo(courseId) {
+            console.log('선택된 과정 정보 조회 시작:', courseId);
+
+            fetch(`/participation/course/${courseId}`)
+            .then(response => {
+                console.log('과정 정보 API 응답 상태:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('과정 정보 API 응답 데이터:', data);
+
+                if (data.success && data.course) {
+                    // 과정명 업데이트
+                    updateCourseNameDisplay(data.course.name);
+                    console.log('과정명 업데이트 완료:', data.course.name);
+                } else {
+                    console.error('과정 정보 조회 실패:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('과정 정보 조회 오류:', error);
+            });
+        }
+
+        /**
+         * 수강과정 정보카드의 과정명 업데이트
+         */
+        function updateCourseNameDisplay(courseName) {
+            const courseNameElement = document.getElementById('currentCourseName');
+
+            if (courseNameElement) {
+                courseNameElement.textContent = courseName;
+                console.log('과정명 표시 업데이트:', courseName);
+            } else {
+                console.warn('currentCourseName 요소를 찾을 수 없습니다.');
+            }
+        }
+
+        /**
+         * 출결 관련 버튼들 표시 (현재 과정용)
+         */
+        function showActionButtons() {
+            console.log('현재 과정 선택 - 버튼들 표시');
+
+            const buttonContainer = document.querySelector('.attendance-buttons');
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkOutBtn = document.getElementById('checkOutBtn');
+            const vacationBtn = document.getElementById('vacationBtn');
+
+            // ✅ 요소 존재 여부 확인 후 처리
+            if (buttonContainer) {
+                // 수업일인 경우에만 표시
+                if (isClassDay) { // 전역 변수로 isClassDay 값 참조
+                    buttonContainer.classList.remove('hidden');
+                }else {
+                    buttonContainer.classList.add('hidden'); // 수업일이 아니면 숨김
+                }
+            }
+
+            // 개별 버튼들도 안전하게 처리
+            if (checkInBtn && isClassDay) {
+                checkInBtn.style.display = 'inline-block';
+            }
+            if (checkOutBtn && isClassDay) {
+                checkOutBtn.style.display = 'inline-block';
+            }
+            if (vacationBtn && isClassDay) {
+                vacationBtn.style.display = 'inline-block';
+            }
+        }
+
+        /**
+         * 출결 관련 버튼들 숨김 (과거 과정용)
+         */
+        function hideActionButtons() {
+            console.log('과거 과정 선택 - 버튼들 숨김');
+
+            const buttonContainer = document.querySelector('.attendance-buttons');
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkOutBtn = document.getElementById('checkOutBtn');
+            const vacationBtn = document.getElementById('vacationBtn');
+
+            // ✅ 요소 존재 여부 확인 후 처리
+            if (buttonContainer) {
+                buttonContainer.classList.add('hidden');
+            }
+
+            // 개별 버튼들도 안전하게 처리
+            if (checkInBtn) {
+                checkInBtn.style.display = 'none';
+            }
+            if (checkOutBtn) {
+                checkOutBtn.style.display = 'none';
+            }
+            if (vacationBtn) {
+                vacationBtn.style.display = 'none';
+            }
+        }
+
+        /**
+         * 선택된 과정의 통계 업데이트 (안전성 + 디버깅)
          */
         function updateStatsForSelectedCourse() {
             const learnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
@@ -1319,8 +1502,18 @@
                     statusDiv.textContent = participation.displayStatusText;
                     statusDiv.style.marginBottom = '0'; // 기존 margin 제거
 
-                    // 휴가인 경우 클릭하여 삭제 가능
-                    if (participation.status === 'VACATION') {
+                    // 휴가(미승인) 및 휴가(승인완료) 모두 클릭 가능
+                    if (participation.displayStatus === 'VACATION_PENDING') {
+                        // 휴가(미승인) 클릭 시 삭제 모달
+                        statusDiv.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            selectedVacationId = participation.id;
+                            openVacationDeleteModal();
+                        });
+                        statusDiv.style.cursor = 'pointer';
+                        statusDiv.title = '클릭하여 휴가 삭제';
+                    } else if (participation.displayStatus === 'VACATION') {
+                        // 휴가(승인완료) 클릭 시 삭제 모달
                         statusDiv.addEventListener('click', function(e) {
                             e.stopPropagation();
                             selectedVacationId = participation.id;
@@ -1373,10 +1566,6 @@
         function handleCheckIn() {
             console.log('=== 입실 처리 시작 ===');
 
-            ws.onopen = function (evt) {
-                console.log("connect success!");
-            };
-            ws.send("checkIn Click");
 
             // 필수 데이터 검증
             if (!learnerEnrollmentId || !today) {
@@ -1428,10 +1617,6 @@
         function handleCheckOut() {
             console.log('=== 퇴실 처리 시작 ===');
 
-            ws.onopen = function (evt) {
-                console.log("connect success!");
-            };
-            ws.send("checkOut Click");
 
             // 버튼 상태 재확인
             const checkOutBtn = document.getElementById('checkOutBtn');
@@ -1583,28 +1768,124 @@
         function openVacationModal() {
             console.log('휴가 신청 모달 열기');
 
-            // DOM 요소 안전성 확인
+            // 에러 메시지 초기화
+            clearVacationErrors();
+
+            // ✅ 안전성 확인과 함께 폼 초기화
             const vacationDateElement = document.getElementById('vacationDate');
             const vacationReasonElement = document.getElementById('vacationReason');
 
             if (vacationDateElement) {
-                vacationDateElement.value = today || '';
+                vacationDateElement.value = '';
             } else {
                 console.error('vacationDate 요소를 찾을 수 없습니다.');
+                alert('휴가 신청 폼을 불러올 수 없습니다. 페이지를 새로고침해주세요.');
+                return; // 요소가 없으면 함수 종료
             }
 
             if (vacationReasonElement) {
                 vacationReasonElement.value = '';
             } else {
                 console.error('vacationReason 요소를 찾을 수 없습니다.');
+                alert('휴가 신청 폼을 불러올 수 없습니다. 페이지를 새로고침해주세요.');
+                return; // 요소가 없으면 함수 종료
             }
 
-            // Bootstrap 모달 표시
-            if (typeof $ !== 'undefined') {
-                $('#vacationModal').modal('show');
-            } else {
-                console.error('jQuery가 로드되지 않아 모달을 표시할 수 없습니다.');
-                alert('휴가 신청 모달을 열 수 없습니다.');
+            // 휴가 신청 가능 날짜 조회
+            loadAvailableVacationDates();
+
+            // 모달 표시
+            $('#vacationModal').modal('show');
+        }
+
+        /**
+         * 에러 메시지 초기화
+         */
+        function clearVacationErrors() {
+            document.getElementById('dateError').style.display = 'none';
+            document.getElementById('reasonError').style.display = 'none';
+        }
+
+        /**
+         * 휴가 신청 가능 날짜 조회 및 설정
+         */
+        function loadAvailableVacationDates() {
+            const currentLearnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
+
+            if (!currentLearnerEnrollmentId) {
+                console.warn('learnerEnrollmentId가 없습니다.');
+                return;
+            }
+
+            fetch(`/participation/available-vacation-dates/${currentLearnerEnrollmentId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    availableVacationDates = data.availableDates;
+                    console.log('휴가 신청 가능 날짜:', availableVacationDates);
+                    setupDateRestrictions();
+                } else {
+                    console.error('휴가 신청 가능 날짜 조회 실패:', data.message);
+                    alert('휴가 신청 가능 날짜를 조회할 수 없습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('휴가 신청 가능 날짜 조회 오류:', error);
+                alert('휴가 신청 가능 날짜 조회 중 오류가 발생했습니다.');
+            });
+        }
+
+        /**
+         * 날짜 입력 제한 설정
+         */
+        function setupDateRestrictions() {
+            const dateInput = document.getElementById('vacationDate');
+
+            if (availableVacationDates.length === 0) {
+                // 신청 가능한 날짜가 없으면 비활성화
+                dateInput.disabled = true;
+                alert('현재 휴가 신청 가능한 날짜가 없습니다.');
+                return;
+            }
+
+            dateInput.disabled = false;
+
+            // 최소/최대 날짜 설정
+            const minDate = availableVacationDates[0];
+            const maxDate = availableVacationDates[availableVacationDates.length - 1];
+
+            dateInput.min = minDate;
+            dateInput.max = maxDate;
+
+            // ✅ 날짜 선택 이벤트 리스너 추가 (유효성 검사)
+            dateInput.addEventListener('change', function() {
+                validateVacationDate();
+            });
+
+            // ✅ 입력 이벤트 리스너 추가 (직접 입력 방지)
+            dateInput.addEventListener('input', function() {
+                validateVacationDate();
+            });
+        }
+
+        /**
+         * 날짜 유효성 검사
+         */
+        function validateVacationDate() {
+            const dateInput = document.getElementById('vacationDate');
+            const selectedDate = dateInput.value;
+
+            // 날짜가 선택되었으면 에러 메시지 숨김
+            if (selectedDate) {
+                document.getElementById('dateError').style.display = 'none';
+
+                // 선택된 날짜가 가능한 날짜 목록에 있는지 확인
+                if (!availableVacationDates.includes(selectedDate)) {
+                    document.getElementById('dateError').innerHTML =
+                        '<span class="text-danger">* 선택할 수 없는 날짜입니다. (주말/공휴일/휴강일 제외)</span>';
+                    document.getElementById('dateError').style.display = 'block';
+                    dateInput.value = ''; // 잘못된 날짜 초기화
+                }
             }
         }
 
@@ -1626,31 +1907,58 @@
          * 휴가 신청 처리
          */
         function submitVacation() {
-            const vacationDateElement = document.getElementById('vacationDate');
-            const vacationReasonElement = document.getElementById('vacationReason');
+            console.log('휴가 신청 제출 시작');
 
-            // DOM 요소 존재 확인
-            if (!vacationDateElement || !vacationReasonElement) {
-                alert('휴가 신청 폼 요소를 찾을 수 없습니다.');
+            const vacationDate = document.getElementById('vacationDate').value;
+            const vacationReason = document.getElementById('vacationReason').value.trim();
+
+            // ✅ 유효성검사
+            let hasError = false;
+
+            // 날짜 검사
+            if (!vacationDate) {
+                document.getElementById('dateError').innerHTML =
+                    '<span class="text-danger">* 일자는 필수입력사항입니다.</span>';
+                document.getElementById('dateError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('dateError').style.display = 'none';
+            }
+
+            // 사유 검사
+            if (!vacationReason) {
+                document.getElementById('reasonError').innerHTML =
+                    '<span class="text-danger">* 사유는 필수입력사항입니다.</span>';
+                document.getElementById('reasonError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('reasonError').style.display = 'none';
+            }
+
+            // 에러가 있으면 제출 중단
+            if (hasError) {
+                console.log('유효성검사 실패 - 제출 중단');
                 return;
             }
 
-            const vacationDate = vacationDateElement.value;
-            const vacationReason = vacationReasonElement.value.trim();
-
-            // 입력값 검증
-            if (!vacationDate || !vacationReason) {
-                alert('모든 필드를 입력해주세요.');
+            // 선택된 날짜가 유효한지 재확인
+            if (!availableVacationDates.includes(vacationDate)) {
+                document.getElementById('dateError').innerHTML =
+                    '<span class="text-danger">* 선택할 수 없는 날짜입니다.</span>';
+                document.getElementById('dateError').style.display = 'block';
                 return;
             }
+
+            const currentLearnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
 
             const requestData = {
-                learnerEnrollmentId: learnerEnrollmentId,
+                learnerEnrollmentId: currentLearnerEnrollmentId,
                 vacationDate: vacationDate,
                 explanation: vacationReason
             };
 
-            // 휴가 신청 API 호출
+            console.log('휴가 신청 요청 데이터:', requestData);
+
             fetch('/vacation/apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1659,13 +1967,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('휴가 신청이 완료되었습니다. 강사 승인을 기다려주세요.');
+                    alert('휴가 신청이 완료되었습니다.\n캘린더에서 "휴가(미승인)" 상태로 확인하실 수 있습니다.');
 
-                    // 모달 닫기
-                    if (typeof $ !== 'undefined') {
-                        $('#vacationModal').modal('hide');
-                    }
-
+                    $('#vacationModal').modal('hide');
                     location.reload();
                 } else {
                     alert('휴가 신청에 실패했습니다: ' + data.message);
