@@ -71,7 +71,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         if (requestURI.equals("/")) {
           return true;
         } else {
-          response.sendRedirect("/");
+          response.sendRedirect("/user/needLogin");
           return false;
         }
 
