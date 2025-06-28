@@ -305,4 +305,14 @@ public class UserController {
     return "redirect:/";
   }
 
+  @GetMapping("/needLogin")
+  public String needLogin() {
+    return "user/needLogin";
+  }
+
+  @GetMapping("/invalidAccess")
+  public String invalidAccess() {
+    return "user/invalidAccess";
+  }
+
 }
