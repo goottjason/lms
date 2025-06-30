@@ -25,7 +25,7 @@ public class DummyQnADataGenerator {
 
       for (int i = 1; i <= 1000; i++) {
         int courseId    = 38;                           // 예시 course_id
-        int writerId    = 36;                            // 예시 writer_id
+        int writerId    = 42;                            // 예시 writer_id
         String title    = "더미 QnA 제목 테스트 " + i;
         String content  = "더미 QnA 내용 " + i;
         // 매 10번째 글은 비밀글로 표시

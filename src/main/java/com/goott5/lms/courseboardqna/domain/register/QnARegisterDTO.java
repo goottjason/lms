@@ -28,6 +28,7 @@ public class QnARegisterDTO {
   private String courseName;
 
   private List<MultipartFile> uploadFiles;
+  private List<Long> removedFileIds;
 
   public boolean getIsSecret() {
     return isSecret;

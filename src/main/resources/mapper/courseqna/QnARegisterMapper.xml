@@ -11,6 +11,7 @@
     q.id AS id,
     q.title AS title,
     c.name AS course_name,
+    u.login_id AS login_id,
     u.fullname AS writer_name,
     q.created_at AS created_at,
     q.is_answer AS is_answer,
@@ -30,6 +31,7 @@
   </select>
 
   <sql id="search">
+    q.deleted_at is null
     <!-- 진행 중 강의 필터 -->
     <if test="searchOptions != null and searchOptions.isInProgress">
       AND c.is_in_progress = 1
@@ -55,12 +57,12 @@
       </choose>
     </if>
     <!-- 답변 상태 필터 -->
-<!--    <if test="searchOptions != null and searchOptions.answerStatus == 'answered'">-->
-<!--      AND q.is_answer = 'Y'-->
-<!--    </if>-->
-<!--    <if test="searchOptions != null and searchOptions.answerStatus == 'unanswered'">-->
-<!--      AND q.is_answer = 'N'-->
-<!--    </if>-->
+    <if test="searchOptions != null and searchOptions.answerStatus == 'answered'">
+      AND q.is_answer = 1
+    </if>
+    <if test="searchOptions != null and searchOptions.answerStatus == 'unanswered'">
+      AND q.is_answer = 0
+    </if>
   </sql>
 
   <select id="selectQnAPostCount"

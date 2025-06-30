@@ -1,5 +1,9 @@
 package com.goott5.lms.courseboardqna.service.register;
 
+import com.goott5.lms.common.mapper.ReadCountLogMapper;
+import com.goott5.lms.common.mapper.UtilMapper;
+import com.goott5.lms.common.service.UtilService;
+import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.courseboardqna.domain.list.QnAListVO;
 import com.goott5.lms.courseboardqna.domain.pagination.QnARequestVO;
 import com.goott5.lms.courseboardqna.domain.pagination.QnAResponseVO;
@@ -17,9 +21,13 @@ import org.springframework.stereotype.Service;
 public class QnARegisterServiceImpl implements QnARegisterService {
 
   private final QnARegisterMapper qnaRegisterMapper;
+  private final UtilMapper utilMapper;
+  private final ReadCountLogMapper readCountLogMapper;
+  private final S3Uploader s3Uploader;
+  private final UtilService utilService;
 
   @Override
-  public void createQnA(QnARegisterDTO qnaRegisterDTO, HttpSession session) {
+  public int createQnA(QnARegisterDTO qnaRegisterDTO, HttpSession session) {
 
     QnARegisterVO qnaRegisterVO = QnARegisterVO.builder()
         .courseId(qnaRegisterMapper.selectCourseId(qnaRegisterDTO.getCourseName()))
@@ -29,7 +37,12 @@ public class QnARegisterServiceImpl implements QnARegisterService {
         .isSecret(qnaRegisterDTO.getIsSecret())
         .build();
 
-    qnaRegisterMapper.insertQnAPost(qnaRegisterVO);
+    int idForQnA = -1;
+    if (qnaRegisterMapper.insertQnAPost(qnaRegisterVO) == 1) {
+      idForQnA = utilMapper.selectLastIdFromAll();
+    }
+
+    return idForQnA;
   }
 
   @Override

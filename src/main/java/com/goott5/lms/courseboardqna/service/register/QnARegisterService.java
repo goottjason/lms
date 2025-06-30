@@ -11,7 +11,7 @@ import jakarta.validation.Valid;
 public interface QnARegisterService {
 
   // 글 Insert
-  void createQnA(@Valid QnARegisterDTO qnaRegisterDTO, HttpSession session);
+  int createQnA(@Valid QnARegisterDTO qnaRegisterDTO, HttpSession session);
 
   // 글 Select
   QnAResponseVO<QnAListVO> getQnAList(QnARequestVO qnaRequestVO);

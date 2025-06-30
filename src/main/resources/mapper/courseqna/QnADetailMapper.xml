@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.courseboardqna.mapper.QnADetailMapper">
+
+  <select id="selectQnADetail" resultType="com.goott5.lms.courseboardqna.domain.detail.QnADetailVO">
+    SELECT
+    q.id AS id,
+    u.fullname AS fullName,
+    q.writer_id AS writerId,
+    q.title AS title,
+    q.content AS content,
+    q.comment AS comment,
+    q.is_answer AS isAnswer,
+    q.is_secret AS isSecret,
+    q.created_at AS createdAt,
+    q.comment_created_at AS commentCreatedAt
+    FROM course_qna q
+    JOIN user u on u.id = q.writer_id
+    WHERE q.id = #{boardNo}
+  </select>
+
+  <update id="updateQnADetail">
+    UPDATE course_qna
+    SET
+    title = #{qnaDTO.title},
+    content = #{qnaDTO.content},
+    is_secret = #{qnaDTO.isSecret},
+    updated_at = CURRENT_TIMESTAMP
+    WHERE id = #{boardNo}
+  </update>
+
+
+
+</mapper>

@@ -18,7 +18,7 @@ public interface QnARegisterMapper {
   // 글 Insert
   @Insert("INSERT INTO course_qna (course_id, writer_id, title, content, is_secret)"
       + " VALUES (#{courseId}, #{writerId}, #{title}, #{content}, #{isSecret})")
-  void insertQnAPost(QnARegisterVO qnaRegisterVO);
+  int insertQnAPost(QnARegisterVO qnaRegisterVO);
 
   // 게시글 Select
   List<QnAListVO> selectQnAPost(QnARequestVO qnaRequestVO);

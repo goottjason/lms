@@ -2,14 +2,26 @@ const $courseSelect = $("#courseSelector");
 const $progressFilter = $("#progress-filter");
 const $courseFilter = $("#course-filter");
 
-const $qnaRegisterBtn = $(".qna-register-btn");
+const $statusFilter = $("#progress-filter");
+const $adminCourseSelect = $("#course-filter");
+
+const $qnaRegisterBtn = $("#qna-register-btn");
 const $qnaTableBody = $(".qna-table-body");
+
+const $searchType = $("#search-type");
+const $qnaSearchKeyword = $("#qna-search-keyword");
+const $qnaSearchBtn = $("#qna-search-btn");
+
+const $answerStatus = $("#answer-status");
+const $sortBy = $("#sort-by");
+const $sortOrder = $("#sort-order");
 
 const $paginationContainer = $(".pagination");
 
 let selectedCourse;
 let currentPageNo = 1;
 let userType;
+let userId;
 
 let qnaRequest;
 
@@ -32,12 +44,18 @@ $(document).ready(async function () {
     }
   };
 
+  const search = window.location.search;
+  if (search && search !== "?") {
+    initFromQuery();
+  }
+
   const rest = qnaObjectToQuery(qnaRequest);
 
   let qnaRes = await fetchQnA(rest);
 
   console.log(qnaRes);
-  userType = qnaRes.data.message;
+  userType = qnaRes.data.message.split("&")[0];
+  userId = qnaRes.data.message.split("&")[1];
 
   if (userType === "ADMINISTRATOR") {
     await getAdminCourses();
@@ -64,6 +82,57 @@ function qnaObjectToQuery(qnaRequest) {
     rest[`searchOptions.${key}`] = val;
   });
   return rest;
+}
+
+function initFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+
+  // 페이징 정보 복원
+  if (params.has("currentPageNo")) {
+    currentPageNo = parseInt(params.get("currentPageNo"), 10);
+    qnaRequest.currentPageNo = currentPageNo;
+  }
+  if (params.has("pageSize")) {
+    qnaRequest.pageSize = parseInt(params.get("pageSize"), 10);
+  }
+  // (필요하면 currentPageGroup, pagesPerGroup 등도 복원)
+
+  // searchOptions 복원
+  Object.keys(qnaRequest.searchOptions).forEach(key => {
+    const paramKey = `searchOptions.${key}`;
+    if (params.has(paramKey)) {
+      let val = params.get(paramKey);
+      // Boolean 타입 복원
+      if (val === "true" || val === "false") {
+        val = val === "true";
+      }
+      qnaRequest.searchOptions[key] = val;
+    }
+  });
+
+  if (!params.has("searchOptions.searchType") || !params.get(
+      "searchOptions.searchType")) {
+    qnaRequest.searchOptions.searchType = "title";
+  }
+
+  // 화면 컨트롤(폼)에 값 세팅
+  $courseSelect.val(qnaRequest.searchOptions.courseName);
+  $("#search-type").val(qnaRequest.searchOptions.searchType);
+  $("#qna-search-keyword").val(qnaRequest.searchOptions.keyWord);
+  $("#answer-status").val(qnaRequest.searchOptions.answerStatus);
+  $("#sort-by").val(qnaRequest.searchOptions.sortBy);
+  $("#sort-order").val(qnaRequest.searchOptions.sortOrder);
+
+  if (userType === "ADMINISTRATOR") {
+    // 진행상황별 필터
+    const prog = qnaRequest.searchOptions.isInProgress;
+    // null 또는 "" 이면 전체, 아니면 해당 값
+    $progressFilter.val(prog == null ? "" : String(prog));
+
+    // 과정별 필터
+    const course = qnaRequest.searchOptions.courseName;
+    $courseFilter.val(course || "");
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -190,9 +259,10 @@ function renderQnAList(data) {
       title: el.title,
       courseName: el.courseName,
       writer: el.writerName,
+      writerId: el.loginId,
       regDate: el.createdAt,
-      answerStatus: el.answer === false ? "답변 전" : "답변 완료",
-      secretStatus: el.secret
+      answerStatus: el.isAnswer === false ? "답변 전" : "답변 완료",
+      secretStatus: el.isSecret
     };
 
     $qnaTableBody.append(makeQnARow(userType, qnaData));
@@ -206,19 +276,35 @@ function makeQnARow(userType, qnaData) {
   //     ? `/test/testDetail/${test.testId}/learner`
   //     : `/test/testDetail/${test.testId}`;
 
+  console.log(qnaData);
+  console.log(qnaData.writerId);
+  console.log(userId);
+  const isOwner = qnaData.writerId === userId;
+  const isSecret = qnaData.secretStatus === true;
+  let titleTh;
+  if (userType === "LEARNER" && isSecret && !isOwner) {
+    titleTh = `<td class="align-middle text-center text-muted"><em>비밀글입니다.</em></td>`;
+  } else {
+    titleTh = `
+        <td class="align-middle">
+            <a class="qna-detail-page" data-board-no="${qnaData.boardNo}" href="#">
+              ${qnaData.title}
+            </a>
+        </td>
+        `;
+  }
+
   return `
     <tr class="text-center">
-      <th scope="col" class="align-middle">${qnaData.boardNo}</th>
-      <th scope="col" class="align-middle">${qnaData.title}</th>
-      <th scope="col" class="align-middle">${qnaData.courseName}</th>
-      <th scope="col" class="align-middle">${qnaData.writer}</th>
-      <th scope="col" class="align-middle">${qnaData.regDate}</th>
-      <th scope="col" class="align-middle">${qnaData.answerStatus}</th>
+      <td class="align-middle" scope="col">${qnaData.boardNo}</td>
+      ${titleTh}
+      <td class="align-middle" scope="col">${qnaData.courseName}</td>
+      <td class="align-middle" scope="col">${qnaData.writer}</td>
+      <td class="align-middle" scope="col">${qnaData.regDate}</td>
+      <td class="align-middle" scope="col">${qnaData.answerStatus}</td>
     </tr>
     `;
 }
-
-// function renderQnAList()
 
 //------------------------------------------------------------------------------
 // [[Pagination 함수]]
@@ -264,7 +350,8 @@ function renderPagination(data) {
 
   $paginationContainer.off();
   $paginationContainer.on("click",
-      ".prev-page-group, .page-no, .next-page-group", function (e) {
+      ".prev-page-group, .page-no, .next-page-group",
+      function (e) {
 
         const $btn = $(this);
 
@@ -290,13 +377,196 @@ function onPageChange(pageNo) {
 }
 
 //------------------------------------------------------------------------------
-// [[필터 정렬 이벤트]]
+// [[검색 & 필터 정렬 이벤트]]
 //------------------------------------------------------------------------------
 
-const $answerStatus = $("#answer-status");
-const $sortBy = $("#sort-by");
-const $sortOrder = $("#sort-order");
+$courseSelect.on("change", function () {
 
-$answerStatus.on("click", function () {
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.courseName = $(this).val();
+  qnaRequest.searchOptions.searchType = "";
+  qnaRequest.searchOptions.keyWord = "";
+  qnaRequest.searchOptions.answerStatus = "";
+  qnaRequest.searchOptions.sortBy = "created_at";
+  qnaRequest.searchOptions.sortOrder = "DESC";
 
-})
+  $searchType.val("title");
+  $qnaSearchKeyword.val("");
+  $answerStatus.val("");
+  $sortBy.val("created_at");
+  $sortOrder.val("DESC");
+
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+
+});
+
+$qnaSearchBtn.on("click", function () {
+
+  console.log($searchType.val());
+
+  // if (!$qnaSearchKeyword.val().trim()) {
+  //     Swal.fire({
+  //                   icon             : "warning",
+  //                   title            : "검색어를 입력해주세요",
+  //                   text             : "검색어 없이 검색할 수 없습니다.",
+  //                   confirmButtonText: "확인"
+  //               });
+  //     return;
+  // }
+
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.searchType = $searchType.val();
+  qnaRequest.searchOptions.keyWord = $qnaSearchKeyword.val().trim();
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+});
+
+$answerStatus.on("change", function () {
+
+  console.log($(this).val());
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.answerStatus = $(this).val();
+  console.log(qnaRequest);
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+});
+
+$sortBy.on("change", function () {
+
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.sortBy = $(this).val();
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+});
+
+$sortOrder.on("change", function () {
+
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.sortOrder = $(this).val();
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+});
+
+// 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
+$progressFilter.on("change", function () {
+
+  const isInProgress = $(this).val(); // 진행상황 값
+
+  if (isInProgress === "") {
+    // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
+    $courseFilter.empty().append("<option value=\"\">전체(과정별)</option>");
+
+    qnaRequest.searchOptions.isInProgress = null;
+    qnaRequest.searchOptions.courseName = "";
+
+    // 과정별 필터에 모든 과정명 불러오기
+    getAdminCourses();
+    fetchQnA(qnaObjectToQuery(qnaRequest))
+    .then((res) => {
+      console.log(res.data.data.items);
+      renderQnAList(res.data.data.items);
+      renderPagination(res.data.data);
+    });
+    return;
+  }
+
+  qnaRequest.searchOptions.isInProgress = $(this).val();
+
+  getAdminCourses(isInProgress);
+});
+
+// 과정별 필터 값을 바꾸었을 때 리스트 불러오기 (관리자)
+$courseFilter.on("change", function () {
+
+  qnaRequest.currentPageNo = 1;
+  qnaRequest.searchOptions.courseName = $(this).val();
+  qnaRequest.searchOptions.searchType = "";
+  qnaRequest.searchOptions.keyWord = "";
+  qnaRequest.searchOptions.answerStatus = "";
+  qnaRequest.searchOptions.sortBy = "created_at";
+  qnaRequest.searchOptions.sortOrder = "DESC";
+
+  $searchType.val("title");
+  $qnaSearchKeyword.val("");
+  $answerStatus.val("");
+  $sortBy.val("created_at");
+  $sortOrder.val("DESC");
+
+  if ($(this).val() === "") {
+    $progressFilter.val("");
+  }
+
+  selectedCourse = $(this).val();
+  fetchQnA(qnaObjectToQuery(qnaRequest))
+  .then((res) => {
+    console.log(res.data.data.items);
+    renderQnAList(res.data.data.items);
+    renderPagination(res.data.data);
+  });
+});
+
+//------------------------------------------------------------------------------
+// [[qna 등록 이벤트]]
+//------------------------------------------------------------------------------
+
+function makeQnAQueryString(qnaRequest) {
+  const { searchOptions, ...rest } = qnaRequest;
+  const params = {};
+
+  // 1) rest(페이지 정보) 중 null/'' 제외
+  Object.entries(rest).forEach(([key, val]) => {
+    if (val !== null && val !== undefined && val !== "") {
+      params[key] = val;
+    }
+  });
+
+  // 2) searchOptions 중 null/'' 제외
+  Object.entries(searchOptions).forEach(([key, val]) => {
+    // boolean(false)도 값이 있으므로 포함, 빈 문자열만 제외
+    if (val !== null && val !== undefined &&
+        !(typeof val === "string" && val.trim() === "")) {
+      params[`searchOptions.${key}`] = val;
+    }
+  });
+
+  return params;
+}
+
+$qnaRegisterBtn.on("click", function () {
+
+  const queryString = $.param(makeQnAQueryString(qnaRequest));
+  console.log(queryString);
+
+  window.location.href = `/courseBoardQnA/register?${queryString}`;
+});
+
+$(document).on("click", ".qna-detail-page", function (e) {
+  e.preventDefault();
+
+  const boardNo = $(this).data("board-no");
+  const queryString = $.param(makeQnAQueryString(qnaRequest));
+  console.log(queryString);
+
+  window.location.href = `/courseBoardQnA/detail/${boardNo}?${queryString}`;
+});
