@@ -10,3 +10,7 @@ function fetchAdminCourses(isInProgress) {
 function fetchUserCourses() {
   return axios.get(`/api/courses`)
 }
+
+function fetchQnADetail(boardNo) {
+  return axios.get(`/api/qna/${boardNo}`)
+}
