@@ -26,7 +26,11 @@ public class WebConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     // 로그인(자동로그인 포함)여부 체크 인터셉터
     registry.addInterceptor(loginInterceptor).addPathPatterns("/**")
-            .excludePathPatterns("/user/signup", "/user/login", "/user/needLogin", "/user/logout",
+            .excludePathPatterns("/user/login", "/user/logout", "/user/signup",
+                    "/user/idDuplicateCheck", "/user/sendAuthCodeForSignup",
+                    "/user/certificateAuthCode", "/user/removeCertificateNo",
+                    "/user/mobileDuplicateCheck", "/user/changePwd", "/user/changePwdForSignup",
+                    "/user/needLogin", "/user/invalidAccess",
                     "/css/**", "/js/**",
                     "/images/**", "/.well-known/**",
                     "/fonts/**", "/img/**", "/favicon.ico", "/vendor/**", "/api/**", "/error/**");
@@ -35,21 +39,25 @@ public class WebConfig implements WebMvcConfigurer {
             .addPathPatterns("/courseRegister", "/courseManagement/courseModify",
                     "/learnerManagement/employment", "/cancelDateManagement",
                     "/operationsManagement/userRegister", "/communityInquiry/answerRegister",
-                    "/communityInquiry/answerDelete");
+                    "/communityInquiry/answerDelete", "/reportList");
 
     registry.addInterceptor(authInterceptorForINSTRUCTOR)
             .addPathPatterns("/homework/homeworkRegister", "/homework/homeworkModify",
                     "/homework/deleteHomework", "/homework/evalRegister",
-                    "/homework/modifyEvalPost", "/homework/deleteEval");
+                    "/homework/modifyEvalPost", "/homework/deleteEval",
+                    "/training/trainingRegister", "/training/trainingModify",
+                    "/training/trainingDelete", "/test/reigster");
 
     registry.addInterceptor(authInterceptorForLEARNER)
             .addPathPatterns("/participation/participationView", "/homework/submissionRegister",
-                    "/homework/submissionModify", "/homework/submissionDelete");
+                    "/homework/submissionModify", "/homework/submissionDelete",
+                    "/test/testDetail/**/learner", "/test/testSubmission",
+                    "/courseBoardQnA/register", "/courseBoardQnA/modify/**");
 
     registry.addInterceptor(authInterceptorForADMINISTRATORandINSTRUCTOR)
             .addPathPatterns("/learnerManagement/learnerList", "/learnerManagement/learnerDetail",
                     "/learnerManagement/employment", "/courseBoardMaterials/materialsRegister",
-                    "/traininglog/traningList", "/traininglog/traningDetail");
+                    "/traininglog/traningList", "/training/trainingDetail", "/test/testDetail/**");
 
     registry.addInterceptor(authInterceptorForLEARNERandINSTRUCTOR)
             .addPathPatterns("/communityInquiry/inquiryRegister",
