@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .d-none {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+  <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
+  <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
+  <input type="hidden" th:value="${debateDetail.id}" id="detail-id">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">토론 상세</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <!-- 상단 카드 시작-->
+  <div class="row">
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow-sm py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">작성자</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${debateDetail.writerName}"></div>
+            </div>
+            <div class="col-auto"><i class="fas fa-user fa-lg text-gray-300"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-primary shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">작성일</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${#temporals.format(debateDetail.createdAt,'yyyy-MM-dd')}"></div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-calendar fa-lg text-gray-300"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-info shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                댓글수</div>
+              <div class="h6 mb-0 text-gray-800" th:text="${#lists.size(debateDetail.comments)}">6</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-comments fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card border-left-info shadow py-1">
+        <div class="card-body py-2 px-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                좋아요</div>
+              <div id="like-count-display" class="h6 mb-0 text-gray-800" th:text="${debateDetail.likeCount}">5</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-heart fa-lg text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 상단 카드 끝 -->
+
+  <!-- 본문 시작 -->
+  <div class="card shadow mb-4" th:object="${debateDetail}">
+    <!-- 제목 -->
+    <div class="card-header py-3">
+      <div class="row">
+        <div class="col-10">
+          <h6 class="m-0 font-weight-bold text-primary" th:text="*{title}">여기에 제목이 들어옵니다~~</h6>
+        </div>
+        <div class="col-auto justify-content-end">
+          <span class="text-sm mr-1">좋아요</span>
+          <!-- 좋아요 클릭 전 -->
+          <span id="like-button" style="cursor: pointer;" th:data-id="*{id}">
+            <i th:if="${debateDetail.isLikedByCurrentUser}" class="fas fa-heart text-danger"></i>
+            <i th:unless="${debateDetail.isLikedByCurrentUser}" class="far fa-heart text-danger"></i>
+          </span>
+
+          <!-- 좋아요 클릭 후 -->
+          <!-- <span style="cursor: pointer"><i class="fas fa-heart text-primary"></i></span> -->
+        </div>
+      </div>
+    </div>
+    <!-- 내용 -->
+    <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;" th:text="*{content}">
+      여기에 내용이 들어옵니다~~~
+    </div>
+    <!-- 첨부 파일 -->
+    <div class="card-footer">
+      <p class="mt-2">첨부파일</p>
+      <div class="row">
+        <th:block th:if="${fileDTOList != null}">
+          <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
+            <div class="row g-0 m-0">
+              <div class="col-md-3 pl-2">
+                <th:block th:if="${fileDTO.getIsImage()}">
+                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                </th:block>
+
+                <th:block th:unless="${fileDTO.getIsImage()}">
+                    <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start" style="width: 100px; height: 70px; object-fit: cover;">
+                </th:block>
+              </div>
+              <div class="col-md-9 d-flex align-items-center ps-2">
+                <a class="card-title mb-0 text-truncate"
+                   th:text="${fileDTO.originalName}"
+                   th:href="@{/download(fileId=${fileDTO.id})}">
+                  첨부파일123.pdf
+                </a>
+              </div>
+            </div>
+          </div>
+        </th:block>
+        <div class="col" th:if="${fileDTOList == null or fileDTOList.isEmpty()}">
+          <p class="text-muted ms-2">첨부파일이 없습니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+      <div th:if="${session.loginUser != null and session.loginUser.id == debateDetail.writerId}">
+        <a th:href="@{/courseBoardDebate/debateModify(id=${debateDetail.id})}" class="btn btn-info btn-icon-split mr-2">
+          <span class="icon text-white-50"><i class="fa fa-wrench"></i></span><span class="text">수정</span>
+        </a>
+        <button id="delete-button" class="btn btn-danger btn-icon-split mr-2" type="button">
+          <span class="icon text-white-50"><i class="fa fa-trash"></i></span><span class="text">삭제</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 본문 끝 -->
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">댓글</h6>
+      </div>
+      <div class="card-body py-3">
+        <div class="row ml-2 mb-4" th:if="${session.loginUser != null}">
+          <form th:action="@{/courseBoardDebate/comments}" th:object="${pagingRequestDTO}" method="post" class="d-flex w-100">
+            <input type="hidden" name="forumId" th:value="${debateDetail.id}" />
+            <input type="hidden" th:field="*{courseId}" />
+            <input type="hidden" th:field="*{pageNo}" />
+            <input type="hidden" th:field="*{pagingSize}" />
+            <input type="hidden" th:field="*{keyword}" />
+            <input type="hidden" th:field="*{type}" />
+            <input type="hidden" th:field="*{orderBy}" />
+            <input type="hidden" th:field="*{orderDirection}" />
+            <textarea name="content" class="form-control col-11" placeholder="의견을 작성하세요." style="height: 80px;" required></textarea>
+            <div class="col-auto">
+            <button class="btn btn-primary" type="submit">등록</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="comment-list">
+          <div th:if="${#lists.isEmpty(debateDetail.comments)}"><p class="text-muted pl-2">작성된 댓글이 없습니다.</p></div>
+
+          <div th:each="comment : ${debateDetail.comments}" th:id="|comment-wrapper-${comment.id}|" class="mb-3 pl-2 border-bottom pb-3">
+
+            <div class="d-flex row" th:id="|comment-display-${comment.id}|">
+              <div class="col-11 d-flex">
+                <div class="mr-3">
+                  <img class="img-profile rounded-circle"  th:src="${comment.profileImg}" style="width: 50px; height: 50px; object-fit: cover;">                </div>
+                <div class="w-100">
+                  <div class="text-gray-900">
+                    <span class="font-weight-bold" th:text="${comment.commenterName}"></span>
+                    <span class="text-gray-500 ml-2" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                  </div>
+                  <div class="comment-content" th:text="${comment.content}" style="white-space: pre-wrap;"></div>
+                </div>
+              </div>
+
+              <!-- 댓글 작성자 본인인 경우 -->
+              <div class="col-auto align-self-center" th:if="${session.loginUser != null and session.loginUser.id == comment.commenterId}">
+                <div class="d-flex">
+                  <span class="mr-3 edit-comment-btn" style="cursor: pointer;" th:data-comment-id="${comment.id}">
+                    <i class="fas fa-pencil-alt text-info"></i></span>
+                  <span class="delete-comment-btn" style="cursor: pointer;" th:data-comment-id="${comment.id}">
+                    <i class="fas fa-trash-alt text-danger"></i></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 수정 버튼 클릭하면 이렇게.... -->
+            <div class="d-flex row d-none" th:id="|comment-edit-${comment.id}|">
+              <div class="col-11 d-flex">
+                <div class="mr-3">
+                  <img class="img-profile rounded-circle"  th:src="${comment.profileImg}" style="width: 50px; height: 50px; object-fit: cover;">
+                </div>
+                <div class="w-100">
+                  <div class="text-gray-900">
+                    <span class="font-weight-bold" th:text="${comment.commenterName}"></span>
+                    <span class="text-gray-500 ml-2" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                  </div>
+                  <div>
+                    <textarea class="form-control" type="text" style="height: 80px;" th:text="${comment.content}"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="col-auto mt-4">
+                <button class="btn btn-primary btn-sm save-comment-btn" th:data-comment-id="${comment.id}">저장</button>
+                <button class="btn btn-secondary btn-sm cancel-edit-btn" th:data-comment-id="${comment.id}">취소</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+    <button id="report-button" class="btn btn-warning btn-icon-split mr-2" th:if="${session.loginUser != null}">
+      <span class="icon text-white-50"><i class="fa fa-exclamation-triangle"></i></span><span class="text">신고</span>
+    </button>
+      <a th:href="|/courseBoardDebate/debateList?pageNo=${pagingRequestDTO.pageNo}${pagingRequestDTO.generateLinkExceptPageNo()}|" class="btn btn-secondary btn-icon-split">
+        <span class="icon text-white-50"><i class="fas fa-list"></i></span>
+        <span class="text">목록</span>
+      </a>
+  </div>
+</div>
+  <!-- content body 끝 -->
+
+  <!-- 삭제 Modal-->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">삭제</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">정말로 삭제하시겠습니까?</div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" type="button">삭제</button>
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 신고 Modal-->
+  <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">신고</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          게시글을 신고하시겠습니까?
+          <div class="row mb-2 mt-3">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="abc">신고 사유</label>
+                <textarea id="abc" class="form-control" placeholder="신고 사유를 작성해주세요." style="height:150px;"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-warning" type="button">신고</button>
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- content body 끝 -->
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // 변수 초기화
+      const loginUserId = document.getElementById('login-user-id')?.value;
+      if (!loginUserId) return;
+      const loginUserType = document.getElementById('login-user-type')?.value;
+
+      const detailId = /*[[${debateDetail.id}]]*/ null;
+
+      /*<![CDATA[*/
+      const currentCourseId = /*[[${currentCourseId}]]*/ null;
+      /*]]>*/
+
+      // 버튼 및 모달 요소 가져오기
+      const likeButton = document.getElementById('like-button');
+      const likeCountDisplay = document.getElementById('like-count-display');
+      const modifyButton = document.getElementById('modify-btn');
+      const deleteButton = document.getElementById('delete-button');
+      const reportButton = document.getElementById('report-button');
+      const confirmDeleteButton = document.getElementById('confirm-delete-btn');
+
+      // 이벤트 리스너 설정
+
+      // 수정 버튼 이벤트
+      if (modifyButton) {
+        modifyButton.addEventListener('click', function() {
+          const id = this.dataset.id;
+          const link = this.dataset.link;
+          let url = `/courseBoardDebate/debateModify?id=${id}`;
+          if (link) { url += `&${link}`; }
+          location.href = url;
+        });
+      }
+
+      // 삭제 버튼 이벤트
+      if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+          Swal.fire({
+            title: '정말 삭제하시겠습니까?',
+            text: "삭제된 데이터는 복구할 수 없습니다.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              axios.delete(`/courseBoardDebate/${detailId}`)
+              .then(() => { Swal.fire('삭제 완료', '게시글이 삭제되었습니다.', 'success').then(() => location.href = '/courseBoardDebate/debateList'); })
+              .catch(() => Swal.fire('오류', '삭제 중 오류가 발생했습니다.', 'error'));
+            }
+          })
+        });
+      }
+
+      // 페이지 초기화
+      async function initializePage() {
+        const headerCourseSelector = document.getElementById('courseSelector');
+        if (headerCourseSelector) {
+          const courses = await fetchCourses(loginUserId, loginUserType);
+          updateCourseSelectBox('#courseSelector', courses, currentCourseId);
+          headerCourseSelector.disabled = true;
+        }
+      }
+
+      async function fetchCourses(loginUserId, loginUserType) {
+        if (loginUserType === 'ADMINISTRATOR') return [];
+        try {
+          const response = await axios.get('/api/management/courses', { params: { loginUserId, loginUserType } });
+          return response.data?.data?.respDTOS || [];
+        } catch (error) { console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return []; }
+      }
+
+      function updateCourseSelectBox(selector, data, selectedValue) {
+        const selectElement = document.querySelector(selector);
+        if (!selectElement) return;
+        selectElement.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '과정 전체'; // 상세페이지에서는 '과정 전체'로 표시
+        selectElement.appendChild(defaultOption);
+        data.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id;
+          option.textContent = course.name;
+          if (course.id == selectedValue) {
+            option.selected = true;
+          }
+          selectElement.appendChild(option);
+        });
+      }
+
+      // 로그인한 사용자만 아래 이벤트 리스너 활성화
+      if(loginUserId) {
+        // 좋아요 버튼 이벤트
+        if (likeButton) {
+          likeButton.addEventListener('click', function() {
+            axios.post(`/courseBoardDebate/like?id=${detailId}`)
+            .then(response => {
+              if (response.data.code === 200) {
+                likeCountDisplay.innerText = response.data.data.likeCount;
+                const icon = this.querySelector('i');
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+              } else {
+                Swal.fire('오류', response.data.message, 'error'); }
+            })
+            .catch(error => Swal.fire('오류', '좋아요 처리 중 오류가 발생했습니다.', 'error'));
+          });
+        }
+
+        // 신고 버튼 이벤트
+        if (reportButton) {
+          reportButton.addEventListener('click', async function() {
+            const { value: reason } = await Swal.fire({
+              title: '신고 사유 입력',
+              input: 'textarea',
+              inputPlaceholder: '신고 사유를 입력해주세요...',
+              inputValidator: (value) => { if (!value || value.trim().length === 0) { return '신고 사유를 반드시 입력해야 합니다.'}},
+              showCancelButton: true,
+              confirmButtonText: '신고하기',
+              cancelButtonText: '취소'
+            });
+
+            if (reason) {
+              const formData = new FormData();
+              formData.append('reportDetail', reason);
+              formData.append('forumId', detailId);
+              axios.post(`/courseBoardDebate/report`, formData)
+              .then(() => Swal.fire('접수 완료', '신고가 정상적으로 접수되었습니다.', 'success'))
+              .catch(() => Swal.fire('오류', '신고 처리 중 오류가 발생했습니다.', 'error'));
+            }
+          });
+        }
+
+      initializePage();
+
+        // 댓글 수정/삭제 이벤트 리스너 (이벤트 위임)
+        const commentList = document.getElementById('comment-list');
+        if(commentList) {
+          commentList.addEventListener('click', function(e) {
+            const target = e.target;
+            const commentWrapper = target.closest('[id^="comment-wrapper-"]');
+            if (!commentWrapper) return;
+            const commentId = commentWrapper.id.split('-')[2];
+
+            const displayEl = document.getElementById(`comment-display-${commentId}`);
+            const editEl = document.getElementById(`comment-edit-${commentId}`);
+
+            // 수정 아이콘 클릭
+            if (target.closest('.edit-comment-btn')) {
+              displayEl.classList.add('d-none');
+              editEl.classList.remove('d-none');
+            }
+            // 삭제 아이콘 클릭
+            else if (target.closest('.delete-comment-btn')) {
+              Swal.fire({
+                title: '댓글을 삭제하시겠습니까?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonText: '취소',
+                confirmButtonText: '삭제'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  axios.delete(`/courseBoardDebate/comments/${commentId}`)
+                  .then(() => {
+                    commentWrapper.remove();
+                    Swal.fire('삭제 완료', '댓글이 삭제되었습니다.', 'success');
+                  }).catch(() => Swal.fire('오류', '댓글 삭제 중 오류가 발생했습니다.', 'error'));
+                }
+              });
+            }
+            // 저장 버튼 클릭
+            else if (target.closest('.save-comment-btn')) {
+              const textarea = editEl.querySelector('textarea');
+              const newContent = textarea.value;
+              axios.put(`/courseBoardDebate/comments`, { commentId: commentId, content: newContent })
+              .then(() => {
+                displayEl.querySelector('.comment-content').textContent = newContent;
+                displayEl.classList.remove('d-none');
+                editEl.classList.add('d-none');
+              }).catch(() => Swal.fire('오류', '댓글 수정 중 오류가 발생했습니다.', 'error'));
+            }
+            // 취소 버튼 클릭
+            else if (target.closest('.cancel-edit-btn')) {
+              displayEl.classList.remove('d-none');
+              editEl.classList.add('d-none');
+            }
+          });
+        }
+      }
+    });
+  </script>
+</th:block>
+</body>
+</html>

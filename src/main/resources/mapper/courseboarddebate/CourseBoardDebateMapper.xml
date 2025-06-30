@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.courseboarddebate.mapper.CourseBoardDebateMapper">
+
+  <insert id="insertCourseBoardDebate" useGeneratedKeys="true" keyProperty="dto.id">
+    insert into course_forum(course_id, writer_id, title, content)
+    values(#{dto.courseId}, #{dto.writerId}, #{dto.title}, #{dto.content})
+  </insert>
+
+  <update id="updateCourseBoardDebate">
+    UPDATE course_forum
+    SET title = #{title}, content = #{content}, updated_at = now()
+    WHERE id = #{id}
+  </update>
+
+  <select id="selectCourseBoardDebateDetail" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateDetailInfo">
+    SELECT
+    cf.id, cf.course_id, c.name AS courseName, cf.title, cf.content, cf.read_count,
+    cf.created_at, cf.updated_at, u.id AS writerId, u.fullname AS writerName, u.type AS writerType
+    FROM course_forum cf
+    JOIN user u ON cf.writer_id = u.id
+    JOIN course c ON cf.course_id = c.id
+    WHERE cf.id = #{id} AND cf.deleted_at IS NULL
+  </select>
+
+  <select id="selectCourseBoardDebateList" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+    SELECT
+    cf.*,
+    c.name AS courseName,
+    u.fullname AS writerName,
+    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached,
+    IFNULL(cc.comment_count, 0) AS commentCount
+    FROM
+    course_forum cf
+    JOIN
+    course c ON cf.course_id = c.id
+    JOIN
+    `user` u ON cf.writer_id = u.id
+    LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_forum' AND deleted_at IS NULL) f
+    ON cf.id = f.table_id
+    LEFT JOIN
+    (SELECT course_forum_id, COUNT(id) AS comment_count
+    FROM course_forum_comment
+    WHERE deleted_at IS NULL
+    GROUP BY course_forum_id) cc
+    ON cf.id = cc.course_forum_id
+    <where>
+      cf.deleted_at IS NULL
+      <if test="courseId != null">
+        AND cf.course_id = #{courseId}
+      </if>
+      <if test="accessibleCourseIds != null and !accessibleCourseIds.isEmpty()">
+        AND cf.course_id IN
+        <foreach item="item" collection="accessibleCourseIds" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="type != null and !type.isEmpty() and keyword != null and !keyword.isBlank()">
+        AND
+        <trim prefix="(" suffix=")" prefixOverrides="OR">
+          <if test="type.contains('t'.toString())">
+            OR cf.title LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('c'.toString())">
+            OR cf.content LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('w'.toString())">
+            OR u.fullname LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+        </trim>
+      </if>
+      <if test="hasAttachment != null">
+        AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
+      </if>
+      <if test="courseId != null">
+        AND cf.course_id = #{courseId}
+      </if>
+      <if test = "courseName != null">
+        AND c.name = #{courseName}
+      </if>
+    </where>
+    ORDER BY
+    <choose>
+      <when test="orderBy == 'readCount'">cf.read_count</when>
+      <when test="orderBy == 'title'">cf.title</when>
+      <when test="orderBy == 'forumLike'">cf.forum_like</when>
+      <otherwise>cf.created_at</otherwise>
+    </choose>
+    <choose>
+      <when test="orderDirection == 'asc'">ASC,</when>
+      <otherwise>DESC,</otherwise>
+    </choose>
+    cf.id DESC
+  </select>
+
+
+  <select id="selectCourseBoardDebateTotalCount" resultType="int">
+    SELECT COUNT(*)
+    FROM
+    course_forum cf
+    JOIN
+    course c ON cf.course_id = c.id
+    JOIN
+    `user` u ON cf.writer_id = u.id
+    LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_forum' AND deleted_at IS NULL) f
+    ON cf.id = f.table_id
+    <where>
+      cf.deleted_at IS NULL
+      <if test="courseId != null">
+        AND cf.course_id = #{courseId}
+      </if>
+      <if test="accessibleCourseIds != null and !accessibleCourseIds.isEmpty()">
+        AND cf.course_id IN
+        <foreach item="item" collection="accessibleCourseIds" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="type != null and !type.isEmpty() and keyword != null and !keyword.isBlank()">
+        AND
+        <trim prefix="(" suffix=")" prefixOverrides="OR">
+          <if test="type.contains('t'.toString())">
+            OR cf.title LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('c'.toString())">
+            OR cf.content LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+          <if test="type.contains('w'.toString())">
+            OR u.fullname LIKE CONCAT('%', #{keyword}, '%')
+          </if>
+        </trim>
+      </if>
+      <if test="hasAttachment != null">
+        AND (CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END) = #{hasAttachment}
+      </if>
+      <if test="courseId != null">
+        AND cf.course_id = #{courseId}
+      </if>
+      <if test="courseName != null and courseName != ''">
+        AND c.name = #{courseName}
+      </if>
+    </where>
+  </select>
+
+  <update id="updateCourseBoardDebateReadCount">
+    UPDATE course_forum SET read_count = read_count + 1 WHERE id = #{id}
+  </update>
+
+  <update id="softDeleteCourseBoardDebateById">
+    UPDATE course_forum SET deleted_at = NOW() WHERE id = #{id}
+  </update>
+
+  <select id="findCourseBoardDebateCommentsByForumId" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateCommentDTO">
+    SELECT c.id, c.course_forum_id, c.content, c.created_at, c.commenter_id, u.fullname AS commenterName, u.profile_img
+    FROM course_forum_comment c JOIN user u ON c.commenter_id = u.id
+    WHERE c.course_forum_id = #{forumId} AND c.deleted_at IS NULL ORDER BY c.created_at ASC
+  </select>
+
+  <insert id="insertCourseBoardDebateComment">
+    INSERT INTO course_forum_comment (course_forum_id, commenter_id, content)
+    VALUES (#{comment.courseForumId}, #{comment.commenterId}, #{comment.content})
+  </insert>
+
+  <select id="findCommentById" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateCommentDTO">
+    SELECT id, commenter_id, content
+    FROM course_forum_comment
+    WHERE id = #{commentId} AND deleted_at IS NULL
+  </select>
+
+  <update id="updateComment">
+    UPDATE course_forum_comment
+    SET
+    content = #{content},
+    updated_at = NOW()
+    WHERE
+    id = #{id}
+  </update>
+
+  <update id="softDeleteComment">
+    UPDATE course_forum_comment
+    SET deleted_at = NOW()
+    WHERE id = #{commentId}
+  </update>
+
+  <select id="countCourseBoardDebateLikesByForumId" resultType="int">
+    SELECT COUNT(*) FROM course_forum_like WHERE course_forum_id = #{forumId}
+  </select>
+
+  <select id="findCourseBoardDebateLikeByUserAndForum" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateLike">
+    SELECT id, course_forum_id, user_id FROM course_forum_like
+    WHERE course_forum_id = #{forumId} AND user_id = #{userId}
+  </select>
+
+  <insert id="insertCourseBoardDebateLike">
+    INSERT INTO course_forum_like (course_forum_id, user_id) VALUES (#{like.courseForumId}, #{like.userId})
+  </insert>
+
+  <delete id="deleteCourseBoardDebateLike">
+    DELETE FROM course_forum_like WHERE id = #{like.id}
+  </delete>
+
+  <update id="updateCourseBoardDebateLikeCount">
+    UPDATE course_forum SET forum_like = (SELECT COUNT(*) FROM course_forum_like WHERE course_forum_id = #{forumId})
+    WHERE id = #{forumId}
+  </update>
+
+  <insert id="insertCourseBoardDebateReport">
+    INSERT INTO course_forum_report (course_forum_id, user_id, report_detail, report_status)
+    VALUES (#{report.courseForumId}, #{report.userId}, #{report.reportDetail}, 'PENDING')
+  </insert>
+</mapper>
