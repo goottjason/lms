@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.training.mapper.TrainingMapper">
+
+
+  <!-- 관리자용 select 메뉴 출력 -->
+  <select id="selectBoxCourseNameForAdmin" parameterType="Boolean" resultType="String">
+    select name
+    from course
+    <where>
+      <if test="isInProgressForAdmin != null">
+        is_in_progress = #{isInProgressForAdmin}
+      </if>
+    </where>
+    order by start_date desc
+  </select>
+
+  <!--관리자용 training_log 불러오기-->
+  <select id="selectTrainingLogForAdmin" parameterType="String"
+    resultType="com.goott5.lms.training.domain.SelectTrainingDTO">
+    select tl.id,tl.course_id,tl.training_date, tl.instructor_id
+    from training_log tl
+    inner join course c
+    on tl.course_id = c.id
+    <where>
+      <if test="courseName != null and courseName != '' ">
+        c.name = #{courseName};
+      </if>
+    </where>
+  </select>
+
+  <!--강사용 trainingLog 불러오기-->
+  <select id="selectTrainingLogForTeacher" resultType="com.goott5.lms.training.domain.SelectTrainingDTO">
+    select tl.id,tl.course_id,tl.training_date, tl.instructor_id
+    from training_log tl
+    inner join course c
+    on tl.course_id = c.id
+    where tl.instructor_id = #{instructorId}
+    <if test="courseName != null and courseName != '' ">
+      and c.name = #{courseName}
+    </if>
+  </select>
+
+
+</mapper>

@@ -1,0 +1,136 @@
+package com.goott5.lms.training.service;
+
+import com.goott5.lms.training.domain.RequestParticipationDTO;
+import com.goott5.lms.training.domain.ResponseParticipationDTO;
+import com.goott5.lms.training.domain.SelectAllTrainingDTO;
+import com.goott5.lms.training.domain.SelectTrainingDTO;
+import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.mapper.TrainingMapper;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class TrainingServiceImpl implements TrainingService{
+
+  private final TrainingMapper trainingMapper;
+
+  @Override
+  public String selectCourseNameById(int courseId) {
+    return trainingMapper.selectCourseNameById(courseId);
+  }
+
+  @Override
+  public boolean isInProgressCourse(String courseName) {
+    return trainingMapper.isInProgressCourse(courseName);
+  }
+
+  @Override
+  public List<String> selectCourseMenuForAdmin(Boolean isInProgress) {
+    return trainingMapper.selectBoxCourseNameForAdmin(isInProgress);
+  }
+
+  @Override
+  public List<String> selectCourseMenuForTeacher(int userId) {
+    return trainingMapper.selectCourseMenuForTeacher(userId);
+  }
+
+  @Override
+  public List<SelectTrainingDTO> selectTrainingLog(String courseName) {
+    return trainingMapper.selectTrainingLogForAdmin(courseName);
+  }
+
+  @Override
+  public List<SelectTrainingDTO> selectTrainingLogForTeacher(int instructorId, String courseName) {
+    return trainingMapper.selectTrainingLogForTeacher(instructorId,courseName);
+  }
+
+  @Override
+  public SelectTrainingDTO selectTrainingDTO(int id) {
+    return trainingMapper.selectTrainingLog(id);
+  }
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public SelectAllTrainingDTO selectAllTraining(int trainingId,RequestParticipationDTO request,SelectTrainingDetailDTO selectTrainingDetailDTO) {
+
+    SelectAllTrainingDTO finalTraining = null;
+
+    try {
+      //id로 selectTrainingDTO 조회
+      SelectTrainingDTO selectTrainingDTO = trainingMapper.selectTrainingLog(trainingId);
+
+      // 해당 trainingDTO의 과정 아이디로 과정명 조회
+      String courseName = trainingMapper.selectCourseNameById(selectTrainingDTO.getCourseId());
+
+      //해당 trainingDTO의 훈련 일자
+      Date trainingDate = selectTrainingDTO.getTrainingDate();
+
+      // 해당 trainingDTO의 과정의 총 수강생 수
+      int numberOfLearner = trainingMapper.countOfLearner(selectTrainingDTO.getCourseId());
+
+      //RequestParticipationDTO 빌드(초기화)
+      request = RequestParticipationDTO.builder()
+          .status("")
+          .trainingDate(trainingDate)
+          .courseId(selectTrainingDTO.getCourseId())
+          .build();
+
+      //출결 상태에 속하는 학생 수
+      Map<String,Integer> participationCountMap = new HashMap<>();
+      Map<String,List<String>> participationLearnerMap = new HashMap<>();
+      List<String> participationStatus = List.of("ATTENDANCE","LATE","ABSENCE","LEAVE_EARLY","VACATION_PENDING");
+
+      for(String status : participationStatus){
+        request = RequestParticipationDTO.builder()
+            .status(status)
+            .trainingDate(trainingDate)
+            .courseId(selectTrainingDTO.getCourseId())
+            .build();
+        int count = trainingMapper.countParticipation(request);
+        participationCountMap.put(status,count);
+        List<String> learnerList = trainingMapper.listParticipationLearner(request);
+        participationLearnerMap.put(status,learnerList);
+      }
+
+      //출결 현황 모두 ResponseParticipationDTO에 세팅
+      ResponseParticipationDTO responseParticipationDTO = ResponseParticipationDTO.builder()
+          .attendanceCount(participationCountMap.get("ATTENDANCE")) //출석
+          .attendanceList(participationLearnerMap.get("ATTENDANCE"))
+          .lateCount(participationCountMap.get("LATE")) //지각
+          .lateList(participationLearnerMap.get("LATE"))
+          .absenceCount(participationCountMap.get("ABSENCE")) // 결석
+          .absenceList(participationLearnerMap.get("ABSENCE"))
+          .leaveEarLyCount(participationCountMap.get("LEAVE_EARLY")) // 조퇴
+          .leaveEarLyList(participationLearnerMap.get("LEAVE_EARLY"))
+          .vacationPaddingCount(participationCountMap.get("VACATION_PENDING")) // 휴가
+          .vacationPaddingList(participationLearnerMap.get("VACATION_PENDING"))
+          .build();
+
+      //훈련일지 아이디로 해당 훈련일지 detailList 모두 받아오기
+      List<SelectTrainingDetailDTO> selectTrainingDetailDTOList = trainingMapper.selectTrainingDetail(selectTrainingDTO.getId());
+
+      // SelectAllTrainingDTO에 최종으로 넣기
+      finalTraining = SelectAllTrainingDTO.builder()
+          .selectTrainingDTO(selectTrainingDTO)
+          .name(courseName)
+          .trainingDate(trainingDate)
+          .numberOfLearner(numberOfLearner)
+          .responseParticipationDTO(responseParticipationDTO)
+          .selectTrainingDetailDTOList(selectTrainingDetailDTOList)
+          .build();
+    } catch (Exception e) {
+      log.error("trainingDetail 조회 실패:{}",e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    return finalTraining;
+  }
+}

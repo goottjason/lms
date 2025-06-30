@@ -109,12 +109,8 @@ public class S3Uploader {
     private File convert(InputStream inputStream, String fileName) throws IOException {
         // 운영체제의 임시 디렉토리 경로에 파일 생성?
         File file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
+        try(FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(inputStream.readAllBytes());
-        } catch (FileNotFoundException e) {
-
-            throw new RuntimeException(e);
         }
         return file;
     }
