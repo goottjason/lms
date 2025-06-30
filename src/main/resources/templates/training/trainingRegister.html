@@ -35,10 +35,10 @@
     <!-- 상단 버튼 -->
     <div class="d-flex justify-content-between mb-3">
       <div>
-        <button class="btn btn-info btn-sm">결재반</button>
+        <button class="btn btn-outline-success btn-sm">결재반</button>
       </div>
       <div>
-        <button class="btn btn-outline-success btn-sm" id = "excel">엑셀 다운</button>
+        <button class="btn btn-dark btn-sm">조회</button>
       </div>
     </div>
 
@@ -46,15 +46,15 @@
     <div class="form-row mb-3">
       <div class="form-group col-md-6">
         <label><strong>과정명</strong></label>
-        <input type="text" class="form-control" readonly th:value="${finalSelectTraining.getName()}">
+        <input type="text" class="form-control" readonly value="조회">
       </div>
       <div class="form-group col-md-4">
         <label><strong>훈련 일자</strong></label>
-        <input type="text" class="form-control" readonly th:value="${finalSelectTraining.getTrainingDate()}">
+        <input type="text" class="form-control" readonly value="조회">
       </div>
       <div class="form-group col-md-2">
         <label><strong>총 수강생 수</strong></label>
-        <input type="text" class="form-control" readonly th:value="${finalSelectTraining.getNumberOfLearner()}">
+        <input type="text" class="form-control" readonly value="조회">
       </div>
     </div>
 
@@ -63,8 +63,7 @@
       <table class="table table-bordered text-center">
         <thead class="thead-light">
         <tr>
-          <th>출석</th>
-          <th>지각</th>
+          <th>출석 수</th>
           <th>결석</th>
           <th>조퇴</th>
           <th>휴가</th>
@@ -72,7 +71,6 @@
         </thead>
         <tbody>
         <tr>
-          <td>조회</td>
           <td>조회</td>
           <td>조회</td>
           <td>조회</td>
@@ -102,10 +100,10 @@
         <tbody>
         <!-- 1~7교시 -->
 
-        <tr th:each="detail : ${finalSelectTraining.getSelectTrainingDetailDTOList()}">
-          <td th:text="${detail.getPeriod()}">1</td>
-          <td th:text="${detail.getPlan()}">조회</td>
-          <td th:text="${detail.getActual()}">조회</td>
+        <tr>
+          <td>1</td>
+          <td>조회</td>
+          <td>조회</td>
         </tr>
 
         <!-- 위는 서버 렌더링용. HTML만 원하시면 아래 코드로 대체하세요. -->
@@ -119,7 +117,6 @@
       <button class="btn btn-primary">수정</button>
       <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">삭제</button>
     </div>
-
   </div>
 
   <!-- 삭제 확인 모달 -->
@@ -152,11 +149,7 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-    let finalSelectTraining = /*[[${finalSelectTraining}]]*/ null;
 
-    $(function(){
-      console.log("finalSelectTraining",finalSelectTraining);
-    })
 
   </script>
 </th:block>

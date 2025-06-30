@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+  <script defer th:src="@{/js/training/trainingList.js}"></script>
+  <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
   <style>
     #courseSelector {
       display: none;
     }
-
 
     #content {
       opacity: 1;
@@ -145,6 +147,12 @@
       font-size: 0.9rem;
     }
 
+    .calendar-day .alert {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin: 2px 0 0;
+    }
+
 
 
   </style>
@@ -159,235 +167,505 @@
 
     <!-- 페이지 제목 -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-      <h1 class="h3 mb-0 text-gray-800">출결 조회</h1>
+      <h1 class="h3 mb-0 text-gray-800">훈련 일지</h1>
+
+      <div class="col d-flex justify-content-end">
+        <form class="row col-12 mb-3" method="get" th:action="@{/training/trainingList}">
+          <div class="col-3" th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
+            <select id="isInProgressForAdmin" class="form-control">
+<!--              <option value="" th:selected="${isInProgressForAdmin == ''}">전체</option>-->
+<!--              <option th:value="true" th:selected="${isInProgressForAdmin == 'true'}">진행 중</option>-->
+<!--              <option th:value="false" th:selected="${isInProgressForAdmin == 'false'}">종료</option>-->
+              <option value="">전체</option>
+              <option value="true">진행 중</option>
+              <option value="false">종료</option>
+            </select>
+          </div>
+
+          <div class="col">
+            <select
+                id="menuForAdminN" class="form-control"
+                th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
+              <option value="">전체</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
     </div>
 
     <!-- 수강과정 정보 카드 -->
     <div class="course-info-card">
 
       <!-- 과정명 표시 -->
-      <div class="course-name" id="currentCourseName">
-        <span >과정명</span>
-        <span >수강 중인 과정이 없습니다</span>
+      <!--      <div class="course-name" id="currentCourseName">-->
+      <!--        <span >과정명</span>-->
+      <!--        <span >수강 중인 과정이 없습니다</span>-->
+      <!--      </div>-->
+
+
+      <!-- 출결 캘린더  -->
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+            <i class="fas fa-chevron-left mr-1"></i>이전
+          </button>
+          <h4 class="calendar-title" id="currentMonth">2025년 6월</h4>
+          <button class="calendar-nav-btn" onclick="changeMonth(1)">
+            다음<i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+
+
+          <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- JavaScript에서 요일 헤더와 날짜들을 동적으로 생성 -->
+        </div>
       </div>
 
-
-
-
-
-
-
-
-    <!-- 출결 캘린더  -->
-    <div class="calendar-container">
-      <div class="calendar-header">
-        <button class="calendar-nav-btn" onclick="changeMonth(-1)">
-          <i class="fas fa-chevron-left mr-1"></i>이전
-        </button>
-        <h4 class="calendar-title" id="currentMonth">2025년 6월</h4>
-        <button class="calendar-nav-btn" onclick="changeMonth(1)">
-          다음<i class="fas fa-chevron-right ml-1"></i>
-        </button>
-      </div>
-
-
-      <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
-      <div class="calendar-grid" id="calendarGrid">
-        <!-- JavaScript에서 요일 헤더와 날짜들을 동적으로 생성 -->
-      </div>
     </div>
 
+    <!-- ======================== 모달들 ======================== -->
+
+
+    <!-- content body 끝 -->
   </div>
-
-  <!-- ======================== 모달들 ======================== -->
-
-
+  <th:block layout:fragment="script" th:inline="javascript">
+    <script>
 
 
+        //기본 select 박스 for 강사
+        let courseSelector = document.getElementById("courseSelector");
+
+        // boolean에 따른 select 박스 for 관리자
+        let menuForAdmin = null;
+
+        let isInProgressForAdmin = "";
+
+        // =========오늘 날짜 초기화==================
+        const thisDate = new Date(); //오늘 날짜 불변
+        let thisYear   = thisDate.getFullYear();
+        let thisMonth  = (String)(thisDate.getMonth() + 1).padStart(2, "0");
+        let thisDay    = (String)(thisDate.getDate()).padStart(2, "0");
+
+        // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
+
+        const today         = /*[[${today}]]*/ null;
+        const currentCourse = /*[[${currentCourse}]]*/ null;
+        const loginUser     = /*[[${loginUser}]]*/ null;
+        let loginUserType   = loginUser?.type ?? null;
+
+        // ======================== 전역 변수 선언 ========================
+        let currentDate = new Date(); // 캘린더 현재 표시 월
+
+        //===================== 관리자 select 박스 값에 따른 과정명 불러오기 ====================
+
+        //메뉴 화면에 보이기 (2)
+        function outputMenuForAdmin(datas) {
+            const urlParams   = new URLSearchParams(location.search);
+            const currentName = decodeURIComponent(urlParams.get("stringBoolean") || "").trim();
+
+            $("#menuForAdminN").empty();
+            menuForAdmin = $("#menuForAdminN");
+
+            isInProgressForAdmin = $("#isInProgressForAdmin").val();
+            if (isInProgressForAdmin === "") {
+                menuForAdmin.append(`<option value="" selected>전체</option>`);
+            }
+
+            Array.from(datas).forEach(function (data) {
+                const selected = (data.trim() === currentName) ? "selected" : "";
+                menuForAdmin.append(`<option value="${data}" ${selected}>${data}</option>`);
+            });
+
+        }
+
+        //메뉴 불러오기 (1) (3)
+        async function getMenuForAdminName(stringBoolean) {
+            try {
+                let response = await axios.get("/training/getMenuForAdminName", {
+                    params: {
+                        stringBoolean: stringBoolean
+                    }
+                });
+                console.log(response);
+                let datas = response.data.data;
+                console.log(datas);
+                outputMenuForAdmin(datas);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        //===================== 강사 select 박스 값에 따른 과정명 불러오기 ====================
+
+        function showCourseSelectorForTeacher() {
+            if (loginUserType === "INSTRUCTOR") {
+                courseSelector.style.display = "block";
+            }
+        }
+
+        // select 박스 호출
+        async function getMenuForTeacher() {
+            if (loginUserType === "INSTRUCTOR") {
+                try {
+                    let response = await axios.get("/training/getMenuForTeacher");
+                    console.log(response);
+                    let datas = response.data.data;
+                    outputMenuForTeacher(datas);
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+
+        // select 박스 형성
+        function outputMenuForTeacher(datas) {
+            // const urlParams   = new URLSearchParams(location.search);
+            // const currentName = decodeURIComponent(urlParams.get("stringBoolean") || "").trim();
+
+            courseSelector.innerHTML = "";
+            let option               = document.createElement("option");
+            option.value             = "";
+            option.text              = "전체";
+            courseSelector.appendChild(option);
+
+            for (let data of datas) {
+                // const selected = (data.trim() === currentName) ? "selected" : "";
+                // courseSelector.append(`<option value="${data}" ${selected}>${data}</option>`);
+                option       = document.createElement("option");
+                option.value = `${data}`;
+                option.text  = `${data}`;
+                courseSelector.appendChild(option);
+            }
+
+        }
+
+        //===================== trainingLog 불러오기 (관리자는 courseName 조건 동적으로 추가) ====================
+
+        async function getTrainingLog(courseName, isChangeMonth = false) {
+
+            try {
+                let response = await axios.get("/training/getSelectTrainingLog", {
+                    params: {
+                        courseName: encodeURIComponent(courseName)
+                    }
+                });
+                console.log(response);
+                let trainingLogMap = response.data.data;
+                let responseCode   = response.data.code;
+
+                console.log("trainingLogMap", trainingLogMap);
+
+                // 달력의 위치를 반드시 변경해야 할때(종료 중) + 종료 중 과정명에서 진행 중/전체로 돌아올 때
+                if (!isChangeMonth) {
+                    if (trainingLogMap == null || Object.keys(trainingLogMap).length === 0) {
+                        changeCalendarForCourse(`${thisYear}-${thisMonth}-${thisDay}`);
+                        return;
+                    }
+                    if (responseCode === 201) {
+                        changeCalendarForCourse(Object.entries(trainingLogMap)[0][1].trainingDate);
+                    } else {
+                        changeCalendarForCourse(`${thisYear}-${thisMonth}-${thisDay}`);
+                    }
+                }
+
+                for (let [key, value] of Object.entries(trainingLogMap)) {
+                    // parsingTrainDate(value.trainingDate,".calendar-day",key);
+                    console.log(`${key}`, value);
+                    parsingTrainDate(value, ".calendar-day", `${key}`);
+
+                }
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        // ======================== 페이지 로드 시 초기화 ========================
+        document.addEventListener("DOMContentLoaded", function () {
+            // ✅ 전역 변수 초기화
+            // window.selectedCourseId = currentCourse?.id || null;
+            // window.selectedLearnerEnrollmentId = learnerEnrollmentId || null;
+            // courseName 초기화
+
+            showCourseSelectorForTeacher();
+
+            // 캘린더 초기화 및 렌더링
+            initializeCalendar();
+            renderCalendar();
+            // generateCurrentMonthDaysOnly();
+
+            console.log("=== 조회 페이지 초기화 완료 ===");
+            isInProgressForAdmin = $("#isInProgressForAdmin").val();
+            console.log("isInProgressForAdmin의 길이", $("#isInProgressForAdmin").length); //1
+            console.log("isInProgressForAdmin의 타입 : ", typeof (isInProgressForAdmin)); //object
+            console.log("isInProgressForAdmin : ", isInProgressForAdmin); //null?
+
+            // 관리자용 boolean 보내기
+            getMenuForAdminName(isInProgressForAdmin); //처음 로드 시
+
+            // 관리자용 boolean 보낼 때 이벤트 핸들러
+            $("#isInProgressForAdmin").on("change", function () {
+                isInProgressForAdmin = $("#isInProgressForAdmin").val();
+                getMenuForAdminName(isInProgressForAdmin);
+                console.log("change 후 isInProgressForAdmin : ", isInProgressForAdmin);
+            });
+
+            //강사용 메뉴 select
+            getMenuForTeacher();
+
+            // ***기본 trainingLog 출력 ***
+            getTrainingLog("");
+
+            //관리자 select 박스 클릭 -> (과정명 동적쿼리 담긴) training_log 출력
+            $("#menuForAdminN").on("change", function () {
+                $(".calendar-day").find("#insertTrain").empty();
+                let courseName = $("#menuForAdminN").val();
+                getTrainingLog(courseName);
+            });
+
+            //강사 select 박스 클릭 -> (과정명 동적쿼리 담긴) training_log 출력
+            if (courseSelector != null) {
+                courseSelector.addEventListener("change", function () {
+                    $(".calendar-day").find("#insertTrain").empty();
+                    let courseName = courseSelector.value;
+                    getTrainingLog(courseName);
+                });
+
+            }
+
+            // 캘린더 년-월 파싱
+            // $(".calendar-title").on("click",function(){
+            //     calendarParsingYM(this);
+            // })
+            //
+            // $(".calendar-day").on("click",function(){
+            //     console.log(this.querySelector(".day-number").innerHTML.padStart(2,"0"));
+            // })
+
+        });
+
+        // ======================= 캘린더에 training log 적용 =====================
+
+        // 기존 캘린더 파싱해 날짜 추출(년,월)
+        // function calendarParsingYM(s){
+        //     let arr = $(s).html().split("년");
+        //     let calendarYear = arr[0];
+        //
+        //     let calendarMonth = arr[1].split("월")[0].trim().padStart(2,"0");
+        //     console.log("calendarYear",calendarYear);
+        //     console.log("calendarMonth",calendarMonth);
+        // }
+
+        // training_log 날짜 추출해 파싱
+        // 달력의 날짜가 trainingLog의 training 날짜와 일치하면 해당 날짜란에 출력
+        function parsingTrainDate(value, s, name) {
+            //s = $(".calendar-day")
+
+            let date    = value.trainingDate;
+            let dateArr = date.split("-");
+            let year    = dateArr[0];
+            let month   = dateArr[1];
+            let day     = dateArr[2];
+
+            // console.log("year", year);
+            // console.log("month", month);
+            // console.log("day", day);
+
+            $(s).each(function () {
+
+                let calendarDay   = $(this).find(".day-number").text().padStart(2, "0");
+                let calendarTitle = $(".calendar-title").text();
+                let calendarYear  = calendarTitle.split("년")[0];
+                let calendarMonth = calendarTitle.split("년")[1].split("월")[0].trim()
+                                                                             .padStart(2, "0");
+
+                if (calendarDay === day && calendarMonth === month && calendarYear
+                    === year) {
+                    console.log("성공");
+                    if ($(this).find("#insertTrain").length === 0) {
+                        $(this).append(`<div id = "insertTrain"></div>`);
+                    }
+                    $(this).find("#insertTrain").append(
+                        `<div class="alert alert-primary mb-2" data-id="${value.id}" onclick="trainingDetail(this);">${name}</div>`);
+                }
+            });
+
+        }
+        // ======================== detail로 이동=========================
+
+        function trainingDetail(s){
+            location.href = "/training/trainingDetail?trainingId=" + $(s).data("id");
+            // axios.get("/training/trainingDetail?trainingId=" + $(s).data("id"));
+        }
+
+        // ======================== 캘린더 관련 함수들 ========================
+        /**
+         * 캘린더 초기화 (현재 월 표시)
+         */
+        function initializeCalendar() {
+            const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월",
+                                "7월", "8월", "9월", "10월", "11월", "12월"];
+
+            const currentMonthElement = document.getElementById("currentMonth");
+            if (currentMonthElement) {
+                currentMonthElement.textContent =
+                    `${currentDate.getFullYear()}년 ${monthNames[currentDate.getMonth()]}`;
+            }
+        }
+
+        /**
+         * 월 변경 함수 (이전/다음 버튼 클릭 시)
+         * @param {number} direction - -1(이전달) 또는 1(다음달)
+         */
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            initializeCalendar();
+            let courseName = "";
+            if (loginUserType === "ADMINISTRATOR") {
+                $(".calendar-day").find("#insertTrain").empty();
+                courseName = $("#menuForAdminN").val();
+            } else {
+                $(".calendar-day").find("#insertTrain").empty();
+                courseName = courseSelector.value;
+            }
+            renderCalendar();
+            getTrainingLog(courseName, true);
+        }
+
+        /**
+         * 연도 및 월 변경
+         */
+        function changeCalendarForCourse(trainingDate) {
+
+            let dateArr = trainingDate.split("-");
+            let year    = dateArr[0];
+            let month   = dateArr[1];
+            let day     = dateArr[2];
+
+            currentDate.setFullYear(Number(year));
+            currentDate.setMonth(Number(month) - 1);
+            currentDate.setDate(Number(day));
+
+            initializeCalendar();
+
+            renderCalendar();
+
+        }
+
+        /**
+         * 완성된 캘린더 렌더링 (선택된 과정의 출결 데이터 표시)
+         */
+        function renderCalendar() {
+            const calendarGrid = document.getElementById("calendarGrid");
+
+            console.log("캘린더 렌더링 시작:", {
+                currentDate: currentDate.toDateString()
+            });
+
+            calendarGrid.innerHTML = "";
+
+            // 요일 헤더 생성 (일~토)
+            const dayHeaders = ["일", "월", "화", "수", "목", "금", "토"];
+            dayHeaders.forEach(day => {
+                const headerDiv       = document.createElement("div");
+                headerDiv.className   = "calendar-day header";
+                headerDiv.textContent = day;
+                calendarGrid.appendChild(headerDiv);
+            });
+
+            // 달력 날짜 생성
+            generateCurrentMonthDaysOnly();
+        }
+
+        /**
+         * 현재 월의 날짜만 생성 (이전/다음달 날짜는 표시하지 않음)
+         */
+        function generateCurrentMonthDaysOnly() {
+            const calendarGrid = document.getElementById("calendarGrid");
+            const year         = currentDate.getFullYear();
+            const month        = currentDate.getMonth();
+
+            // 현재 월의 첫째 날과 마지막 날
+            const firstDay = new Date(year, month, 1);
+            const lastDay  = new Date(year, month + 1, 0);
+
+            // 첫 주의 빈 칸 채우기 (일요일부터 시작)
+            const firstDayOfWeek = firstDay.getDay();
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDiv                 = document.createElement("div");
+                emptyDiv.className             = "calendar-day";
+                emptyDiv.style.backgroundColor = "#f8f9fc";
+                calendarGrid.appendChild(emptyDiv);
+            }
+
+            // 현재 월의 날짜들만 생성
+            for (let date = 1; date <= lastDay.getDate(); date++) {
+                const currentDay = new Date(year, month, date);
+                const dayDiv     = createCurrentMonthDayCell(currentDay, date);
+                calendarGrid.appendChild(dayDiv);
+            }
+
+            // 마지막 주의 빈 칸 채우기 (6주 완성)
+            const totalCells     = calendarGrid.children.length - 7; // 헤더 제외
+            const remainingCells = 42 - 7 - totalCells; // 6주 * 7일 - 헤더 - 현재 셀
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyDiv                 = document.createElement("div");
+                emptyDiv.className             = "calendar-day";
+                emptyDiv.style.backgroundColor = "#f8f9fc";
+                calendarGrid.appendChild(emptyDiv);
+            }
+        }
+
+        /**
+         * 현재 월의 개별 날짜 셀 생성 (출결 정보 포함)
+         * @param {Date} date - 날짜 객체
+         * @param {number} dayNumber - 날짜 숫자
+         * @returns {HTMLElement} - 생성된 날짜 셀 요소
+         */
+        function createCurrentMonthDayCell(date, dayNumber) {
+            const dayDiv     = document.createElement("div");
+            dayDiv.className = "calendar-day";
+
+            const dateStr   = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,
+                                                                                            "0")}-${String(
+                dayNumber).padStart(2, "0")}`;
+            const isToday   = dateStr === today;
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+            if (isToday) {
+                dayDiv.classList.add("today");
+            }
+            if (isWeekend) {
+                dayDiv.classList.add("weekend");
+            }
+
+            //  날짜와 상태를 같은 줄에 표시하는 헤더 div 생성
+            const dayHeaderDiv                = document.createElement("div");
+            dayHeaderDiv.className            = "day-header";
+            dayHeaderDiv.style.display        = "flex";
+            dayHeaderDiv.style.justifyContent = "space-between";
+            dayHeaderDiv.style.alignItems     = "center";
+            dayHeaderDiv.style.marginBottom   = "6px";
+
+            // 날짜 번호
+            const dayNumberDiv        = document.createElement("div");
+            dayNumberDiv.className    = "day-number";
+            dayNumberDiv.textContent  = dayNumber;
+            dayNumberDiv.style.margin = "0"; // 기존 margin 제거
+            dayHeaderDiv.appendChild(dayNumberDiv);
+
+            //  헤더(날짜+상태)를 dayDiv에 추가
+            dayDiv.appendChild(dayHeaderDiv);
+
+            return dayDiv;
+
+        }
 
 
-
-
-
-  <!-- content body 끝 -->
+    </script>
+  </th:block>
 </div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-
-
-    // ======================== Thymeleaf 변수를 JavaScript로 변환 ========================
-
-    const today = /*[[${today}]]*/ null;
-    const currentCourse = /*[[${currentCourse}]]*/ null;
-    const loginUser = /*[[${loginUser}]]*/ null;
-
-    // ======================== 전역 변수 선언 ========================
-    let currentDate = new Date(); // 캘린더 현재 표시 월
-
-
-    // ======================== 페이지 로드 시 초기화 ========================
-    document.addEventListener('DOMContentLoaded', function() {
-      // ✅ 전역 변수 초기화
-      // window.selectedCourseId = currentCourse?.id || null;
-      // window.selectedLearnerEnrollmentId = learnerEnrollmentId || null;
-
-
-
-      // 3. 캘린더 초기화 및 렌더링
-      initializeCalendar();
-      renderCalendar();
-      // generateCurrentMonthDaysOnly();
-
-      console.log('=== 출결 조회 페이지 초기화 완료 ===');
-    });
-
-    // ======================== basic.html의 courseSelector 설정 ========================
-
-
-
-    /**
-     * API 호출 실패 시 현재 과정만 표시하는 fallback 함수
-     */
-
-
-    // ======================== 캘린더 관련 함수들 ========================
-    /**
-     * 캘린더 초기화 (현재 월 표시)
-     */
-    function initializeCalendar() {
-      const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월',
-        '7월', '8월', '9월', '10월', '11월', '12월'];
-
-      const currentMonthElement = document.getElementById('currentMonth');
-      if (currentMonthElement) {
-        currentMonthElement.textContent =
-            `${currentDate.getFullYear()}년 ${monthNames[currentDate.getMonth()]}`;
-      }
-    }
-
-    /**
-     * 월 변경 함수 (이전/다음 버튼 클릭 시)
-     * @param {number} direction - -1(이전달) 또는 1(다음달)
-     */
-    function changeMonth(direction) {
-      currentDate.setMonth(currentDate.getMonth() + direction);
-      initializeCalendar();
-      renderCalendar();
-    }
-
-    /**
-     * 완성된 캘린더 렌더링 (선택된 과정의 출결 데이터 표시)
-     */
-    function renderCalendar() {
-      const calendarGrid = document.getElementById('calendarGrid');
-
-
-      console.log('캘린더 렌더링 시작:', {
-        currentDate: currentDate.toDateString()
-      });
-
-
-      calendarGrid.innerHTML = '';
-
-      // 요일 헤더 생성 (일~토)
-      const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
-      dayHeaders.forEach(day => {
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'calendar-day header';
-        headerDiv.textContent = day;
-        calendarGrid.appendChild(headerDiv);
-      });
-
-
-        // 달력 날짜 생성
-        generateCurrentMonthDaysOnly();
-
-    }
-
-
-    /**
-     * 현재 월의 날짜만 생성 (이전/다음달 날짜는 표시하지 않음)
-     */
-    function generateCurrentMonthDaysOnly() {
-      const calendarGrid = document.getElementById('calendarGrid');
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-
-      // 현재 월의 첫째 날과 마지막 날
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-
-      // 첫 주의 빈 칸 채우기 (일요일부터 시작)
-      const firstDayOfWeek = firstDay.getDay();
-      for (let i = 0; i < firstDayOfWeek; i++) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'calendar-day';
-        emptyDiv.style.backgroundColor = '#f8f9fc';
-        calendarGrid.appendChild(emptyDiv);
-      }
-
-      // 현재 월의 날짜들만 생성
-      for (let date = 1; date <= lastDay.getDate(); date++) {
-        const currentDay = new Date(year, month, date);
-        const dayDiv = createCurrentMonthDayCell(currentDay, date);
-        calendarGrid.appendChild(dayDiv);
-      }
-
-      // 마지막 주의 빈 칸 채우기 (6주 완성)
-      const totalCells = calendarGrid.children.length - 7; // 헤더 제외
-      const remainingCells = 42 - 7 - totalCells; // 6주 * 7일 - 헤더 - 현재 셀
-      for (let i = 0; i < remainingCells; i++) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'calendar-day';
-        emptyDiv.style.backgroundColor = '#f8f9fc';
-        calendarGrid.appendChild(emptyDiv);
-      }
-    }
-
-    /**
-     * 현재 월의 개별 날짜 셀 생성 (출결 정보 포함)
-     * @param {Date} date - 날짜 객체
-     * @param {number} dayNumber - 날짜 숫자
-     * @returns {HTMLElement} - 생성된 날짜 셀 요소
-     */
-    function createCurrentMonthDayCell(date, dayNumber) {
-      const dayDiv = document.createElement('div');
-      dayDiv.className = 'calendar-day';
-
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
-      const isToday = dateStr === today;
-      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-
-      if (isToday) dayDiv.classList.add('today');
-      if (isWeekend) dayDiv.classList.add('weekend');
-
-      //  날짜와 상태를 같은 줄에 표시하는 헤더 div 생성
-      const dayHeaderDiv = document.createElement('div');
-      dayHeaderDiv.className = 'day-header';
-      dayHeaderDiv.style.display = 'flex';
-      dayHeaderDiv.style.justifyContent = 'space-between';
-      dayHeaderDiv.style.alignItems = 'center';
-      dayHeaderDiv.style.marginBottom = '6px';
-
-      // 날짜 번호
-      const dayNumberDiv = document.createElement('div');
-      dayNumberDiv.className = 'day-number';
-      dayNumberDiv.textContent = dayNumber;
-      dayNumberDiv.style.margin = '0'; // 기존 margin 제거
-      dayHeaderDiv.appendChild(dayNumberDiv);
-
-
-
-      //  헤더(날짜+상태)를 dayDiv에 추가
-      dayDiv.appendChild(dayHeaderDiv);
-
-
-      return dayDiv;
-
-    }
-
-
-  </script>
-</th:block>
 </body>
 </html>
