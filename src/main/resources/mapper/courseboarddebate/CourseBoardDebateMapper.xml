@@ -18,7 +18,8 @@
   <select id="selectCourseBoardDebateDetail" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateDetailInfo">
     SELECT
     cf.id, cf.course_id, c.name AS courseName, cf.title, cf.content, cf.read_count,
-    cf.created_at, cf.updated_at, u.id AS writerId, u.fullname AS writerName, u.type AS writerType
+    cf.created_at, cf.updated_at, u.id AS writerId, u.fullname AS writerName, u.type AS writerType,
+    cf.is_hotpost
     FROM course_forum cf
     JOIN user u ON cf.writer_id = u.id
     JOIN course c ON cf.course_id = c.id

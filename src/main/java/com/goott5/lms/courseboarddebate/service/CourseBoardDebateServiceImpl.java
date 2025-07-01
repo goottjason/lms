@@ -44,7 +44,6 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
   public CourseBoardDebatePagingResponseDTO<CourseBoardDebatePageDTO> getCourseBoardDebateList(
       CourseBoardDebatePagingRequestDTO requestDTO, HttpSession session) {
 
-    // +++ 사용자 권한에 따른 조회 범위 설정 로직 추가 시작 +++
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 
     // 관리자가 아닐 경우, 접근 가능한 과정 ID 목록을 설정
@@ -76,8 +75,6 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
             .build();
       }
     }
-    // +++ 사용자 권한에 따른 조회 범위 설정 로직 추가 끝 +++
-
 
     // Mapper에서 목록과 전체 개수를 각각 조회
     List<CourseBoardDebateVO> posts = courseBoardDebateMapper.selectCourseBoardDebateList(requestDTO);
@@ -140,21 +137,26 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     return courseBoardDebateDTO.getId();
   }
 
-  // 댓글 작성: 메소드명 통일
+  // 댓글 작성
   @Override
   @Transactional
   public void addCourseBoardDebateComment(CourseBoardDebateCommentDTO comment) {
     courseBoardDebateMapper.insertCourseBoardDebateComment(comment);
 
-    checkAndPromoteToHotPost(comment.getCourseForumId());
+    int forumId = comment.getCourseForumId();
+    int finalLikeCount = courseBoardDebateMapper.countCourseBoardDebateLikesByForumId(forumId);
+    int finalCommentCount = courseBoardDebateMapper.countCommentsByForumId(forumId);
+    updateHotPostStatus(forumId, finalLikeCount, finalCommentCount);
   }
 
+  // 게시글 수정
   @Override
   @Transactional
   public int updateCourseBoardDebate(CourseBoardDebateDTO courseBoardDebateDTO) {
     return courseBoardDebateMapper.updateCourseBoardDebate(courseBoardDebateDTO);
   }
 
+  // 게시글 삭제
   @Override
   @Transactional
   public void deleteCourseBoardDebate(int debateId) {
@@ -162,10 +164,10 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     courseBoardDebateMapper.softDeleteCourseBoardDebateById(debateId);
   }
 
+  // 조회수
   @Override
   @Transactional
   public boolean updateCourseBoardDebateReadCount(ReadCountLog readCountLog) {
-    // 중복 조회 방지 로직은 기존 수업공지 게시판의 것을 그대로 사용
     int check = readCountLogMapper.checkReadCountLog(readCountLog.getTableName(), readCountLog.getTableId(), readCountLog.getUserId());
     if (check == 0) {
       readCountLogMapper.insertReadCountLog(readCountLog);
@@ -192,7 +194,10 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     // 토론 게시글의 좋아요 수 업데이트 후, 최종 카운트 반환
     courseBoardDebateMapper.updateCourseBoardDebateLikeCount(forumId);
 
-    checkAndPromoteToHotPost(forumId);
+    int finalLikeCount = courseBoardDebateMapper.countCourseBoardDebateLikesByForumId(forumId);
+    int finalCommentCount = courseBoardDebateMapper.countCommentsByForumId(forumId);
+    updateHotPostStatus(forumId, finalLikeCount, finalCommentCount);
+
     return courseBoardDebateMapper.countCourseBoardDebateLikesByForumId(forumId);
   }
 
@@ -202,6 +207,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     courseBoardDebateMapper.insertCourseBoardDebateReport(report);
   }
 
+  // 댓글 수정
   @Override
   public void updateComment(int commentId, String content, UserVO loginUser) {
     // 수정할 댓글 정보를 가져옴
@@ -225,6 +231,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     }
   }
 
+  // 댓글 삭제
   @Override
   public void deleteComment(int commentId, UserVO loginUser) {
     // 삭제할 댓글 정보를 가져옴
@@ -244,85 +251,79 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     if (affectedRows != 1) {
       throw new RuntimeException("댓글 삭제 중 오류가 발생했습니다.");
     }
+    int forumId = comment.getCourseForumId();
+    int finalLikeCount = courseBoardDebateMapper.countCourseBoardDebateLikesByForumId(forumId);
+    int finalCommentCount = courseBoardDebateMapper.countCommentsByForumId(forumId);
+    updateHotPostStatus(forumId, finalLikeCount, finalCommentCount);
   }
 
   @Override
-  public void checkAndPromoteToHotPost(int forumId) {
-    log.info(">>>>>> 인기글 승격 확인 시작 (게시글 ID: {}) <<<<<<", forumId);
+  public void updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount) {
+    log.info(">>>>>> 인기글 상태 업데이트 시작 (게시글 ID: {}) <<<<<<", forumId);
 
-    // 승격 후보 게시글의 정보를 가져옴
-    CourseBoardDebateDetailInfo candidatePost = courseBoardDebateMapper.selectCourseBoardDebateDetail(forumId);
-
-    // 이미 인기 글이거나 삭제된 글이면 아무 작업도 하지 않고 종료
-    if (candidatePost == null || candidatePost.isHotPost()) {
-      log.info("이미 인기글이거나 존재하지 않는 글이므로 확인을 중단합니다.");
+    // 게시글 정보를 가져옴
+    CourseBoardDebateDetailInfo postDetail = courseBoardDebateMapper.selectCourseBoardDebateDetail(forumId);
+    if (postDetail == null) {
+      log.warn("게시글이 존재하지 않아 업데이트를 중단합니다.");
       return;
     }
 
-    // 승격 후보 게시글의 좋아요와 댓글 수를 확인
-    int candidateLikes = courseBoardDebateMapper.countCourseBoardDebateLikesByForumId(forumId);
-    int candidateComments = courseBoardDebateMapper.countCommentsByForumId(forumId);
+    // 현재 상태와 되어야 할 상태를 정의
+    boolean isCurrentlyHot = postDetail.isHotPost();
+
+    int likeCount = finalLikeCount;
+    int commentCount = finalCommentCount;
 
     final int LIKE_THRESHOLD = 5;
     final int COMMENT_THRESHOLD = 10;
 
-    // 인기글 기준에 미달하면 아무 작업도 하지 않고 종료
-    if (candidateLikes < LIKE_THRESHOLD || candidateComments < COMMENT_THRESHOLD) {
-      log.info("인기글 기준 미달 (좋아요: {}/{}, 댓글: {}/{})",
-          candidateLikes, LIKE_THRESHOLD, candidateComments, COMMENT_THRESHOLD);
-      return;
-    }
+    boolean shouldBeHot = (likeCount >= LIKE_THRESHOLD && commentCount >= COMMENT_THRESHOLD);
 
-    // 현재 인기글 개수 확인
-    final int HOT_POST_LIMIT = 5;
-    int currentHotPostCount = courseBoardDebateMapper.countHotPosts();
-    log.info("현재 인기글 개수: {}/{}", currentHotPostCount, HOT_POST_LIMIT);
+    // 현재 인기글이 아닌데, 인기글이 되어야 할 때
+    if (!isCurrentlyHot && shouldBeHot) {
+      log.info("인기글 기준 충족. 승격 절차를 시작합니다.");
+      final int HOT_POST_LIMIT = 5;
+      int currentHotPostCount = courseBoardDebateMapper.countHotPosts();
+      if (currentHotPostCount < HOT_POST_LIMIT) {
+        log.info("인기글 자리가 남아있어 바로 승격합니다.");
+        courseBoardDebateMapper.promoteToHotPost(forumId);
+      } else {
+        log.info("인기글이 꽉 차 있어, 기존 인기글과 점수 비교를 시작합니다.");
+        List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.findHotPosts();
+        CourseBoardDebateVO worstHotPost = null;
+        int minScore = Integer.MAX_VALUE;
 
-    // 현재 인기글이 5개 미만인 경우
-    if (currentHotPostCount < HOT_POST_LIMIT) {
-      log.info("인기글 자리가 남아있어 바로 승격합니다.");
-      courseBoardDebateMapper.promoteToHotPost(forumId);
-      return; // 작업 종료
-    }
+        for (CourseBoardDebateVO post : hotPosts) {
+          int score = post.getForumLike() + post.getCommentCount();
+          if (score < minScore) {
+            minScore = score;
+            worstHotPost = post;
+          } else if (score == minScore) {
+            if (worstHotPost != null && post.getHotPostAt().isBefore(worstHotPost.getHotPostAt())) {
+              worstHotPost = post;
+            }
+          }
+        }
 
-    // 현재 인기글이 5개 이상인 경우 (교체 로직 실행)
-    log.info("인기글이 꽉 차 있어, 기존 인기글과 점수 비교를 시작합니다.");
-    List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.findHotPosts();
-
-    // 기존 인기글 중 가장 점수가 낮은 글 찾기
-    CourseBoardDebateVO worstHotPost = null;
-    int minScore = Integer.MAX_VALUE;
-
-    for (CourseBoardDebateVO post : hotPosts) {
-      int score = post.getForumLike() + post.getCommentCount();
-      if (score < minScore) {
-        minScore = score;
-        worstHotPost = post;
-      } else if (score == minScore) {
-        // 현재 post가 기존 worstHotPost보다 더 오래전에 인기글이 되었다면 교체
-        if (worstHotPost != null && post.getHotPostAt().isBefore(worstHotPost.getHotPostAt())) {
-          worstHotPost = post;
+        if (worstHotPost != null) {
+          int candidateScore = likeCount + commentCount;
+          if (candidateScore > minScore) {
+            log.info("승격 후보의 점수가 더 높아 교체를 진행합니다. ({} -> {})", worstHotPost.getId(), forumId);
+            courseBoardDebateMapper.demoteHotPost(worstHotPost.getId());
+            courseBoardDebateMapper.promoteToHotPost(forumId);
+          } else {
+            log.info("승격 후보의 점수가 기존 인기글보다 낮거나 같아 승격하지 않습니다.");
+          }
         }
       }
     }
-
-    if (worstHotPost == null) {
-      log.error("인기글 목록은 있으나 점수가 가장 낮은 글을 찾지 못했습니다.");
-      return;
+    // 현재 인기글인데, 더 이상 인기글 기준을 만족하지 못할 때
+    else if (isCurrentlyHot && !shouldBeHot) {
+      log.info("인기글 기준 미달. 인기글 상태를 해제합니다.");
+      courseBoardDebateMapper.demoteHotPost(forumId);
     }
-
-    // 승격 후보와 점수가 가장 낮은 기존 인기글의 점수 비교
-    int candidateScore = candidateLikes + candidateComments;
-    log.info("승격 후보 점수: {}, 기존 최저 점수: {}", candidateScore, minScore);
-
-    if (candidateScore > minScore) {
-      log.info("승격 후보의 점수가 더 높아 교체를 진행합니다. ({} -> {})", worstHotPost.getId(), forumId);
-      // 가장 점수 낮은 글을 인기글에서 해제
-      courseBoardDebateMapper.demoteHotPost(worstHotPost.getId());
-      // 새로운 글을 인기글로 승격
-      courseBoardDebateMapper.promoteToHotPost(forumId);
-    } else {
-      log.info("승격 후보의 점수가 기존 인기글보다 낮거나 같아 승격하지 않습니다.");
+    else {
+      log.info("상태 변경 없음. 현재 상태를 유지합니다.");
     }
   }
 }

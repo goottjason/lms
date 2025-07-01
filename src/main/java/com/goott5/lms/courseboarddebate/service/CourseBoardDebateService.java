@@ -36,5 +36,5 @@ public interface CourseBoardDebateService {
 
   void deleteComment(int commentId, UserVO loginUser);
 
-  void checkAndPromoteToHotPost(int forumId);
+  void updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount);
 }

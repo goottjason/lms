@@ -15,17 +15,11 @@ import org.apache.ibatis.annotations.Param;
 public interface CourseBoardDebateMapper {
 
   int insertCourseBoardDebate(@Param("dto") CourseBoardDebateDTO courseBoardDebateDTO);
-
   List<CourseBoardDebateVO> selectCourseBoardDebateList(CourseBoardDebatePagingRequestDTO requestDTO);
-
   int selectCourseBoardDebateTotalCount(CourseBoardDebatePagingRequestDTO requestDTO);
-
   CourseBoardDebateDetailInfo selectCourseBoardDebateDetail(@Param("id") int id);
-
   int updateCourseBoardDebateReadCount(@Param("id") int id);
-
   int updateCourseBoardDebate(CourseBoardDebateDTO courseBoardDebateDTO);
-
   int softDeleteCourseBoardDebateById(@Param("id") int id);
 
   // 댓글
