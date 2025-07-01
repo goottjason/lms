@@ -59,7 +59,7 @@ public class CourseBoardMaterialsPagingRequestDTO {
       sb.append("&courseId=").append(courseId);
     }
 
-    if (courseName != null && courseName.isBlank()) {
+    if (courseName != null && !courseName.isBlank()) {
       sb.append("&courseName=").append(courseName);
     }
 
@@ -109,7 +109,7 @@ public class CourseBoardMaterialsPagingRequestDTO {
       sb.append("&courseId=").append(courseId);
     }
 
-    if (courseName != null && courseName.isBlank()) {
+    if (courseName != null && !courseName.isBlank()) {
       sb.append("&courseName=").append(courseName);
     }
 

@@ -44,4 +44,13 @@ public interface CourseBoardDebateMapper {
 
   // 신고
   int insertCourseBoardDebateReport(@Param("report") CourseBoardDebateReport report);
+
+  // 인기글
+  int countCommentsByForumId(int forumId);
+  int promoteToHotPost(int forumId);
+  int expireHotPosts();
+
+  int countHotPosts();
+  List<CourseBoardDebateVO> findHotPosts();
+  int demoteHotPost(int forumId);
 }

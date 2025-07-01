@@ -83,6 +83,7 @@
       </if>
     </where>
     ORDER BY
+    cf.is_hotpost DESC,
     <choose>
       <when test="orderBy == 'readCount'">cf.read_count</when>
       <when test="orderBy == 'title'">cf.title</when>
@@ -94,6 +95,7 @@
       <otherwise>DESC,</otherwise>
     </choose>
     cf.id DESC
+    LIMIT #{skip}, #{pagingSize}
   </select>
 
 
@@ -211,4 +213,61 @@
     INSERT INTO course_forum_report (course_forum_id, user_id, report_detail, report_status)
     VALUES (#{report.courseForumId}, #{report.userId}, #{report.reportDetail}, 'PENDING')
   </insert>
+
+  <select id="countCommentsByForumId" resultType="int">
+    SELECT COUNT(id)
+    FROM course_forum_comment
+    WHERE course_forum_id = #{forumId} AND deleted_at IS NULL
+  </select>
+
+  <update id="promoteToHotPost">
+    UPDATE course_forum
+    SET
+    is_hotpost = TRUE,
+    hotpost_at = NOW()
+    WHERE
+    id = #{forumId}
+  </update>
+
+  <update id="expireHotPosts">
+    UPDATE course_forum
+    SET
+    is_hotpost = FALSE
+    WHERE
+    is_hotpost = TRUE
+    AND hotpost_at <![CDATA[ < ]]> DATE_SUB(NOW(), INTERVAL 3 DAY)
+  </update>
+
+  <select id="countHotPosts" resultType="int">
+    SELECT COUNT(*)
+    FROM course_forum
+    WHERE is_hotpost = TRUE
+  </select>
+
+  <select id="findHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+    SELECT
+    cf.id,
+    cf.forum_like,
+    cf.hotpost_at,
+    IFNULL(cc.comment_count, 0) AS commentCount
+    FROM
+    course_forum cf
+    LEFT JOIN
+    (SELECT course_forum_id, COUNT(id) AS comment_count
+    FROM course_forum_comment
+    WHERE deleted_at IS NULL
+    GROUP BY course_forum_id) cc
+    ON cf.id = cc.course_forum_id
+    WHERE
+    cf.is_hotpost = TRUE
+  </select>
+
+  <update id="demoteHotPost">
+    UPDATE course_forum
+    SET
+    is_hotpost = FALSE,
+    hotpost_at = NULL
+    WHERE
+    id = #{forumId}
+  </update>
 </mapper>

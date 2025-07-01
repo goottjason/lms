@@ -41,8 +41,16 @@
           <h6 class="m-0 font-weight-bold text-primary">토론 리스트 조회</h6>
         </div>
         <div class="col-auto">
-          <form action="/courseBoardDebate/debateRegister" method="get" id="registerForm">
-            <input type="hidden" name="courseId" id="courseIdForRegister">
+          <form action="/courseBoardDebate/debateRegister" method="get" id="registerForm" th:object="${responseDTO.pagingRequestDTO}">
+            <input type="hidden" name="courseId" id="courseIdForRegister" th:value="*{courseId}">
+            <input type="hidden" th:field="*{pageNo}" />
+            <input type="hidden" th:field="*{pagingSize}" />
+            <input type="hidden" th:field="*{keyword}" />
+            <input type="hidden" th:field="*{type}" />
+            <input type="hidden" th:field="*{orderBy}" />
+            <input type="hidden" th:field="*{orderDirection}" />
+            <input type="hidden" th:field="*{hasAttachment}" />
+
             <button type="submit" id="debateRegisterBtn" class="btn btn-info btn-icon-split">
               <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
               <span class="text">토론 등록</span>
@@ -84,6 +92,7 @@
           <select id="orderBy" name="orderBy" class="form-control col-3 mr-3">
             <option value="createdAt" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'createdAt'}">작성일</option>
             <option value="readCount" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'readCount'}">조회수</option>
+            <option value="comment" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'comment'}">댓글수</option>
             <option value="forumLike" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'forumLike'}">좋아요</option>
             <option value="title" th:selected="${responseDTO?.pagingRequestDTO?.orderBy == 'title'}">제목</option>
           </select>
@@ -116,8 +125,9 @@
             <td th:text="${dto.id}" class="text-center align-middle"></td>
             <td class="title align-middle">
               <th:block th:if="${dto.deletedAt == null}">
+                <span th:if="${dto.isHotPost}" class="badge badge-danger mr-2">HOT</span>
                 <a th:href="|/courseBoardDebate/debateDetail?id=${dto.id}&pageNo=${responseDTO.pageNo}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}|"
-                   th:text="${dto.title}">제목</a>
+                   th:text="${#strings.abbreviate(dto.title, 20)}">제목</a>
                 <span th:if="${dto.isAttached}" class="ml-2">
                     <i class="fas fa-cog text-secondary"></i>
                 </span>
@@ -146,7 +156,7 @@
         <ul class="pagination justify-content-center">
           <li class="page-item" th:classappend="${!responseDTO.prev} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/courseBoardDebate/list(pageNo=${responseDTO.start - 1},
+               th:href="@{/courseBoardDebate/debateList(pageNo=${responseDTO.start - 1},
                                                              type=${responseDTO.pagingRequestDTO.type},
                                                              keyword=${responseDTO.pagingRequestDTO.keyword},
                                                              courseId=${responseDTO.pagingRequestDTO.courseId},
@@ -159,7 +169,7 @@
           <li class="page-item" th:each="i : ${#numbers.sequence(responseDTO.start, responseDTO.end)}"
               th:classappend="${i == responseDTO.pageNo} ? 'active'">
             <a class="page-link"
-               th:href="@{/courseBoardDebate/list(pageNo=${i},
+               th:href="@{/courseBoardDebate/debateList(pageNo=${i},
                                                              type=${responseDTO.pagingRequestDTO.type},
                                                              keyword=${responseDTO.pagingRequestDTO.keyword},
                                                              courseId=${responseDTO.pagingRequestDTO.courseId},
@@ -172,7 +182,7 @@
           </li>
           <li class="page-item" th:classappend="${!responseDTO.next} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/courseBoardDebate/list(pageNo=${responseDTO.end + 1},
+               th:href="@{/courseBoardDebate/debateList(pageNo=${responseDTO.end + 1},
                                                              type=${responseDTO.pagingRequestDTO.type},
                                                              keyword=${responseDTO.pagingRequestDTO.keyword},
                                                              courseId=${responseDTO.pagingRequestDTO.courseId},
