@@ -478,7 +478,9 @@ function modifyCourse(e) {
 
                        console.log(data);
                        let result = (data == "success" ? true : false);
+
                        location.href = `/courseManagement/courseModify/modifySuccess?isSuccess=${result}&courseId=${courseId}`;
+
 
                    },
                    error   : function () {

@@ -75,14 +75,14 @@
 
 
     <choose>
-      <when test="courseId == 0">
+      <when test="isAll">
         insert into cancel_date (is_all, is_public_holiday, cancel_date, reason) values (#{isAll},
         #{isPublicHoliday}, #{cancelDate}, #{reason})
       </when>
-      <when test="courseId != 0">
+      <otherwise>
         insert into cancel_date (is_all, course_id, is_public_holiday, cancel_date, reason) values
         (#{isAll}, #{courseId}, #{isPublicHoliday}, #{cancelDate}, #{reason})
-      </when>
+      </otherwise>
     </choose>
 
   </insert>

@@ -272,6 +272,8 @@
                              // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
                              async   : false, // 비동기옵션 off
                              success : function (data) { // 통신이 성공하면 수행할 함수
+                               // sendNotificationToAll(`${cancelDate}에 학원 전체가 휴강합니다. 사유 : ${reason}`,
+                               //                       false)
                                  location.reload(true);
                              },
                              error   : function () {
