@@ -33,6 +33,11 @@ public class TrainingServiceImpl implements TrainingService{
   }
 
   @Override
+  public String selectInstructorNameById(int instructorId) {
+    return trainingMapper.selectInstructorNameById(instructorId);
+  }
+
+  @Override
   public List<String> selectCourseMenuForAdmin(Boolean isInProgress) {
     return trainingMapper.selectBoxCourseNameForAdmin(isInProgress);
   }
@@ -55,6 +60,11 @@ public class TrainingServiceImpl implements TrainingService{
   @Override
   public SelectTrainingDTO selectTrainingDTO(int id) {
     return trainingMapper.selectTrainingLog(id);
+  }
+
+  @Override
+  public String selectSubjectName(int plan) {
+    return trainingMapper.selectSubjectName(plan);
   }
 
   @Override
