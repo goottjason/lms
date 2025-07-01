@@ -58,6 +58,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket' // WebSocket
 
     implementation 'org.apache.poi:poi-ooxml:5.4.1' //apache poi(엑셀 파일 생성용)
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.1' // dto -> map 변환
 }
 
 tasks.named('test') {

@@ -1,8 +1,11 @@
 package com.goott5.lms.training.mapper;
 
 import com.goott5.lms.training.domain.RequestParticipationDTO;
+import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
+import com.goott5.lms.training.domain.registerdto.SelectSchSubDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -10,6 +13,15 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface TrainingMapper {
   //================== 공통 ============================
+
+  //현재 강사가 진행 중인 과정 아이디, 과정명 출력
+  @Select("select c.id,c.name from course c\n"
+      + "inner join staff_assignment sa\n"
+      + "on c.id = sa.course_id\n"
+      + "where c.is_in_progress = 1 \n"
+      + "and sa.user_id = #{userId}")
+  SelectCourseDTO selectCourse(int userId);
+
 
   //과정아이디로 과정명 출력
   @Select("select name from course where id = #{courseId}")
@@ -24,6 +36,9 @@ public interface TrainingMapper {
   @Select("select number_of_learner from course where id = #{courseId}")
   int countOfLearner(int courseId);
 
+  //강사 아이디로 강사명 찾기
+  @Select("select fullname from user where id = #{instructorId}")
+  String selectInstructorNameById(int instructorId);
 
 
   // =============== select list ===========
@@ -57,6 +72,14 @@ public interface TrainingMapper {
   @Select("select id, training_id, period, plan, actual from training_detail where training_id = #{training_id}")
   List<SelectTrainingDetailDTO> selectTrainingDetail(int trainingId);
 
+  //course_schedule의 id로 훈련과목 select
+  @Select("select sb.name\n"
+      + "from course_subject sb\n"
+      + "inner join course_schedule sc\n"
+      + "on sb.id = sc.subject_id\n"
+      + "where sc.id = #{plan}")
+  String selectSubjectName(int plan);
+
   //============== 출석과 관계된 쿼리문===============================
 
   // 출결 상태에 속하는 학생 수
@@ -82,5 +105,17 @@ public interface TrainingMapper {
       + "where p.status = #{status} AND p.participation_date = #{trainingDate}\n"
       + "and c.id = #{courseId}")
   List<String> listParticipationLearner(RequestParticipationDTO request);
+
+  //=====교시/훈련과목===========
+  @Select("select sch.id,sch.subject_id,sub.name\n"
+      + "from course_schedule sch\n"
+      + "inner join course_subject sub\n"
+      + "on sch.subject_id = sub.id\n"
+      + "inner join staff_assignment sa\n"
+      + "on sa.course_id = sch.course_id\n"
+      + "where sch.class_date = #{trainingDate}\n"
+      + "and sa.user_id = #{userId}")
+  List<SelectSchSubDTO> selectSchSub(Date trainingDate, int userId);
+
 
 }
