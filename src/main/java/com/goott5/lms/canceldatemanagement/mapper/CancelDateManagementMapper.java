@@ -30,7 +30,7 @@ public interface CancelDateManagementMapper {
   @Delete("delete from cancel_date where id = #{id}")
   void deleteCancelDate(Integer id);
 
-  void insertCancelDate(CancelDateDTO cancelDateDTO);
+  int insertCancelDate(CancelDateDTO cancelDateDTO);
 
   List<CourseVO> selectCoursesByInProgress(Integer inProgressType);
 
@@ -62,7 +62,7 @@ public interface CancelDateManagementMapper {
   List<LocalDate> selectRemainClassDates(CancelDateDTO cancelDateDTO);
 
   @Delete("delete from cancel_date where cancel_date = #{cancelDate} and is_all != 1")
-  void deleteAllCancelDateByDateExceptIsAllTrue(LocalDate cancelDate);
+  int deleteAllCancelDateByDateExceptIsAllTrue(LocalDate cancelDate);
 
   @Select("select count(*) from course_schedule where course_id = #{courseId} and class_date = #{cancelDate}")
   int selectCountOfSchedulesByCourseAndDate(CancelDateDTO cancelDateDTO);

@@ -43,6 +43,11 @@
       cursor: default;
     }
 
+    #notification-box {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
 
   </style>
 </head>
@@ -134,7 +139,7 @@
 
     <!-- Nav Item - 훈련 일지 -->
     <li th:if="${session.loginUser.type != 'LEARNER'}" class="nav-item nav-single">
-      <a class="nav-link" href="#">
+      <a class="nav-link" th:href="@{/training/trainingList}">
         <i class="fa fa-book"></i>
         <span>&nbsp;훈련 일지</span></a>
     </li>
@@ -271,49 +276,20 @@
               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fas fa-bell fa-fw"></i>
               <!-- Counter - Alerts -->
-              <span class="badge badge-danger badge-counter">3</span>
+              <span id="notificationCount" class="badge badge-danger badge-counter"></span>
             </a>
             <!-- Dropdown - Alerts -->
             <div
               class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-              aria-labelledby="alertsDropdown">
+              aria-labelledby="alertsDropdown" id="dropDown-box">
               <h6 class="dropdown-header">
-                Notice Center
+                알림
               </h6>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                  <div class="icon-circle bg-warning">
-                    <i class="fas fa-exclamation-triangle text-white"></i>
-                  </div>
-                </div>
-                <div>
-                  <div class="small text-gray-500">2025-06-01</div>
-                  네트워크 작업으로 인한 인터넷 연결 중단 예정
-                </div>
-              </a>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                  <div class="icon-circle bg-success">
-                    <i class="fas fa-donate text-white"></i>
-                  </div>
-                </div>
-                <div>
-                  <div class="small text-gray-500">2025-05-24</div>
-                  6월 대통령선거일 휴강 안내
-                </div>
-              </a>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                  <div class="icon-circle bg-primary">
-                    <i class="fas fa-file-alt text-white"></i>
-                  </div>
-                </div>
-                <div>
-                  <div class="small text-gray-500">2025-05-21</div>
-                  5월 훈련장려금 동의관련 안내
-                </div>
-              </a>
-              <a class="dropdown-item text-center small text-gray-500" href="#">Show All Notice</a>
+              <div id="notification-box">
+
+              </div>
+              <a id="delete-all-notification" class="dropdown-item text-center small text-gray-500"
+                 href="#">전체 삭제</a>
             </div>
           </li>
 
@@ -434,7 +410,17 @@
 <!-- sweetalert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- stomp -->
+<script th:src="@{https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js}"></script>
+<script th:src="@{https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js}"></script>
+
+<script th:if="${session.loginUser}" th:inline="javascript">
+  const loginUserIdForSub = [[${session.loginUser.id}]]
+
+</script>
+
 <script>
+
     $(document).on("click", ".collapse-item", function (e) {
       // 같은 collapse 그룹 내의 모든 collapse-item에서 active 제거
       $(this).closest(".collapse-inner").find(".collapse-item").removeClass("active");
@@ -449,6 +435,465 @@
       $(".nav-link").addClass("collapsed");
       $(".collapse").removeClass("show");
     });
+
+
+    // Notification
+
+    let stompC = null;
+    let notificationData = [];
+    let isRenderAll = false;
+
+    $(function(){
+
+      getNotification();
+      renderNotificationAll();
+
+      $("#alertsDropdown").click(function(){
+        checkAllNotification();
+        $("#notificationCount").empty();
+      });
+
+      $("body").on("click", ".delete-notification", function(e){
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        $.ajax({
+                 url: "/api/notification/deleteNotification", // 데이터가 송수신될 서버의
+                 // 주소
+                 type       : "PATCH", // 통신 방식 (GET, POST, PUT, DELETE)
+                 dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                 data       : JSON.stringify({
+                                               id: $(this).closest("a").data("id")
+                                             }),
+                 contentType: "application/json; charset=utf-8",
+                 // Content-Type헤더가 application/x-www-form-urlencoded;
+                 // charset=UTF-8로 자동 설정되는 것을 방지
+                 // async   : false, // 비동기옵션 off
+                 success : function (data) { // 통신이 성공하면 수행할 함수
+
+                   if(data == "success"){
+                    getNotification();
+                    renderNotificationAll();
+                   }
+
+                 },
+                 error   : function () {
+                 },
+                 complete: function () {
+                 }
+               });
+
+      });
+
+      $("body").on("click", "#delete-all-notification", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        $.ajax({
+                 url: "/api/notification/deleteAllNotification", // 데이터가 송수신될 서버의
+                 // 주소
+                 type       : "PATCH", // 통신 방식 (GET, POST, PUT, DELETE)
+                 dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+                 // data       : JSON.stringify({
+                 //                               id: $(this).closest("a").data("id")
+                 //                             }),
+                 // contentType: "application/json; charset=utf-8",
+                 // Content-Type헤더가 application/x-www-form-urlencoded;
+                 // charset=UTF-8로 자동 설정되는 것을 방지
+                 // async   : false, // 비동기옵션 off
+                 success : function (data) { // 통신이 성공하면 수행할 함수
+
+                   if(data == "success"){
+                     getNotification();
+                     renderNotificationAll();
+                   }
+
+                 },
+                 error   : function () {
+                 },
+                 complete: function () {
+                 }
+               });
+
+
+      });
+
+    });
+
+    function connect(){
+      let socket = new SockJS('/ws');
+      stompC = Stomp.over(socket);
+
+      stompC.connect({}, function(){
+
+        stompC.subscribe(`/topic/notification/${loginUserIdForSub}`,
+        function(message){
+
+          console.log(message);
+          if(message.body == "notified"){
+
+            getNotification();
+            renderNotificationAll();
+
+          }
+
+        })
+
+      });
+
+    }
+
+    connect();
+
+    function getNotification(){
+
+      $.ajax({
+               url: "/api/notification/getNotification",
+               type    : "GET",
+               dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
+               // data       : JSON.stringify(courseId),
+               // contentType: "application/json; charset=utf-8",
+               async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+                 console.log(data);
+                 notificationData = data;
+
+                 let notificationCount = 0;
+
+                 $(data).each(function(index, item){
+                   if(!item.checked){
+                     notificationCount++;
+                   }
+                 });
+
+                 if(notificationCount != 0){
+                   $("#notificationCount").text(notificationCount);
+                 } else {
+                   $("#notificationCount").empty();
+                 }
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+
+
+
+    }
+
+    function renderNotificationAll(){
+
+      let output = ``;
+
+      if(notificationData.length == 0){
+
+        output += `
+                <a class="dropdown-item d-flex align-items-center notification-row" data-id=""
+                href="#">
+                  <div class="text-center w-100 text-gray-500">
+                    알림이 없습니다.
+                  </div>
+                </a>`;
+
+        $("#dropDown-box").find("#delete-all-notification").remove();
+
+      } else {
+
+        $(notificationData).each(function (index, item) {
+
+          output += `
+                <a class="dropdown-item d-flex align-items-center notification-row" data-id="${item.id}"
+                href="${item.targetURI != null ? item.targetURI : '#'}">
+                  <div class="mr-3">
+                    <div class="icon-circle ${item.warning ? 'bg-warning' : 'bg-success'}">
+                      <i class="fas ${item.warning ? 'fa-exclamation-triangle' : 'fa-file-alt'} text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">${item.createdAt}</div>
+                    ${item.content}
+                  </div>
+                  <i role="button" class="fas fa-times border-0 px-2 py-0 delete-notification" style="font-size: 1.5rem; margin-left: auto; color: lightgray"></i>
+                </a>`;
+
+          if($("#dropDown-box").find("#delete-all-notification").length == 0){
+            let deleteAllBtn = `<a id="delete-all-notification" class="dropdown-item text-center small text-gray-500"
+                 href="#">전체 삭제</a>`
+            $("#dropDown-box").append(deleteAllBtn);
+          }
+
+        });
+      }
+
+      $("#notification-box").find(".notification-row").remove();
+      $("#notification-box").append(output);
+    }
+
+    function checkAllNotification(){
+
+      $.ajax({
+               url: "/api/notification/checkAllNotification", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "PATCH", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               // data       : ,
+               // contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotification(userIdArr, content, isWarning, targetURI){
+
+
+      $.ajax({
+               url: "/api/notification/send", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             userIds: userIdArr,
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+
+    }
+
+    function sendNotificationToAdmin(content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToAdmin", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToInstructor(content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToInstructor", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToLearnerInProgress(content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToLearnerInProgress", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToAllInCourse(courseId, content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToAllInCourse", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             courseId: courseId,
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToLearnerInCourse(courseId, content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToLearnerInCourse", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             courseId: courseId,
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToInstructorInCourse(courseId, content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToInstructorInCourse", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             courseId: courseId,
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToAdminInCourse(courseId, content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToAdminInCourse", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             courseId: courseId,
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
+
+    function sendNotificationToAll(content, isWarning, targetURI){
+
+      $.ajax({
+               url: "/api/notification/sendNotificationToAll", // 데이터가 송수신될 서버의
+               // 주소
+               type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
+               dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
+               data       : JSON.stringify({
+                                             content: content,
+                                             warning: isWarning,
+                                             targetURI: targetURI
+                                           }),
+               contentType: "application/json; charset=utf-8",
+               // Content-Type헤더가 application/x-www-form-urlencoded;
+               // charset=UTF-8로 자동 설정되는 것을 방지
+               // async   : false, // 비동기옵션 off
+               success : function (data) { // 통신이 성공하면 수행할 함수
+
+               },
+               error   : function () {
+               },
+               complete: function () {
+               }
+             });
+    }
 
 </script>
 <th:block layout:fragment="script">
