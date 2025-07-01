@@ -125,7 +125,7 @@
 
   <!-- 버튼 -->
   <div class="col-12 d-flex justify-content-end mb-4">
-    <div th:if="${loginUserType != 'LEARNER'}">
+    <div th:if="${(loginUserType == 'INSTRUCTOR' or loginUserType == 'ADMINISTRATOR') and loginUserId == detail.writerId}">
 
       <button type="button" id="modify-btn" class="btn btn-info btn-icon-split mr-2" th:if="${loginUserType == 'INSTRUCTOR' || loginUserType == 'ADMINISTRATOR'}"
               th:data-id="${detail.id}" th:data-link="${pagingRequestDTO.generateLinkExceptPageNo()}">

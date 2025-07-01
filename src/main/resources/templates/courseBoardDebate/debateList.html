@@ -127,7 +127,7 @@
               <th:block th:if="${dto.deletedAt == null}">
                 <span th:if="${dto.isHotPost}" class="badge badge-danger mr-2">HOT</span>
                 <a th:href="|/courseBoardDebate/debateDetail?id=${dto.id}&pageNo=${responseDTO.pageNo}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}|"
-                   th:text="${#strings.abbreviate(dto.title, 20)}">제목</a>
+                   th:text="${#strings.abbreviate(dto.title, 15)}">제목</a>
                 <span th:if="${dto.isAttached}" class="ml-2">
                     <i class="fas fa-cog text-secondary"></i>
                 </span>
