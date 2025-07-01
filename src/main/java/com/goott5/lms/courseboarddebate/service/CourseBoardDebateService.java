@@ -35,4 +35,6 @@ public interface CourseBoardDebateService {
   void updateComment(int commentId, String content, UserVO loginUser);
 
   void deleteComment(int commentId, UserVO loginUser);
+
+  void checkAndPromoteToHotPost(int forumId);
 }

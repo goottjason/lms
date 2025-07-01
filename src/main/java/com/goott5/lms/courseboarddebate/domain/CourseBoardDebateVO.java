@@ -26,8 +26,10 @@ public class CourseBoardDebateVO {
   private String content;
   private int readCount;
   private int commentCount;
+  private boolean isHotPost;
   private Boolean isAttached;
   private int forumLike;
+  private LocalDateTime hotPostAt;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;

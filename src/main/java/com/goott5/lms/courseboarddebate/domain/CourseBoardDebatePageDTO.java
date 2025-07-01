@@ -27,6 +27,7 @@ public class CourseBoardDebatePageDTO {
   private int commentCount;
   private int readCount;
   private Boolean isAttached;
+  private boolean isHotPost;
   private int forumLike;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

@@ -67,6 +67,8 @@ public class CourseBoardDebateController {
       @ModelAttribute("requestDTO") CourseBoardDebatePagingRequestDTO courseBoardDebatePagingRequestDTO, Model model , HttpSession session,
       @RequestParam(required = false) String courseName) {
 
+    log.info("페이지네이션No: {}", courseBoardDebatePagingRequestDTO.getPageNo());
+
     if(courseName != null){
       courseBoardDebatePagingRequestDTO.setCourseName(courseName);
       log.info("courseName:{}", courseName);
@@ -199,12 +201,17 @@ public class CourseBoardDebateController {
 
   // 등록 페이지(GET)
   @GetMapping("/debateRegister")
-  public String getDebateRegister(@RequestParam(required = false) Integer courseId, Model model) {
-    CourseBoardDebateDTO dto = new CourseBoardDebateDTO();
-    if (courseId != null) {
-      dto.setCourseId(courseId);
+  public String getDebateRegister(@ModelAttribute CourseBoardDebatePagingRequestDTO pagingRequestDTO, Model model) {
+    CourseBoardDebateDTO debateDto = new CourseBoardDebateDTO();
+    // 목록에서 선택했던 courseId를 새 글 DTO의 기본값으로 설정
+    if (pagingRequestDTO.getCourseId() != null) {
+      debateDto.setCourseId(pagingRequestDTO.getCourseId());
     }
-    model.addAttribute("courseBoardDebateDTO", dto);
+    model.addAttribute("courseBoardDebateDTO", debateDto);
+    // 목록의 상태 정보를 담은 DTO를 뷰로 전달
+    model.addAttribute("pagingRequestDTO", pagingRequestDTO);
+    model.addAttribute("currentCourseId", pagingRequestDTO.getCourseId());
+
     return "courseBoardDebate/debateRegister";
   }
 

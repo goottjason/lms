@@ -28,11 +28,12 @@ public class CourseBoardDebateDetailInfo {
   private String title;
   private String content;
   private int readCount;
+  private LocalDateTime hotPostAt;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;
   private Boolean isAttached; // 첨부파일 여부
-
+  private boolean isHotPost; // 인기글 여부
   private UserVO user; // 작성자 UserVO
   private List<FileSelectDTO> attachments;
   private boolean isLikedByCurrentUser;

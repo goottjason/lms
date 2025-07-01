@@ -131,7 +131,7 @@ public class CourseBoardMaterialsController {
 
     // 등록 페이지(GET)
     @GetMapping("/materialsRegister")
-    public String getMaterialsRegister(
+    public String getMaterialsRegister(@ModelAttribute CourseBoardMaterialsPagingRequestDTO pagingRequestDTO,
         @RequestParam(required = false) Integer courseId,
         Model model) {
 
@@ -141,6 +141,7 @@ public class CourseBoardMaterialsController {
         }
 
         model.addAttribute("courseBoardMaterialsDTO", dto);
+        model.addAttribute("currentCourseId", pagingRequestDTO.getCourseId());
         return "courseBoardMaterials/materialsRegister";
     }
 
