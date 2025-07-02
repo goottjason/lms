@@ -1,9 +1,13 @@
 package com.goott5.lms.training;
 
 
+import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
+import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.domain.registerdto.SelectSchSubDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
@@ -12,6 +16,7 @@ import com.goott5.lms.training.mapper.TrainingMapper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +38,9 @@ class TrainingTest {
 
   @Autowired(required = true)
   TrainingMapper trainingMapper;
+
+  @Autowired(required = true)
+  UtilMapper utilMapper;
 
   @Test
   public void selectTrainingTest() {
@@ -261,7 +269,65 @@ class TrainingTest {
       log.info("selectSchSubDTO={}", selectSchSubDTO);
     }
 
+    SelectAllWithoutActualDTO selectAllWithoutActualDTO = SelectAllWithoutActualDTO.builder()
+        .selectCourseDTO(selectCourseDTO)
+        .trainingDate(thisDate)
+        .numberOfLearner(learnerNum)
+        .responseParticipationDTO(responseParticipationDTO)
+        .selectSchSubDTOList(schSubDTOList)
+        .build();
 
+    log.info("selectAllWithoutActualDTO={}", selectAllWithoutActualDTO);
+
+
+
+  }
+
+  @Test
+  @Transactional
+  public void selectCourseByIdForTeacher(){
+
+    LocalDate date = LocalDate.now();
+
+    InsertTrainingDTO insertTrainingDTO = InsertTrainingDTO.builder()
+        .courseId(38)
+        .trainingDate(date)
+        .instructorId(35)
+        .build();
+
+    int insertTraining = trainingMapper.insertTrainingLog(insertTrainingDTO);
+    if(insertTraining > 0){
+      log.info("insertTraining={}", insertTraining);
+    }else{
+      log.info("insertTraining 실패");
+    }
+
+    int lastAutoNum = utilMapper.selectLastIdFromAll();
+
+    log.info("lastAutoNum={}", lastAutoNum);
+
+    InsertTrainingDetailDTO insertTrainingDetailDTO = InsertTrainingDetailDTO.builder()
+        .trainingId(lastAutoNum)
+        .period(1)
+        .plan(6297)
+        .build();
+
+    int insertTraingDetail = trainingMapper.insertTrainingDetail(insertTrainingDetailDTO);
+
+    if(insertTraingDetail == 1){
+      log.info("insertTrainingDetail={}", insertTraingDetail);
+    }else{
+      log.info("insertTrainingDetail 실패");
+    }
+
+  }
+
+  @Test
+  @Transactional
+  public void selectCourseByIdForAdmin(){
+    boolean isHoliday = trainingMapper.isHoliday("2025-07-25");
+
+    log.info("isHoliday={}", isHoliday); //false
 
   }
 
