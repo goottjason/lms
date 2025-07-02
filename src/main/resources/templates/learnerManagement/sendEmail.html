@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html
+  lang="ko"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:th="http://www.thymeleaf.org"
+  layout:decorate="~{layout/basic.html}">
+<head>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">이메일 발송</h1>
+    <div class="col d-flex justify-content-end">
+
+      <div id="target-radio" class="form-group">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input" type="radio" name="selector" id="all"
+            value="all">
+          <label class="form-check-label" for="all">전체 교육생</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input" type="radio" name="selector" id="course"
+            value="course">
+          <label class="form-check-label" for="course">과정 선택</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input" type="radio" name="selector" id="fullname"
+            value="fullname">
+          <label class="form-check-label" for="fullname">이름 검색</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div id="send-target" class="card shadow mb-4">
+    <div class="card-header py-2">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">발송 대상 선택</h6>
+        </div>
+
+        <div class="search-course col-3">
+          <select id="inProgress-selector" class="form-control">
+            <option value="1">진행 중</option>
+            <option value="0">종료</option>
+          </select>
+        </div>
+        <div class="search-course col-6">
+          <select id="courseId" class="form-control">
+
+          </select>
+        </div>
+
+        <div class="search-fullname col-4 input-group">
+          <input id="search-fullname" type="text" class="form-control" placeholder="이름으로 검색하세요.">
+          <div class="input-group-append">
+            <button id="search-fullname-btn" class="btn btn-primary" type="button">
+              <i class="fas fa-search fa-sm"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle text-center" style="width: 5%;">
+              <div class="d-flex justify-content-center align-items-center">
+                <input id="check-all" class="form-check-input" type="checkbox">
+              </div>
+            </th>
+            <th scope="col" class="align-middle" style="width: 10%;">이름</th>
+            <th scope="col" class="align-middle" style="width: 30%;">과정명</th>
+            <th scope="col" class="align-middle" style="width: 15%;">상태</th>
+            <th scope="col" class="align-middle" style="width: 15%;">이메일주소</th>
+            <th scope="col" class="align-middle" style="width: 10%;">출석률</th>
+            <th scope="col" class="align-middle" style="width: 15%;">취업여부</th>
+          </tr>
+          </thead>
+          <tbody id="learner-info">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <div class="row align-items-center">
+        <div class="col">
+          <h6 class="m-0 font-weight-bold text-primary">이메일 작성</h6>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-2">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" id="title" class="form-control" placeholder="메일 제목을 작성하세요.">
+          </div>
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="contents">내용</label>
+            <textarea
+              id="contents"
+              class="form-control"
+              placeholder="메일 내용을 작성하세요."
+              style="height: 280px; white-space: pre-wrap;" wrap="hard"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 버튼 -->
+  <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+    <button
+      id="sendEmailModalBtn" class="btn btn-primary btn-icon-split mr-2">
+          <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
+      <span class="text px-3">이메일 발송</span>
+    </button>
+  </div>
+
+  <!-- 이메일발송 Modal-->
+  <div
+    class="modal fade"
+    id="sendEmailModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">이메일 발송</h5>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <input type="hidden" id="login-user-id" th:value="${session.loginUser.id}">
+  <input type="hidden" id="login-user-type" th:value="${session.loginUser.type}">
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+
+    const loginUserId   = $("#login-user-id").val();
+    const loginUserType = $("#login-user-type").val();
+
+    let baseConfig = {
+      loginUserId  : loginUserId,
+      loginUserType: loginUserType
+    };
+
+    $(document).ready(function () {
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const leId      = urlParams.get("leId");
+
+      console.log(leId);
+
+      if (leId !== null) {
+        loadLearnersByLeId(leId);
+      } else {
+        $("#all").prop("checked", true);
+        updateVisibility();
+      }
+
+      loadCourses(1);
+
+      $("#inProgress-selector").on("change", function () {
+        $("#learner-info").empty();
+        const inProgressValue = $(this).val();
+        loadCourses(inProgressValue);
+      });
+
+      function updateVisibility() {
+        $("#learner-info").empty();
+        $("#search-fullname").val("");
+        const selected = $("input[name=\"selector\"]:checked").val();
+
+        if (selected === "all") {
+          $("#send-target").hide();
+        } else if (selected === "course") {
+          $("#send-target").show();
+          $(".search-course").show();
+          $(".search-fullname").hide();
+        } else if (selected === "fullname") {
+          $("#send-target").show();
+          $(".search-course").hide();
+          $(".search-fullname").show();
+        }
+      }
+
+      $("input[name=\"selector\"]").on("change", updateVisibility);
+
+      $("#courseId").on("change", function () {
+        const courseId = $(this).val();
+
+        if (!courseId) {
+          $("#learner-info").empty();
+          return;
+        }
+
+        loadLearnersByCourseId(courseId);
+
+      });
+
+      $("#search-fullname").on("keydown", function (e) {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault();
+          $("#search-fullname-btn").click();
+        }
+      });
+
+      $("#search-fullname-btn").on("click", function () {
+        const fullname = $("#search-fullname").val();
+
+        if (!fullname) {
+          $("#learner-info").empty();
+          return;
+        }
+
+        loadLearnersByFullname(fullname);
+
+      });
+
+      $("#check-all").on("change", function () {
+        const isChecked = $(this).prop("checked");
+        $("tbody input[type=\"checkbox\"]").prop("checked", isChecked);
+      });
+
+      $("tbody").on("change", "input[type=\"checkbox\"]", function () {
+        const total   = $("tbody input[type=\"checkbox\"]").length;
+        const checked = $("tbody input[type=\"checkbox\"]:checked").length;
+        $("#check-all").prop("checked", total === checked);
+      });
+
+      $("#sendEmailModalBtn").on("click", function () {
+        let selected = $("input[name=\"selector\"]:checked").val();
+        if (selected !== "all") {
+          let checkedBoxes = $("input.target-check:checked");
+          if (checkedBoxes.length === 0) {
+            alert("대상자를 선택해주세요.");
+
+            return;
+          }
+        }
+        $("#sendEmailModal").modal({
+                                     backdrop: "static",
+                                     keyboard: false
+                                   });
+
+        $(".modal-body").html("대상자에게 이메일을 발송 하시겠습니까?");
+        $(".modal-footer").html(`
+          <button id="sendEmailBtn" class="btn btn-primary" type="button">발송</button>
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+        `);
+      });
+
+      $(".modal").on("click", "#sendEmailBtn", function () {
+        let selected = $("input[name=\"selector\"]:checked").val();
+        if (selected === "all") {
+          sendEmailAll();
+        } else {
+          sendEmailTarget();
+        }
+      });
+    });
+
+    function loadLearnersByFullname(fullname) {
+
+      let learnerConfig = {
+        pageNo        : null, // 페이징 할 경우: 1
+        pageSize      : null, // 페이징 할 경우: 10
+        type          : "userFullname",
+        keyword       : fullname, // 검색 할 경우: "김학생"
+        orderBy       : "userFullname",
+        orderDirection: "ASC",
+        // 필터링
+        coIsInProgress: null, // 과정이 진행중인 교육생들만
+        leCourseId    : null, // 해당 과정에 배정된 교육생들만ㅇㅇ
+        leId          : null // 해당 learner_enrollment_id 교육생만
+      };
+
+      fetchLearners(learnerConfig);
+
+    }
+
+    function loadLearnersByCourseId(courseId) {
+
+      let learnerConfig = {
+        pageNo        : null, // 페이징 할 경우: 1
+        pageSize      : null, // 페이징 할 경우: 10
+        type          : "userFullname",
+        keyword       : null, // 검색 할 경우: "김학생"
+        orderBy       : "userFullname",
+        orderDirection: "ASC",
+        // 필터링
+        coIsInProgress: null, // 과정이 진행중인 교육생들만
+        leCourseId    : courseId, // 해당 과정에 배정된 교육생들만ㅇㅇ
+        leId          : null // 해당 learner_enrollment_id 교육생만
+      };
+
+      fetchLearners(learnerConfig);
+
+    }
+
+    async function fetchLearners(learnerConfig) {
+      let learners = await apiGetRequestParams(
+        "/api/learnermanagement/learners",
+        {...baseConfig, ...learnerConfig});
+      console.log(learners);
+
+      let learnerTable = "";
+
+      if (learners.totalRecords === 0) {
+        learnerTable += `
+            <tr>
+            <td colspan="7" class="align-middle text-center pt-5">
+              조회된 교육생이 없습니다.
+            </td>
+            </tr>
+        `;
+      } else {
+
+        $.each(learners.records, function (i, e) {
+
+          const employmentStatusMap = {
+            UNEMPLOYED     : "취업준비중",
+            EMPLOYED       : "취업",
+            STUDYING       : "학업",
+            NOT_SEEKING_JOB: "취업의사없음"
+          };
+
+          const leCompletionStatusMap = {
+            IN_PROGRESS: "교육생",
+            COMPLETED  : "수료생",
+            DROPPED    : "중퇴생"
+          };
+
+          const employmentStatus = employmentStatusMap[e.learnerEmploymentSupport.esEmploymentStatus] ||
+                                   "기타";
+
+          const leCompletionStatus = leCompletionStatusMap[e.leCompletionStatus] ||
+                                     "기타";
+
+          learnerTable += `
+            <tr>
+            <td class="align-middle text-center">
+              <div class="d-flex justify-content-center align-items-center">
+                <input class="target-check form-check-input" type="checkbox">
+              </div>
+            </td>
+            <td class="text-center align-middle">${e.learnerUser.userFullname}</td>
+            <td class="title align-middle">${e.learnerCourse.coName}</td>
+            <td class="text-center title align-middle">${leCompletionStatus}</td>
+            <td class="text-center align-middle">${e.learnerUser.userEmail}</td>
+            <td class="text-center align-middle">${e.partOverview.attendanceRate}<span>%</span></td>
+            <td class="text-center align-middle">${employmentStatus}</td>
+            </tr>
+        `;
+
+        });
+      }
+      $("#learner-info").html(learnerTable);
+
+    }
+
+    async function loadLearnersByLeId(leId) {
+
+      $("input[name='selector']").prop("checked", false);
+
+      $("#send-target").show();
+
+      $("#target-radio").hide();
+      $(".search-course").hide();
+      $(".search-fullname").hide();
+      $("#send-target > .card-header")
+      .removeClass("py-2")
+      .addClass("py-3");
+
+      // 조회 조건 설정
+      let learnerConfig = {
+        pageNo        : null,
+        pageSize      : null,
+        type          : "userFullname",
+        keyword       : null,
+        orderBy       : "userFullname",
+        orderDirection: "ASC",
+        coIsInProgress: null,
+        leCourseId    : null,
+        leId          : leId
+      };
+
+      await fetchLearners(learnerConfig);
+
+      $("#learner-info tr").each(function () {
+        const row       = $(this);
+        const emailCell = row.find("td").eq(4);
+        if (emailCell.length > 0) {
+          row.find("input[type='checkbox']").prop("checked", true);
+        }
+      });
+    }
+
+    function loadCourses(inProgress) {
+
+      let courseConfig = {
+        pageNo        : null,
+        pageSize      : null,
+        type          : "coName",
+        keyword       : null,
+        orderBy       : "coStartDate",
+        orderDirection: "ASC",
+        offset        : null,
+        coId          : null,
+        coIsInProgress: inProgress
+      };
+
+      fetchCourses(courseConfig);
+
+    }
+
+    async function fetchCourses(courseConfig) {
+      let course = await apiGetRequestParams(
+        "/api/coursemanagement/courses",
+        {...baseConfig, ...courseConfig});
+      console.log(course);
+
+      const $courseSelect = $("#courseId");
+      $courseSelect.empty(); // 기존 옵션 제거
+
+      if (course.totalRecords === 0) {
+        $courseSelect.append(`<option value="">과정 없음</option>`);
+        return;
+      }
+
+      $courseSelect.append(`<option value="">과정을 선택하세요</option>`);
+      course.records.forEach(course => {
+        $courseSelect.append(
+          `<option value="${course.courseWithAssignedInfo.coId}">${course.courseWithAssignedInfo.coName}</option>`
+        );
+      });
+
+    }
+
+    function sendEmailAll() {
+
+      let learnerConfig = {
+        pageNo        : null, // 페이징 할 경우: 1
+        pageSize      : null, // 페이징 할 경우: 10
+        type          : "userFullname",
+        keyword       : null, // 검색 할 경우: "김학생"
+        orderBy       : "userFullname",
+        orderDirection: "ASC",
+        // 필터링
+        coIsInProgress: 1, // 과정이 진행중인 교육생들만
+        leCourseId    : null, // 해당 과정에 배정된 교육생들만ㅇㅇ
+        leId          : null // 해당 learner_enrollment_id 교육생만
+      };
+
+      fetchAllLearnersAndSendEmail(learnerConfig);
+
+    }
+
+    async function fetchAllLearnersAndSendEmail(learnerConfig) {
+      let learners = await apiGetRequestParams(
+        "/api/learnermanagement/learners",
+        {...baseConfig, ...learnerConfig});
+      console.log(learners.records);
+
+      let title    = $("#title").val();
+      let contents = $("#contents").val();
+
+      let emailList = [];
+
+      $.each(learners.records, function (i, e) {
+        emailList.push(e.learnerUser.userEmail);
+      });
+
+      $(".modal-body").html(`
+        <div class="text-center">
+          <p class="mb-2">이메일 발송 중입니다. 잠시만 기다려주세요.</p>
+          <div class="progress" style="height: 20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                 role="progressbar" style="width: 100%;">
+              진행 중...
+            </div>
+          </div>
+        </div>
+      `);
+      $(".modal-footer").html("");
+
+      axios.post("/learnerManagement/sendEmail", {
+        title    : title,
+        contents : contents,
+        emailList: emailList,
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $(".modal-body").html("이메일 발송이 완료되었습니다.");
+               $(".modal-footer").html(`
+                  <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+                `);
+               $("#title").val("");
+               $("#contents").val("");
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+             $(".modal-body").html(`<p class="text-danger">이메일 발송 중 오류가 발생했습니다.</p>`);
+             $(".modal-footer").html(`
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+              `);
+           });
+    }
+
+    function sendEmailTarget() {
+
+      let title    = $("#title").val();
+      let contents = $("#contents").val();
+
+      let emailList = [];
+
+      let checkedBoxes = $("input.target-check:checked");
+
+      checkedBoxes.each(function () {
+        let row   = $(this).closest("tr");
+        let email = row.find("td").eq(4).text().trim();
+        emailList.push(email);
+      });
+
+      $(".modal-body").html(`
+        <div class="text-center">
+          <p class="mb-2">이메일 발송 중입니다. 잠시만 기다려주세요.</p>
+          <div class="progress" style="height: 20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                 role="progressbar" style="width: 100%;">
+              진행 중...
+            </div>
+          </div>
+        </div>
+      `);
+      $(".modal-footer").html("");
+
+      axios.post("/learnerManagement/sendEmail", {
+        title    : title,
+        contents : contents,
+        emailList: emailList,
+
+      })
+           .then(function (response) {
+             if (response.data.code === 200) {
+               $(".modal-body").html("이메일 발송이 완료되었습니다.");
+               $(".modal-footer").html(`
+                  <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+                `);
+               $("#title").val("");
+               $("#contents").val("");
+             }
+           })
+           .catch(function (error) {
+             console.log(error);
+             $(".modal-body").html(`<p class="text-danger">이메일 발송 중 오류가 발생했습니다.</p>`);
+             $(".modal-footer").html(`
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+              `);
+           });
+
+    }
+
+    async function apiGetRequestParams(endpoint, params) {
+      try {
+        const response = await axios.get(endpoint, {params: params});
+        return response.data.data;
+      } catch (error) {
+        return [];
+      }
+    }
+
+  </script>
+</th:block>
+</body>
+</html>

@@ -31,33 +31,38 @@ public class WebConfig implements WebMvcConfigurer {
                     "/user/certificateAuthCode", "/user/removeCertificateNo",
                     "/user/mobileDuplicateCheck", "/user/changePwd", "/user/changePwdForSignup",
                     "/user/needLogin", "/user/invalidAccess",
+                    "/.well-known/**",
+                    "/swagger-ui/**",
                     "/css/**", "/js/**",
-                    "/images/**", "/.well-known/**",
+                    "/images/**",
                     "/fonts/**", "/img/**", "/favicon.ico", "/vendor/**", "/api/**", "/error/**");
 
     registry.addInterceptor(authInterceptorForADMINISTRATOR)
             .addPathPatterns("/courseRegister", "/courseManagement/courseModify",
-                    "/learnerManagement/employment", "/cancelDateManagement",
+                    "/cancelDateManagement",
                     "/operationsManagement/userRegister", "/communityInquiry/answerRegister",
-                    "/communityInquiry/answerDelete", "/reportList");
+                    "/communityInquiry/answerDelete", "/admin/reports",
+                    "/communityNotice/noticeRegister", "/communityNotice/noticeModify");
 
     registry.addInterceptor(authInterceptorForINSTRUCTOR)
             .addPathPatterns("/homework/homeworkRegister", "/homework/homeworkModify",
                     "/homework/deleteHomework", "/homework/evalRegister",
                     "/homework/modifyEvalPost", "/homework/deleteEval",
                     "/training/trainingRegister", "/training/trainingModify",
-                    "/training/trainingDelete", "/test/reigster");
+                    "/training/trainingDelete", "/test/reigster", "/vacation/vacationApproval");
 
     registry.addInterceptor(authInterceptorForLEARNER)
             .addPathPatterns("/participation/participationView", "/homework/submissionRegister",
                     "/homework/submissionModify", "/homework/submissionDelete",
-                    "/test/testDetail/**/learner", "/test/testSubmission",
+                    "/test/learner/testDetail/**", "/test/testSubmission",
                     "/courseBoardQnA/register", "/courseBoardQnA/modify/**");
 
     registry.addInterceptor(authInterceptorForADMINISTRATORandINSTRUCTOR)
             .addPathPatterns("/learnerManagement/learnerList", "/learnerManagement/learnerDetail",
                     "/learnerManagement/employment", "/courseBoardMaterials/materialsRegister",
-                    "/traininglog/traningList", "/training/trainingDetail", "/test/testDetail/**");
+                    "/courseBoardMaterials/materialsModify",
+                    "/traininglog/traningList", "/training/trainingDetail", "/test/testDetail/**",
+                    "/learnerManagement/employment");
 
     registry.addInterceptor(authInterceptorForLEARNERandINSTRUCTOR)
             .addPathPatterns("/communityInquiry/inquiryRegister",
