@@ -44,7 +44,6 @@ public class TestSubmissionController {
         testSubmissionService.getTestSubmission(testId, session));
   }
 
-
   @GetMapping("/my/tests/{testId}/submission2")
   public ResponseEntity<ApiResult<TestSubmissionVO>> getTestSubmission2(
       @PathVariable(required = true) int testId,

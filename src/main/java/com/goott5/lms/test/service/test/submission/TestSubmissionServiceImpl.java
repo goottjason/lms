@@ -40,7 +40,8 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
 
   @Override
   public TestSubmissionVO getTestSubmission2(int testId, int userId) {
-    return testSubmissionMapper.selectTestSubmission(testId, userId);
+
+    return testSubmissionMapper.selectTestSubmission2(testId, userId);
   }
 
 

@@ -2,12 +2,17 @@ let testInfo = null;
 let quiz = new Quiz();
 let userAnswer;
 let userScore;
+let userId;
 
 $(document).ready(async function () {
 
   try {
 
     const testId = parseInt(UrlUtils.getPathSegment(3));
+
+    userId = parseInt(UrlUtils.getQueryParam("userId"));
+    console.log(userId);
+
     const currentPageNo = parseInt(UrlUtils.getQueryParam("currentPageNo"));
     const testStatus = UrlUtils.getQueryParam("testStatus");
     console.log(testStatus);
@@ -40,8 +45,13 @@ $(document).ready(async function () {
     const courseName = UrlUtils.getQueryParam("courseName");
     console.log(courseName);
 
+    // const submissionRes = await apiCall("get",
+    //     `/api/my/tests/${testId}/submission`);
+
+    console.log(userId);
     const submissionRes = await apiCall("get",
-        `/api/my/tests/${testId}/submission`);
+        `/api/my/tests/${testId}/submission2`, null, { userId: userId });
+    console.log(submissionRes);
     const submissionStatus = submissionRes.data.data.submissionStatus;
     renderTestDetailPageForLearnerBySubmissionStatus(
         submissionRes.data.data);
