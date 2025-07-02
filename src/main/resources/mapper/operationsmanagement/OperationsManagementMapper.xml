@@ -50,7 +50,7 @@
 
 
 
-  <select id="selectClassroomsAllorOne"
+  <!--<select id="selectClassroomsAllorOne"
     resultType="com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO">
     SELECT
     cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
@@ -74,6 +74,38 @@
     <if test="page.pageSize != null and page.pageNo != null">
       LIMIT #{page.offset}, #{page.pageSize}
     </if>
+  </select>-->
+
+  <select id="selectClassroomsAllorOne"
+    resultType="com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO">
+    select
+    cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+    c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+    c.start_date, c.end_date,
+    u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+    u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+    from classroom cr
+    join classroom_allocation ca on cr.id = ca.classroom_id
+    join course c on c.id = ca.course_id and c.is_in_progress = 1
+    JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+    JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+    union
+    select
+    cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+    c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+    c.start_date, c.end_date,
+    u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+    u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+    from classroom cr
+    left join classroom_allocation ca on cr.id = ca.classroom_id
+    left join course c on c.id = ca.course_id
+    LEFT JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+    LEFT JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+    where cr.id not in
+    (select cr.id from classroom cr
+    join classroom_allocation ca on cr.id = ca.classroom_id
+    join course c on c.id = ca.course_id and c.is_in_progress = 1)
+    order by name asc
   </select>
 
   <update id="updateClassroom">
@@ -114,4 +146,24 @@
     </if>
     WHERE user_id = #{staffId}
   </update>
+
+  <select id="selectClassroomUsage" resultType="com.goott5.lms.operationsmanagement.domain.ClassroomUsageResp">
+    SELECT
+    crm.name AS classroom_name,
+    crs.name AS course_name,
+    crs.start_date AS start_date,
+    crs.end_date AS end_date
+    FROM classroom crm
+    LEFT JOIN classroom_allocation ca ON crm.id = ca.classroom_id
+    LEFT JOIN course crs ON ca.course_id = crs.id
+    WHERE
+    crs.start_date IS NULL
+    OR
+    crs.start_date BETWEEN
+    DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+    AND
+    DATE_ADD(CURDATE(), INTERVAL 9 MONTH)
+    ORDER BY crm.name, crs.start_date
+  </select>
+
 </mapper>

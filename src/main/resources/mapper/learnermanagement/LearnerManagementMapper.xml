@@ -289,10 +289,12 @@
     leCourseId,
     leCompletionStatus,
     coIsInProgress,
-    coCourseHeadId,
     coInstructorId,
+    coInstructorName,
+    coCourseHeadId,
     coCourseHeadName,
-    coInstructorName
+    coClassroomId,
+    coClassroomName
     FROM (
     SELECT
     ul.id AS userId,
@@ -320,9 +322,9 @@
     GROUP BY ul.id, ul.fullname, le.id, le.user_id, le.course_id, le.completion_status, co.is_in_progress, cr.id, cr.name
     ) AS origin
     WHERE
-      <include refid="mapper.learnermanagement.CommonManagement.authForCourse"/>
+      <include refid="mapper.learnermanagement.CommonManagement.authForLearner"/>
       <include refid="mapper.learnermanagement.CommonManagement.filteringForLearner"/>
-      <include refid="mapper.learnermanagement.CommonManagement.orderAndPaging"/>
+      <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForLearner"/>
   </select>
 
   <!--사용자 조회-->
@@ -532,5 +534,11 @@
       u.id = #{loginUserId}
   </select>
 
+
+  <update id="updateCompletionStatus">
+    UPDATE learner_enrollment le
+    SET le.completion_status = #{leCompletionStatus}
+    WHERE le.id = #{leId}
+  </update>
 
 </mapper>

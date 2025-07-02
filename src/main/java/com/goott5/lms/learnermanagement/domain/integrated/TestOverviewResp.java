@@ -12,4 +12,6 @@ import lombok.*;
 public class TestOverviewResp<TestWithSub> {
   private List<TestWithSub> testList;
   private Integer totalCount;
+  private Double testAvgScore;
+  private Boolean isCompletionAboutTest;
 }

@@ -3,6 +3,7 @@ package com.goott5.lms.operationsmanagement.service;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
+import com.goott5.lms.operationsmanagement.domain.ClassroomUsageResp;
 import com.goott5.lms.operationsmanagement.domain.IntegratedReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomRespDTO;
@@ -11,6 +12,7 @@ import com.goott5.lms.operationsmanagement.domain.PageStaffRespDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
 import java.time.LocalDate;
+import java.util.List;
 
 
 public interface OperationsManagementService {
@@ -30,4 +32,8 @@ public interface OperationsManagementService {
   Boolean addClassroom(IntegratedReqDTO integratedReqDTO);
 
   Boolean updateLeaveDateByStaffId(Integer loginUserId, String loginUserType, Integer staffId, String leaveDate);
+
+  Boolean modifyClassroomIsActiveBycoClassroomId(Integer coClassroomId);
+
+  List<ClassroomUsageResp> getClassroomUsage();
 }

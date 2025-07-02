@@ -1,170 +1,128 @@
 const loginUserId = $('#login-user-id').val();
 const loginUserType = $('#login-user-type').val();
-let isInProgress =  '1';
-let courses = null;
-const courseConfig = {
-  pageNo: null,
-  pageSize: null,
-  type: null,
-  keyword: null,
-  orderBy: null,
-  orderDirection: null,
-};
-const config = {
-  pageNo: 1,
-  pageSize: 10, // 테스트
-  type: "name",
-  keyword: null,
-  orderBy: "name",
-  orderDirection: "ASC",
-};
 
-/* ================================================================================ */
+let baseConfig = {
+  loginUserId: loginUserId,
+  loginUserType: loginUserType
+}
+let courseConfig = {
+  pageNo: 1,
+  pageSize: 10,
+  type: "coName", // Builder.Default (coName)
+  keyword: null,
+  orderBy: "coStartDate", // Builder.Default (coStartDate)
+  orderDirection: "ASC", // Builder.Default (ASC)
+  // 필터링
+  coIsInProgress: null,
+  coId: null
+};
 
 $(document).ready(function() {
 
-  // 관리자, 강사 모두 숨김
-  // $("#courseSelector").hide();
-  if (loginUserType == "INSTRUCTOR") {
-    updateTopCourseSelector();
-  } else {
-    $("#courseSelector").hide();
-  }
-  getListState();
-  $("#is-in-progress").val(isInProgress == null ? '' : isInProgress);
-  $('#search-input').val(config.keyword);
-  $('#order-direction').val(config.orderDirection);
-  $('#order-by').val(config.orderBy);
+  window.addEventListener('beforeunload', function(e) {
 
-  fetchAndDisplayView();
+    // 외부로 이동 시 config 데이터 삭제
+    if (!sessionStorage.getItem('isEnteringDetail')) {
+      sessionStorage.removeItem('courseConfig');
+    }
+    // 내부로 이동 시 플래그만 삭제 (목록으로 돌아와도 courseConfig는 남아있음)
+    else {
+      sessionStorage.removeItem('isEnteringDetail');
+    }
+  });
 
-  $('#is-in-progress').on('change', handleProgressStatusChange);
-  $('#search-button').on('click', handleSearchChange);
+  // 세션 정보 불러오기
+  getStatus();
+
+  // ADMINISTRATOR는 메뉴로 접근, 그 외에는 과정이력조회에서 접근 (상단셀렉트박스 불필요)
+  $('#courseSelector').hide();
+
+  // 셀렉트박스의 기본값 설정
+  $("#is-in-progress").val(
+      courseConfig.coIsInProgress == null ? '' : courseConfig.coIsInProgress);
+  $('#search-input').val(
+      courseConfig.keyword == null ? '' : courseConfig.keyword);
+  $('#order-by').val(courseConfig.orderBy);
+  $('#order-direction').val(courseConfig.orderDirection);
+
+  // 리스트 조회 후 뷰로 반환
+  fetchAndDisplayCourses();
+
+  // 이벤트 핸들러
+  $(document).on('change', '#is-in-progress', handleIsInProgressSelectChange);
+  $(document).on('click', '#search-button', handleSearchButtonClick);
   $(document).on('keydown', '#search-input', function(e) {
     if (e.key == "Enter") {
       e.preventDefault();
-      handleSearchChange();
+      handleSearchButtonClick();
     }
   });
-  $('#order-by').on('change', handleOrderByChange);
-  $('#order-direction').on('change', handleOrderDirectionChange);
-  $(document).on('click', '.page-link', handlePageBtnClick);
-  $(document).on('change', '#courseSelector', handleCourseSelectChange)
+  $(document).on('change', '#order-by', handleOrderBySelectChange);
+  $(document).on('change', '#order-direction', handleOrderDirectionSelectChange);
+  $(document).on('click', '.page-link', handlePageButtonClick);
 });
 
 /* ================================================================================ */
 
-async function updateTopCourseSelector() {
-  let coursesWithPagination = await apiGetRequestAboutCourses(
-      '/api/management/courses',
-      {
-        loginUserId: loginUserId,
-        loginUserType: loginUserType,
-        isInProgress: null});
-  let courses = coursesWithPagination?.respDTOS || [];
-  if (!Array.isArray(courses)) courses = [];
-  console.log(courses)
-  updateTopCourseSelectorOption('#courseSelector', courses);
+async function fetchAndDisplayCourses() {
+  let coursesWithPaging= await apiGetRequestParams(
+      '/api/coursemanagement/courses',
+      {...baseConfig, ...courseConfig});
+  displayView(coursesWithPaging);
 }
-function updateTopCourseSelectorOption(selector, data) {
-  console.log(selector, data);
-  const $select = $(selector).empty();
-  data.forEach(course => {
-    $select.append($('<option>').val(course.id).text(course.name));
-  });
-}
-async function apiGetRequestAboutCourses(endpoint, additionalParams = {}) {
+async function apiGetRequestParams(endpoint, params) {
   try {
-    const response = await axios.get(endpoint, {
-      params: { ...courseConfig, ...additionalParams }
-    });
-    console.log(response.data);
-    return response.data.data;
-  } catch (error) {
-    console.error(`${endpoint} 요청 오류:`, error);
-    return [];
-  }
-}
-
-
-
-function getListState() {
-
-  let listState = sessionStorage.getItem('listState');
-
-  if (listState) {
-    const listState = JSON.parse(sessionStorage.getItem('listState'));
-    Object.assign(config, listState);
-    isInProgress = listState.isInProgress;
-  } else {
-    return;
-  }
-}
-
-function saveListState() {
-  sessionStorage.setItem('listState', JSON.stringify({
-    ...config,
-    isInProgress: isInProgress
-  }));
-}
-
-async function fetchAndDisplayView() {
-  let coursesWithPagination = await apiGetRequest(
-    '/api/management/courses',
-    {
-      loginUserId: loginUserId,
-      loginUserType: loginUserType,
-      isInProgress: isInProgress
-    }
-  );
-  let courses = coursesWithPagination?.respDTOS || [];
-  if (!Array.isArray(courses)) courses = [];
-  renderCourseTable(courses);
-  renderCoursePagination(coursesWithPagination);
-}
-
-async function apiGetRequest(endpoint, additionalParams = {}) {
-  try {
-    const response = await axios.get(endpoint, {
-      params: { ...config, ...additionalParams }
-    });
+    const response = await axios.get(endpoint, {params: params});
     return response.data.data;
   } catch (error) {
     return [];
   }
 }
-
-function renderCourseTable(courses) {
-  if(courses.length == 0) {
-    $("#table-body").html("<tr class='text-center'><td colspan='7'>데이터가 없습니다.</td></tr>"); // 바꿔야 할 부분
-    return;
-  }
+function displayView(coursesWithPaging) {
+  console.log(coursesWithPaging);
+  displayTableBody(coursesWithPaging);
+  displayPagination(coursesWithPaging, $("#course-pagination"));
+}
+function displayTableBody(coursesWithPaging) {
   $('#table-body').empty();
-  courses.forEach(function(course) {
+
+  let courses = coursesWithPaging?.records || [];
+  if (!Array.isArray(courses)) courses = [];
+
+  if(courses.length == 0) {
+    $("#table-body").html(`
+        <tr class='text-center'><td colspan='7'>데이터가 없습니다.</td></tr>
+    `);
+    return;
+  }
+
+  courses.forEach(function(record) {
+    let course = record.courseWithAssignedInfo;
     let rowHtml = `
-        <tr>
-          <td class="text-center align-middle">${course.isInProgress ? '진행 중': '종료'}</td>
-          <td class="title align-middle">
-            <a href="/courseManagement/courseDetail?courseId=${course.id}" onclick="saveListState()">${course.name}</a></td>
-          <td class="text-center align-middle">${course.startDate} ~ ${course.endDate}</td>
-          <td class="text-center align-middle">${course.numberOfLearner}</td>
-          <td class="text-center align-middle">${course.fulltimeInstructorFullname}</td>
-          <td class="text-center align-middle">${course.classroomName}</td>
-          <td class="text-center align-middle">
-            <button class="btn btn-primary btn-icon-split btn-sm">
-              <span class="text"><a href="/courseSchedule?courseId=${course.id}" onclick="saveListState()">조회</a></span>
-            </button>
-          </td>
-        </tr>
-      `;
+      <tr>
+        <td class="text-center align-middle ${course.coIsInProgress ? 'text-primary':''}">
+          ${course.coIsInProgress ? '진행 중' : '종료'}</td>
+        <td class="title align-middle">
+          <a href="/courseManagement/courseDetail?courseId=${course.coId}" onclick="setFlag();">${course.coName}</a>
+        </td>
+        <td class="text-center align-middle">${course.coStartDate} ~ ${course.coEndDate}</td>
+        <td class="text-center align-middle">${course.coNumberOfLearner}</td>
+        <td class="text-center align-middle">${course.coInstructorName}</td>
+        <td class="text-center align-middle">${course.coClassroomName}</td>
+        <td class="text-center align-middle">
+          <button class="btn btn-primary btn-icon-split btn-sm">
+            <span class="text"><a href="/courseSchedule?courseId=${course.coId}">조회</a></span>
+          </button>
+        </td>
+      </tr>`;
     $('#table-body').append(rowHtml);
   });
 }
+function displayPagination(data, $selector) {
 
-function renderCoursePagination(data) {
   // 기록이 없을 때, 페이지네이션도 표시되지 않음
   if(data.totalRecords == 0) {
-    $("#course-pagination").html(""); // 바꿔야 할 부분
+    $selector.html("");
     return;
   }
 
@@ -193,49 +151,75 @@ function renderCoursePagination(data) {
       <a class="page-link page-btn" href="#" data-page="${nextBlockPage}">다음</a>
     </li></ul>`;
 
-  $("#course-pagination").html(output);
+  $selector.html(output);
 }
 
 /* ================================================================================ */
 
-function handleProgressStatusChange() {
-  // 기존 검색 초기화 -> 유지하고 필터할 예정
-  /*$("#search-input").val('');
-  config.keyword = null;*/
-
-  // 기존에 있던 페이지 초기화
-  config.pageNo = 1;
+function handleIsInProgressSelectChange() {
+  // 기존 검색과 페이징 초기화
+  courseConfig.keyword = null;
+  $('#search-input').val('');
+  courseConfig.pageNo = 1;
+  courseConfig.pageSize = 10;
 
   // 셀렉트박스 옵션 변경
-  isInProgress = $('#is-in-progress').val() === '' ? null : $('#is-in-progress').val();
+  courseConfig.coIsInProgress =
+      $('#is-in-progress').val() === '' ? null : $('#is-in-progress').val();
 
-  saveListState();
-  fetchAndDisplayView();
+  setStatus();
+  fetchAndDisplayCourses();
 }
+function handleOrderBySelectChange() {
+  // 모든 상태 유지하고 orderBy만 변경
+  courseConfig.orderBy = $(this).val();
 
-function handleOrderByChange() {
-  config.orderBy = $(this).val();
-  saveListState();
-  fetchAndDisplayView();
+  setStatus();
+  fetchAndDisplayCourses();
 }
+function handleOrderDirectionSelectChange() {
+  // 모든 상태 유지하고 orderDirection 변경
+  courseConfig.orderDirection = $(this).val();
 
-function handleOrderDirectionChange() {
-  config.orderDirection = $(this).val();
-  saveListState();
-  fetchAndDisplayView();
+  setStatus();
+  fetchAndDisplayCourses();
 }
+function handleSearchButtonClick() {
+  // 페이징 초기화
+  courseConfig.pageNo = 1;
+  courseConfig.pageSize = 10;
 
-function handleSearchChange() {
-  config.keyword = $("#search-input").val();
-  isInProgress = null; // 전체에서 검색
-  config.pageNo = 1; // 검색결과 1페이지 보여주기
-  saveListState();
+  // 전체에서 검색
+  courseConfig.coIsInProgress = null;
   $('#is-in-progress').val('');
-  fetchAndDisplayView();
+
+  // 키워드로 검색
+  courseConfig.keyword = $("#search-input").val();
+
+  setStatus();
+  fetchAndDisplayCourses();
+}
+function handlePageButtonClick() {
+  courseConfig.pageNo = $(this).data('page');
+
+  setStatus();
+  fetchAndDisplayCourses();
 }
 
-function handlePageBtnClick() {
-  config.pageNo = $(this).data('page');
-  saveListState();
-  fetchAndDisplayView();
+function getStatus() {
+
+  let courseStatusByUser = sessionStorage.getItem('courseConfig');
+
+  if (courseStatusByUser) {
+    const parsedCourseConfig = JSON.parse(sessionStorage.getItem('courseConfig'));
+    Object.assign(courseConfig, parsedCourseConfig);
+  }
+}
+function setStatus() {
+  sessionStorage.setItem(
+      'courseConfig', JSON.stringify(courseConfig));
+}
+function setFlag() {
+  sessionStorage.setItem(
+      'isEnteringDetail', 'true');
 }

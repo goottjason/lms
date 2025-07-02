@@ -3,7 +3,7 @@ package com.goott5.lms.learnermanagement.service;
 import com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo;
 import com.goott5.lms.coursemanagement.mapper.CourseManagementMapper;
 import com.goott5.lms.learnermanagement.domain.*;
-import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
@@ -27,6 +27,7 @@ import com.goott5.lms.learnermanagement.mapper.LearnerManagementMapper;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageStaffRespDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Int;
 
 @Service
 @Slf4j
@@ -242,7 +245,7 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
   public PageLearnerResponse<LearnerOverviewResp> getLearnersByAuth(
       BaseReqDTO baseReqDTO,
-      PageLearnerRequest<LearnerRequest> pageLearnerRequest
+      PageLearnerRequest pageLearnerRequest
   ) {
     Integer originalPageNo = pageLearnerRequest.getPageNo();
     Integer originalPageSize = pageLearnerRequest.getPageSize();
@@ -341,6 +344,47 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
     return learnerManagementMapper.selectPartInfoByPid(pid);
   }
 
+  @Override
+  public Boolean modifyCompletionStatus(CompletionStatusUpdateRequest request) {
+    return learnerManagementMapper.updateCompletionStatus(request);
+  }
+
+  @Override
+  public Boolean modifyCompletionStatusByCoId(BaseReqDTO baseReqDTO, Integer coId) {
+    // 해당 과정의 교육생을 조회하여 셋다 true인 학생은 COMPLETED, 아니면 DROPPED
+    PageLearnerRequest pageLearnerRequest = PageLearnerRequest.builder()
+        .pageNo(null)
+        .pageSize(null)
+        .type("userFullname")
+        .keyword(null)
+        .orderBy("userFullname")
+        .orderDirection("ASC")
+        .coIsInProgress(null)
+        .leCourseId(coId)
+        .leId(null)
+        .build();
+    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
+        getLearnersByAuth(baseReqDTO, pageLearnerRequest);
+    List<LearnerOverviewResp> records = learnersWithPagination.getRecords();
+    for (LearnerOverviewResp record : records) {
+      String completionStatus = "DROPPED";
+      if (record.getPartOverview().getIsCompletionAboutParticipation() &&
+          record.getHomeOverview().getIsCompletionAboutHomework() &&
+          record.getTestOverview().getIsCompletionAboutTest()) {
+        completionStatus = "COMPLETED";
+      }
+      CompletionStatusUpdateRequest completionStatusUpdateRequest =
+          CompletionStatusUpdateRequest.builder()
+              .leCompletionStatus(completionStatus)
+              .leId(record.getLeId())
+              .build();
+      Boolean result = learnerManagementMapper.updateCompletionStatus(
+          completionStatusUpdateRequest);
+      log.info("updateCompletionStatusByCoId: " + record.getLeId() + " " + completionStatus);
+    }
+    return true;
+  }
+
 
   private User fetchUser(Integer userId) {
     return learnerManagementMapper.selectUserById(userId);
@@ -353,16 +397,44 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
     List<ParticipationWithReason> details =
         learnerManagementMapper.selectParticipationByLeId(leId);
 
-    Map<String, Integer> statusCount = details.stream()
-        .collect(Collectors.groupingBy(
-            ParticipationWithReason::getPartStatus,
-            Collectors.summingInt(e -> 1)
+    List<String> requiredStatuses = Arrays.asList(
+        "LATE", "ABSENCE", "LEAVE_EARLY", "ATTENDANCE", "VACATION");
+
+    Map<String, Integer> statusCount = requiredStatuses.stream()
+        .collect(Collectors.toMap(
+            status -> status,
+            status -> (int) details.stream()
+                .filter(d -> status.equals(d.getPartStatus()))
+                .count()
         ));
+
+    log.info("statusCount: " + statusCount);
+
+    int attendance = statusCount.getOrDefault("ATTENDANCE", 0);
+    int absence = statusCount.getOrDefault("ABSENCE", 0);
+    int vacation = statusCount.getOrDefault("VACATION", 0);
+    int late = statusCount.getOrDefault("LATE", 0);
+    int leaveEarly = statusCount.getOrDefault("LEAVE_EARLY", 0);
+
+    double totalScore = attendance + vacation + (late * 0.5) + (leaveEarly * 0.5);
+    int totalCount = attendance + absence + vacation + late + leaveEarly;
+    Double attendanceRate = 100.0;
+    if (totalCount > 0) {
+      attendanceRate = Math.round((totalScore / totalCount) * 100 * 100.0) / 100.0;
+    }
+
+    // isCompletionAboutParticipation (80% 이상인지 체크하여 true)
+    Boolean isCompletionAboutParticipation = false;
+    if (attendanceRate >= 80.0) {
+      isCompletionAboutParticipation = true;
+    }
 
     return ParticipationOverviewResp.<ParticipationWithReason>builder()
         .partList(details)
         .totalCount(details.size())
         .statusCount(statusCount)
+        .attendanceRate(attendanceRate)
+        .isCompletionAboutParticipation(isCompletionAboutParticipation)
         .build();
   }
 
@@ -372,9 +444,30 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
     List<HomeworkWithSubEval> details =
         learnerManagementMapper.selectHomeworkByCourseIdAndUserId(leCourseId, leUserId);
 
+    // 과제 평균패스율
+    Integer denominator = 0;
+    Integer numerator = 0;
+    Double homeworkPassRate = 100.0;
+    Boolean isCompletionAboutHomework = false;
+    if (details.size() > 0) {
+      for (HomeworkWithSubEval detail : details) {
+        if (detail.getHeIsPass() != null) { // 평가까지 완료된 과제에 대해
+          denominator++;
+          if (detail.getHeIsPass()) {
+            numerator++;
+            isCompletionAboutHomework = true;
+          }
+        }
+      }
+      homeworkPassRate = Math.round((numerator/denominator) * 100 * 100.0) / 100.0;
+    }
+    // isCompletionAboutHomework (1번이상 패스가 있는지 체크하여 true)
+
     return HomeworkOverviewResp.<HomeworkWithSubEval>builder()
         .homeList(details)
         .totalCount(details.size())
+        .homeworkPassRate(homeworkPassRate)
+        .isCompletionAboutHomework(isCompletionAboutHomework)
         .build();
   }
 
@@ -382,9 +475,28 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
       Integer leCourseId, Integer leUserId) {
     List<TestWithSub> details =
         learnerManagementMapper.selectTestByCourseIdAndUserId(leCourseId, leUserId);
+
+    // 시험 평균점수
+    Integer denominator = details.size();
+    Integer numerator = 0;
+    Double testAvgScore = 100.0; // 만약 시험이 하나도 없으면 전부 100점 처리
+    Boolean isCompletionAboutTest = false;
+    if (details.size() > 0) {
+      for (TestWithSub detail : details) {
+        numerator += detail.getTsScore();
+      }
+      testAvgScore = Math.round((numerator/denominator) * 100) / 100.0;
+    }
+    // isCompletionAboutTest (평균점수 60점 이상인지 체크하여 true)
+    if (testAvgScore >= 60.0) {
+      isCompletionAboutTest = true;
+    }
+
     return TestOverviewResp.<TestWithSub>builder()
         .testList(details)
         .totalCount(details.size())
+        .testAvgScore(testAvgScore)
+        .isCompletionAboutTest(isCompletionAboutTest)
         .build();
   }
 

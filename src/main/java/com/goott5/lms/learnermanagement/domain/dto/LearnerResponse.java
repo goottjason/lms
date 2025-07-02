@@ -19,10 +19,10 @@ public class LearnerResponse {
 
   private Boolean coInProgress;
 
-  private Integer coCourseHeadId;
   private Integer coInstructorId;
-  private String coCourseHeadName;
   private String coInstructorName;
+  private Integer coCourseHeadId;
+  private String coCourseHeadName;
   private Integer coClassroomId;
   private String coClassroomName;
 }

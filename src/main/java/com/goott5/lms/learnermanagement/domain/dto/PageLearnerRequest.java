@@ -9,17 +9,18 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PageLearnerRequest<T> {
+public class PageLearnerRequest {
   private Integer pageNo;
   private Integer pageSize;
 
-  private String type;
+  @Builder.Default
+  private String type = "userFullname";
   private String keyword;
 
-  private String orderBy;
-  private String orderDirection;
-
-  private List<T> requestList;
+  @Builder.Default
+  private String orderBy = "userFullname";
+  @Builder.Default
+  private String orderDirection = "ASC";
 
   private Integer offset;
 
@@ -33,5 +34,6 @@ public class PageLearnerRequest<T> {
 
   private Boolean coIsInProgress;
   private Integer leCourseId;
+  private Integer leId;
 
 }

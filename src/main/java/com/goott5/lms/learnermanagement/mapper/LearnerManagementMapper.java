@@ -4,7 +4,7 @@ import com.goott5.lms.coursemanagement.domain.PageListReqDTO;
 import com.goott5.lms.coursemanagement.domain.table.CourseWithAssignedInfo;
 import com.goott5.lms.learnermanagement.domain.*;
 
-import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.integrated.HomeworkOverviewResp;
@@ -90,7 +90,7 @@ public interface LearnerManagementMapper {
 
   List<LearnerResponse> selectLearnersByAuth(
       @Param("base") BaseReqDTO base,
-      @Param("page") PageLearnerRequest<LearnerRequest> page);
+      @Param("page") PageLearnerRequest page);
 
 
 
@@ -113,4 +113,7 @@ public interface LearnerManagementMapper {
   String selectLoginUserPositionByUserId(Integer loginUserId);
 
   ParticipationWithReason selectPartInfoByPid(Integer pid);
+
+  Boolean updateCompletionStatus(CompletionStatusUpdateRequest request);
+
 }

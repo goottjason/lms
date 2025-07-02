@@ -12,7 +12,8 @@ public class PageCourseRequest {
   private Integer pageNo;
   private Integer pageSize;
 
-  private String type;
+  @Builder.Default
+  private String type = "coName";
   private String keyword;
 
   @Builder.Default
@@ -30,6 +31,6 @@ public class PageCourseRequest {
     }
   }
 
-  private Integer coId;
   private Boolean coIsInProgress;
+  private Integer coId;
 }

@@ -12,15 +12,15 @@
     </if>
     <!-- 과정 책임자: 담당 과정만 조회 -->
     <if test="base.loginUserType == 'ADMINISTRATOR' and base.loginUserPosition == 'COURSE_HEAD'">
-      AND coCourseHeadId = #{base.loginUserId}
+      coCourseHeadId = #{base.loginUserId}
     </if>
     <!-- 전임 강사: 담당 강의만 조회 -->
     <if test="base.loginUserType == 'INSTRUCTOR' and base.loginUserPosition == 'FULLTIME_INSTRUCTOR'">
-      AND coInstructorId = #{base.loginUserId}
+      coInstructorId = #{base.loginUserId}
     </if>
     <!-- 학습자: 본인 데이터만 조회 -->
     <if test="base.loginUserType == 'LEARNER'">
-      AND userId = #{base.loginUserId}
+      userId = #{base.loginUserId}
     </if>
   </sql>
 
@@ -48,17 +48,21 @@
   </sql>
 
   <sql id="filteringForLearner">
+    <!-- 교육생 이름 검색 -->
+    <if test="page.keyword != null and page.keyword != ''">
+      AND userFullname LIKE CONCAT('%', #{page.keyword}, '%')
+    </if>
     <!-- 과정 진행 상태 필터링 -->
     <if test="page.coIsInProgress != null">
       AND coIsInProgress = #{page.coIsInProgress}
     </if>
-    <!-- 학생 이름 검색 -->
-    <if test="page.keyword != null and page.keyword != ''">
-      AND userFullname LIKE CONCAT('%', #{page.keyword}, '%')
-    </if>
     <!-- 과정 ID 필터링 -->
     <if test="page.leCourseId != null">
       AND leCourseId = #{page.leCourseId}
+    </if>
+    <!-- 수강 ID 필터링 (단일항목) -->
+    <if test="page.leId != null">
+      AND leId = #{page.leId}
     </if>
   </sql>
 
@@ -77,12 +81,17 @@
     </if>
   </sql>
 
-  <sql id="orderAndPaging">
+  <sql id="orderAndPagingForCourse">
     <!-- 정렬 조건 -->
-    <if test="page.orderBy != null and page.orderBy != ''
-    and page.orderDirection != null and page.orderDirection != ''">
-      ORDER BY ${page.orderBy} ${page.orderDirection}
+    ORDER BY coIsInProgress DESC, ${page.orderBy} ${page.orderDirection}
+    <!-- 페이징 처리 -->
+    <if test="page.pageNo != null and page.pageSize != null">
+      LIMIT #{page.offset}, #{page.pageSize}
     </if>
+  </sql>
+  <sql id="orderAndPagingForLearner">
+    <!-- 정렬 조건 -->
+    ORDER BY ${page.orderBy} ${page.orderDirection}
     <!-- 페이징 처리 -->
     <if test="page.pageNo != null and page.pageSize != null">
       LIMIT #{page.offset}, #{page.pageSize}

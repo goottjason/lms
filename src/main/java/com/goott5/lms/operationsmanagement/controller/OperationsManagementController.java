@@ -8,6 +8,7 @@ import com.goott5.lms.learnermanagement.domain.PageLearnerRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
+import com.goott5.lms.operationsmanagement.domain.ClassroomUsageResp;
 import com.goott5.lms.operationsmanagement.domain.IntegratedReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomRespDTO;
@@ -218,4 +219,11 @@ public class OperationsManagementController {
     }
   }
 
+  @GetMapping("/api/operationmanagement/classroom/usage")
+  public ResponseEntity<ApiResponse<List<ClassroomUsageResp>>> getClassroomUsage () {
+
+    List<ClassroomUsageResp> classroomUsage = operationsManagementService.getClassroomUsage();
+
+    return ApiResponse.okResponse(200, "success", classroomUsage);
+  }
 }

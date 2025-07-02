@@ -15,4 +15,6 @@ public class ParticipationOverviewResp<ParticipationWithReason> {
   private List<ParticipationWithReason> partList;
   private Integer totalCount;
   private Map<String, Integer> statusCount;
+  private Double attendanceRate;
+  private Boolean isCompletionAboutParticipation;
 }

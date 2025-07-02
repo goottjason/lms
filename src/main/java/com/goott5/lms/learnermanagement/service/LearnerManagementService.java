@@ -1,7 +1,7 @@
 package com.goott5.lms.learnermanagement.service;
 
 import com.goott5.lms.learnermanagement.domain.*;
-import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
@@ -33,10 +33,14 @@ public interface LearnerManagementService {
 
   PageLearnerResponse<LearnerOverviewResp> getLearnersByAuth(
       BaseReqDTO baseReqDTO,
-      PageLearnerRequest<LearnerRequest> pageLearnerRequest
+      PageLearnerRequest pageLearnerRequest
   );
 
   String getLoginUserPositionByUserId(Integer loginUserId);
 
   ParticipationWithReason getPartInfoByPid(Integer pid);
+
+  Boolean modifyCompletionStatus(CompletionStatusUpdateRequest request);
+
+  Boolean modifyCompletionStatusByCoId(BaseReqDTO baseReqDTO, Integer coId);
 }

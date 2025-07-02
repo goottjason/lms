@@ -13,12 +13,15 @@ import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
+import java.time.LocalDate;
 import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool;
 
 @Mapper
 public interface CourseManagementMapper {
@@ -143,11 +146,14 @@ public interface CourseManagementMapper {
   Integer selectErolledLernerCount(Integer courseId);
 
 
-  int deleteCourse(
-      @Param("loginUserId") Integer loginUserId,
-      @Param("loginUserType") String loginUserType,
-      @Param("courseId") Integer courseId
-  );
+  void updateClassroomByAuth(
+      @Param("base") BaseReqDTO base,
+      @Param("page") PageCourseRequest page);
+
+  Boolean deleteCourseByAuth(
+      @Param("base") BaseReqDTO base,
+      @Param("page") PageCourseRequest page);
+
   @Select({
       "SELECT id FROM learner_enrollment WHERE user_id = #{learnerId} AND course_id = #{courseId}"
   })
@@ -168,4 +174,18 @@ public interface CourseManagementMapper {
   List<CourseSubject> selectSubjectByCoId(Integer coId);
 
   List<CourseSchedule> selectScheduleByCoId(Integer coId);
+
+  @Update("UPDATE course co SET co.is_in_progress = false WHERE co.id = #{coId}")
+  Boolean modifyCourseIsInProgressByCoId(Integer coId);
+
+  List<LocalDate> selectClassDateByCoId(Integer coId);
+
+  @Select("SELECT tl.training_date FROM training_log tl WHERE tl.course_id = #{coId}")
+  List<LocalDate> selectCourseTrainingDates(Integer coId);
+
+  @Select("SELECT count(*) FROM community_inquiry ci WHERE ci.is_answered = false and ci.is_posted = true")
+  Integer selectIncompleteInquiryCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
+  @Select("SELECT count(*) FROM course_forum_report cfr WHERE cfr.report_status = 'PENDING'")
+  Integer selectIncompleteReportCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
+  Integer selectIncompleteEmployCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
 }

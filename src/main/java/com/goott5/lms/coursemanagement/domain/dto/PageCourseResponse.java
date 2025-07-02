@@ -1,6 +1,4 @@
 package com.goott5.lms.coursemanagement.domain.dto;
-import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
-import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import java.util.List;
 import lombok.*;
 
@@ -9,7 +7,6 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PageCourseResponse<T> {
   private Integer pageNo;
   private Integer pageSize;
@@ -26,19 +23,19 @@ public class PageCourseResponse<T> {
   public PageCourseResponse(PageCourseRequest request, List<T> records, Integer totalRecords) {
     this.totalRecords = totalRecords;
 
-    this.pageNo = request.getPageNo();
-    this.pageSize = request.getPageSize();
+    pageNo = request.getPageNo();
+    pageSize = request.getPageSize();
 
-    if (pageNo != null || pageSize != null) {
+    if (pageNo != null && pageSize != null) {
 
-      this.blockEndPage = (((this.pageNo - 1) / this.pageSize) + 1) * this.pageSize;
-      this.blockStartPage = this.blockEndPage - (this.pageSize - 1);
-      this.lastPage = (int) (Math.ceil(this.totalRecords / (double) pageSize));
+      blockEndPage = (((pageNo - 1) / pageSize) + 1) * pageSize;
+      blockStartPage = blockEndPage - (pageSize - 1);
+      lastPage = (int) (Math.ceil(totalRecords / (double) pageSize));
 
-      this.blockEndPage = Math.min(this.blockEndPage, this.lastPage);
+      blockEndPage = Math.min(blockEndPage, lastPage);
 
-      if (this.blockEndPage == 0) {
-        this.blockEndPage = 1;
+      if (blockEndPage == 0) {
+        blockEndPage = 1;
       }
     }
 

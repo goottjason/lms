@@ -2,7 +2,6 @@ package com.goott5.lms.coursemanagement.controller;
 
 import com.goott5.lms.coursemanagement.domain.ApiResponse;
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
-import com.goott5.lms.coursemanagement.domain.CourseGetReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
@@ -124,7 +123,7 @@ public class CourseManagementController {
   }
 
 
-  @DeleteMapping("/api/course")
+  /*@DeleteMapping("/api/course")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeCourse(
       @RequestBody CommonReqDTO commonReqDTO
@@ -141,60 +140,13 @@ public class CourseManagementController {
           null,
           HttpStatus.CONFLICT);
     }
-  }
+  }*/
 
 
-  @GetMapping("/courseManagement/courseList")
-  public String courseList() {
-    return "courseManagement/courseList";
-  }
 
 
-  @GetMapping("/courseManagement/courseDetail")
-  public String courseDetail(
-      @RequestParam(value = "courseId", defaultValue = "-1") Integer courseId,
-      Model model,
-      HttpSession session
-  ) {
 
-    if (courseId == -1) {
-      /// ///////////////////////////////////////////////////////
-      UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-      Integer loginUserId = Integer.valueOf(loginUser.getId());
-      String loginUserType = loginUser.getType();
-      CommonReqDTO commonReqDTO = CommonReqDTO.builder()
-          .loginUserId(loginUserId)
-          .loginUserType(loginUserType)
-          .courseId(null)
-          .isInProgress(null)
-          .build();
-      PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = PageCourseReqDTO.<CourseReqDTO>builder()
-          .orderBy("is_in_progress")
-          .orderDirection("DESC")
-          .build();
-      PageCourseRespDTO<CourseRespDTO> courses =
-          courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
 
-      model.addAttribute("course", courses.getRespDTOS().get(0));
-      return "courseManagement/courseDetail";
-    }
-
-    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    Integer loginUserId = Integer.valueOf(loginUser.getId());
-    String loginUserType = loginUser.getType();
-    CommonReqDTO commonReqDTO = CommonReqDTO.builder()
-        .loginUserId(loginUserId)
-        .loginUserType(loginUserType)
-        .courseId(courseId)
-        .isInProgress(null)
-        .build();
-    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
-    PageCourseRespDTO<CourseRespDTO> courses =
-        courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
-
-    model.addAttribute("course", courses.getRespDTOS().get(0));
-    return "courseManagement/courseDetail";
-  }
 
 
   @GetMapping("/courseManagement/learnerAssignment")
@@ -205,6 +157,31 @@ public class CourseManagementController {
     return "courseManagement/learnerAssignment";
   }
 
+// =============================================================================
+
+  @GetMapping("/courseManagement/courseList")
+  public String courseList() {
+    return "courseManagement/courseList";
+  }
+
+  @GetMapping("/api/coursemanagement/incompletetaskcount")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<Map<String, Integer>>> getIncompleteTaskCount(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageCourseRequest pageCourseRequest
+  ) {
+    // 로그인유저 포지션 요청 후 SET
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    /*Map<String, Integer> map = new HashMap<>();*/
+
+    Map<String, Integer> incompleteTaskCount =
+        courseManagementService.getIncompleteTaskCount(
+            baseReqDTO, pageCourseRequest);
+    return ApiResponse.okResponse(200, "success", incompleteTaskCount);
+  }
 
   @GetMapping("/api/coursemanagement/courses")
   @ResponseBody
@@ -213,13 +190,124 @@ public class CourseManagementController {
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageCourseRequest pageCourseRequest
   ) {
+
+    // 로그인유저 포지션 요청 후 SET
     String loginUserPosition =
         learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
     baseReqDTO.setLoginUserPosition(loginUserPosition);
 
+    log.info("pageCourseRequest: {}", pageCourseRequest);
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
         courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+    log.info("coursesWithPagination: {}", coursesWithPagination);
     return ApiResponse.okResponse(200, "success", coursesWithPagination);
   }
 
+  @GetMapping("/courseManagement/courseDetail")
+  public String courseDetail(
+      @RequestParam(value = "courseId", defaultValue = "-1") Integer coId,
+      Model model,
+      HttpSession session
+  ) {
+
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    Integer loginUserId = Integer.valueOf(loginUser.getId());
+    String loginUserType = loginUser.getType();
+
+    BaseReqDTO baseReqDTO = BaseReqDTO.builder()
+        .loginUserId(loginUserId)
+        .loginUserType(loginUserType)
+        .build();
+
+    // 로그인유저 포지션 요청 후 SET
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageCourseRequest pageCourseRequest = PageCourseRequest.builder()
+        .pageNo(null)
+        .pageSize(null)
+        .type("coName")
+        .keyword(null)
+        .orderBy("coStartDate")
+        .orderDirection("ASC")
+        .coIsInProgress(null)
+        .coId(coId)
+        .build();
+
+    // 쿼리스트링 없이 요청 (강사 및 교육생의 경우)
+    if (coId == -1) {
+      // 진행중이면서 과정시작일 빠른 순서로 조회되는 첫번째 과정
+      pageCourseRequest.setCoId(null);
+      PageCourseResponse<CourseOverviewResp> coursesWithPagination =
+          courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+    }
+
+    PageCourseResponse<CourseOverviewResp> coursesWithPagination =
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+
+    model.addAttribute("record", coursesWithPagination.getRecords().get(0));
+
+    return "courseManagement/courseDetail";
+  }
+
+  @DeleteMapping("/api/coursemanagement/courses")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<Void>> removeCoursesByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageCourseRequest pageCourseRequest
+  ) {
+    // 로그인유저 포지션 요청 후 SET
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    Boolean isSuccess = courseManagementService.removeCoursesByAuth(baseReqDTO, pageCourseRequest);
+    if (isSuccess) {
+      return ApiResponse.okResponse(
+          200, "삭제 성공", null);
+    } else {
+      return ApiResponse.failResponse(
+          409,
+          "잘못된 요청입니다. 다시 시도해주세요.",
+          null, HttpStatus.CONFLICT);
+    }
+
+  }
+
+  @GetMapping("/home/administratorHome")
+  public String administratorHome(
+      Model model,
+      HttpSession session
+  ) {
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    Integer loginUserId = Integer.valueOf(loginUser.getId());
+    String loginUserType = loginUser.getType();
+
+    BaseReqDTO baseReqDTO = BaseReqDTO.builder()
+        .loginUserId(loginUserId)
+        .loginUserType(loginUserType)
+        .build();
+
+    // 로그인유저 포지션 요청 후 SET
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageCourseRequest pageCourseRequest = PageCourseRequest.builder()
+        .pageNo(null)
+        .pageSize(null)
+        .type("coName")
+        .keyword(null)
+        .orderBy("coStartDate")
+        .orderDirection("ASC")
+        .coIsInProgress(true)
+        .coId(null)
+        .build();
+    PageCourseResponse<CourseOverviewResp> coursesWithPagination =
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+    model.addAttribute("records", coursesWithPagination.getRecords());
+
+    return "home/administratorHome";
+  }
 }

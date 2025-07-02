@@ -35,19 +35,16 @@
           <div class="row mb-2">
             <div class="col-md-9">
               <div class="form-group">
-                <label for="a">과정명</label>
-                <input type="text" id="a" class="form-control" th:value="${course.name}" readonly>
+                <label for="coName">과정명</label>
+                <input type="text" id="coName" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coName}" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="b">등록인원</label>
-                <input
-                    type="text"
-                    id="b"
-                    class="form-control"
-                    th:value="${course.numberOfLearner}"
-                    readonly>
+                <label for="coNumberOfLearner">등록인원</label>
+                <input type="text" id="coNumberOfLearner" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coNumberOfLearner}" readonly>
               </div>
             </div>
           </div>
@@ -55,46 +52,30 @@
           <div class="row mb-2">
             <div class="col-md-3">
               <div class="form-group">
-                <label for="c">총훈련시간</label>
-                <input
-                    type="text"
-                    id="c"
-                    class="form-control"
-                    th:value="${course.totalHours}"
-                    readonly>
+                <label for="coTotalHours">총훈련시간</label>
+                <input type="text" id="coTotalHours" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coTotalHours}" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="d">총훈련일수</label>
-                <input
-                    type="text"
-                    id="d"
-                    class="form-control"
-                    th:value="${course.totalDays}"
-                    readonly>
+                <label for="coTotalDays">총훈련일수</label>
+                <input type="text" id="coTotalDays" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coTotalDays}" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="e">일일훈련시간</label>
-                <input
-                    type="text"
-                    id="e"
-                    class="form-control"
-                    th:value="${course.dailyHours}"
-                    readonly>
+                <label for="coDailyHours">일일훈련시간</label>
+                <input type="text" id="coDailyHours" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coDailyHours}" readonly>
               </div>
             </div>
             <div class="col-md-3">
               <div class="form-group">
-                <label for="f">쉬는시간</label>
-                <input
-                    type="text"
-                    id="f"
-                    class="form-control"
-                    th:value="${course.breakTime}"
-                    readonly>
+                <label for="coBreakTime">쉬는시간(분)</label>
+                <input type="text" id="coBreakTime" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coBreakTime}" readonly>
               </div>
             </div>
           </div>
@@ -102,24 +83,16 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="g">과정시작일</label>
-                <input
-                    type="date"
-                    id="g"
-                    class="form-control"
-                    th:value="${course.startDate}"
-                    readonly>
+                <label for="coStartDate">과정시작일</label>
+                <input type="date" id="coStartDate" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coStartDate}" readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="h">과정종료일</label>
-                <input
-                    type="date"
-                    id="h"
-                    class="form-control"
-                    th:value="${course.endDate}"
-                    readonly>
+                <label for="coEndDate">과정종료일</label>
+                <input type="date" id="coEndDate" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coEndDate}" readonly>
               </div>
             </div>
           </div>
@@ -127,24 +100,16 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="i">훈련시작시간</label>
-                <input
-                    type="time"
-                    id="i"
-                    class="form-control"
-                    th:value="${course.lessonStartTime}"
-                    readonly>
+                <label for="coLessonStartTime">훈련시작시간</label>
+                <input type="time" id="coLessonStartTime" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coLessonStartTime}" readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="j">훈련종료시간</label>
-                <input
-                    type="time"
-                    id="j"
-                    class="form-control"
-                    th:value="${course.lessonEndTime}"
-                    readonly>
+                <label for="coLessonEndTime">훈련종료시간</label>
+                <input type="time" id="coLessonEndTime" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coLessonEndTime}" readonly>
               </div>
             </div>
           </div>
@@ -152,24 +117,16 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="k">식사시작시간</label>
-                <input
-                    type="time"
-                    id="k"
-                    class="form-control"
-                    th:value="${course.lunchStartTime}"
-                    readonly>
+                <label for="coLunchStartTime">식사시작시간</label>
+                <input type="time" id="coLunchStartTime" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coLunchStartTime}" readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="l">식사종료시간</label>
-                <input
-                    type="time"
-                    id="l"
-                    class="form-control"
-                    th:value="${course.lunchEndTime}"
-                    readonly>
+                <label for="coLunchEndTime">식사종료시간</label>
+                <input type="time" id="coLunchEndTime" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coLunchEndTime}" readonly>
               </div>
             </div>
           </div>
@@ -177,24 +134,16 @@
           <div class="row mb-2">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="m">강사명</label>
-                <input
-                    type="text"
-                    id="m"
-                    class="form-control"
-                    th:value="${course.fulltimeInstructorFullname}"
-                    readonly>
+                <label for="coInstructorName">강사명</label>
+                <input type="text" id="coInstructorName" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coInstructorName}" readonly>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="n">강의실</label>
-                <input
-                    type="text"
-                    id="n"
-                    class="form-control"
-                    th:value="${course.classroomName}"
-                    readonly>
+                <label for="coClassroomName">강의실</label>
+                <input type="text" id="coClassroomName" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coClassroomName}" readonly>
               </div>
             </div>
           </div>
@@ -222,15 +171,18 @@
               </thead>
               <tbody>
               <tr
-                  th:if="${course.subjects != null and not #lists.isEmpty(course.subjects)}"
-                  th:each="subject : ${course.subjects}">
-                <td class="text-center align-middle" th:text="${subject.subjectOrder}"></td>
-                <td class="text-center align-middle" th:text="${subject.name}"></td>
-                <td class="text-center align-middle" th:text="${subject.hours}"></td>
-                <td class="text-center align-middle" th:text="${subject.textbookName}"></td>
-                <td class="text-center align-middle" th:text="${subject.textbookAuthor}"></td>
+                  th:if="${record.subjectOverview.subjectList != null and
+                  not #lists.isEmpty(record.subjectOverview.subjectList)}"
+                  th:each="subject : ${record.subjectOverview.subjectList}">
+                <td class="text-center align-middle" th:text="${subject.cuSubjectOrder}"></td>
+                <td class="text-center align-middle" th:text="${subject.cuName}"></td>
+                <td class="text-center align-middle" th:text="${subject.cuHours}"></td>
+                <td class="text-center align-middle" th:text="${subject.cuTextbookName}"></td>
+                <td class="text-center align-middle" th:text="${subject.cuTextbookAuthor}"></td>
               </tr>
-              <tr th:unless="${course.subjects != null and not #lists.isEmpty(course.subjects)}">
+              <tr
+                  th:unless="${record.subjectOverview.subjectList != null and
+                  not #lists.isEmpty(record.subjectOverview.subjectList)}">
                 <td colspan="5" class="text-center align-middle">등록된 교과목이 없습니다.</td>
               </tr>
               </tbody>
@@ -242,9 +194,10 @@
 
     <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
-      <a th:if="${session.loginUser.type} == 'ADMINISTRATOR'"
-         th:href="@{courseModify(courseId=${course.id})}">
-        <button class="btn btn-info btn-icon-split mr-2">
+      <a th:if="${session.loginUser.type} == 'ADMINISTRATOR'" id="modify-link"
+         th:href="@{courseModify(courseId=${record.courseWithAssignedInfo.coId})}">
+        <button id="modify-button" class="btn btn-info btn-icon-split mr-2"
+                th:data-startdate="${record.courseWithAssignedInfo.coStartDate}">
           <span class="icon text-white-50">
             <i class="fa fa-wrench"></i>
           </span>
@@ -252,8 +205,8 @@
         </button>
       </a>
       <button th:if="${session.loginUser.type} == 'ADMINISTRATOR'"
-              id="remove-button"
-              class="btn btn-danger btn-icon-split mr-2">
+              id="remove-button" class="btn btn-danger btn-icon-split mr-2"
+              th:data-startdate="${record.courseWithAssignedInfo.coStartDate}">
         <span class="icon text-white-50">
           <i class="fa fa-times"></i>
         </span>
@@ -272,10 +225,27 @@
     <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script">
-  <!-- 외부 JS 파일 연결 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script th:if="${isSaveSuccess}" th:inline="javascript">
+    let isSaveSuccess = [[${isSaveSuccess}]];
+    if (isSaveSuccess) {
+      Swal.fire({
+                  icon: "success",
+                  title: "수정되었습니다!",
+                  text: "성공적으로 수정되었습니다.",
+                  footer: ''
+                });
+    } else {
+      Swal.fire({
+                  icon: "error",
+                  title: "수정불가능!",
+                  text: "과정 관련 DB 테이블을 확인해주세요.",
+                  footer: ''
+                });
+    }
+  </script>
+  <!-- 외부 JS 파일 연결 -->
   <script th:src="@{/js/courseManagement/courseDetail.js}" type="text/javascript"></script>
-
 </th:block>
 </body>
 </html>
