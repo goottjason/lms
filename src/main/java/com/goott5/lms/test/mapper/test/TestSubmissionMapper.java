@@ -24,6 +24,13 @@ public interface TestSubmissionMapper {
   TestSubmissionVO selectTestSubmission(@Param("testId") int testId,
           @Param("learnerId") int learnerId);
 
+  // 특정 수강생의 시험 제출 정보 가져오기
+  @Select(
+      "SELECT id, submission_time, submission_status, retry_count, is_invalidated, submission_reg_date, score"
+          + " FROM test_submission WHERE test_id = #{testId} AND learner_id = #{learnerId}")
+  TestSubmissionVO selectTestSubmission2(@Param("testId") int testId,
+      @Param("learnerId") int learnerId);
+
   // 답안 제출
   @Insert("INSERT INTO test_answer (question_id , submission_id , select_answer, is_correct)"
           + " VALUES (#{questionId}, #{submissionId}, #{selectAnswer}, #{isCorrect})")

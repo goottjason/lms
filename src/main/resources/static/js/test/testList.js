@@ -19,6 +19,7 @@ const $testTableBody = $(".test-table-body");
 let selectedCourse;
 let currentPageNo = 1;
 let detailPageUrl;
+let userId;
 
 //------------------------------------------------------------------------------
 // [[필터]]
@@ -201,7 +202,7 @@ function makeTestRow(userType, test) {
   return `
     <tr>
       <td class="text-center align-middle">${test.testId}</td>
-      <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
+      <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
       <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
       <td class="text-center align-middle">${test.testStatus}</td>
@@ -306,6 +307,8 @@ function assignValueByStatus(testStatus) {
 //------------------------------------------------------------------------------
 
 $(document).ready(function () {
+
+  userId = $("#login-user-id").val();
 
   const Toast = Swal.mixin({
     toast: true,
