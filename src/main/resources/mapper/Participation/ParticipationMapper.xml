@@ -303,15 +303,26 @@
 
   <!-- 강사가 맡은 현재 과정 조회 -->
   <select id="selectCurrentCourseByInstructor" parameterType="int" resultType="map">
-    SELECT c.id, c.name, c.start_date as startDate, c.end_date as endDate, c.is_in_progress as isInProgress
+    SELECT
+    c.id,
+    c.name,
+    c.start_date as startDate,
+    c.end_date as endDate,
+    c.is_in_progress as isInProgress,
+    (SELECT COUNT(*)
+    FROM participation p
+    JOIN learner_enrollment le ON p.learner_enrollment_id = le.id
+    WHERE le.course_id = c.id
+    AND p.status = 'VACATION_PENDING') AS pendingCount
     FROM course c
-           JOIN staff_assignment sa ON c.id = sa.course_id
+    JOIN staff_assignment sa ON c.id = sa.course_id
     WHERE sa.user_id = #{instructorId}
-      AND c.is_in_progress = 1
-      AND c.deleted_at IS NULL
-      AND sa.deleted_at IS NULL
+    AND c.is_in_progress = 1
+    AND c.deleted_at IS NULL
+    AND sa.deleted_at IS NULL
     LIMIT 1
   </select>
+
 
   <!-- 강사가 맡은 과거 과정 목록 조회 -->
   <select id="selectPreviousCoursesByInstructor" parameterType="int" resultType="map">

@@ -202,10 +202,17 @@ public class VacationServiceImpl implements VacationService {
   @Transactional(readOnly = true)
   public Map<String, Object> getInstructorCourses(Integer instructorId) {
     try {
+      Map<String, Object> result = new HashMap<>();
       Map<String, Object> currentCourse = participationMapper.selectCurrentCourseByInstructor(instructorId);
       List<Map<String, Object>> previousCourses = participationMapper.selectPreviousCoursesByInstructor(instructorId);
 
-      Map<String, Object> result = new HashMap<>();
+      if (currentCourse != null) {
+        int pendingCount = participationMapper.countPendingVacationsByCourse(
+            (Integer) currentCourse.get("id")
+        );
+        currentCourse.put("pendingCount", pendingCount);
+      }
+
       result.put("currentCourse", currentCourse);
       result.put("previousCourses", previousCourses != null ? previousCourses : List.of());
 

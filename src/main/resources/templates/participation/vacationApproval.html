@@ -698,15 +698,10 @@
             // 현재 과정에서 승인 대기만 카운트 (정렬 순서 반영)
             if (isCurrentCourseSelected) {
                 // 승인 대기 중인 항목만 카운트 (항상 맨 위에 표시됨)
-                const pendingCount = data.content ? data.content.filter(v => v.status === 'VACATION_PENDING').length : 0;
+                const pendingCount = instructorData.currentCourse.pendingCount || 0;
                 $icon.removeClass().addClass('fas fa-clock text-warning me-2');
                 $text.text('처리 대기 중인 휴가 신청');
                 $count.removeClass().addClass('badge bg-warning ms-2').text(pendingCount);
-
-                // 승인 대기 우선 정렬 안내 메시지
-                if (pendingCount > 0) {
-                    console.log('승인 대기 중인 휴가가 우선 표시됩니다:', pendingCount + '건');
-                }
             } else {
                 $icon.removeClass().addClass('fas fa-check-circle text-success me-2');
                 $text.text('승인된 휴가 기록');
