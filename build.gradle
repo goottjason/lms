@@ -61,6 +61,9 @@ dependencies {
     implementation 'org.apache.poi:poi-ooxml:5.4.1' //apache poi(엑셀 파일 생성용)
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.1' // dto -> map 변환
+
+
+    implementation 'org.apache.poi:poi-ooxml:5.4.1' // Word, Excel, PPT 모두 지원
 }
 
 tasks.named('test') {
