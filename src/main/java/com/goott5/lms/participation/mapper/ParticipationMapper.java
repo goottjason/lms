@@ -136,6 +136,102 @@ public interface ParticipationMapper {
       @Param("endDate") LocalDate endDate
   );
 
+  /**
+   * 강사가 맡은 현재 과정 조회
+   */
+  Map<String, Object> selectCurrentCourseByInstructor(@Param("instructorId") Integer instructorId);
+
+  /**
+   * 강사가 맡은 과거 과정 목록 조회
+   */
+  List<Map<String, Object>> selectPreviousCoursesByInstructor(@Param("instructorId") Integer instructorId);
+
+  /**
+   * 과정별 승인 대기 중인 휴가 신청 개수 조회
+   */
+  int countPendingVacationsByCourse(@Param("courseId") Integer courseId);
+
+  /**
+   * 과정별 승인 대기 중인 휴가 신청 목록 조회 (페이징)
+   */
+  List<Map<String, Object>> selectPendingVacationsByCourseWithPaging(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit
+  );
+
+  /**
+   * 과정별 승인된 휴가 개수 조회
+   */
+  int countApprovedVacationsByCourse(@Param("courseId") Integer courseId);
+
+  /**
+   * 과정별 승인된 휴가 목록 조회 (페이징)
+   */
+  List<Map<String, Object>> selectApprovedVacationsByCourseWithPaging(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit
+  );
+
+  /**
+   * 과정별 모든 휴가 개수 조회 (승인 대기 + 승인된 휴가)
+   */
+  int countAllVacationsByCourse(@Param("courseId") Integer courseId);
+
+  /**
+   * 과정별 모든 휴가 목록 조회 (페이징)
+   */
+  List<Map<String, Object>> selectAllVacationsByCourseWithPaging(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit
+  );
+
+  /**
+   * 과정별 승인 대기 중인 휴가 신청 개수 조회 (이름 검색)
+   */
+  int countPendingVacationsBySearch(@Param("courseId") Integer courseId, @Param("searchName") String searchName);
+
+  /**
+   * 과정별 승인 대기 중인 휴가 신청 목록 조회 (이름 검색, 페이징)
+   */
+  List<Map<String, Object>> selectPendingVacationsBySearch(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit,
+      @Param("searchName") String searchName
+  );
+
+  /**
+   * 과정별 승인된 휴가 개수 조회 (이름 검색)
+   */
+  int countApprovedVacationsBySearch(@Param("courseId") Integer courseId, @Param("searchName") String searchName);
+
+  /**
+   * 과정별 승인된 휴가 목록 조회 (이름 검색, 페이징)
+   */
+  List<Map<String, Object>> selectApprovedVacationsBySearch(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit,
+      @Param("searchName") String searchName
+  );
+
+  /**
+   * 과정별 모든 휴가 개수 조회 (이름 검색)
+   */
+  int countAllVacationsBySearch(@Param("courseId") Integer courseId, @Param("searchName") String searchName);
+
+  /**
+   * 과정별 모든 휴가 목록 조회 (이름 검색, 페이징)
+   */
+  List<Map<String, Object>> selectAllVacationsBySearch(
+      @Param("courseId") Integer courseId,
+      @Param("offset") long offset,
+      @Param("limit") int limit,
+      @Param("searchName") String searchName
+  );
 
 
 }
