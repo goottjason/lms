@@ -99,9 +99,13 @@
 
     let courseName = /*[[${courseName ?: ''}]]*/ null; //과정명 상단에 출력
 
-    let learnerId = [[${learnerId}]];
+    let learnerId = /*[[${learnerId}]]*/ null;
 
-    let noAuth = [[${noAuth}]];
+    let noAuth = /*[[${noAuth}]]*/ null;
+
+    // let courseId = /*[[${courseId}]]*/ null;
+
+    let instructorId = /*[[${instructorId}]]*/ null;
 
     // 상단 과정명 출력
     function showCourseSelector() {
@@ -221,6 +225,8 @@
       .then(function (response) {
         console.log("response", response);
         let submissionId = response.data.data;
+        let userARR = [instructorId];
+        sendNotification(userARR, "제출물이 등록 되었습니다", false, "/homework/submissionDetail?submissionId=" + submissionId);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId
       }).catch(function (error) {
         console.log("error", error);

@@ -40,6 +40,16 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public int courseIdById(int id) {
+    return homeworkMapper.courseId(id);
+  }
+
+  @Override
+  public int instructorIdByCourseId(int courseId) {
+    return homeworkMapper.instructorIdByCourseId(courseId);
+  }
+
+  @Override
   public PagingResponseDTO<HomeworkDTO> serviceList(HomeworkRequestDTO homeworkRequestDTO,
       String type) {
     List<HomeworkDTO> homeworkDTOList = new ArrayList<>();

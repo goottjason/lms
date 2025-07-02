@@ -24,6 +24,14 @@ public interface HomeworkMapper {
   @Select("select name from course where id = #{id}")
   String courseName(int id);
 
+  //homeworkId로 과정 아이디 가져오기
+  @Select("select course_id from homework where id = #{id}")
+  int courseId(int id);
+
+  // 해당 과정 아이디의 instructorId 가져오기(homework 에서)
+  @Select("select instructor_id from homework where course_id = #{courseId} limit 1")
+  int instructorIdByCourseId(int id);
+
   // 로그인한 아이디가 속한 과정 출력(학생,강사)
   //1. 학생
   @Select("select c.name from course c "

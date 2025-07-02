@@ -123,7 +123,7 @@
       <div class="row">
 
         <th:block th:if="${fileDTOList != null}">
-          div< class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
+          <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
               <div class="col-md-3 pl-2">
                 <th:block th:if="${fileDTO.getIsImage()}">
@@ -146,186 +146,188 @@
             </div>
           </div>
         </th:block>
-
       </div>
     </div>
-  </div>
-  <!-- 본문 끝 -->
+    <!-- 본문 끝 -->
 
-  <!-- 버튼 -->
-  <div class="col-12 d-flex justify-content-end mb-4">
-    <button id="modify" class="btn btn-info btn-icon-split mr-2"
-            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+    <!-- 버튼 -->
+    <div class="col-12 d-flex justify-content-end mb-4">
+      <button id="modify" class="btn btn-info btn-icon-split mr-2"
+              th:if="${loginUser.getType() == 'INSTRUCTOR'}">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-      <span class="text px-3">과제수정</span>
-    </button>
-    <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
-            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+        <span class="text px-3">과제수정</span>
+      </button>
+      <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
+              th:if="${loginUser.getType() == 'INSTRUCTOR'}">
       <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
-      <span class="text px-3">과제삭제</span>
-    </button>
-    <button id="" class="btn btn-primary btn-icon-split mr-2"
-            th:if="${loginUser.getType() == 'LEARNER'}">
+        <span class="text px-3">과제삭제</span>
+      </button>
+      <button id="" class="btn btn-primary btn-icon-split mr-2"
+              th:if="${loginUser.getType() == 'LEARNER'}">
       <span class="icon text-white-50">
         <i class="fas fa-upload"></i>
       </span>
-      <span class="text px-3" id="registerBtn">과제 제출 등록</span>
-    </button>
-    <button id="toList" class="btn btn-secondary btn-icon-split">
+        <span class="text px-3" id="registerBtn">과제 제출 등록</span>
+      </button>
+      <button id="toList" class="btn btn-secondary btn-icon-split">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-      <span class="text px-4">목록</span>
-    </button>
-  </div>
+        <span class="text px-4">목록</span>
+      </button>
+    </div>
 
-  <!-- The Modal -->
-  <div class="modal delete" id="myModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
+    <!-- The Modal -->
+    <div class="modal delete" id="myModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
 
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <h4 class="modal-title">과제가 삭제됩니다.</h4>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h4 class="modal-title">과제가 삭제됩니다.</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+
+          <!-- Modal body -->
+          <div class="modal-body">
+            정말 삭제하시겠습니까?
+          </div>
+
+          <!-- Modal footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger deleteBtn" data-dismiss="modal">예</button>
+          </div>
+
         </div>
-
-        <!-- Modal body -->
-        <div class="modal-body">
-          정말 삭제하시겠습니까?
-        </div>
-
-        <!-- Modal footer -->
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger deleteBtn" data-dismiss="modal">예</button>
-        </div>
-
       </div>
     </div>
+
+    <!-- content body 끝 -->
   </div>
+  <th:block layout:fragment="script" th:inline="javascript">
+    <script
+        src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
+        integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE="
+        crossorigin="anonymous"></script>
+    <script>
 
-  <!-- content body 끝 -->
-</div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
+      // $("#courseSelector").val(hom)
 
-    // $("#courseSelector").val(hom)
+      // 세션에 저장된 페이지를 담을 변수
+      let savePage = "";
+      let homeworkId = /*[[${homework.id ?: ''}]]*/ null;
+      let homeworkIdNull = /*[[${homeworkIdNull ?: ''}]]*/ null;
+      let courseName = /*[[${courseName ?: ''}]]*/ null;
 
-    // 세션에 저장된 페이지를 담을 변수
-    let savePage = "";
-    let homeworkId = /*[[${homework.id ?: ''}]]*/ null;
-    let homeworkIdNull = /*[[${homeworkIdNull ?: ''}]]*/ null;
-    let courseName = /*[[${courseName ?: ''}]]*/ null;
-
-    function showCourseSelector() {
-      $("#courseSelector").empty();
-      $("#courseSelector").append($("<option>", {
-            value: courseName,
-            text: courseName
-          })
-      );
-      $("#courseSelector").val(courseName);
-    }
-
-    // homeworkId가 null일때
-    function homeworkIdNullCheck() {
-      if (homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim()
-          !== "") {
-        Swal.fire({
-          title: homeworkIdNull,
-          text: '과제가 존재하지 않아요',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: '예',
-          cancelButtonText: '아니오'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            location.href = "/homework/homeworkList";
-          }
-        })
-        // alert(homeworkIdNull);
+      function showCourseSelector() {
+        $("#courseSelector").empty();
+        $("#courseSelector").append($("<option>", {
+              value: courseName,
+              text: courseName
+            })
+        );
+        $("#courseSelector").val(courseName);
       }
-    }
 
-    // 등록 버튼
-    function registerBtn() {
-      location.href = "/homework/submissionRegister?homeworkId=" + homeworkId;
-    }
-
-    $(function () {
-
-      //과정명 나오게
-      showCourseSelector();
-
-      //과제 아이디 체크
-      homeworkIdNullCheck();
-
-      // 삭제 모달창 뜨기
-      $("#deleteHomework").on("click", function () {
-        // alert("!");
-        $(".delete").modal("show");
-      })
-
-      // 모달창 끄기
-
-      $(".close").on("click", function () {
-        $(".delete").modal("hide");
-      })
-
-      $(".deleteBtn").on("click", function () {
-        console.log(homeworkId);
-        axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
-        .then(function (response) {
-          savePage = localStorage.getItem("savePage");
-          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
-            // console.log("savePage",savePage);
-            location.href = savePage;
-          } else {
-            location.href = "/homework/homeworkList";
-          }
-        }).catch(function (error) {
-          let msg = error.response.data.message;
-          let errorCode = error.response.data.code;
-          console.log(error);
+      // homeworkId가 null일때
+      function homeworkIdNullCheck() {
+        if (homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim()
+            !== "") {
           Swal.fire({
-            title: '과제를 삭제할 수 없습니다',
-            text: msg,
-            icon: 'error',
-            confirmButtonText: '예'
+            title: homeworkIdNull,
+            text: '과제가 존재하지 않아요',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '예',
+            cancelButtonText: '아니오'
           }).then((result) => {
             if (result.isConfirmed) {
-              if (errorCode === 400) {
-                location.href = "/homework/homeworkList";
-              }
+              location.href = "/homework/homeworkList";
             }
           })
-          // alert(msg);
+          // alert(homeworkIdNull);
+        }
+      }
+
+      // 등록 버튼
+      function registerBtn() {
+        location.href = "/homework/submissionRegister?homeworkId=" + homeworkId;
+      }
+
+      $(function () {
+
+        //과정명 나오게
+        showCourseSelector();
+
+        //과제 아이디 체크
+        homeworkIdNullCheck();
+
+        // 삭제 모달창 뜨기
+        $("#deleteHomework").on("click", function () {
+          // alert("!");
+          $(".delete").modal("show");
         })
+
+        // 모달창 끄기
+
+        $(".close").on("click", function () {
+          $(".delete").modal("hide");
+        })
+
+        $(".deleteBtn").on("click", function () {
+          console.log(homeworkId);
+          axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
+          .then(function (response) {
+            savePage = localStorage.getItem("savePage");
+            if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+              // console.log("savePage",savePage);
+              location.href = savePage;
+            } else {
+              location.href = "/homework/homeworkList";
+            }
+          }).catch(function (error) {
+            let msg = error.response.data.message;
+            let errorCode = error.response.data.code;
+            console.log(error);
+            Swal.fire({
+              title: '과제를 삭제할 수 없습니다',
+              text: msg,
+              icon: 'error',
+              confirmButtonText: '예'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                if (errorCode === 400) {
+                  location.href = "/homework/homeworkList";
+                }
+              }
+            })
+            // alert(msg);
+          })
+        })
+
+        $("#registerBtn").on("click", function (e) {
+          e.preventDefault();
+
+          registerBtn();
+        })
+
+        //목록으로
+        $("#toList").click(function () {
+          location.href = "/homework/homeworkList";
+        })
+
+        // 수정
+        $("#modify").click(function () {
+          location.href = "/homework/homeworkModify?homeworkId=" + homeworkId;
+        })
+
       })
 
-      $("#registerBtn").on("click", function (e) {
-        e.preventDefault();
-
-        registerBtn();
-      })
-
-      //목록으로
-      $("#toList").click(function () {
-        location.href = "/homework/homeworkList";
-      })
-
-      // 수정
-      $("#modify").click(function () {
-        location.href = "/homework/homeworkModify?homeworkId=" + homeworkId;
-      })
-
-    })
-
-  </script>
-</th:block>
+    </script>
+  </th:block>
 </body>
 </html>

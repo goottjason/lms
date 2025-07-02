@@ -32,8 +32,8 @@
 
   <div class="container bg-white shadow rounded p-4">
     <div class="mb-4">
-    <h1 class="h3 mb-6 text-gray-800 text-center">훈련 일지 등록</h1>
-      <hr />
+      <h1 class="h3 mb-6 text-gray-800 text-center">훈련 일지 등록</h1>
+      <hr/>
     </div>
     <!-- 상단 버튼 -->
 
@@ -121,8 +121,19 @@
 
     <!-- 하단 버튼 -->
     <div class="text-right">
-      <button class="btn btn-primary" id="register">등록</button>
-      <button class="btn btn-secondary" id="toList">목록</button>
+      <button class="btn btn-primary" id="register">
+        <span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+        <span class="text px-3">등록</span>
+      </button>
+      </button>
+      <button class="btn btn-secondary" id="toList">
+        <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+        <span class="text px-4">목록</span>
+      </button>
     </div>
   </div>
 
@@ -172,7 +183,7 @@
         let responseCode = response.data.code;
         let responseMessage = response.data.message;
         let responseData = response.data.data;
-        if(responseCode === 200){
+        if (responseCode === 200) {
           Swal.fire({
             title: responseMessage,
             text: '훈련일지가 등록되었습니다.',
@@ -187,7 +198,7 @@
         let errorCode = error.data.code;
         let errorMessage = error.data.message;
         // let errorData = error.data.data;
-        if(errorCode === 500 || errorCode === 401){
+        if (errorCode === 500 || errorCode === 401) {
           Swal.fire({
             title: errorMessage,
             text: '다시 확인해주세요',
@@ -196,7 +207,7 @@
           }).then((result) => {
             location.href = "/training/trainingList";
           })
-        } else if(errorCode === 404){
+        } else if (errorCode === 404) {
           Swal.fire({
             title: errorMessage,
             text: '다시 확인해주세요',

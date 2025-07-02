@@ -16,6 +16,12 @@ public interface HomeworkService {
   //과정명 반환
   String courseNameById(int id);
 
+  //과정 아이디(homeworkId로 반환)
+  int courseIdById(int id);
+
+  //과정 아이디로 강사 아이디 반환
+  int instructorIdByCourseId(int courseId);
+
   //과제 반환
   PagingResponseDTO<HomeworkDTO> serviceList(HomeworkRequestDTO homeworkRequestDTO,String type);
   
