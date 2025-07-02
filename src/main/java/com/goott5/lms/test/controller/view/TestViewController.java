@@ -33,6 +33,11 @@ public class TestViewController {
   public String getTestDetailPageForLearner(@PathVariable int testId) {
     return "test/testDetailLearner";
   }
+  @GetMapping("/learner/testDetail/{testId}/{learnerId}")
+  public String getTestDetailPageForLearner(
+      @PathVariable int testId, @PathVariable int learnerId) {
+    return "test/testDetailLearner";
+  }
 
   @GetMapping("/testSubmission")
   public String getTestSubmissionPage() {
