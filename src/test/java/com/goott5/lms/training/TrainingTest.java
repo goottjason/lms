@@ -331,4 +331,39 @@ class TrainingTest {
 
   }
 
+  @Test
+  @Transactional
+  public void updateTrainingLogDetail(){
+    int updateNum = trainingMapper.updateTrainingDetail(17,"진도 빠름");
+    if(updateNum == 1){
+      log.info("updateNum={}", updateNum);
+    }else{
+      log.info("업데이트 실패");
+    }
+  }
+
+  @Test
+  @Transactional
+  public void isYourAdmin(){
+//    boolean isAdmin = trainingMapper.isAdmin(37,37);
+    // 둘 중에 하나의 검사를 통과 해야 함.
+
+    //1. 강사일 경우
+    boolean canTeacher = trainingMapper.isMyTrainingLog(1,34);
+
+
+    //2. 관리자일 경우 (해당 과정의)
+    boolean canAdmin = trainingMapper.isAdmin(37,37);
+
+    boolean result = canTeacher || canAdmin;
+
+    if(!result){
+      log.info("canTeacher:{}, canAdmin:{}",canTeacher,canAdmin);
+    }else{
+      log.info("유효성 통과");
+    }
+
+
+  }
+
 }
