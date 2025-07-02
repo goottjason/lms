@@ -2,18 +2,27 @@ package com.goott5.lms.training.controller;
 
 import com.goott5.lms.common.util.CreatePOI;
 import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
-import com.goott5.lms.homework.service.HomeworkService;
 import com.goott5.lms.training.domain.ExcelRequestDTO;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.registerdto.InsertFinalRegisterDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
+import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
+import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
+import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.service.TrainingService;
 import com.goott5.lms.user.domain.UserVO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -41,6 +51,7 @@ public class TrainingController {
 
   private final TrainingService trainingService;
   private final CreatePOI createPOI;
+  private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(),LocalTime.of(18,30));
 
 //  private final HomeworkService homeworkService; //공통기능용
 
@@ -296,15 +307,119 @@ public class TrainingController {
   }
 
   @GetMapping("/trainingRegister")
-  public String training(@RequestParam(required = false) String registerDate) {
+  public String training(@RequestParam(required = false) String registerDate,
+      RequestParticipationDTO request,
+      SelectTrainingDetailDTO selectTrainingDetailDTO, Model model, HttpSession session,
+      RedirectAttributes redirectAttributes) {
 
+    //registerDate 존재x
+    if (registerDate == null || registerDate.isEmpty()) {
+      redirectAttributes.addFlashAttribute("noGet", "등록할 날짜가 존재하지 않습니다.");
+      return "redirect:/training/trainingList";
+    }
+
+    String decodeRegisterDate = "";
     try {
       log.info("registerDate: {}", URLDecoder.decode(registerDate, "UTF-8")); //받아옴
+      decodeRegisterDate = URLDecoder.decode(registerDate, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
 
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    model.addAttribute("loginUser", loginUser);
+
+    // 금일 훈련 일지 등록 일자는 금일 퇴실 시간 이후부터
+    DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate thisRegisterDate = LocalDate.parse(decodeRegisterDate, dtf);
+
+    if(thisRegisterDate.isEqual(LocalDate.now())){
+      if (LocalDateTime.now().isBefore(IS_REGISTER_TODAY)){
+        redirectAttributes.addFlashAttribute("noGet", "금일 훈련일지 등록은 18시 30분 이후에 가능합니다.");
+        return "redirect:/training/trainingList";
+      }
+    }
+
+    // 훈련 일지는 금일 이후는 안됨!
+    if(thisRegisterDate.isAfter(LocalDate.now())){
+      redirectAttributes.addFlashAttribute("noGet", "훈련 일지는 미리 등록할 수 없습니다.");
+      return "redirect:/training/trainingList";
+    }
+
+    // 공휴일,휴강 제외
+    if(trainingService.isHoliday(decodeRegisterDate)){
+      redirectAttributes.addFlashAttribute("noGet", "공휴일은 등록할 수 없습니다.");
+      return "redirect:/training/trainingList";
+    }
+
+
+    int userId = loginUser.getId();
+
+    SelectAllWithoutActualDTO selectAllWithoutActualDTO =
+        trainingService.selectAllWithoutActual(userId, decodeRegisterDate, request,
+            selectTrainingDetailDTO);
+
+    log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
+
+    //해당 일자의 훈련일지가 있으면, 등록 막기
+    boolean isReRegister = trainingService.isReRegister(decodeRegisterDate, userId);
+    if (isReRegister) {
+      redirectAttributes.addFlashAttribute("noGet","훈련일지는 두 번 등록 할 수 없습니다.");
+      return "redirect:/training/trainingList";
+    }
+
+    if (selectAllWithoutActualDTO != null) {
+      model.addAttribute("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
+    }
+
     return "training/trainingRegister";
+  }
+
+
+  @PostMapping("/trainingRegister")
+  public ResponseEntity<?> trainingRegister(@RequestBody InsertFinalRegisterDTO finalData,
+      HttpSession session) {
+
+    log.info("finalData: {}", finalData);
+
+    //로그인한 유저가 해당 과정의 강사인지 확인
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    SelectCourseDTO selectCourseDTO = trainingService.selectCourseDTO(loginUser.getId());
+
+    if (selectCourseDTO == null) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(500, "당신의 현재 진행 중인 강의가 존재하지 않습니다.", null));
+    }
+
+    if (selectCourseDTO.getId() != finalData.getSelectCourseDTO().getId()) {
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(401, "권한이 없습니다", null));
+    }
+
+    // 문자열 => date로
+    String postDate = finalData.getPostDate();
+    DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate thisDate = LocalDate.parse(postDate, sdf);
+
+    // 훈련일지 빌드
+    InsertTrainingDTO insertTrainingDTO = InsertTrainingDTO.builder()
+        .courseId(finalData.getSelectCourseDTO().getId())
+        .trainingDate(thisDate)
+        .instructorId(loginUser.getId())
+        .build();
+
+    int isInsertAll = trainingService.insertTrainingAll(insertTrainingDTO,
+        finalData.getDataArray());
+
+    if (isInsertAll == 0 || isInsertAll == -1) {
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "훈련일지 등록 실패", null));
+    }
+
+    //등록 후 해당 훈련일지 id 반환
+
+//    trainingService.insertTrainingAll(insertTrainingDTO,finalData.getDataArray().get(0))
+
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "등록 완료", isInsertAll));
   }
 
 

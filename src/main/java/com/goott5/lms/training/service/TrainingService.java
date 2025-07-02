@@ -4,6 +4,11 @@ import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
+import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
+import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
+import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
+import java.util.Date;
 import java.util.List;
 
 public interface TrainingService {
@@ -38,5 +43,20 @@ public interface TrainingService {
   //훈련일지 상세 자료 불러오기
   SelectAllTrainingDTO selectAllTraining(int trainingId, RequestParticipationDTO request, SelectTrainingDetailDTO selectTrainingDetailDTO);
 
+  // 훈련일지 등록 시 자료 불러오기
+  SelectAllWithoutActualDTO selectAllWithoutActual(int userId, String trainingDate, RequestParticipationDTO request, SelectTrainingDetailDTO selectTrainingDetailDTO);
+
+  // 훈련일지 등록
+  int insertTrainingAll(InsertTrainingDTO insertTrainingDTO,
+      List<RegisterTrainingParamDTO> registerParamList);
+
+  //로그인한 강사의 courseDTO 출력 (로그인한 강사의 courseDTO와 프론트에서 보낸 courseDTO 비교)
+  SelectCourseDTO selectCourseDTO(int userId);
+
+  //홀리데이 여부
+  boolean isHoliday(String trainingDate);
+
+  //기존 훈련일지 여부
+  boolean isReRegister(String trainingDate, int instructorId);
 
 }

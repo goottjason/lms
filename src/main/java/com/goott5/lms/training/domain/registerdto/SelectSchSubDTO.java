@@ -9,6 +9,7 @@ public class SelectSchSubDTO {
 
   private int id; //과정 계획 아이디
   private int subjectId; //과목 아이디
+  private int period;
   private String name; //과목명
 
 }

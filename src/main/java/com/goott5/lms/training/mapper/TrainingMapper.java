@@ -1,18 +1,23 @@
 package com.goott5.lms.training.mapper;
 
 import com.goott5.lms.training.domain.RequestParticipationDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
+import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.domain.registerdto.SelectSchSubDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
 import java.util.Date;
 import java.util.List;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface TrainingMapper {
   //================== 공통 ============================
+
+  //강사의 아이디 확인
 
   //현재 강사가 진행 중인 과정 아이디, 과정명 출력
   @Select("select c.id,c.name from course c\n"
@@ -21,7 +26,6 @@ public interface TrainingMapper {
       + "where c.is_in_progress = 1 \n"
       + "and sa.user_id = #{userId}")
   SelectCourseDTO selectCourse(int userId);
-
 
   //과정아이디로 과정명 출력
   @Select("select name from course where id = #{courseId}")
@@ -39,7 +43,6 @@ public interface TrainingMapper {
   //강사 아이디로 강사명 찾기
   @Select("select fullname from user where id = #{instructorId}")
   String selectInstructorNameById(int instructorId);
-
 
   // =============== select list ===========
 
@@ -107,7 +110,7 @@ public interface TrainingMapper {
   List<String> listParticipationLearner(RequestParticipationDTO request);
 
   //=====교시/훈련과목===========
-  @Select("select sch.id,sch.subject_id,sub.name\n"
+  @Select("select sch.id,sch.subject_id,sch.period,sub.name\n"
       + "from course_schedule sch\n"
       + "inner join course_subject sub\n"
       + "on sch.subject_id = sub.id\n"
@@ -116,6 +119,22 @@ public interface TrainingMapper {
       + "where sch.class_date = #{trainingDate}\n"
       + "and sa.user_id = #{userId}")
   List<SelectSchSubDTO> selectSchSub(Date trainingDate, int userId);
+
+  //================== 훈련일지 등록 ========================
+  @Insert("insert into training_log (course_id,training_date,instructor_id) values (#{courseId},#{trainingDate},#{instructorId})")
+  int insertTrainingLog(InsertTrainingDTO insertTrainingDTO);
+
+  @Insert("insert into training_detail (training_id,period,plan,actual) values (#{trainingId}, #{period}, #{plan}, #{actual})")
+  int insertTrainingDetail(InsertTrainingDetailDTO insertTrainingDetailDTO);
+
+  // 휴강일 확인
+  @Select("select exists\n"
+      + "(select 1 from cancel_date where cancel_date = #{trainingDate})")
+  boolean isHoliday(String trainingDate);
+
+  // 재등록 막기(현재 날짜로 등록할 경우 막기)
+  @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId})")
+  boolean isReRegister(String trainingDate, int instructorId);
 
 
 }

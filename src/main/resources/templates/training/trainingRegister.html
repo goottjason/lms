@@ -46,15 +46,17 @@
     <div class="form-row mb-3">
       <div class="form-group col-md-6">
         <label><strong>과정명</strong></label>
-        <input type="text" class="form-control" readonly value="조회">
+        <input type="text" class="form-control" readonly
+               th:value="${selectAllWithoutActualDTO.getSelectCourseDTO().getName()}">
       </div>
       <div class="form-group col-md-4">
         <label><strong>훈련 일자</strong></label>
-        <input type="text" class="form-control" readonly value="조회">
+        <input type="text" class="form-control" readonly id=registerDate>
       </div>
       <div class="form-group col-md-2">
         <label><strong>총 수강생 수</strong></label>
-        <input type="text" class="form-control" readonly value="조회">
+        <input type="text" class="form-control" readonly
+               th:value="${selectAllWithoutActualDTO.getNumberOfLearner()}">
       </div>
     </div>
 
@@ -63,7 +65,8 @@
       <table class="table table-bordered text-center">
         <thead class="thead-light">
         <tr>
-          <th>출석 수</th>
+          <th>출석</th>
+          <th>지각</th>
           <th>결석</th>
           <th>조퇴</th>
           <th>휴가</th>
@@ -71,21 +74,29 @@
         </thead>
         <tbody>
         <tr>
-          <td>조회</td>
-          <td>조회</td>
-          <td>조회</td>
-          <td>조회</td>
+          <td th:text="${selectAllWithoutActualDTO.getResponseParticipationDTO().attendanceCount}">
+            조회
+          </td>
+          <td th:text="${selectAllWithoutActualDTO.getResponseParticipationDTO().lateCount}">조회</td>
+          <td th:text="${selectAllWithoutActualDTO.getResponseParticipationDTO().absenceCount}">조회
+          </td>
+          <td th:text="${selectAllWithoutActualDTO.getResponseParticipationDTO().leaveEarLyCount}">
+            조회
+          </td>
+          <td th:text="${selectAllWithoutActualDTO.getResponseParticipationDTO().vacationPaddingCount}">
+            조회
+          </td>
         </tr>
         </tbody>
       </table>
     </div>
 
     <!-- 훈련생 이름 -->
-<!--    <div class="mb-4">-->
-<!--      <span class="clickable-name" onclick="alert('박철수')">박 ○○</span>,-->
-<!--      <span class="clickable-name" onclick="alert('김민수')">김 ○○</span>-->
-<!--      <small class="text-muted ml-2">(클릭 or 호버하면 이름 조회되게)</small>-->
-<!--    </div>-->
+    <!--    <div class="mb-4">-->
+    <!--      <span class="clickable-name" onclick="alert('박철수')">박 ○○</span>,-->
+    <!--      <span class="clickable-name" onclick="alert('김민수')">김 ○○</span>-->
+    <!--      <small class="text-muted ml-2">(클릭 or 호버하면 이름 조회되게)</small>-->
+    <!--    </div>-->
 
     <!-- 훈련 과목 -->
     <div class="table-responsive mb-4">
@@ -100,10 +111,11 @@
         <tbody>
         <!-- 1~7교시 -->
 
-        <tr>
-          <td>1</td>
-          <td>조회</td>
-          <td>조회</td>
+        <tr th:each="dto : ${selectAllWithoutActualDTO.getSelectSchSubDTOList()}">
+          <td th:text="${dto.getPeriod()}">1</td>
+          <td th:text="${dto.getName()}">조회</td>
+          <td class="actual" contenteditable="true" th:data-period="${dto.getPeriod()}"
+              th:data-plan="${dto.getId()}"></td>
         </tr>
 
         <!-- 위는 서버 렌더링용. HTML만 원하시면 아래 코드로 대체하세요. -->
@@ -114,41 +126,114 @@
 
     <!-- 하단 버튼 -->
     <div class="text-right">
-      <button class="btn btn-primary">수정</button>
-      <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">삭제</button>
+      <button class="btn btn-primary" id="register">등록</button>
+      <button class="btn btn-secondary" id="toList">목록</button>
     </div>
   </div>
-
-  <!-- 삭제 확인 모달 -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content text-center">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">삭제하시겠습니까?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          (모달 or 토스트 창)
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-danger">네</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-
-
 
 
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+
+    let selectAllWithoutActualDTO = /*[[${selectAllWithoutActualDTO}]]*/ null;
+    let selectCourseDTO = /*[[${selectAllWithoutActualDTO.selectCourseDTO}]]*/ null;
+
+    // 파라미터의 registerDate 가져오기
+    function queryDate() {
+      const urlParams = new URLSearchParams(location.search);
+      const registerDate = urlParams.get("registerDate");
+      $("#registerDate").val(registerDate);
+    }
+
+    // 서버에 보낼 데이터(4~8개의 actual)
+    function sendActualData() {
+      let dataArray = [];
+      let postDate = $("#registerDate").val();
+
+      Array.from($(".actual")).forEach(function (actual) {
+        //requestBody 로 보내기
+        let period = $(actual).data("period");
+        let plan = $(actual).data("plan");
+        let actualData = {
+          period: period,
+          plan: plan,
+          actual: $(actual).text()
+        }
+        dataArray.push(actualData);
+      })
+      console.log("dataArray", dataArray);
+
+      let finalData = {
+        dataArray: dataArray,
+        selectCourseDTO: selectCourseDTO,
+        postDate: postDate
+      }
+
+      axios.post("/training/trainingRegister", finalData)
+      .then(function (response) {
+        console.log(response);
+        let responseCode = response.data.code;
+        let responseMessage = response.data.message;
+        let responseData = response.data.data;
+        if(responseCode === 200){
+          Swal.fire({
+            title: responseMessage,
+            text: '훈련일지가 등록되었습니다.',
+            icon: 'info',
+            confirmButtonText: '예'
+          }).then((result) => {
+            location.href = "/training/trainingDetail?trainingId=" + responseData;
+          })
+        }
+      }).catch(function (error) {
+        console.log("error", error);
+        let errorCode = error.data.code;
+        let errorMessage = error.data.message;
+        // let errorData = error.data.data;
+        if(errorCode === 500 || errorCode === 401){
+          Swal.fire({
+            title: errorMessage,
+            text: '다시 확인해주세요',
+            icon: 'error',
+            confirmButtonText: '예'
+          }).then((result) => {
+            location.href = "/training/trainingList";
+          })
+        } else if(errorCode === 404){
+          Swal.fire({
+            title: errorMessage,
+            text: '다시 확인해주세요',
+            icon: 'error',
+            confirmButtonText: '예'
+          })
+        }
+      })
+
+    }
+
+    $(function () {
+      console.log("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
+
+      // 파라미터의 registerDate
+      queryDate();
+
+      // 목록으로
+      $("#toList").click(function () {
+        location.href = "/training/trainingList";
+      })
+
+      $("#register").click(function () {
+        sendActualData();
+      })
+
+      // $(".actual").on("keydown", function () {
+      //   sendActualData(); //수정 성공
+      //
+      // })
+
+    })
 
 
   </script>
