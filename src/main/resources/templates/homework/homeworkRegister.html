@@ -221,6 +221,8 @@
       console.log("fileList", fileList);
     }
 
+    // 알림 function (해당 과정의 학생들에게)
+
     // $function 모음
     $(function(){
 
@@ -247,6 +249,8 @@
         ).then(function(response){
           console.log(response)
           console.log(response.data)
+          let targetNum = response.data.data;
+          sendNotificationToAllInCourse(courseId, "과제가 등록 되었습니다", false, "/homework/homeworkDetail?homeworkId="+ targetNum);
           location.href = "/homework/homeworkList";
         }).catch(function (error) {
           console.log("error",error);

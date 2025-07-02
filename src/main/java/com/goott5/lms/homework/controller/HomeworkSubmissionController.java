@@ -3,7 +3,6 @@ package com.goott5.lms.homework.controller;
 import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.common.domain.ReadCountLog;
-import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.homework.domain.HomeworkDTO;
@@ -13,7 +12,6 @@ import com.goott5.lms.homework.domain.HomeworkSubmissionDTO;
 import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
 import com.goott5.lms.homework.domain.PagingRequestDTO;
 import com.goott5.lms.homework.domain.PagingResponseDTO;
-import com.goott5.lms.homework.mapper.HomeworkMapper;
 import com.goott5.lms.homework.service.HomeworkService;
 import com.goott5.lms.homework.util.FileException;
 import com.goott5.lms.user.domain.UserVO;
@@ -60,8 +58,7 @@ public class HomeworkSubmissionController {
   private final HomeworkService homeworkService;
   private final S3Uploader s3Uploader;
   private final UtilService utilService;
-  private final UtilMapper utilMapper;
-  private final HomeworkMapper homeworkMapper;
+
 
   @Value("${cloud.aws.s3.bucketName}")
   private String bucket;
@@ -100,7 +97,7 @@ public class HomeworkSubmissionController {
 
     Map<String, PagingResponseDTO<HomeworkSubmissionDTO>> resultMap = new HashMap<>();
     if (pagingResponseSubmission != null) {
-      resultMap.put(homeworkMapper.selectTitle(homeworkId), pagingResponseSubmission);
+      resultMap.put(homeworkService.homeworkName(homeworkId), pagingResponseSubmission);
       return resultMap;
     }
     return null;
@@ -311,6 +308,11 @@ public class HomeworkSubmissionController {
       }
     }
 
+    // 알림용 파라미터 매핑
+    int courseId = homeworkService.courseIdById(homeworkId);
+    int instructorId =  homeworkService.instructorIdByCourseId(courseId);
+//    model.addAttribute("courseId", courseId);
+    model.addAttribute("instructorId", instructorId);
     model.addAttribute("learnerId", loginUser.getId());
 
     return "homework/submissionRegister";
@@ -411,7 +413,7 @@ public class HomeworkSubmissionController {
     HomeworkSubmissionDTO submission = homeworkService.selectSubmission(submissionId);
 
     // 이전에 등록했던 파일 조회
-    List<FileSelectDTO> beforeFiles = utilMapper.selectFileFrom("homework_submission",
+    List<FileSelectDTO> beforeFiles = utilService.selectFileList("homework_submission",
         submissionId);
 
     if (beforeFiles != null && !beforeFiles.isEmpty()) {

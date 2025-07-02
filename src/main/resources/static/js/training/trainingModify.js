@@ -14,8 +14,18 @@ function modifyView() {
   console.log("(수정 전)actualMap", actualMap);
 
   let output = "";
-  output = `<button class="btn btn-primary" id = "modifyRegister">수정 등록</button>
-      <button class="btn btn-secondary" id = "toDetail">목록</button>`
+  output = `<button class="btn btn-primary" id = "modifyRegister">
+<span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+        <span class="text px-3">수정 등록</span>
+</button>
+      <button class="btn btn-secondary" id = "toDetail"> 
+      <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+        <span class="text px-4">취소</span>
+        </button>`
   $("#modifyDeleteDiv").html(output);
 
 }
@@ -32,8 +42,6 @@ function modifyData() {
 
   let postMap = Object.fromEntries(actualMap)
   console.log("(수정 후)postMap", postMap);
-
-
 
   let modifyFinalDTO = {
     postMap: postMap,
@@ -84,7 +92,7 @@ function modifyData() {
 // 게시글 삭제 function
 function deleteTraining() {
 
-  axios.post("/training/deleteTraining",{
+  axios.post("/training/deleteTraining", {
     trainingIdBody: trainingId,
     courseIdBody: courseId
   })
@@ -127,6 +135,11 @@ $(function () {
   $(document).on("click", "#deleteTraining", function () {
     // alert("!");
     deleteTraining();
+  })
+
+  // 취소 버튼 클릭시
+  $(document).on("click", "#toDetail", function () {
+    location.href = "/training/trainingDetail?trainingId=" + trainingId;
   })
 
 })

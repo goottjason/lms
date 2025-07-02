@@ -32,7 +32,8 @@
   <!-- content header 시작 -->
 
   <!-- 학생 이름(해당 창 hover or click시 토스트창 띄우기) -->
-  <div class="toast" data-autohide="false" style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">
+  <div class="toast" data-autohide="false"
+       style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">
     <div class="toast-header">
       <strong class="mr-auto text-primary toast-strong"></strong>
       <small class="text-muted"></small>
@@ -76,7 +77,8 @@
     </div>
 
     <!-- 출석 정보 -->
-    <div class="table-responsive mb-4" th:if="${finalSelectTraining != null && finalSelectTraining.getResponseParticipationDTO() != null}">
+    <div class="table-responsive mb-4"
+         th:if="${finalSelectTraining != null && finalSelectTraining.getResponseParticipationDTO() != null}">
 
       <table class="table table-bordered text-center">
         <thead class="thead-light">
@@ -142,11 +144,13 @@
 
 
         <th:block th:if="${detailWithSubMap != null}">
-        <tr th:each="detail : ${detailWithSubMap.entrySet()}">
-          <td th:text="${detail.getKey().period}">1</td>
-          <td th:text="${detail.getValue()}">조회</td>
-          <td th:text="${detail.getKey().actual}" class="detail-actual" th:data-id="${detail.getKey().getId()}">조회</td>
-        </tr>
+          <tr th:each="detail : ${detailWithSubMap.entrySet()}">
+            <td th:text="${detail.getKey().period}">1</td>
+            <td th:text="${detail.getValue()}">조회</td>
+            <td th:text="${detail.getKey().actual}" class="detail-actual"
+                th:data-id="${detail.getKey().getId()}">조회
+            </td>
+          </tr>
         </th:block>
 
         <!-- 위는 서버 렌더링용. HTML만 원하시면 아래 코드로 대체하세요. -->
@@ -156,9 +160,19 @@
     </div>
 
     <!-- 하단 버튼 -->
-    <div class="text-right"  id="modifyDeleteDiv">
-      <button class="btn btn-primary" id = "modifyBtn" th:if="${loginUserType == 'INSTRUCTOR'}">수정</button>
-      <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">삭제</button>
+    <div class="text-right" id="modifyDeleteDiv">
+      <button class="btn btn-primary" id="modifyBtn" th:if="${loginUserType == 'INSTRUCTOR'}">
+        <span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+        <span class="text px-3">수정</span>
+      </button>
+      <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+         <span class="icon text-white-50">
+        <i class="fa fa-times"></i>
+      </span>
+        <span class="text px-3">삭제</span>
+      </button>
     </div>
 
   </div>
@@ -178,7 +192,7 @@
           해당 훈련일지 및 서명이 모두 삭제됩니다.
         </div>
         <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-danger" id = "deleteTraining">네</button>
+          <button type="button" class="btn btn-danger" id="deleteTraining">네</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
         </div>
       </div>
@@ -211,26 +225,24 @@
       console.log("finalSelectTraining", finalSelectTraining);
       console.log("detailWithSubMap", detailWithSubMap);
 
-
-
       // 엑셀 다운로드 버튼 클릭
       $("#excel").on("click", function (e) {
         // alert("excel");
         e.preventDefault();
 
         let data = {
-          finalSelectTraining : finalSelectTraining,
-          detailWithSubMap : detailWithSubMap
+          finalSelectTraining: finalSelectTraining,
+          detailWithSubMap: detailWithSubMap
         }
 
         console.log("data", data);
 
-        axios.post("/training/excel",data).then(function (response) {
+        axios.post("/training/excel", data).then(function (response) {
           console.log("response", response);
           // console.log(response.headers['content-type']);
           let responseCode = response.data.code;
           let responseMessage = response.data.message;
-          if(responseCode === 200){
+          if (responseCode === 200) {
             Swal.fire({
               title: responseMessage,
               text: 'c:/downloads를 확인해주세요.',
@@ -243,7 +255,7 @@
           let errorCode = error.data.code;
           let errorMessage = error.data.message;
           // let errorData = error.data.data;
-          if(errorCode === 500){
+          if (errorCode === 500) {
             Swal.fire({
               title: errorMessage,
               text: '다시 확인해주세요',
@@ -253,7 +265,6 @@
           }
         })
       });
-
 
     })
 

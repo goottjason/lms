@@ -248,9 +248,11 @@
 
     let savePage = ""; //후에 로컬스토리지에 저장된 페이지로 이동
 
-    let instructorId = [[${homeworkDTO.instructorId}]]; // 추후 강사가 글 등록시 필요
+    let instructorId = /*[[${homeworkDTO.instructorId}]]*/ null; // 추후 강사가 글 등록시 필요
 
-    let submissionId = [[${submission.id}]]
+    let submissionId = /*[[${submission.id}]]*/ null;
+
+    let learnerId = /*[[${submission.learnerId}]]*/ null;
 
     let evalDTO = /*[[${eval}]]*/ null; //eval은 내장함수랑 충돌 가능성
 
@@ -388,6 +390,8 @@
       axios.post("/homework/evalRegister", formData)
       .then(function (response) {
         console.log(response);
+        let userARR = [learnerId];
+        sendNotification(userARR, "평가가 등록 되었습니다", false, "/homework/submissionDetail?submissionId=" + submissionId);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId;
       }).catch(function (error) {
         console.log("error", error);

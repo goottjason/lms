@@ -2,7 +2,6 @@ package com.goott5.lms.homework.controller;
 
 import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.common.domain.FileSelectDTO;
-import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.homework.domain.*;
@@ -41,7 +40,6 @@ public class HomeworkController {
   private final HomeworkService homeworkService;
   private final S3Uploader s3Uploader;
   private final UtilService utilService;
-  private final UtilMapper utilMapper;
 
   @Value("${cloud.aws.s3.bucketName}")
   private String bucket;
@@ -276,7 +274,7 @@ public class HomeworkController {
 //    model.addAttribute("homeworkId",homeworkId);
 
     // 파일이 있을 경우, 파일 조회
-    List<FileSelectDTO> fileDTOList = utilMapper.selectFileFrom("homework", homeworkId);
+    List<FileSelectDTO> fileDTOList = utilService.selectFileList("homework", homeworkId);
     if (fileDTOList != null) {
       log.info("fileDTOList:{}", fileDTOList);
       model.addAttribute("fileDTOList", fileDTOList);
@@ -442,11 +440,11 @@ public class HomeworkController {
 
     } else {
       log.info("파일 등록 없는 insert 성공");
-      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkDTO));
+      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkIdForFile));
     }
 
     log.info("파일 등록 with insert 성공");
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkDTO));
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkIdForFile));
 
   }
 
@@ -575,7 +573,7 @@ public class HomeworkController {
       if (!deleteFiles.isEmpty()) {
 
         for (Integer num : deleteFiles) {
-          fileSelectDTO = utilMapper.selectFileById(num);
+          fileSelectDTO = utilService.selectFileById(num);
           deleteFileList.add(fileSelectDTO);
         }
 
