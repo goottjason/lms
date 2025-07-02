@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.report.mapper.ReportMapper">
+
+  <select id="selectReportList" resultType="com.goott5.lms.report.domain.ReportVO">
+    SELECT
+    r.id,
+    r.report_status AS reportStatus,
+    r.report_detail AS reportDetail,
+    r.created_at AS createdAt,
+    cf.id AS forumId,
+    cf.title AS postTitle,
+    cf.content AS postContent,
+    c.name AS courseName,
+    writer.fullname AS postWriterName,
+    reporter.fullname AS reporterName
+    FROM
+    course_forum_report r
+    JOIN
+    course_forum cf ON r.course_forum_id = cf.id
+    JOIN
+    course c ON cf.course_id = c.id
+    JOIN
+    `user` writer ON cf.writer_id = writer.id
+    JOIN
+    `user` reporter ON r.user_id = reporter.id
+    ORDER BY
+    r.id DESC
+    LIMIT #{skip}, #{pagingSize}
+  </select>
+
+  <select id="selectReportTotalCount" resultType="int">
+    SELECT COUNT(*)
+    FROM course_forum_report r
+    JOIN course_forum cf ON r.course_forum_id = cf.id
+  </select>
+
+  <update id="updateReportStatus">
+    UPDATE course_forum_report
+    SET report_status = #{status}
+    WHERE id = #{reportId}
+  </update>
+
+</mapper>

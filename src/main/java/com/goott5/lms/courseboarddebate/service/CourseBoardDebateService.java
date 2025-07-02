@@ -26,7 +26,7 @@ public interface CourseBoardDebateService {
 
   void deleteCourseBoardDebate(int debateId);
 
-  void addCourseBoardDebateComment(CourseBoardDebateCommentDTO comment);
+  boolean addCourseBoardDebateComment(CourseBoardDebateCommentDTO comment);
 
   int toggleCourseBoardDebateLike(int forumId, int userId);
 
@@ -36,5 +36,7 @@ public interface CourseBoardDebateService {
 
   void deleteComment(int commentId, UserVO loginUser);
 
-  void updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount);
+  boolean updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount);
+
+  int getUserId(int forumId);
 }

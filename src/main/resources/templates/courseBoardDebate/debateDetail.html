@@ -239,7 +239,8 @@
     </div>
 
   <div class="col-12 d-flex justify-content-end mt-3 mb-4">
-    <button id="report-button" class="btn btn-warning btn-icon-split mr-2" th:if="${session.loginUser != null}">
+    <button id="report-button" class="btn btn-warning btn-icon-split mr-2"
+            th:if="${session.loginUser != null and session.loginUser.id != debateDetail.writerId}">
       <span class="icon text-white-50"><i class="fa fa-exclamation-triangle"></i></span><span class="text">신고</span>
     </button>
       <a th:href="|/courseBoardDebate/debateList?pageNo=${pagingRequestDTO.pageNo}${pagingRequestDTO.generateLinkExceptPageNo()}|" class="btn btn-secondary btn-icon-split">
@@ -324,11 +325,11 @@
       const modifyButton = document.getElementById('modify-btn');
       const deleteButton = document.getElementById('delete-button');
       const reportButton = document.getElementById('report-button');
-      const confirmDeleteButton = document.getElementById('confirm-delete-btn');
 
-      // 이벤트 리스너 설정
-
-      // 수정 버튼 이벤트
+      /**
+       * 이벤트 리스너 설정
+       * 수정 버튼 이벤트
+       */
       if (modifyButton) {
         modifyButton.addEventListener('click', function() {
           const id = this.dataset.id;
@@ -437,6 +438,7 @@
               axios.post(`/courseBoardDebate/report`, formData)
               .then(() => Swal.fire('접수 완료', '신고가 정상적으로 접수되었습니다.', 'success'))
               .catch(() => Swal.fire('오류', '신고 처리 중 오류가 발생했습니다.', 'error'));
+              sendNotificationToAdmin('신고가 접수 되었습니다.',true,'/admin/reports');
             }
           });
         }

@@ -119,21 +119,24 @@
             <th scope="col" class="align-middle">좋아요</th>
           </tr>
           </thead>
-          <tbody>
 
+          <tbody>
           <tr th:each="dto: ${responseDTO.dtoList}">
-            <td th:text="${dto.id}" class="text-center align-middle"></td>
+            <td class="text-center align-middle">
+              <span th:if="${dto.isHotPost}" class="badge badge-danger">인기글</span>
+              <th:block th:unless="${dto.isHotPost}" th:text="${dto.id}"></th:block>
+            </td>
             <td class="title align-middle">
-              <th:block th:if="${dto.deletedAt == null}">
-                <span th:if="${dto.isHotPost}" class="badge badge-danger mr-2">HOT</span>
-                <a th:href="|/courseBoardDebate/debateDetail?id=${dto.id}&pageNo=${responseDTO.pageNo}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}|"
-                   th:text="${#strings.abbreviate(dto.title, 15)}">제목</a>
-                <span th:if="${dto.isAttached}" class="ml-2">
-                    <i class="fas fa-cog text-secondary"></i>
-                </span>
+              <th:block th:if="${dto.approvedReportCount >= 3}">
+                <span class="text-muted">신고로 인해 삭제 된 글입니다.</span>
               </th:block>
-              <th:block th:if="${dto.deletedAt != null}">
-                <span class="text-muted">삭제된 글입니다.</span>
+              <th:block th:unless="${dto.approvedReportCount >= 3}">
+                <a th:href="|/courseBoardDebate/debateDetail?id=${dto.id}&pageNo=${responseDTO.pageNo}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}|"
+                   th:text="${#strings.abbreviate(dto.title, 30)}">
+                </a>
+                <span th:if="${dto.isAttached}" class="ml-2">
+                  <i class="fas fa-cog text-secondary"></i>
+                </span>
               </th:block>
             </td>
             <td th:text="${dto.courseName}" class="title align-middle text-truncate" style="max-width: 200px;"></td>

@@ -131,7 +131,6 @@
           const formData = new FormData(form);
 
           // courseId를 formData에 추가 (만약 필요하다면)
-          const currentCourseId = /*[[${currentCourseId}]]*/ null;
           if (currentCourseId) {
             formData.append("courseId", currentCourseId);
           }
@@ -148,7 +147,8 @@
             // 서버 응답 코드(code)가 200 (성공)일 경우
             if (response.data.code === 200) {
               Swal.fire(response.data.message).then(()=>{location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`});
-
+              sendNotificationToLearnerInCourse(currentCourseId,'공지 및 수업자료 게시판에 글이 수정 되었습니다.',false,
+                  `/courseBoardMaterials/materialsDetail?id=${response.data.data.id}`);
               // 응답 데이터에 포함된 게시글 ID(id)를 가져옵니다.
               const materialId = response.data.data.id;
 

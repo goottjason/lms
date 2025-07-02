@@ -10,13 +10,18 @@ import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface CourseBoardDebateMapper {
 
   int insertCourseBoardDebate(@Param("dto") CourseBoardDebateDTO courseBoardDebateDTO);
-  List<CourseBoardDebateVO> selectCourseBoardDebateList(CourseBoardDebatePagingRequestDTO requestDTO);
-  int selectCourseBoardDebateTotalCount(CourseBoardDebatePagingRequestDTO requestDTO);
+
+  // 일반글/인기글 분리된 목록 조회용 메소드들
+  List<CourseBoardDebateVO> selectRegularPosts(CourseBoardDebatePagingRequestDTO requestDTO);
+  int selectRegularPostsTotalCount(CourseBoardDebatePagingRequestDTO requestDTO);
+  List<CourseBoardDebateVO> selectHotPosts(CourseBoardDebatePagingRequestDTO requestDTO);
+
   CourseBoardDebateDetailInfo selectCourseBoardDebateDetail(@Param("id") int id);
   int updateCourseBoardDebateReadCount(@Param("id") int id);
   int updateCourseBoardDebate(CourseBoardDebateDTO courseBoardDebateDTO);
@@ -43,8 +48,12 @@ public interface CourseBoardDebateMapper {
   int countCommentsByForumId(int forumId);
   int promoteToHotPost(int forumId);
   int expireHotPosts();
-
   int countHotPosts();
+
   List<CourseBoardDebateVO> findHotPosts();
+
   int demoteHotPost(int forumId);
+
+  @Select("select u.id from course_forum cf join user u on cf.writer_id = u.id where cf.id = #{forumId}")
+  int selectUserId(int forumId);
 }

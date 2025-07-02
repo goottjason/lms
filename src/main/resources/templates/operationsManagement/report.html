@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    textarea[readonly] {
+      background-color: #fff !important;
+    }
+    .title {
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">신고 관리</h1>
+  </div>
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">신고 리스트</h6>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr class="text-center">
+            <th scope="col" class="align-middle" style="width: 5%;">No</th>
+            <th scope="col" class="align-middle" style="width: 15%;">과정명</th>
+            <th scope="col" class="align-middle">제목</th>
+            <th scope="col" class="align-middle" style="width: 10%;">작성자</th>
+            <th scope="col" class="align-middle" style="width: 10%;">신고자</th>
+            <th scope="col" class="align-middle" style="width: 15%;">신고날짜</th>
+            <th scope="col" class="align-middle" style="width: 20%;">처리</th>
+          </tr>
+          </thead>
+          <tbody id="report-list-body">
+          <tr th:each="report : ${reportList}"
+              th:data-reason="${report.reportDetail}"
+              th:data-post-content="${report.postContent}"
+              th:data-forum-id="${report.forumId}">
+            <td class="text-center align-middle" th:text="${report.id}"></td>
+            <td class="align-middle" th:text="${report.courseName}"></td>
+            <td class="align-middle">
+              <a href="#" class="title" data-toggle="modal" data-target="#reportModal"
+                 th:text="${#strings.abbreviate(report.postTitle, 30)}"></a>
+            </td>
+            <td class="text-center align-middle" th:text="${report.postWriterName}"></td>
+            <td class="text-center align-middle" th:text="${report.reporterName}"></td>
+            <td class="text-center align-middle" th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd')}"></td>
+            <td class="text-center align-middle">
+              <th:block th:if="${report.reportStatus == 'PENDING'}">
+                <button class="btn btn-primary btn-sm approve-btn" th:data-report-id="${report.id}">승인</button>
+                <button class="btn btn-danger btn-sm reject-btn" th:data-report-id="${report.id}">거부</button>
+                <button class="btn btn-dark btn-sm delete-btn" th:data-forum-id="${report.forumId}">즉시삭제</button>
+              </th:block>
+              <th:block th:unless="${report.reportStatus == 'PENDING'}">
+                <span class="text-info">처리 완료</span>
+              </th:block>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(reportList)}">
+            <td colspan="7" class="text-center">신고 내역이 없습니다.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <nav aria-label="Page navigation" class="col mt-4" th:if="${responseDTO != null and responseDTO.total > 0}">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" th:classappend="${!responseDTO.prev} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/reports(pageNo=${responseDTO.start - 1})}">이전</a>
+          </li>
+
+          <li class="page-item" th:each="i : ${#numbers.sequence(responseDTO.start, responseDTO.end)}"
+              th:classappend="${i == responseDTO.pageNo} ? 'active'">
+            <a class="page-link" th:href="@{/admin/reports(pageNo=${i})}" th:text="${i}"></a>
+          </li>
+
+          <li class="page-item" th:classappend="${!responseDTO.next} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/reports(pageNo=${responseDTO.end + 1})}">다음</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">신고 내용</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group"><label for="report-reason">신고사유</label><textarea id="report-reason" class="form-control" style="height: 100px;" readonly></textarea></div>
+          <div class="form-group"><label for="post-content">신고글 내용</label><textarea id="post-content" class="form-control" style="height: 180px;" readonly></textarea></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">승인 완료</h5><button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button></div>
+        <div class="modal-body">승인 처리되었습니다.</div>
+        <div class="modal-footer"><button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const reportListBody = document.getElementById('report-list-body');
+
+      if (reportListBody) {
+        reportListBody.addEventListener('click', function(e) {
+          const target = e.target;
+
+          // 기능 1: 제목 클릭 -> 상세 모달
+          if (target.classList.contains('title')) {
+            const row = target.closest('tr');
+            document.getElementById('report-reason').value = row.dataset.reason;
+            document.getElementById('post-content').value = row.dataset.postContent;
+          }
+
+          // 기능 2: 승인 버튼
+          if (target.classList.contains('approve-btn')) {
+            const reportId = target.dataset.reportId;
+            Swal.fire({
+              title: '신고를 승인하시겠습니까?',
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: '승인',
+              cancelButtonText: '취소'
+            }).then(result => result.isConfirmed && processReport(reportId, 'RESOLVED', target));
+          }
+
+          // 기능 3: 거부 버튼
+          if (target.classList.contains('reject-btn')) {
+            const reportId = target.dataset.reportId;
+            Swal.fire({
+              title: '신고를 거부하시겠습니까?',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              confirmButtonText: '거부',
+              cancelButtonText: '취소'
+            }).then(result => result.isConfirmed && processReport(reportId, 'DISMISSED', target));
+          }
+
+          // 기능 4: 즉시삭제 버튼
+          if (target.classList.contains('delete-btn')) {
+            const forumId = target.dataset.forumId;
+            Swal.fire({
+              title: '정말 즉시 삭제하시겠습니까?',
+              text: "악의적인 게시글을 바로 삭제합니다. 이 작업은 되돌릴 수 없습니다!",
+              icon: 'error',
+              showCancelButton: true,
+              confirmButtonText: '삭제',
+              cancelButtonText: '취소'
+            }).then(result => result.isConfirmed && deletePost(forumId, target));
+          }
+        });
+      }
+
+      /** 신고 처리 (승인/거부) */
+      async function processReport(reportId, newStatus, buttonElement) {
+        try {
+          await axios.put(`/api/admin/reports/${reportId}`, { status: newStatus });
+          buttonElement.closest('td').innerHTML = '<span class="text-info">처리 완료</span>';
+          if (newStatus === 'RESOLVED') {
+            $('#approvalModal').modal('show');
+          } else {
+            Swal.fire('거부 처리 완료', '신고가 거부되었습니다.', 'success');
+          }
+        } catch (error) {
+          console.error('신고 처리 오류:', error);
+          Swal.fire('오류', '처리 중 문제가 발생했습니다.', 'error');
+        }
+      }
+
+      /** 게시글 즉시 삭제 */
+      async function deletePost(forumId) {
+        try {
+          const response = await axios.get(`/api/admin/forums/getUser/${forumId}`);
+          let writerId = response.data;
+          sendNotification([writerId], "신고가 되어 글이 삭제 되었습니다.", true);
+          await axios.delete(`/api/admin/forums/${forumId}`);
+          Swal.fire('삭제 완료!', '해당 게시글이 삭제되었습니다.', 'success');
+        } catch (error) {
+          console.error('게시글 삭제 오류:', error);
+          Swal.fire('오류', '게시글 삭제 중 문제가 발생했습니다.', 'error');
+        }
+      }
+    });
+  </script>
+</th:block>
+</body>
+</html>

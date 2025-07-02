@@ -203,7 +203,7 @@
       </if>
     </where>
     ORDER BY
-    cn.created_at DESC
+    COALESCE(cn.updated_at, cn.created_at) DESC
   </select>
 
 </mapper>
