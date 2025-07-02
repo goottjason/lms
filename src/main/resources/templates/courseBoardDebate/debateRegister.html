@@ -272,37 +272,6 @@
       $("#file").on("change", function () {
         pushFileLIst();
       });
-
-      // 폼 전송
-      $("#submit").on("click", function (e) {
-        e.preventDefault();
-
-        const courseName = $("#courseNameForRegister").val();
-        console.log(courseName);
-
-        let form = document.getElementById("registerForm");
-        let formData = new FormData(form);
-        formData.append("courseId", courseId);
-        formData.append("courseName", courseName);
-        formData.append("instructorId", userId);
-
-        console.log(fileList);
-
-        fileList.forEach(function (file) {
-          formData.append("files", file);
-        });
-
-        axios.post("/courseBoardDebate/debateRegister",
-            formData
-        ).then(function (response) {
-          console.log(response);
-          console.log(response.data);
-          location.href = "/courseBoardDebate/debateList";
-        }).catch(function (error) {
-          console.log(error);
-        });
-      });
-
     });
   </script>
 </th:block>

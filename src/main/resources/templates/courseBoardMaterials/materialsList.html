@@ -125,7 +125,7 @@
             <td class="text-center align-middle"><i class="fas fa-thumbtack text-primary"></i></td>
             <td class="title align-middle">
               <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
-                 th:text="${#strings.abbreviate(dto.title, 20)}">고정글 제목</a>
+                 th:text="${#strings.abbreviate(dto.title, 30)}">고정글 제목</a>
               <span th:if="${dto.isAttached}" class="ml-2">
                 <i class="fas fa-cog text-secondary"></i>
               </span>
@@ -142,7 +142,7 @@
             <td class="title align-middle">
               <th:block th:if="${dto.deletedAt == null}">
                 <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
-                   th:text="${#strings.abbreviate(dto.title, 20)}">제목</a>
+                   th:text="${#strings.abbreviate(dto.title, 30)}">제목</a>
                 <span th:if="${dto.isAttached}" class="ml-2">
                     <i class="fas fa-cog text-secondary"></i>
                 </span>

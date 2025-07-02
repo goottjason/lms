@@ -548,7 +548,7 @@ public class CourseBoardDebateController {
   // 신고 접수
   @PostMapping("/report")
   @ResponseBody
-  public ResponseEntity<MyResponseWithDataDebate> addReport(@RequestParam int id, @RequestParam String reportDetail, HttpSession session) {
+  public ResponseEntity<MyResponseWithDataDebate> addReport(@RequestParam("forumId") int id, @RequestParam("reportDetail") String reportDetail, HttpSession session) {
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
       return ResponseEntity.status(401).body(new MyResponseWithDataDebate(401, "로그인이 필요합니다.", null));

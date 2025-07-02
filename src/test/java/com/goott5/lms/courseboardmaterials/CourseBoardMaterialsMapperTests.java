@@ -43,12 +43,13 @@ public class CourseBoardMaterialsMapperTests {
   @Rollback(value = false)
   public void insertDummyData(){
 
-    for(int i = 0; i < 11; i++){
+    for(int i = 0; i < 101; i++){
       CourseBoardMaterialsDTO dto = CourseBoardMaterialsDTO.builder()
-          .courseId(37)
+          .courseId(38)
           .writerId(33)
-          .title("더미 데이터 2"+ i)
-          .content("더미 데이터 2" +i)
+          .title("더미 데이터입니다 "+ i)
+          .content("더미 데이터입니다 " +i)
+          .isFixed(false)
           .build();
 
       courseBoardMaterialsMapper.insertCourseBoardMaterials(dto);

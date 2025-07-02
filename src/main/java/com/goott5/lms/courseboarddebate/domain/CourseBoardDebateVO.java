@@ -34,4 +34,5 @@ public class CourseBoardDebateVO {
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;
 
+  private int approvedReportCount;
 }
