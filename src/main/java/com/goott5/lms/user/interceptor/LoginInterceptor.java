@@ -38,19 +38,20 @@ public class LoginInterceptor implements HandlerInterceptor {
 
       if (autoLoginUser != null) {
         session.setAttribute("loginUser", autoLoginUser);
+        log.info("autoLoginUser: {}", autoLoginUser);
 
         if (requestURI.equals("/")) {
 
           String redirectUrl = "";
           switch (autoLoginUser.getType()) {
             case "ADMINISTRATOR":
-              redirectUrl = "/courseManagement/courseList";
+              redirectUrl = "home/administratorHome";
               break;
             case "INSTRUCTOR":
-              redirectUrl = "/homework/homeworkList";
+              redirectUrl = "home/instructorHome";
               break;
             case "LEARNER":
-              redirectUrl = "/participation/participationView";
+              redirectUrl = "home/learnerHome";
           }
           response.sendRedirect(redirectUrl);
           return false;
@@ -81,13 +82,13 @@ public class LoginInterceptor implements HandlerInterceptor {
           String redirectUrl = "";
           switch (((UserVO) request.getSession().getAttribute("loginUser")).getType()) {
             case "ADMINISTRATOR":
-              redirectUrl = "/courseManagement/courseList";
+              redirectUrl = "home/administratorHome";
               break;
             case "INSTRUCTOR":
-              redirectUrl = "/homework/homeworkList";
+              redirectUrl = "home/instructorHome";
               break;
             case "LEARNER":
-              redirectUrl = "/participation/participationView";
+              redirectUrl = "home/learnerHome";
           }
           response.sendRedirect(redirectUrl);
           return false;

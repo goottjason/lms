@@ -58,16 +58,16 @@
           </div>
         </div>
         <div class="col-6 d-flex justify-content-end">
-          <select id="orderBy" class="form-control col-3 mr-3">
-            <option value="desc" th:selected="${inquiryRequestParam.orderBy == 'desc'}">내림차순
-            </option>
-            <option value="asc" th:selected="${inquiryRequestParam.orderBy == 'asc'}">오름차순</option>
-          </select>
-          <select id="sort" class="form-control col-3">
+          <select id="sort" class="form-control col-3 mr-3">
             <option value="createdAt" th:selected="${inquiryRequestParam.sort == 'createdAt'}">질문작성일
             </option>
             <option value="answeredAt" th:selected="${inquiryRequestParam.sort == 'answeredAt'}">답변일
             </option>
+          </select>
+          <select id="orderBy" class="form-control col-3">
+            <option value="desc" th:selected="${inquiryRequestParam.orderBy == 'desc'}">내림차순
+            </option>
+            <option value="asc" th:selected="${inquiryRequestParam.orderBy == 'asc'}">오름차순</option>
           </select>
         </div>
       </form>

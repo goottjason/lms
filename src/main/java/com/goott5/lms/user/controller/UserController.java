@@ -81,13 +81,13 @@ public class UserController {
       String redirectUrl = "";
       switch (loginUser.getType()) {
         case "ADMINISTRATOR":
-          redirectUrl = "courseManagement/courseList";
+          redirectUrl = "home/administratorHome";
           break;
         case "INSTRUCTOR":
-          redirectUrl = "homework/homeworkList";
+          redirectUrl = "home/instructorHome";
           break;
         case "LEARNER":
-          redirectUrl = "participation/participationView";
+          redirectUrl = "home/learnerHome";
       }
       return "redirect:/" + redirectUrl;
 

@@ -29,7 +29,8 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="title">제목</label>
+              <label for="title">제목<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+              <span id="title-msg" class="text-danger small"></span>
               <input
                 type="text" id="title" name="title" class="form-control"
                 placeholder="제목을 입력하세요.">
@@ -39,7 +40,8 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="inquiry">내용</label>
+              <label for="inquiry">내용*</span>&nbsp;&nbsp;</label>
+              <span id="inquiry-msg" class="text-danger small"></span>
               <textarea
                 id="inquiry"
                 name="inquiry"
@@ -72,6 +74,49 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
     $("#courseSelector").hide();
+
+    $("#signupForm").on("submit", function (e) {
+
+      if (!validateTitle()) {
+        e.preventDefault();
+      }
+      if (!validateInquiry()) {
+        e.preventDefault();
+      }
+    });
+
+    function validateTitle() {
+      let title     = $("#title").val();
+      let $titleMsg = $("#title-msg");
+
+      if (title.length === 0) {
+        $titleMsg.text("제목을 입력해주세요.");
+        return false;
+      }
+
+      if (title.length > 100) {
+        $titleMsg.text("제목은 100자 아내로 입력하셔야 합니다.");
+        return false;
+      }
+
+      // 정상일 경우
+      $titleMsg.text("");
+      return true;
+    }
+
+    function validateInquiry() {
+      let inquiry     = $("#inquiry").val();
+      let $inquiryMsg = $("#inquiry-msg");
+
+      if (inquiry.length > 1000) {
+        $inquiryMsg.text("문의 내용은 1000자 아내로 입력하셔야 합니다.");
+        return false;
+      }
+
+      // 정상일 경우
+      $inquiryMsg.text("");
+      return true;
+    }
 
   </script>
 </th:block>
