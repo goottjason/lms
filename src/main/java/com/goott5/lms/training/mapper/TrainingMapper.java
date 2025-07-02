@@ -9,9 +9,11 @@ import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
 import java.util.Date;
 import java.util.List;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface TrainingMapper {
@@ -135,6 +137,28 @@ public interface TrainingMapper {
   // 재등록 막기(현재 날짜로 등록할 경우 막기)
   @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId})")
   boolean isReRegister(String trainingDate, int instructorId);
+
+  //=================== 훈련일지 수정 ===========================
+  @Update("update training_detail set actual = #{actual}, updated_at = now() where id = #{trainingId}")
+  int updateTrainingDetail(int trainingId, String actual);
+
+  @Update("update training_log set updated_at = now() where id = #{trainingId}")
+  int updateTrainingLog(int trainingId);
+
+  // 강사 권한 확인
+  @Select("select exists(select 1 from training_log where id = #{id} and instructor_id = #{instructorId})")
+  boolean isMyTrainingLog(int id, int instructorId);
+
+  // 관리자 권한 확인(해당 과정의 관리자인지)
+  @Select("select exists(select 1 from staff_assignment where course_id = #{courseId} and user_id = #{userId})")
+  boolean isAdmin(int courseId, int userId);
+
+  // ======================= 훈련일지 삭제 ===============================
+  @Delete("delete from training_detail where training_id = #{trainingId}")
+  int deleteTrainingDetail(int trainingId); //1보다 클 수 o
+
+  @Delete("delete from training_log where id = #{trainingId}")
+  int deleteTrainingLog(int trainingId);
 
 
 }

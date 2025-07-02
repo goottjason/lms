@@ -10,6 +10,7 @@ import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface TrainingService {
 
@@ -58,5 +59,17 @@ public interface TrainingService {
 
   //기존 훈련일지 여부
   boolean isReRegister(String trainingDate, int instructorId);
+
+  // 로그인 유저 == 해당 훈련일지 작성자 판단 여부 (수정용-강사만)
+  boolean isMyTrainingLog(int id, int instructorId);
+
+  // 훈련 일지 업데이트
+  boolean updateTrainingDetail(Map<String, String> map,int trainingId);
+
+  //(삭제 시) 유효성 검사 (강사 + 관리자)
+  boolean canDeleteTraining(int trainingId, int courseId, int userId);
+
+  //======최종 삭제 (훈련 일지 + 훈련일지 detail + (존재한다면) 파일까지)========
+  void deleteTraining(int trainingId, String tableName);
 
 }

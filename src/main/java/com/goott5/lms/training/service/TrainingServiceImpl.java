@@ -1,5 +1,9 @@
 package com.goott5.lms.training.service;
 
+
+import com.goott5.lms.common.domain.FileSelectDTO;
+import com.goott5.lms.common.service.UtilService;
+import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
@@ -18,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,9 @@ public class TrainingServiceImpl implements TrainingService {
 
   private final TrainingMapper trainingMapper;
   private final com.goott5.lms.common.mapper.UtilMapper utilMapper;
+  private final UtilService utilService;
+  private final S3Uploader s3Uploader;
+  private static final String FILE_UPLOAD_PATH = "upload/signature/";
 
   @Override
   public String selectCourseNameById(int courseId) {
@@ -291,7 +299,95 @@ public class TrainingServiceImpl implements TrainingService {
 
   @Override
   public boolean isReRegister(String trainingDate, int instructorId) {
-    return trainingMapper.isReRegister(trainingDate,instructorId);
+    return trainingMapper.isReRegister(trainingDate, instructorId);
   }
 
+  @Override
+  public boolean isMyTrainingLog(int id, int instructorId) {
+    return trainingMapper.isMyTrainingLog(id, instructorId);
+  }
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public boolean updateTrainingDetail(Map<String, String> map, int trainingId) {
+
+    for (Entry<String, String> entry : map.entrySet()) {
+      try {
+        int key = Integer.parseInt(entry.getKey());
+        if (trainingMapper.updateTrainingDetail(key,
+            (String) entry.getValue()) != 1) {
+          throw new RuntimeException("런타임 오류" + key);
+        }
+      } catch (NumberFormatException e) {
+        throw new RuntimeException(e.getMessage());
+      }
+    }
+
+    int trainingNum = trainingMapper.updateTrainingLog(trainingId);
+    if (trainingNum != 1) {
+      throw new RuntimeException("런타임 오류" + trainingNum);
+    }
+
+    return true;
+  }
+
+  @Override
+  public boolean canDeleteTraining(int trainingId, int courseId, int userId) {
+    // 둘 중에 하나의 검사를 통과 해야 함.
+
+    //1. 강사일 경우
+    boolean canTeacher = trainingMapper.isMyTrainingLog(trainingId, userId);
+
+    //2. 관리자일 경우 (해당 과정의)
+    boolean canAdmin = trainingMapper.isAdmin(courseId, userId);
+
+    boolean result = canTeacher || canAdmin;
+
+    if (!result) {
+      log.info("canTeacher:{}, canAdmin:{}", canTeacher, canAdmin);
+    }
+
+    return result;
+  }
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public void deleteTraining(int trainingId, String tableName) {
+
+    // 1. 첨부 파일이 있을 경우 삭제(없으면 건너뛰어도 무방)
+    List<FileSelectDTO> fileList = utilMapper.selectFileFrom(tableName, trainingId);
+
+    if (fileList != null && !fileList.isEmpty()) {
+      for (FileSelectDTO fileSelectDTO : fileList) {
+        // 파일 서버 삭제
+        try {
+          s3Uploader.deleteFile(FILE_UPLOAD_PATH + fileSelectDTO.getNewName());
+        } catch (Exception e) {
+          throw new RuntimeException("파일 서버 삭제 실패" + fileSelectDTO.getNewName(), e);
+        }
+        //파일 db 삭제
+        int deleteDBFile = utilService.deleteFileById(fileSelectDTO.getId());
+        if (deleteDBFile != 1) {
+          throw new RuntimeException("파일 db 삭제 실패");
+        }
+      }
+    } else {
+      log.info("fileList is null or empty");
+    }
+
+    // 2. 훈련일지 detail 삭제
+    int deleteDetail = trainingMapper.deleteTrainingDetail(trainingId);
+    if (deleteDetail <= 0) {
+      log.info("해당 아이디로 조회된 trainingDetail 존재 x:{}", trainingId);
+      throw new RuntimeException("trainingDetail 삭제 실패" + trainingId);
+    }
+
+    // 3. 훈련일지  trainingLog 삭제
+    int deleteLog = trainingMapper.deleteTrainingLog(trainingId);
+    if (deleteLog != 1) {
+      log.info("해당 아이디로 조회된 trainingLog 존재 x:{}", trainingId);
+      throw new RuntimeException("trainingLog 삭제 실패" + trainingId);
+    }
+
+  }
 }

@@ -7,6 +7,7 @@ import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertFinalRegisterDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
@@ -51,7 +52,8 @@ public class TrainingController {
 
   private final TrainingService trainingService;
   private final CreatePOI createPOI;
-  private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(),LocalTime.of(18,30));
+  private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(),
+      LocalTime.of(18, 30));
 
 //  private final HomeworkService homeworkService; //공통기능용
 
@@ -242,25 +244,29 @@ public class TrainingController {
     //3. finalSelectTraining의 selectTrainingDetailDTOList
     Map<String, String> trainingDetailMap = new LinkedHashMap<>();
     Map<String, String> detailMap = excelRequestDTO.getDetailWithSubMap();
-    for (String s : detailMap.keySet()) {
-      // period만 파싱
-      log.info("s: {}", s);
-      log.info(s.split("=")[3].split(",")[0]); //period 값
-      String period = s.split("=")[3].split(",")[0];
-      trainingDetailMap.put(period + "교시", detailMap.get(s));
-    }
-    log.info("detailMap: {}", detailMap);
-    log.info("trainingDetailMap: {}", trainingDetailMap);
-
-    // 실제 상황(plan과 다른)
     Map<String, String> actualPeriodMap = new LinkedHashMap<>();
-    for (String s : detailMap.keySet()) {
-      String tmp = s.split("=")[5].split(",")[0];
-      String period = s.split("=")[3].split(",")[0];
-      String actual = tmp.substring(0, tmp.length() - 1);
-      actualPeriodMap.put(period + "교시에 실제 한 것", actual);
+
+    if (detailMap != null) {
+      for (String s : detailMap.keySet()) {
+        // period만 파싱
+        log.info("s: {}", s);
+        log.info(s.split("=")[3].split(",")[0]); //period 값
+        String period = s.split("=")[3].split(",")[0];
+        trainingDetailMap.put(period + "교시", detailMap.get(s));
+      }
+      log.info("detailMap: {}", detailMap);
+      log.info("trainingDetailMap: {}", trainingDetailMap);
+
+      // 실제 상황(plan과 다른)
+      for (String s : detailMap.keySet()) {
+        String tmp = s.split("=")[5].split(",")[0];
+        String period = s.split("=")[3].split(",")[0];
+        String actual = tmp.substring(0, tmp.length() - 1);
+        actualPeriodMap.put(period + "교시에 실제 한 것", actual);
+      }
+      log.info("actualPeriodMap: {}", actualPeriodMap);
+
     }
-    log.info("actualPeriodMap: {}", actualPeriodMap);
 
     //강사명/날짜 넣기
     String instructorName = trainingService.selectInstructorNameById(
@@ -334,25 +340,24 @@ public class TrainingController {
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     LocalDate thisRegisterDate = LocalDate.parse(decodeRegisterDate, dtf);
 
-    if(thisRegisterDate.isEqual(LocalDate.now())){
-      if (LocalDateTime.now().isBefore(IS_REGISTER_TODAY)){
+    if (thisRegisterDate.isEqual(LocalDate.now())) {
+      if (LocalDateTime.now().isBefore(IS_REGISTER_TODAY)) {
         redirectAttributes.addFlashAttribute("noGet", "금일 훈련일지 등록은 18시 30분 이후에 가능합니다.");
         return "redirect:/training/trainingList";
       }
     }
 
     // 훈련 일지는 금일 이후는 안됨!
-    if(thisRegisterDate.isAfter(LocalDate.now())){
+    if (thisRegisterDate.isAfter(LocalDate.now())) {
       redirectAttributes.addFlashAttribute("noGet", "훈련 일지는 미리 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
 
     // 공휴일,휴강 제외
-    if(trainingService.isHoliday(decodeRegisterDate)){
+    if (trainingService.isHoliday(decodeRegisterDate)) {
       redirectAttributes.addFlashAttribute("noGet", "공휴일은 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
-
 
     int userId = loginUser.getId();
 
@@ -365,7 +370,7 @@ public class TrainingController {
     //해당 일자의 훈련일지가 있으면, 등록 막기
     boolean isReRegister = trainingService.isReRegister(decodeRegisterDate, userId);
     if (isReRegister) {
-      redirectAttributes.addFlashAttribute("noGet","훈련일지는 두 번 등록 할 수 없습니다.");
+      redirectAttributes.addFlashAttribute("noGet", "훈련일지는 두 번 등록 할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
 
@@ -420,6 +425,74 @@ public class TrainingController {
 //    trainingService.insertTrainingAll(insertTrainingDTO,finalData.getDataArray().get(0))
 
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "등록 완료", isInsertAll));
+  }
+
+  @PostMapping("/trainingModify")
+  public ResponseEntity<?> trainingModify(@RequestBody ModifyFinalDTO modifyFinalDTO,
+      HttpSession session) {
+
+    //로그인 유저가 해당 훈련일지의 작성자가 아니면 수정 불가
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    if (loginUser != null) {
+      if (!trainingService.isMyTrainingLog(modifyFinalDTO.getTrainingId(), loginUser.getId())) {
+        return ResponseEntity.badRequest()
+            .body(new MyResponseWithDataPYJ(400, "해당 과제의 작성자가 아닙니다", loginUser));
+      }
+    }
+
+    log.info("modifyFinalDTO: {}", modifyFinalDTO); //성공
+
+    int trainingId = modifyFinalDTO.getTrainingId();
+
+    boolean updateTraining = false;
+
+    try {
+      updateTraining = trainingService.updateTrainingDetail(modifyFinalDTO.getPostMap(),
+          trainingId);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+//    if(!updateTraining){
+//      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400,"수정 실패",modifyFinalDTO));
+//    }
+
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "수정 성공", modifyFinalDTO));
+
+  }
+
+  @PostMapping("/deleteTraining")
+  public ResponseEntity<?> trainingDelete(@RequestBody Map<String, Integer> body,
+      HttpSession session) {
+
+    int userId = -1;
+
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    if (loginUser != null) {
+      userId = loginUser.getId();
+    }
+
+    log.info("trainingIdBody: {}", body.get("trainingIdBody")); //ok
+    log.info("courseIdBody: {}", body.get("courseIdBody")); //ok
+    int trainingId = body.get("trainingIdBody");
+    int courseId = body.get("courseIdBody");
+
+    //delete 권한 확인 (훈련일지 작성 강사 or 해당 과정의 관리자)
+    boolean isDeleteCan = trainingService.canDeleteTraining(trainingId, courseId, userId);
+    if (!isDeleteCan) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(404, "삭제할 권한이 없습니다", userId));
+    }
+
+    //detail + trainingLog 삭제
+    try {
+      trainingService.deleteTraining(trainingId, "training_log");
+    } catch (Exception e) {
+      log.error("훈련일지 삭제 error:{}", e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "삭제 성공", trainingId));
   }
 
 
