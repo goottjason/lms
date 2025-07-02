@@ -7,7 +7,7 @@ $(document).ready(async function () {
 
   try {
 
-    const testId = parseInt(UrlUtils.getPathSegment(2));
+    const testId = parseInt(UrlUtils.getPathSegment(3));
     const currentPageNo = parseInt(UrlUtils.getQueryParam("currentPageNo"));
     const testStatus = UrlUtils.getQueryParam("testStatus");
     console.log(testStatus);
@@ -309,23 +309,25 @@ function renderCourseFilterOptionsForAdminForUser(data) {
   $courseFilter.val(defaultCourse);
 }
 
-// $(document).on("click", ".test-caution-check", function (e) {
-//     console.log($(e.target));
-//
-//     if ($(e.target).is(":checked")) {
-//
-//         const startDate = new Date($("#start-date").val());
-//         const now       = new Date();
-//         if (startDate < now) {
-//
-//             $("#test-start-btntest-start-btn").prop("disabled", false);
-//         } else {
-//             $("#test-start-btn").prop("disabled", true);
-//         }
-//
-//     }
-//
-// });
+$(document).on("click", ".test-caution-check", function (e) {
+  console.log($(e.target));
+
+  if ($(e.target).is(":checked")) {
+
+    const startDate = new Date($("#start-date").val());
+    const now = new Date();
+    if (startDate < now) {
+
+      $("#test-start-btn").prop("disabled", false);
+    } else {
+      $("#test-start-btn").prop("disabled", true);
+    }
+
+  } else {
+    $("#test-start-btn").prop("disabled", true);
+  }
+
+});
 
 $("#prev-page").on("click", function () {
 

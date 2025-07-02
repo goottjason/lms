@@ -427,7 +427,7 @@ function finishTestWithScore(userScore, testId) {
 
         // 해제 완료 후 iframe 숨기고 리다이렉트
         $("#examFrame", window.parent.document).hide().attr("src", "");
-        window.parent.location.href = `/test/testDetail/${testId}/learner?currentPageNo=${currentPageNo}&courseName=${courseName}`;
+        window.parent.location.href = `/test/learner/testDetail/${testId}?currentPageNo=${currentPageNo}&courseName=${courseName}`;
       });
 }
 

@@ -284,7 +284,7 @@ function hideAllBtn(isDisabled) {
 function renderTestModifyBtn(startDate, userType) {
 
   if (userType === "ADMINISTRATOR") {
-    $modifyTestBtn.hide();
+    $modifyTestBtn.remove();
     $("#del-test-btn").hide();
   }
 
@@ -292,7 +292,7 @@ function renderTestModifyBtn(startDate, userType) {
   const start = new Date(startDate);
 
   if (now > start) {
-    $modifyTestBtn.hide();
+    $modifyTestBtn.remove();
   }
 
 }

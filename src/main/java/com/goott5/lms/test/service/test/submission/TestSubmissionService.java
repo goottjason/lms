@@ -13,6 +13,7 @@ public interface TestSubmissionService {
 
   // 시험 제출 정보 가져오기
   TestSubmissionVO getTestSubmission(int testId, HttpSession session);
+  TestSubmissionVO getTestSubmission2(int testId, int userId);
 
   // 시험 비정상적인 조작시 비정상 조작 카운트 증가
   String modifyTestSubmissionToInProgressIncrementAbnormalCount(TestAnswerDTO testAnswerDTO, HttpSession session);
