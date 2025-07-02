@@ -18,8 +18,8 @@ public class TestViewController {
 
   @GetMapping("/register")
   public String getTestRegisterPage(
-          @RequestParam(name = "currentPageNo", required = false, defaultValue = "1") int pageNo,
-          Model model) {
+      @RequestParam(name = "currentPageNo", required = false, defaultValue = "1") int pageNo,
+      Model model) {
     model.addAttribute("pageNo", pageNo);
     return "test/testRegister";
   }
@@ -29,7 +29,7 @@ public class TestViewController {
     return "test/testDetail";
   }
 
-  @GetMapping("/testDetail/{testId}/learner")
+  @GetMapping("/learner/testDetail/{testId}")
   public String getTestDetailPageForLearner(@PathVariable int testId) {
     return "test/testDetailLearner";
   }

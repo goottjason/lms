@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.test.mapper.learnermain.LearnerMainMapper">
+
+  <select id="selectCourseId" resultType="Integer">
+    SELECT id FROM course WHERE name = #{courseName}
+  </select>
+
+
+  <select id="selectLearnerEnrollmentId" resultType="Integer">
+    SELECT e.id
+    FROM learner_enrollment e
+    JOIN course c ON c.id = e.course_id
+    JOIN user u ON u.id = e.user_id
+    WHERE c.name = #{courseName} and u.id = #{userId}
+  </select>
+
+  <select id="selectMyTestAvgScore" resultType="Integer">
+    SELECT AVG(score)
+    FROM test_submission
+    WHERE learner_id = #{userId} and submission_status = 'COMPLETED'
+  </select>
+
+  <select id="selectCourseSchedule"
+    resultType="com.goott5.lms.test.domain.learnermain.CourseScheduleVO">
+    SELECT
+    d.date AS class_date,
+    GROUP_CONCAT(DISTINCT cs.name ORDER BY s.period_start_time SEPARATOR ', ') AS subject_names
+    FROM (
+    SELECT DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY) AS date
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY), INTERVAL 1 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY), INTERVAL 2 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY), INTERVAL 3 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY), INTERVAL 4 DAY)
+    ) d
+    LEFT JOIN course_schedule s ON s.course_id = #{courseId} AND s.class_date = d.date
+    LEFT JOIN course_subject cs ON s.subject_id = cs.id
+    GROUP BY d.date
+    ORDER BY d.date
+  </select>
+
+  <select id="selectMyHwData" resultType="map">
+    SELECT
+    (SELECT COUNT(*) FROM homework WHERE course_id = #{courseId}) AS homework_total_cnt,
+    (SELECT COUNT(s.id)
+    FROM homework_submission s
+    JOIN homework h ON h.id = s.homework_id
+    JOIN homework_eval e ON e.hs_id = s.id
+    WHERE h.course_id = #{courseId} AND s.learner_id = #{userId} AND e.is_pass = 1) AS
+    learner_homework_cnt;
+  </select>
+
+  <select id="selectHwTestSchedule"
+    resultType="com.goott5.lms.test.domain.learnermain.TestHwScheduleVO">
+    SELECT
+    s.id AS id,
+    h.title AS title,
+    h.created_at AS start_date,
+    CASE
+    WHEN DATEDIFF(h.start_date, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(h.start_date, CURDATE()))
+    WHEN DATEDIFF(h.start_date, CURDATE()) = 0 THEN 'D-Day'
+    ELSE CONCAT('D+', ABS(DATEDIFF(h.start_date, CURDATE())))
+    END AS d_day,
+    CASE
+    WHEN s.id IS NOT NULL THEN '제출'
+    ELSE '미제출'
+    END AS submission_status,
+    NULL AS is_invalidated,
+    IFNULL(e.is_pass, 0) AS score,
+    'homework' AS content_type
+    FROM homework h
+    LEFT JOIN homework_submission s ON h.id = s.homework_id AND s.learner_id = #{userId}
+    LEFT JOIN homework_eval e ON e.hs_id = s.id
+    WHERE h.course_id = #{courseId}
+
+    UNION ALL
+
+    SELECT
+    t.id AS id,
+    t.title AS title,
+    t.created_at AS start_date,
+    CASE
+    WHEN DATEDIFF(t.start_date, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(t.start_date, CURDATE()))
+    WHEN DATEDIFF(t.start_date, CURDATE()) = 0 THEN 'D-Day'
+    ELSE CONCAT('D+', ABS(DATEDIFF(t.start_date, CURDATE())))
+    END AS d_day,
+    s.submission_status AS submission_status,
+    s.is_invalidated AS is_invalidated,
+    s.score AS score,
+    'test' AS content_type
+    FROM test t
+    JOIN test_submission s ON t.id = s.test_id
+    WHERE s.learner_id = #{userId} and t.course_id = #{courseId}
+
+    ORDER BY start_date ASC
+  </select>
+
+  <select id="selectAttendanceStatus"
+    resultType="com.goott5.lms.test.domain.learnermain.AttendanceStatusVO">
+    SELECT
+    d.dt AS participation_date,
+    COALESCE(p.status, '미등록') AS status,
+    p.check_in,
+    p.check_out
+    FROM (
+    SELECT DATE_ADD(
+    DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY),
+    INTERVAL seq.n DAY
+    ) AS dt
+    FROM (
+    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2
+    UNION ALL SELECT 3 UNION ALL SELECT 4
+    ) AS seq
+    ) AS d
+    LEFT JOIN participation p
+    ON p.learner_enrollment_id = #{learnerEnrollmentId}
+    AND DATE(p.participation_date) = d.dt
+    ORDER BY d.dt
+  </select>
+
+  <select id="selectInquiryBoard" resultType="com.goott5.lms.test.domain.learnermain.InquiryVO">
+    SELECT id, title, is_answered, is_answered_checked
+    FROM community_inquiry
+    WHERE writer = #{userId} AND is_posted = 1
+    ORDER BY created_at DESC
+    LIMIT 3
+  </select>
+
+  <select id="selectQnABoard" resultType="com.goott5.lms.test.domain.learnermain.QnAVO">
+    SELECT id, title, is_answer FROM course_qna
+    WHERE writer_id = #{userId}
+    ORDER BY created_at DESC
+    LIMIT 3
+  </select>
+
+  <select id="selectNoticeBoard" resultType="com.goott5.lms.test.domain.learnermain.NoticeVO">
+    (
+    SELECT id, title, is_fixed, created_at
+    FROM course_notice
+    WHERE is_fixed = true AND course_id = #{courseId}
+    ORDER BY created_at DESC
+    LIMIT 3
+    )
+    UNION ALL
+    (
+    SELECT id, title, is_fixed, created_at
+    FROM course_notice
+    WHERE is_fixed= false AND course_id = #{courseId}
+    ORDER BY created_at DESC
+    LIMIT 2
+    )
+  </select>
+
+  <select id="selectForumBoard" resultType="com.goott5.lms.test.domain.learnermain.ForumVO">
+    SELECT
+    f.id,
+    f.title,
+    f.forum_like,
+    f.hotpost_at,
+    COUNT(c.id) AS comment_count
+    FROM course_forum f
+    LEFT JOIN course_forum_comment c ON c.course_forum_id = f.id
+    WHERE f.course_id = #{courseId} AND f.is_hotpost = 1
+    GROUP BY f.id, f.title, f.forum_like, f.hotpost_at
+    ORDER BY f.hotpost_at DESC;
+  </select>
+
+
+  <select id="selectTestStatistic" resultType="com.goott5.lms.test.domain.learnermain.TestVO">
+    SELECT
+    t.id AS test_id,
+    t.title AS title,
+    ROUND(avg_sub.avg_score, 1) AS avg_score,
+    stu.score AS my_score,
+    ROUND(
+    100.0 *
+    (
+    SELECT COUNT(*)
+    FROM test_submission
+    WHERE
+    test_id = t.id
+    AND submission_status = 'COMPLETED'
+    AND score &lt; stu.score
+    )
+    /
+    (
+    SELECT COUNT(*)
+    FROM test_submission
+    WHERE
+    test_id = t.id
+    AND submission_status = 'COMPLETED'
+    )
+    , 1) AS percentile
+    FROM test t
+
+    LEFT JOIN (
+    SELECT test_id, AVG(score) AS avg_score
+    FROM test_submission
+    WHERE submission_status = 'COMPLETED'
+    GROUP BY test_id
+    ) AS avg_sub
+    ON avg_sub.test_id = t.id
+
+    LEFT JOIN (
+    SELECT test_id, score
+    FROM test_submission
+    WHERE
+    submission_status = 'COMPLETED'
+    AND learner_id = #{userId}
+    ) AS stu
+    ON stu.test_id = t.id
+    WHERE t.course_id = #{courseId}
+    ORDER BY t.id
+  </select>
+
+
+</mapper>

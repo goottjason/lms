@@ -195,7 +195,7 @@ function onPageChange(pageNo) {
 function makeTestRow(userType, test) {
 
   detailPageUrl = "LEARNER" === userType
-      ? `/test/testDetail/${test.testId}/learner`
+      ? `/test/learner/testDetail/${test.testId}`
       : `/test/testDetail/${test.testId}`;
 
   return `

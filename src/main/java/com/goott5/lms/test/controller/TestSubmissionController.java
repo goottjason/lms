@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,6 +43,16 @@ public class TestSubmissionController {
     return ApiResult.respondOk(200, "SUCCESS",
         testSubmissionService.getTestSubmission(testId, session));
   }
+
+  @GetMapping("/my/tests/{testId}/submission")
+  public ResponseEntity<ApiResult<TestSubmissionVO>> getTestSubmission2(
+      @PathVariable(required = true) int testId,
+      @RequestParam(name = "userId", required = true) int userId) {
+
+    return ApiResult.respondOk(200, "SUCCESS",
+        testSubmissionService.getTestSubmission2(testId, userId));
+  }
+
 
   @PutMapping("/my/tests/{testId}/submission/abnormal")
   public ResponseEntity<ApiResult<String>> modifyTestSubmissionToInProgressIncrementAbnormalCount(

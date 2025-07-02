@@ -38,6 +38,11 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
     return testSubmissionMapper.selectTestSubmission(testId, learnerId);
   }
 
+  @Override
+  public TestSubmissionVO getTestSubmission2(int testId, int userId) {
+    return testSubmissionMapper.selectTestSubmission(testId, userId);
+  }
+
 
   @Override
   public String modifyTestSubmissionToInProgressIncrementAbnormalCount(TestAnswerDTO testAnswerDTO,
