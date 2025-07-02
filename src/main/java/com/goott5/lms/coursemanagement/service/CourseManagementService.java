@@ -14,6 +14,7 @@ import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.util.List;
+import java.util.Map;
 
 public interface CourseManagementService {
 
@@ -70,17 +71,19 @@ public interface CourseManagementService {
   boolean removeLearnerFromCourse(Integer loginUserId, String loginUserType, Integer learnerId,
       Integer courseId);
 
-  /**
-   * 과정 삭제 API
-   *
-   * @param commonReqDTO
-   * @return
-   */
-  Boolean removeCourse(CommonReqDTO commonReqDTO);
+
+  /*Boolean removeCourse(CommonReqDTO commonReqDTO);*/
 
   PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
       BaseReqDTO baseReqDTO,
       PageCourseRequest pageCourseRequest
   );
 
+  Boolean removeCoursesByAuth(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
+
+  Boolean modifyCourseIsInProgressByCoId(Integer coId);
+
+  Map<String, Integer> getIncompleteTaskCount(
+      BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest
+  );
 }

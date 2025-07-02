@@ -96,7 +96,7 @@
     </if>
   </select>
 
-  <delete id="deleteCourse">
+  <!--<delete id="deleteCourse">
     DELETE c
       FROM course c
     WHERE
@@ -104,23 +104,47 @@
       <include refid="idsOfGeneralManager"/>
       )
       AND c.id = #{courseId}
+  </delete>-->
+
+
+
+
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+<!--=============================================================================================-->
+
+  <!--강의실 업데이트(is_active: 1->0)-->
+  <update id="updateClassroomByAuth">
+    UPDATE classroom
+    SET is_active = 0
+    WHERE id IN (
+      SELECT classroom_id
+      FROM classroom_allocation
+      WHERE course_id = #{page.coId}
+    ) AND
+    #{base.loginUserType} = 'ADMINISTRATOR'
+  </update>
+
+  <!--과정 삭제(관리자만 삭제 가능)-->
+  <delete id="deleteCourseByAuth">
+    DELETE c
+    FROM course c
+    WHERE
+      #{base.loginUserType} = 'ADMINISTRATOR'
+      AND c.id = #{page.coId}
   </delete>
-  <sql id="idsOfGeneralManager">
-    SELECT u.id
-    FROM user u
-    LEFT JOIN staff_detail sd ON sd.user_id = u.id
-    WHERE u.type = 'ADMINISTRATOR'
-    AND sd.position = 'GENERAL_MANAGER'
-  </sql>
+
+
+  <select id="selectIncompleteEmployCount" resultType="Integer">
+    SELECT
+    count(*)
+    FROM
 
 
 
-
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
+  </select>
 
   <!--과정 조회-->
   <select id="selectCoursesByAuth"
@@ -172,7 +196,7 @@
       WHERE
         <include refid="mapper.learnermanagement.CommonManagement.authForCourse"/>
         <include refid="mapper.learnermanagement.CommonManagement.filteringForCourse"/>
-        <include refid="mapper.learnermanagement.CommonManagement.orderAndPaging"/>
+        <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForCourse"/>
   </select>
 
   <!--교과목 조회-->
@@ -210,6 +234,15 @@
     cs.created_at AS csCreatedAt,
     cs.updated_at AS csUpdatedAt,
     cs.deleted_at AS csDeletedAt
+    FROM course_schedule cs
+    WHERE
+    cs.course_id = #{coId}
+    ORDER BY cs.class_date ASC, cs.period ASC
+  </select>
+
+  <select id="selectClassDateByCoId" resultType="java.time.LocalDate">
+    SELECT DISTINCT
+    cs.class_date AS csClassDate
     FROM course_schedule cs
     WHERE
     cs.course_id = #{coId}

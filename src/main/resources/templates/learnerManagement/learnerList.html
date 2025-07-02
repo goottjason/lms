@@ -5,7 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
-
+  <th:block layout:fragment="style"></th:block>
 </head>
 <body>
 <div layout:fragment="content">
@@ -42,7 +42,8 @@
         </div>
         <div class="input-group col-6">
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="이름으로 검색하세요." id="search-input">
+            <input type="text" class="form-control" placeholder="(전체 목록) 교육생 이름으로 검색"
+                   id="search-input">
             <div class="input-group-append">
               <button class="btn btn-primary" type="button" id="search-button">
                 <i class="fas fa-search fa-sm"></i>
@@ -76,6 +77,20 @@
   </div>
     <!-- content body 끝 -->
 </div>
+<th:block layout:fragment="style">
+  <!--<style>
+    .card-dropped {
+      background-color: #fbdbdb !important;
+      opacity: 0.7;
+      /*filter: grayscale(1);*/
+    }
+    .card-null {
+      background-color: #efeed0 !important;
+      opacity: 0.7;
+      filter: grayscale(0.5);
+    }
+  </style>-->
+</th:block>
 <th:block layout:fragment="script">
   <!-- 외부 JS 파일 연결 -->
   <script th:src="@{/js/learnerManagement/learnerList.js}" type="text/javascript"></script>

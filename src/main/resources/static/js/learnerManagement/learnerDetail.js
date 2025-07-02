@@ -1,185 +1,262 @@
 const loginUserId = $('#login-user-id').val();
 const loginUserType = $('#login-user-type').val();
-const params = new URLSearchParams(window.location.search);
-const leId = params.get('leId');
 
-const config = {
-  pageNo        : 1,
-  pageSize      : 5,
-  type          : null,
-  keyword       : null,
-  orderBy       : null,
-  orderDirection: null,
+const queryStrings = new URLSearchParams(window.location.search);
+
+let baseConfig = {
+  loginUserId  : loginUserId,
+  loginUserType: loginUserType
 };
 
+const learnerConfig = {
+  pageNo        : null,
+  pageSize      : null,
+  type          : "userFullname",
+  keyword       : null,
+  orderBy       : "userFullname",
+  orderDirection: "ASC",
+  // 필터링
+  coIsInProgress: null,
+  leCourseId    : null,
+  leId          : queryStrings.get("leId")
+};
 
+// part 정보 불러오고 페이징하기 위한 전역변수
+let learnersWithPaging = null;
+let partOverview = [];
+let partList = [];
+let currentPage = 1;
+let pageSize = 5;
 
 $(document).ready(function() {
 
-  $("#courseSelector").hide();
-
-  let str = $('#status-count-map').val();
-
-  const trimmed = str.slice(1, -1);
-  const pairs = trimmed.split(/\s*,\s*/);
-  let obj = {};
-  pairs.forEach(pair => {
-    const [key, value] = pair.split('=');
-    obj[key] = Number(value);
-  });
-  console.log(obj);
-  if (Object.keys(obj).length === 0 || (Object.keys(obj).length === 1 && Object.keys(obj)[0] === "")) {
-    obj = {
-      ATTENDANCE: 0,
-      ABSENCE: 0,
-      VACATION: 0,
-      LATE: 0,
-      LEAVE_EARLY: 0
-    };
-    $(".chart-pie").html(`<span class="text-center">데이터가 없습니다.</span>`);
+  const $courseSelector = $("#courseSelector");
+  // 강사는 상단셀렉트박스 필요, 선택시 핸들러 필요
+  if (loginUserType == "INSTRUCTOR") {
+    $courseSelector.empty();
+    $courseSelector.append(
+        `<option value="">${queryStrings.get('coName')}</option>`);
+    $courseSelector.prop("disabled", true);
+  } else if (loginUserType == "ADMINISTRATOR") {
+    $courseSelector.hide();
   }
-  displayChartValues(obj);
 
-  // Pie Chart 데이터
-  let $ctx = $("#myPieChart");
-  let data = [obj.ATTENDANCE, obj.ABSENCE, obj.VACATION, obj.LATE, obj.LEAVE_EARLY];
-  var myPieChart = new Chart($ctx, {
-    type   : "doughnut",
-    data   : {
-      labels  : ["출석", "결석", "휴가", "지각", "조퇴"],
-      datasets: [{
-        data                : data,
-        backgroundColor     : ["#36b9cc", "#e74a3b", "#4e73df", "#f6c23e", "#858796"],
-        hoverBackgroundColor: ["#2ca4b5", "#c0392b", "#3b5cc9", "#d9a820", "#6e707f"],
-        hoverBorderColor    : "rgba(234, 236, 244, 1)",
-      }],
-    },
-    options: {
-      maintainAspectRatio: false,
-      tooltips           : {
-        backgroundColor: "rgb(255,255,255)",
-        bodyFontColor  : "#858796",
-        borderColor    : "#dddfeb",
-        borderWidth    : 1,
-        xPadding       : 15,
-        yPadding       : 15,
-        displayColors  : false,
-        caretPadding   : 10,
-      },
-      legend             : {
-        display: false
-      },
-      cutoutPercentage   : 75,
-    },
+  fetchAndDisplayPartView();
+
+  $(document).on('click', '#part-detail-button', handlePartDetailButtonClick);
+  $(document).on('click', '.page-btn', function(e) {
+    e.preventDefault();
+    const page = Number($(this).data('page'));
+    if (!isNaN(page) && page !== currentPage) {
+      currentPage = page;
+      renderPartTableAndPagination();
+    }
   });
 
-
-
-
-
-  $(document).on('click', '#edit-button', handleEditBtnClick);
-  $(document).on('click', '#save-button', handleSaveBtnClick);
-  $(document).on('click', '#prticipation-modal-button', handleParticipationModalBtnClick);
-  $(document).on("click", ".page-link", handlePageBtnClick);
-  $(document).on("click", "#to-learner-list", handlePageBtnClick);
-
-
+  $(document).on('click', '#employ-edit-button', handleEmployEditButtonClick);
+  $(document).on('click', '#employ-save-button', handleEmploySaveButtonClick);
+  $(document).on('click', '#drop-button', handleDropButtonClick);
+  $(document).on('click', '.part-edit-button', handlePartEditButtonClick);
+  $(document).on('click', '.part-save-button', handlePartSaveButtonClick);
 });
 
-function displayChartValues(obj) {
-  setTextIfNullOrEmpty("#ATTENDANCE", obj.ATTENDANCE);
-  setTextIfNullOrEmpty("#ABSENCE", obj.ABSENCE);
-  setTextIfNullOrEmpty("#VACATION", obj.VACATION);
-  setTextIfNullOrEmpty("#LATE", obj.LATE);
-  setTextIfNullOrEmpty("#LEAVE_EARLY", obj.LEAVE_EARLY);
-}
-function setTextIfNullOrEmpty(selector, value) {
-  value = (value === null || value === "" || value === undefined) ? "0" : value;
-  $(selector).text(value);
-}
-function handlePageBtnClick() {
-  config.pageNo = $(this).data("page");
-  fetchAndDisplayView();
-}
+/* ================================================================================ */
 
-function handleParticipationModalBtnClick() {
-  config.pageNo = 1;
-  fetchAndDisplayView();
-}
-
-async function fetchAndDisplayView() {
-
-  let participationsWithPagination = await apiGetRequest(
-    "/api/participations",
-    {
-      loginUserId  : loginUserId,
-      loginUserType: loginUserType,
-      leId : leId
-    });
-  let participations
-    = participationsWithPagination?.respDTOS || [];
-  if (!Array.isArray(participations)) {
-    participations = [];
+async function fetchAndDisplayPartView() {
+  console.log("learnerConfig: ", learnerConfig);
+  learnersWithPaging = await apiGetRequestParams(
+      "/api/learnermanagement/learners",
+      {...baseConfig, ...learnerConfig});
+  console.log(learnersWithPaging);
+  if (learnersWithPaging.records[0].leCompletionStatus != 'DROPPED'
+      && learnersWithPaging.records[0].leCompletionStatus != 'COMPLETED'
+      && loginUserType == "ADMINISTRATOR") {
+    $('#drop-button').show();
+    $('.padding-flag').removeClass('py-3').addClass('py-2');
   }
-  console.log("RESP", participations);
-  renderCourseTable(participations);
-  renderCoursePagination(participationsWithPagination);
+  displayPartChart();
 }
-
-async function apiGetRequest(endpoint, additionalParams = {}) {
+async function apiGetRequestParams(endpoint, params) {
   try {
-    const response = await axios.get(endpoint, {
-      params: {...config, ...additionalParams}
-    });
-    console.log(response.data);
-    return response.data;
+    const response = await axios.get(endpoint, {params: params});
+    return response.data.data;
   } catch (error) {
-    console.error(`${endpoint} 요청 오류:`, error);
     return [];
   }
 }
+function displayPartChart() {
+  if (
+      learnersWithPaging &&
+      Array.isArray(learnersWithPaging.records) &&
+      learnersWithPaging.records.length > 0
+  ) {
+    partOverview = learnersWithPaging.records[0].partOverview || [];
+    partList = partOverview.partList;
+  }
 
-function renderCourseTable(participations) {
-  $("#tbody-participation").empty();
+  console.log(partOverview);
+
+  // statusCount가 없으면 함수 종료
+  if (!partOverview.statusCount) {
+    $('#partChart').html(`<span>데이터가 없습니다.</span>`);
+    return;
+  }
+  // Google Charts 라이브러리 로드
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(
+      function() {
+        drawChart(partOverview.statusCount);
+      }
+  );
+
+}
+function drawChart(statusCount) {
+  const allStatuses = ['LATE', 'ABSENCE', 'LEAVE_EARLY', 'ATTENDANCE', 'VACATION'];
+  const colors = ['#f6c23e', '#e74a3b', '#858796', '#36b9cc', '#4e73df'];
+  let chartData = [['상태', '횟수']]; // 헤더 행
+
+  allStatuses.forEach(status => {
+    const count = statusCount[status] || 0; // 값이 없으면 0
+    const koreanLabel = `${getKoreanLabel(status)} ${count}`; // 예: "지각 (1)"
+    chartData.push([koreanLabel, count]);
+  });
+
+
+  let data = google.visualization.arrayToDataTable(chartData);
+
+  let options = {
+    title: '',
+    pieHole: 0.4,
+    width: 500,
+    height: 300,
+    chartArea: {
+      left: 20,
+      top: 10,
+      width: '90%',
+      height: '75%'
+    },
+    legend: {
+      position: 'bottom',
+      alignment: 'center',
+      maxLines: 1,
+      textStyle: {
+        fontSize: 14
+      }
+    },
+    colors: colors, // 색상 배열
+    sliceVisibilityThreshold: 0 // 0도 나오도록
+  };
+
+  let chart = new google.visualization.PieChart($('#partChart')[0]);
+
+  chart.draw(data, options);
+}
+function getKoreanLabel(englishStatus) {
+  const statusMap = {
+    'LATE': '지각',
+    'ABSENCE': '결석',
+    'LEAVE_EARLY': '조퇴',
+    'ATTENDANCE': '출석',
+    'VACATION': '휴가'
+  };
+  return statusMap[englishStatus] || englishStatus;
+}
+
+function renderPartTableAndPagination() {
+
+  // 페이징 데이터 생성
+  const pagingData = getPagingData(partList, currentPage, pageSize);
+  console.log("pagingData: ", pagingData);
+
+  // 현재 페이지에 해당하는 데이터만 추출
+  const start = (pagingData.pageNo - 1) * pageSize;
+  const end = start + pageSize;
+  const pageItems = partList.slice(start, end);
+  console.log("pageItems: ", pageItems);
+
+  // 테이블 렌더링
+  displayTableBody(pageItems);
+
+  // 페이지네이션 렌더링
+  displayPagination(pagingData, $('#part-pagination'));
+}
+function getPagingData(list, pageNo, pageSize, blockSize = 10) {
+  const totalRecords = list.length;
+  const lastPage = Math.max(1, Math.ceil(totalRecords / pageSize));
+  const page = Math.max(1, Math.min(pageNo, lastPage));
+  const currentBlock = Math.ceil(page / blockSize);
+  const blockStartPage = (currentBlock - 1) * blockSize + 1;
+  const blockEndPage = Math.min(blockStartPage + blockSize - 1, lastPage);
+  return {
+    totalRecords,
+    pageNo: page,
+    lastPage,
+    blockStartPage,
+    blockEndPage
+  };
+}
+function displayTableBody(items) {
+  $("#tbody-part").empty();
+
   let rowHtml = ``;
-  if(participations.length == 0) {
+
+  if(items.length == 0) {
     rowHtml += `<tr><td class="text-center" colspan="4">데이터가 없습니다.</td></tr>`;
   }
-  participations.forEach(function (item) {
+  items.forEach(function (item) {
     rowHtml += `
-  <tr>
-    <td class="text-center align-middle">${item.pparticipationDate}</td>
-    <td class="text-center align-middle ${
-      item.pstatus == 'LEAVE_EARLY' ? 'text-secondary' :
-        item.pstatus == 'VACATION' ? 'text-primary' :
-          item.pstatus == 'VACATION_PENDING' ? 'text-primary' :
-            item.pstatus == 'LATE' ? 'text-warning' :
-              item.pstatus == 'ATTENDANCE' ? 'text-info' :
-                item.pstatus == 'ABSENCE' ? 'text-danger' : ''
-    }">
-      ${
-      item.pstatus == 'LEAVE_EARLY' ? '조퇴' :
-        item.pstatus == 'VACATION' ? '휴가' :
-          item.pstatus == 'VACATION_PENDING' ? '휴가(미승인)' :
-            item.pstatus == 'LATE' ? '지각' :
-              item.pstatus == 'ATTENDANCE' ? '출석' :
-                item.pstatus == 'ABSENCE' ? '결석' :
-                  item.pstatus
-    }
-    </td>
-    <td class="text-center align-middle">${
-      item.prExplanation == null ? '-' : item.prExplanation
-    }</td>
-    <td class="text-center align-middle">${item.ptrainingTime}H</td>
-  </tr>
-`;
+      <tr>
+        <td class="text-center align-middle part-date" data-id="${item.partId}">${item.partParticipationDate}</td>
+        <td class="text-center align-middle part-check-in" data-id="${item.partId}">${item.partCheckIn ? item.partCheckIn.split('T')[1] : '-'}</td>
+        <td class="text-center align-middle part-check-out" data-id="${item.partId}">${item.partCheckOut ? item.partCheckOut.split('T')[1] : '-'}</td>
+        <td class="text-center align-middle ${
+            item.partStatus == 'LEAVE_EARLY' ? 'text-secondary' :
+            item.partStatus == 'VACATION' ? 'text-primary' :
+            item.partStatus == 'VACATION_PENDING' ? 'text-primary' :
+            item.partStatus == 'LATE' ? 'text-warning' :
+            item.partStatus == 'ATTENDANCE' ? 'text-info' :
+            item.partStatus == 'ABSENCE' ? 'text-danger' :
+            item.partStatus == 'IN_STUDY' ? 'text-secondary' : ''
+        } part-status" data-id="${item.partId}">
+          ${
+            item.partStatus == 'LEAVE_EARLY' ? '조퇴' :
+            item.partStatus == 'VACATION' ? '휴가' :
+            item.partStatus == 'VACATION_PENDING' ? '휴가(미승인)' :
+            item.partStatus == 'LATE' ? '지각' :
+            item.partStatus == 'ATTENDANCE' ? '출석' :
+            item.partStatus == 'ABSENCE' ? '결석' :
+            item.partStatus == 'IN_STUDY' ? '수업중' : ''
+        }
+        </td>
+        <td class="text-center align-middle part-explanation" data-id="${item.partId}">${
+            item.partExplanation == null ? '-' : item.partExplanation
+        }</td>
+        <td class="text-center align-middle part-training-time" data-id="${item.partId}">${item.partTrainingTime}H</td>
+        <td class="text-center align-middle">
+          <button class="btn btn-sm btn-warning btn-icon-split part-edit-button" data-id="${item.partId}">
+            <span class="icon text-white-50">
+              <i class="fa fa-wrench"></i>
+            </span>
+            <span class="text">수정</span>
+          </button>
+          <button class="btn btn-sm btn-primary btn-icon-split part-save-button" data-id="${item.partId}"
+                  style="display: none;">
+            <span class="icon text-white-50">
+              <i class="fa fa-upload"></i>
+            </span>
+            <span class="text">저장</span>
+          </button>
+        </td>
+      </tr>
+    `;
   });
-  $("#tbody-participation").append(rowHtml);
+  console.log(rowHtml);
+  $("#tbody-part").append(rowHtml);
 }
-function renderCoursePagination(data) {
+function displayPagination(data, $selector) {
   // 기록이 없을 때, 페이지네이션도 표시되지 않음
   if (data.totalRecords == 0) {
-    $("#participation-pagination").html("");
+    $selector.html("");
     return;
   }
 
@@ -188,7 +265,7 @@ function renderCoursePagination(data) {
   // 이전 버튼
   let prevBlockPage = data.blockStartPage > 1 ? data.blockStartPage - 1 : 1;
   output += `
-    <li class="page-item ${data.blockStartPage == 1? 'disabled': ''}">
+    <li class="page-item ${data.blockStartPage == 1 ? "disabled" : ""}">
       <a class="page-link page-btn" href="#" data-page="${prevBlockPage}">이전</a>
     </li>`;
 
@@ -202,29 +279,32 @@ function renderCoursePagination(data) {
   }
 
   // 다음 버튼
-  let nextBlockPage = data.blockEndPage < data.lastPage ? data.blockEndPage + 1 : data.lastPage;
+  let nextBlockPage = data.blockEndPage < data.lastPage ? data.blockEndPage +
+                                                          1 : data.lastPage;
   output += `
-    <li class="page-item ${data.blockEndPage == data.lastPage ? 'disabled': ''}">
+    <li class="page-item ${data.blockEndPage == data.lastPage ? "disabled" : ""}">
       <a class="page-link page-btn" href="#" data-page="${nextBlockPage}">다음</a>
     </li></ul>`;
 
-  $("#participation-pagination").html(output);
+  $selector.html(output);
 }
 
+/* ================================================================================ */
 
-
-function handleEditBtnClick() {
-  $('#edit-button').hide();
-  $('#save-button').show();
+function handlePartDetailButtonClick() {
+  renderPartTableAndPagination();
+}
+function handleEmployEditButtonClick() {
+  $('#employ-edit-button').hide();
+  $('#employ-save-button').show();
   $('input[type="text"]').prop('readonly', false);
   $('input[type="radio"]').prop('readonly', false).removeAttr('readonly')
     .css('pointer-events', 'auto')
     .removeAttr('onclick');
 }
-
-async function handleSaveBtnClick() {
-  $('#save-button').hide();
-  $('#edit-button').show();
+async function handleEmploySaveButtonClick() {
+  $('#employ-save-button').hide();
+  $('#employ-edit-button').show();
 
   // es가 붙은 필드만 reqDTO로 묶기
   let reqDTO = {
@@ -241,7 +321,7 @@ async function handleSaveBtnClick() {
   let payload = {
     loginUserId: Number(loginUserId),
     loginUserType: loginUserType,
-    leId: leId,
+    leId: queryStrings.get('leId'),
     reqDTO: reqDTO
   };
 
@@ -254,10 +334,10 @@ async function handleSaveBtnClick() {
     .css('pointer-events', 'none')
     .attr('onclick', 'return false;');
 }
-// 저장되었습니다 모달 만들기
 async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
   try {
     const response = await axios.post(endpoint, payload);
+    console.log(response)
     Swal.fire({
       icon: "success",
       title: "저장되었습니다!",
@@ -266,6 +346,7 @@ async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
     Swal.fire({
       icon: "error",
       title: "수정불가능!",
@@ -273,5 +354,177 @@ async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
       footer: ''
     });
     return [];
+  }
+}
+function handleDropButtonClick() {
+  Swal.fire({
+              title             : "정말 중도탈퇴 처리하시겠습니까?",
+              text              : "중도탈퇴 기준에 부합하는지 검토 후 확인을 눌러주세요.",
+              icon              : "warning",
+              showCancelButton  : true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor : "#d33",
+              confirmButtonText : "확인"
+            }).then((result) => {
+    if (result.isConfirmed) {
+      modifyCompletionStatus();
+    }
+  });
+}
+
+async function modifyCompletionStatus() {
+  let result = await apiPatchRequestBody(
+      `/api/learnermanagement/learners/enrollments/${learnerConfig.leId}`,
+      {...baseConfig, leCompletionStatus: 'DROPPED'});
+  // 요청 후에 동작은 없음
+  if (result != []) {
+    Swal.fire({
+                icon: "success",
+                title: "수정되었습니다.",
+                text: "해당 수강이력이 중도탈퇴로 변경되었습니다.",
+                footer: ''
+              });
+  } else {
+    Swal.fire({
+                icon: "error",
+                title: "수정이 불가능합니다.",
+                text: "해당 수강이력을 찾을 수 없습니다.",
+                footer: ''
+              });
+  }
+}
+async function apiPatchRequestBody(endpoint, payload) {
+  try {
+    const response = await axios.patch(endpoint, payload);
+    return response.data.data;
+  } catch (error) {
+    return [];
+  }
+}
+
+function handlePartEditButtonClick() {
+  Swal.fire({
+              title             : "정말 출결기록을 수정하시겠습니까?",
+              text              : "실제 출결현황과 일치하는지 신중히 검토 후 수정해주세요.",
+              icon              : "warning",
+              showCancelButton  : true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor : "#d33",
+              confirmButtonText : "확인"
+            }).then((result) => {
+    if (result.isConfirmed) {
+      modifyPartInfoByPartId($(this).data('id'));
+    }
+  });
+}
+function modifyPartInfoByPartId(partId) {
+
+  $('.part-edit-button[data-id="' + partId + '"]').hide();
+  $('.part-save-button[data-id="' + partId + '"]').show();
+
+
+  // 체크인
+  let $checkInTd = $('.part-check-in[data-id="' + partId + '"]');
+  let checkInVal = $checkInTd.text().trim();
+  let checkInInput = `
+    <input type="time" class="form-control part-check-in-input" data-id="${partId}" 
+           value="${checkInVal !== '-' ? checkInVal : ''}">`;
+  $checkInTd.html(checkInInput);
+
+  // 체크아웃
+  let $checkOutTd = $('.part-check-out[data-id="' + partId + '"]');
+  let checkOutVal = $checkOutTd.text().trim();
+  let checkOutInput = `
+    <input type="time" class="form-control part-check-out-input" data-id="${partId}" 
+           value="${checkOutVal !== '-' ? checkOutVal : ''}">`;
+  $checkOutTd.html(checkOutInput);
+
+  // 상태
+  let $statusTd = $('.part-status[data-id="' + partId + '"]');
+  let statusVal = $statusTd.text().trim();
+  let statusOptions = [
+    { value: 'LATE', label: '지각' },
+    { value: 'ABSENCE', label: '결석' },
+    { value: 'LEAVE_EARLY', label: '조퇴' },
+    { value: 'ATTENDANCE', label: '출석' },
+    { value: 'VACATION', label: '휴가' },
+    { value: 'VACATION_PENDING', label: '휴가(미승인)' },
+    { value: 'IN_STUDY', label: '수업중' }
+  ];
+  let selectHtml = `<select class="form-control part-status-input" data-id="${partId}">`;
+  statusOptions.forEach(function(opt) {
+    let selected = (opt.label === statusVal) ? 'selected' : '';
+    selectHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+  });
+  selectHtml += `</select>`;
+  $statusTd.html(selectHtml);
+
+  // 사유
+  let $explanationTd = $('.part-explanation[data-id="' + partId + '"]');
+  let explanationVal = $explanationTd.text().trim();
+  let explanationInput = `
+    <input type="text" class="form-control part-explanation-input" data-id="${partId}" 
+    value="${explanationVal !== '-' ? explanationVal : ''}">`;
+  $explanationTd.html(explanationInput);
+
+  // 인정시간
+  let $trainingTimeTd = $('.part-training-time[data-id="' + partId + '"]');
+  let trainingTimeVal = parseInt($trainingTimeTd.text());
+  let trainingSelect = `<select class="form-control part-training-time-input" data-id="${partId}">`;
+  for (let i = 0; i <= 8; i++) {
+    let selected = (i === trainingTimeVal) ? 'selected' : '';
+    trainingSelect += `<option value="${i}" ${selected}>${i}H</option>`;
+  }
+  trainingSelect += `</select>`;
+  $trainingTimeTd.html(trainingSelect);
+}
+function handlePartSaveButtonClick() {
+  // 저장 버튼 클릭 시, 해당 partId 추출
+  let partId = $(this).data('id');
+
+  // 각 input/select에서 값 추출 (data-id로 해당 partId만 선택)
+  let partDateVal = $('.part-date[data-id="' + partId + '"]').text().trim(); // 'YYYY-MM-DD'
+  let checkInValOnlyTime = $('.part-check-in-input[data-id="' + partId + '"]').val();
+  let checkInVal = partDateVal + 'T' + checkInValOnlyTime;
+  let checkOutValOnlyTime = $('.part-check-out-input[data-id="' + partId + '"]').val();
+  let checkOutVal = partDateVal + 'T' + checkOutValOnlyTime;
+  let statusVal = $('.part-status-input[data-id="' + partId + '"]').val();
+  let explanationVal = $('.part-explanation-input[data-id="' + partId + '"]').val();
+  let trainingTimeVal = $('.part-training-time-input[data-id="' + partId + '"]').val();
+
+  // partRequest 객체에 값 담기
+  let partRequest = {
+    partCheckIn: checkInVal,
+    partCheckOut: checkOutVal,
+    partStatus: statusVal,
+    partExplanation: explanationVal,
+    partTrainingTime: trainingTimeVal
+  };
+  console.log(partRequest);
+  // savePartInfoByPartId($(this).data('id'), partRequest);
+
+  // 요청한 value 그대로 text로 출력
+
+}
+async function savePartInfoByPartId(partId, partRequest) {
+  let result = await apiPatchRequestBody(
+      `/api/learnermanagement/learners/participations/${partId}`,
+      {...baseConfig, ...partRequest});
+  // 요청 후에 동작은 없음
+  if (result != []) {
+    Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "저장 완료!",
+                showConfirmButton: false,
+                timer: 1500
+              });
+  } else {
+    Swal.fire({
+                icon: "error",
+                title: "저장이 불가능합니다.",
+                text: "해당 출결이력을 찾을 수 없습니다.",
+                footer: ''
+              });
   }
 }

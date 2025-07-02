@@ -2,7 +2,7 @@ package com.goott5.lms.learnermanagement.controller;
 
 import com.goott5.lms.coursemanagement.domain.ApiResponse;
 import com.goott5.lms.learnermanagement.domain.*;
-import com.goott5.lms.learnermanagement.domain.dto.LearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
@@ -39,10 +39,7 @@ public class LearnerManagementController {
    *
    * @return
    */
-  @GetMapping("/learnerManagement/learnerList")
-  public String learnerList() {
-    return "learnerManagement/learnerList";
-  }
+
 
   /**
    * 전체 교육생 수강 조회 API
@@ -109,43 +106,7 @@ public class LearnerManagementController {
     return participationsWithPagination;
   }
 
-  /**
-   * learnerDetail 페이지
-   *
-   * @param leId
-   * @param isInProgress
-   * @param courseId
-   * @param model
-   * @param session
-   * @return
-   */
-  @GetMapping("/learnerManagement/learnerDetail")
-  public String learnerDetail(
-      @RequestParam(value = "leId", defaultValue = "-1") Integer leId,
-      @RequestParam(value = "isInProgress", required = false) Boolean isInProgress,
-      @RequestParam(value = "courseId", required = false) Integer courseId,
-      Model model,
-      HttpSession session
-  ) {
-    if (leId == -1) {
-      return "learnerManagement/learnerList";
-    }
-    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    Integer loginUserId = Integer.valueOf(loginUser.getId());
-    String loginUserType = loginUser.getType();
-    PageLearnerReqDTO<LearnerReqDTO> pageLearnerReqDTO = new PageLearnerReqDTO();
-    PageLearnerRespDTO<LearnerRespDTO> personal =
-        learnerManagementService.findLearnersAll(
-            pageLearnerReqDTO, loginUserId, loginUserType, leId, isInProgress, courseId);
-    log.info("personal: " + personal);
-    HashMap<String, Integer> statusCountMap = personal.getRespDTOS().get(0)
-        .getPageParticipationRespDTO().getStatusCountMap();
-    log.info("statusCountMap: " + statusCountMap);
-    model.addAttribute("personal", personal.getRespDTOS().get(0));
-    model.addAttribute("statusCountMap", statusCountMap);
-    // model.addAttribute("participations",);
-    return "learnerManagement/learnerDetail";
-  }
+
 
   /**
    * 특정 과정에 수강한 교육생의 취업관리 데이터 '수정' API
@@ -191,22 +152,7 @@ public class LearnerManagementController {
   }
 
 
-  @GetMapping("/api/learnermanagement/learners")
-  @ResponseBody
-  public ResponseEntity<ApiResponse<PageLearnerResponse<LearnerOverviewResp>>> getLearnersByAuth(
-      @ModelAttribute BaseReqDTO baseReqDTO,
-      @ModelAttribute PageLearnerRequest<LearnerRequest> pageLearnerRequest
-  ) {
-    String loginUserPosition =
-        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
-    baseReqDTO.setLoginUserPosition(loginUserPosition);
 
-    log.info("■baseReqDTO: " + baseReqDTO);
-    log.info("■pageLearnerRequest: " + pageLearnerRequest);
-    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
-        learnerManagementService.getLearnersByAuth(baseReqDTO, pageLearnerRequest);
-    return ApiResponse.okResponse(200, "success", learnersWithPagination);
-  }
 
 
   @GetMapping("/api/management/participation/{pid}")
@@ -217,5 +163,120 @@ public class LearnerManagementController {
     ParticipationWithReason partInfo = learnerManagementService.getPartInfoByPid(pid);
     log.info("partInfo: " + partInfo);
     return ApiResponse.okResponse(200, "success", partInfo);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =============================================================================
+  @GetMapping("/learnerManagement/learnerList")
+  public String learnerList() {
+    return "learnerManagement/learnerList";
+  }
+
+  @GetMapping("/api/learnermanagement/learners")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<PageLearnerResponse<LearnerOverviewResp>>> getLearnersByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageLearnerRequest pageLearnerRequest
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
+        learnerManagementService.getLearnersByAuth(baseReqDTO, pageLearnerRequest);
+    return ApiResponse.okResponse(200, "success", learnersWithPagination);
+  }
+
+  @GetMapping("/learnerManagement/learnerDetail")
+  public String learnerDetail(
+      @RequestParam(value = "leId", defaultValue = "-1") Integer leId,
+      Model model,
+      HttpSession session
+  ) {
+
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    Integer loginUserId = Integer.valueOf(loginUser.getId());
+    String loginUserType = loginUser.getType();
+
+    BaseReqDTO baseReqDTO = BaseReqDTO.builder()
+        .loginUserId(loginUserId)
+        .loginUserType(loginUserType)
+        .build();
+
+    // 로그인유저 포지션 요청 후 SET
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageLearnerRequest pageLearnerRequest = PageLearnerRequest.builder()
+        .pageNo(null)
+        .pageSize(null)
+        .type("userFullname")
+        .keyword(null)
+        .orderBy("userFullname")
+        .orderDirection("ASC")
+        .coIsInProgress(null)
+        .leCourseId(null)
+        .leId(leId)
+        .build();
+
+    // 쿼리스트링 없이 요청 (잘못된 요청)
+    if (leId == -1) {
+      return "learnerManagement/learnerList";
+    }
+
+    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
+        learnerManagementService.getLearnersByAuth(baseReqDTO, pageLearnerRequest);
+
+    model.addAttribute("record", learnersWithPagination.getRecords().get(0));
+
+    return "learnerManagement/learnerDetail";
+  }
+
+  @PatchMapping("/api/learnermanagement/learners/enrollments/{leId}")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<Boolean>> modifyCompletionStatus(
+      @PathVariable Integer leId,
+      @RequestBody CompletionStatusUpdateRequest request
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(request.getLoginUserId());
+    request.setLoginUserPosition(loginUserPosition);
+    request.setLeId(leId);
+
+    Boolean result = false;
+
+    if (request.getLoginUserType().equals("ADMINISTRATOR")) {
+       result = learnerManagementService.modifyCompletionStatus(request);
+    }
+
+    if (result) {
+      return ApiResponse.okResponse(200, "success", result);
+    } else {
+      return ApiResponse.okResponse(200, "fail", result);
+    }
   }
 }

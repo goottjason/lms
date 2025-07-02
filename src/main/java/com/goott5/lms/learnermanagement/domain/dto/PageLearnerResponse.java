@@ -8,7 +8,6 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PageLearnerResponse<T> {
   private Integer pageNo;
   private Integer pageSize;
@@ -22,7 +21,7 @@ public class PageLearnerResponse<T> {
   private List<T> records;
 
   @Builder(builderMethodName = "withPageInfo")
-  public PageLearnerResponse(PageLearnerRequest<LearnerRequest> request, List<T> records, Integer totalRecords) {
+  public PageLearnerResponse(PageLearnerRequest request, List<T> records, Integer totalRecords) {
     this.totalRecords = totalRecords;
 
     this.pageNo = request.getPageNo();

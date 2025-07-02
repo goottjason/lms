@@ -3,6 +3,7 @@ package com.goott5.lms.operationsmanagement.service;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
+import com.goott5.lms.operationsmanagement.domain.ClassroomUsageResp;
 import com.goott5.lms.operationsmanagement.domain.IntegratedReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomRespDTO;
@@ -152,5 +153,15 @@ public class OperationsManagementServiceImpl implements OperationsManagementServ
       return true;
     }
     return false;
+  }
+
+  @Override
+  public Boolean modifyClassroomIsActiveBycoClassroomId(Integer coClassroomId) {
+    return operationsManagementMapper.updateClassroomIsActiveBycoClassroomId(coClassroomId);
+  }
+
+  @Override
+  public List<ClassroomUsageResp> getClassroomUsage() {
+    return operationsManagementMapper.selectClassroomUsage();
   }
 }

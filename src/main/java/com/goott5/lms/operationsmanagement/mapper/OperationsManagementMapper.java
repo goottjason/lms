@@ -3,6 +3,7 @@ package com.goott5.lms.operationsmanagement.mapper;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
+import com.goott5.lms.operationsmanagement.domain.ClassroomUsageResp;
 import com.goott5.lms.operationsmanagement.domain.PageClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageStaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffReqDTO;
@@ -41,4 +42,9 @@ public interface OperationsManagementMapper {
   int updateLeaveDate(
       @Param("staffId") Integer staffId,
       @Param("leaveDate") String leaveDate);
+
+  @Update("UPDATE classroom cr SET cr.is_active = false WHERE cr.id = #{coClassroomId}")
+  Boolean updateClassroomIsActiveBycoClassroomId(Integer coClassroomId);
+
+  List<ClassroomUsageResp> selectClassroomUsage();
 }

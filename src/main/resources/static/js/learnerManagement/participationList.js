@@ -1,73 +1,90 @@
 const loginUserId = $('#login-user-id').val();
 const loginUserType = $('#login-user-type').val();
 
-// dayjs 확장기능
-dayjs.extend(window.dayjs_plugin_customParseFormat);
-
-// 과정 전역변수
-const courseConfig = {
-    pageNo: null,
-    pageSize: null,
-    type: null,
-    keyword: null,
-    orderBy: null,
-    orderDirection: null,
+let baseConfig = {
+    loginUserId  : loginUserId,
+    loginUserType: loginUserType
 };
-let courses = null;
-let isInProgressByCourse = null;
-let courseIdByCourse = null;
 
-let topStatusCourseConfig = {
-    pageNo: null,
-    pageSize: null,
-    type: null,
-    keyword: null,
-    orderBy: 'is_in_progress',
-    orderDirection: 'DESC',
-}
+// 상단셀렉트박스용
+let courseTopConfig = {
+    pageNo        : null,
+    pageSize      : null,
+    type          : "coName",
+    keyword       : null,
+    orderBy       : "coStartDate",
+    orderDirection: "ASC",
+    // 필터링
+    coIsInProgress: null,
+    coId          : null
+};
 
+// 중간셀렉트박스용
+let courseConfig = {
+    pageNo        : null,
+    pageSize      : null,
+    type          : "coName",
+    keyword       : null,
+    orderBy       : "coStartDate",
+    orderDirection: "ASC",
+    // 필터링
+    coIsInProgress: null,
+    coId          : null
+};
 
 const learnerConfig = {
-    pageNo: 1,
-    pageSize: 10,
-    type: 'fullname',
-    keyword: null,
-    orderBy: 'fullname',
-    orderDirection: 'ASC',
+    pageNo        : 1,
+    pageSize      : 8,
+    type          : "userFullname",
+    keyword       : null,
+    orderBy       : "userFullname",
+    orderDirection: "ASC",
+    // 필터링
+    coIsInProgress: null,
+    leCourseId    : null,
+    leId          : null
 };
-let isInProgressByLearner = null;
-let courseIdByLearner = null;
 
+// =============================================================================
+
+// 오늘 날짜 객체
 let currentDate = new Date();
+// 첫화면: 일간뷰
 let activeTabText = 'pills-daily';
 
 $(document).ready(() => {
 
     if (loginUserType == "INSTRUCTOR") {
-        updateTopCourseSelector();
-        fetchLearnersByCondition();
+        // 상단셀렉트박스 로드
+        fetchAndLoadTopCourseSelector();
+        // 리스트 로드
+        fetchAndDisplayLearners();
+        $(document)
+        .on("change", "#courseSelector", handleCourseTopSelectorChange);
+
+    } else {
+        // 상단셀렉트박스 가림
+        $("#courseSelector").hide();
+        // 중간셀렉트박스 로드
+        fetchAndLoadCourseSelect();
+        // 리스트 로드
+        fetchAndDisplayLearners();
+
+        $(document)
+        .on("change", "#is-in-progress", handleIsInProgressSelectChange);
+        $(document).on("change", "#course-select", handleCourseSelectChange);
+
     }
-    $(document).on('change', '#courseSelector', handleCourseSelectorChange)
 
-    // 중앙 날짜 업데이트
-    updateDateDisplay();
-    // 좌측 시간 업데이트
-    updateTimeDisplay();
-
-    // 상태바 변경 핸들러 실행
-    handleProgressStatusChange();
-
-    $('#is-in-progress').on('change', handleProgressStatusChange);
-    $('#course-select').on('change', handleCourseSelectChange);
-    $('#search-button').on('click', handleSearchChange);
-    $(document).on('keydown', '#search-input', function(e) {
+    // 공통 핸들러
+    $(document).on("click", "#search-button", handleSearchButtonClick);
+    $(document).on("keydown", "#search-input", function (e) {
         if (e.key == "Enter") {
             e.preventDefault();
-            handleSearchChange();
+            handleSearchButtonClick();
         }
     });
-    $(document).on('click', '.page-link', handlePageBtnClick);
-
+    $(document).on("click", ".page-link", handlePageButtonClick);
 
     $('a[data-toggle="pill"]').on('shown.bs.tab', handleTabChange);
 
@@ -75,88 +92,512 @@ $(document).ready(() => {
     $(document).on('click', '#prev-btn', handlePrevBtnClick);
     $(document).on('click', '#next-btn', handleNextBtnClick);
     $(document).on('click', '.weekly-status', handleWeeklyStatusBtnClick);
-    /*$('#pills-daily-tab').on('shown.bs.tab', function (e) {
-     console.log('일간 탭 활성화됨');
-     // 여기에 원하는 동작 추가
-     });
-     $('#pills-weekly-tab').on('shown.bs.tab', function (e) {
-     console.log('주간 탭 활성화됨');
-     // 여기에 원하는 동작 추가
-     });*/
-});
-function handleCourseSelectorChange() {
-    courseIdByLearner = $(this).val();
-    fetchLearnersByCondition();
-}
 
-async function apiGetRequestAboutCoursesByTop(endpoint, additionalParams = {}) {
+    // 중앙 날짜 업데이트
+    updateDateDisplay();
+    // 좌측 시간 업데이트
+    updateTimeDisplay();
+});
+
+/* ========================================================================== */
+
+async function fetchAndLoadTopCourseSelector() {
+    let coursesWithPaging = await apiGetRequestParams(
+        "/api/coursemanagement/courses",
+        {...baseConfig, ...courseTopConfig});
+    LoadTopCourseSelector(coursesWithPaging);
+}
+async function apiGetRequestParams(endpoint, params) {
     try {
-        const response = await axios.get(endpoint, {
-            params: { ...topStatusCourseConfig, ...additionalParams }
-        });
-        console.log(response.data);
+        const response = await axios.get(endpoint, {params: params});
         return response.data.data;
     } catch (error) {
-        console.error(`${endpoint} 요청 오류:`, error);
         return [];
     }
 }
-
-async function updateTopCourseSelector() {
-    let coursesWithPagination = await apiGetRequestAboutCoursesByTop(
-        '/api/management/courses',
-        {
-            loginUserId: loginUserId,
-            loginUserType: loginUserType,
-            isInProgress: null});
-    let courses = coursesWithPagination?.respDTOS || [];
-    if (!Array.isArray(courses)) courses = [];
-    console.log(courses);
-    courseId = courses[0].id;
-    isInProgress = null;
-    updateTopCourseSelectorOption('#courseSelector', courses);
+function LoadTopCourseSelector(coursesWithPaging) {
+    let courses = coursesWithPaging?.records || [];
+    if (!Array.isArray(courses)) {
+        courses = [];
+    }
+    if (courses.length == 0) {
+        $("#courseSelector").append(`<option value="">해당하는 과정이 없습니다.`);
+        return;
+    }
+    LoadTopCourseSelectorOption("#courseSelector", courses);
 }
-function updateTopCourseSelectorOption(selector, data) {
-    console.log(selector, data);
+function LoadTopCourseSelectorOption(selector, records) {
     const $select = $(selector).empty();
-    data.forEach(course => {
-        const $option = $('<option>').val(course.id).text(course.name);
+    records.forEach(record => {
+        const $option = $("<option>")
+        .val(record.courseWithAssignedInfo.coId)
+        .text(record.courseWithAssignedInfo.coName);
         $select.append($option);
-        console.log(course.id, courseId);
-        if (course.id == courseId) {
-            console.log(courseId, "가 선택됨");
-            $option.prop('selected', true);
+    });
+    // 첫 번째 옵션 (초기)
+    if (learnerConfig.leCourseId == null && records.length > 0) {
+        $select.find("option:first").prop("selected", true);
+        learnerConfig.leCourseId = $select.find("option:first").val();
+    } else if (learnerConfig.leCourseId != null) {
+        $select.find(`option[value="${learnerConfig.leCourseId}"]`).prop("selected", true);
+    }
+}
+
+async function fetchAndLoadCourseSelect() {
+    let coursesWithPaging = await apiGetRequestParams(
+        "/api/coursemanagement/courses",
+        {...baseConfig, ...courseConfig});
+    LoadCourseSelect(coursesWithPaging);
+}
+function LoadCourseSelect(coursesWithPaging) {
+    let courses = coursesWithPaging?.records || [];
+    if (!Array.isArray(courses)) {
+        courses = [];
+    }
+    LoadCourseSelectOption("#course-select", courses);
+}
+function LoadCourseSelectOption(selector, records) {
+    const $select = $(selector).empty().append("<option value=\"\">전체</option>");
+    ;
+    records.forEach(record => {
+        const $option = $("<option>")
+        .val(record.courseWithAssignedInfo.coId)
+        .text(record.courseWithAssignedInfo.coName);
+        $select.append($option);
+        if (record.courseWithAssignedInfo.coId == courseConfig.coId) {
+            $option.prop("selected", true);
         }
     });
+    // 초기 또는 전체로 선택시, 첫 번째(전체) 옵션
+    if (courseConfig.coId == null) {
+        $select.find("option:first").prop("selected", true);
+    }
 }
 
+function handleCourseTopSelectorChange() {
+    // 기존 검색과 페이징 초기화
+    learnerConfig.keyword = null;
+    $("#search-input").val("");
+    learnerConfig.pageNo     = 1;
+    learnerConfig.pageSize   = 8;
+    learnerConfig.leCourseId = $(this).val();
 
+    fetchAndDisplayLearners();
+}
+function handleIsInProgressSelectChange() {
+    // 기존 검색과 페이징 초기화
+    learnerConfig.keyword = null;
+    $("#search-input").val("");
+    learnerConfig.pageNo     = 1;
+    learnerConfig.pageSize   = 8;
+
+    // is-in-progress 옵션 변경
+    learnerConfig.coIsInProgress =
+        $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
+
+    // course-select 옵션 로드 후 변경
+    courseConfig.coIsInProgress =
+        $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
+
+    fetchAndLoadCourseSelect();
+
+    fetchAndDisplayLearners();
+}
+function handleCourseSelectChange() {
+    // 기존 검색과 페이징 초기화
+    learnerConfig.keyword = null;
+    $("#search-input").val("");
+    learnerConfig.pageNo     = 1;
+    learnerConfig.pageSize   = 8;
+    learnerConfig.leCourseId = $(this).val();
+
+    // 셀렉트박스 옵션 변경
+    learnerConfig.leCourseId =
+        $("#course-select").val() === "" ? null : $("#course-select").val();
+
+    fetchAndDisplayLearners();
+}
+function handleSearchButtonClick() {
+
+    // 페이징 초기화 및 검색한 키워드로 검색
+    learnerConfig.pageNo   = 1;
+    learnerConfig.pageSize = 8;
+    learnerConfig.keyword  = $("#search-input").val();
+
+    if (loginUserType == "ADMINISTRATOR") {
+        // 관리자의 경우 전체에서 검색
+        learnerConfig.coIsInProgress = null;
+        $("#is-in-progress").val("");
+        learnerConfig.leCourseId = null;
+        $("#course-select").val("");
+    } else if (loginUserType == "INSTRUCTOR") {
+        // 강사의 경우 해당 과정에서 검색 유지
+    }
+    fetchAndDisplayLearners();
+}
+function handlePageButtonClick() {
+    learnerConfig.pageNo = $(this).data("page");
+    fetchAndDisplayLearners();
+}
+
+async function fetchAndDisplayLearners() {
+    console.log("learnerConfig: ", learnerConfig);
+    let learnersWithPaging = await apiGetRequestParams(
+        "/api/learnermanagement/learners",
+        {...baseConfig, ...learnerConfig});
+    displayView(learnersWithPaging);
+}
+function displayView(learnersWithPaging) {
+    console.log(learnersWithPaging);
+    //updateStatusBar(learnersWithPaging);
+    displayTableList(learnersWithPaging);
+    displayPagination(learnersWithPaging);
+}
+async function displayTableList(learnersWithPaging) {
+
+    let learners = learnersWithPaging?.records || [];
+    if (!Array.isArray(learners)) {
+        learners = [];
+    }
+
+    // 일간뷰
+    if (activeTabText == 'pills-daily') {
+        console.log(learners);
+
+        let rowHtml = ``;
+
+        if (learners.length == 0) {
+            rowHtml += `<tr><td class="text-center" colspan="7">데이터가 없습니다.</td></tr>`;
+        } else {
+            learners.forEach(learner => {
+                if (learner.learnerCourse == null) {
+                    return;
+                }
+                let course = learner.learnerCourse;
+                // 입실가능시간
+                let checkInStartTimeStr = `07:00:00`;
+                let checkInEndTimeStr = course.coLessonStartTime;
+                // 퇴실가능시간
+                let checkOutStartTimeStr = course.coLessonEndTime;
+                let checkOutEndTimeStr = adjustMinutesToTimeStr(checkOutStartTimeStr, 10);
+
+                // 교육생의 입실, 퇴실시간
+                let learnerCheckInStr = '-';
+                let learnerCheckOutStr = '-';
+
+
+                learner.partOverview.partList.forEach(part => {
+
+                    const partDate = new Date(part.partParticipationDate);
+
+                    // 오늘 날짜와 동일한 데이터에 대한 처리
+                    if (partDate.getDate() == currentDate.getDate()) {
+
+                        if (part.partCheckIn != null) {
+                            // null이 아니면(입실함)
+                            learnerCheckInStr = part.partCheckIn;
+
+                        } else if (part.partCheckIn == null) {
+                            /*null이면(미입실함),
+                                '입실마감시간-10분'부터 퇴실시작시간 직전까지 이메일알림 버튼 출력
+                                그 외의 시간은 초기 세팅대로 '-' 출력*/
+                            let buttonStartTime = fromTimeStrToTodayTime(adjustMinutesToTimeStr(checkInEndTimeStr, -10));
+                            let buttonEndTime = fromTimeStrToTodayTime(checkOutStartTimeStr);
+
+                            if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
+                                learnerCheckInStr = `
+                                    <span class="text-danger font-weight-bold">미입실</span><br>
+                                    <button class="btn btn-danger btn-icon-split btn-sm">
+                                      <span class="text">이메일알림</span>
+                                    </button>
+                                `;
+                            }
+                        }
+
+                        if (part.partCheckOut != null) {
+                            // null이 아니면(퇴실함)
+                            learnerCheckOutStr = part.partCheckOut;
+                        } else if (part.partCheckOut == null) {
+                            /*null이면(미퇴실함),
+                             '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
+                             그 외의 시간은 초기 세팅대로 '-' 출력*/
+                            let buttonStartTime = fromTimeStrToTodayTime(adjustMinutesToTimeStr(checkOutEndTimeStr, -10));
+                            let buttonEndTime = fromTimeStrToTodayTime('23:59:59');
+
+                            if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
+                                learnerCheckOutStr = `
+                                    <span class="text-danger font-weight-bold">미퇴실</span><br>
+                                    <button class="btn btn-danger btn-icon-split btn-sm" data-id="${learner.leId}">
+                                      <span class="text">이메일알림</span>
+                                    </button>
+                                `;
+                            }
+                        }
+                    }
+                });
+
+                rowHtml += `
+                    <tr>
+                        <td class="text-center align-middle">
+                            ${course.coIsInProgress ? '진행 중' : '종료'}</td>
+                        <td class="title align-middle">${course.coName}</td>
+                        <td class="text-center align-middle">${course.coInstructorName}</td>
+                        <td class="text-center align-middle">
+                            ${checkInStartTimeStr}~${checkInEndTimeStr}<br>
+                            ${checkOutStartTimeStr}~${checkOutEndTimeStr}
+                        </td>
+                        <td class="text-center align-middle" data-id="${learner.leId}">${learner.learnerUser.userFullname}</td>
+                        <td class="text-center align-middle">
+                            ${learnerCheckInStr}
+                        </td>
+                        <td class="text-center align-middle">
+                            ${learnerCheckOutStr}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        let html = `
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr class="text-center">
+                            <th scope="col" class="align-middle" style="width: 10%">진행상황</th>
+                            <th scope="col" class="align-middle" style="width: 31%">과정명</th>
+                            <th scope="col" class="align-middle" style="width: 9%">강사</th>
+                            <th scope="col" class="align-middle" style="width: 15%">입퇴실 가능시간</th>
+                            <th scope="col" class="align-middle" style="width: 9%">교육생</th>
+                            <th scope="col" class="align-middle" style="width: 13%">입실</th>
+                            <th scope="col" class="align-middle" style="width: 13%">퇴실</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${rowHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        $('#pills-daily').html(html);
+    }
+    // 주간뷰
+    else {
+        // 주간으로 탭 이동시 curruntDate는 그 주 월요일로 변경됨
+        console.log(learners);
+        let rowHtml = ``;
+
+        if (learners.length == 0) {
+            rowHtml += `<tr><td class="text-center" colspan="9">데이터가 없습니다.</td></tr>`;
+        } else {
+            learners.forEach(learner => {
+                if (learner.learnerCourse == null) {
+                    return;
+                }
+
+                let course = learner.learnerCourse;
+
+                let nowOnlyDate = toYMD(new Date());
+
+                let monOnlyDate = toYMD(currentDate);
+                let tueOnlyDate = new Date(monOnlyDate);
+                tueOnlyDate.setDate(tueOnlyDate.getDate() + 1);
+                let wedOnlyDate= new Date(monOnlyDate);
+                wedOnlyDate.setDate(wedOnlyDate.getDate() + 2);
+                let thuOnlyDate= new Date(monOnlyDate);
+                thuOnlyDate.setDate(thuOnlyDate.getDate() + 3);
+                let friOnlyDate= new Date(monOnlyDate);
+                friOnlyDate.setDate(friOnlyDate.getDate() + 4);
+
+                const dayRecords = {
+                    mon: { korStatus: '-', partId: null },
+                    tue: { korStatus: '-', partId: null },
+                    wed: { korStatus: '-', partId: null },
+                    thu: { korStatus: '-', partId: null },
+                    fri: { korStatus: '-', partId: null }
+                };
+                let monStatus = '-';
+                let tueStatus = '-';
+                let wedStatus = '-';
+                let thuStatus = '-';
+                let friStatus = '-';
+
+                // 출결기록 row를 순회
+                learner.partOverview.partList.forEach(part => {
+
+                    const korStatus = getKorStatusFromPartStatus(part.partStatus);
+                    const partOnlyDate = toYMD(new Date(part.partParticipationDate));
+
+                    // 날짜 비교 함수
+                    const isPastDate = (targetDate) =>
+                        nowOnlyDate.getTime() > targetDate.getTime() &&
+                        partOnlyDate.getTime() === targetDate.getTime();
+
+                    // 각 요일별로 상태와 PID 업데이트
+                    if (isPastDate(monOnlyDate)) {
+                        dayRecords.mon = { korStatus, partId: part.partId };
+                    }
+                    if (isPastDate(tueOnlyDate)) {
+                        dayRecords.tue = { korStatus, partId: part.partId };
+                    }
+                    if (isPastDate(wedOnlyDate)) {
+                        dayRecords.wed = { korStatus, partId: part.partId };
+                    }
+                    if (isPastDate(thuOnlyDate)) {
+                        dayRecords.thu = { korStatus, partId: part.partId };
+                    }
+                    if (isPastDate(friOnlyDate)) {
+                        dayRecords.fri = { korStatus, partId: part.partId };
+                    }
+                });
+
+                const year = String(currentDate.getFullYear()).padEnd(2, '0');
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const currentDateStr = `${year}-${month}-${day}`;
+                let againDateObj = new Date(currentDateStr);
+
+                rowHtml += `
+                    <tr>
+                        <td class="text-center align-middle">
+                        ${course.coIsInProgress ? '진행 중' : '종료'}
+                        </td>
+                        <td class="title align-middle">${course.coName}</td>
+                        <td class="text-center align-middle">${course.coInstructorName}</td>
+                        <td class="text-center align-middle border-right">${learner.learnerUser.userFullname}</td>
+                        ${getStatusCell(dayRecords.mon.korStatus, dayRecords.mon.partId)}
+                        ${getStatusCell(dayRecords.tue.korStatus, dayRecords.tue.partId)}
+                        ${getStatusCell(dayRecords.wed.korStatus, dayRecords.wed.partId)}
+                        ${getStatusCell(dayRecords.thu.korStatus, dayRecords.thu.partId)}
+                        ${getStatusCell(dayRecords.fri.korStatus, dayRecords.fri.partId)}
+                    </tr>
+                `;
+            });
+        }
+
+        let html = `
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr class="text-center">
+                            <th scope="col" class="align-middle" style="width: 10%">진행상황</th>
+                            <th scope="col" class="align-middle" style="width: 30%">과정명</th>
+                            <th scope="col" class="align-middle" style="width: 10%">강사</th>
+                            <th scope="col" class="align-middle border-right" style="width: 10%">교육생</th>
+                            <th scope="col" class="align-middle" style="width: 8%" id="mon-header">월</th>
+                            <th scope="col" class="align-middle" style="width: 8%" id="tue-header">화</th>
+                            <th scope="col" class="align-middle" style="width: 8%" id="wed-header">수</th>
+                            <th scope="col" class="align-middle" style="width: 8%" id="thu-header">목</th>
+                            <th scope="col" class="align-middle" style="width: 8%" id="fri-header">금</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        $('#pills-weekly').html(html);
+
+        // 헤더에 표시할 날짜 계산
+        const monDate = new Date(currentDate);
+        const tueDate = new Date(monDate);
+        tueDate.setDate(tueDate.getDate() + 1);
+        const wedDate = new Date(monDate);
+        wedDate.setDate(wedDate.getDate() + 2);
+        const thuDate = new Date(monDate);
+        thuDate.setDate(thuDate.getDate() + 3);
+        const friDate = new Date(monDate);
+        friDate.setDate(friDate.getDate() + 4);
+        // 헤더 업데이트
+        $('#mon-header').html(`월(${formatDateMMDD(monDate)})`);
+        $('#tue-header').html(`화(${formatDateMMDD(tueDate)})`);
+        $('#wed-header').html(`수(${formatDateMMDD(wedDate)})`);
+        $('#thu-header').html(`목(${formatDateMMDD(thuDate)})`);
+        $('#fri-header').html(`금(${formatDateMMDD(friDate)})`);
+
+    }
+}
+function displayPagination(data) {
+
+    let output = `<ul class="pagination justify-content-center" style="margin:20px 0">`;
+
+    // 이전 버튼
+    let prevBlockPage = data.blockStartPage > 1 ? data.blockStartPage - 1 : 1;
+    output += `
+    <li class="page-item ${data.blockStartPage == 1? 'disabled': ''}">
+      <a class="page-link page-btn" href="#" data-page="${prevBlockPage}">이전</a>
+    </li>`;
+
+    // 페이지 번호 버튼
+    for (let i = data.blockStartPage; i <= data.blockEndPage; i++) {
+        let active = data.pageNo == i ? "active" : "";
+        output += `
+      <li class="page-item ${active}">
+        <a class="page-link page-btn" href="#" data-page="${i}">${i}</a>
+      </li>`;
+    }
+
+    // 다음 버튼
+    let nextBlockPage = data.blockEndPage < data.lastPage ? data.blockEndPage + 1 : data.lastPage;
+    output += `
+    <li class="page-item ${data.blockEndPage == data.lastPage ? 'disabled': ''}">
+      <a class="page-link page-btn" href="#" data-page="${nextBlockPage}">다음</a>
+    </li></ul>`;
+
+    // 테이블 다음에 붙여넣기
+    if (activeTabText == 'pills-daily') {
+        $("#pills-daily").append(output);
+    } else if (activeTabText == 'pills-weekly'){
+        $("#pills-weekly").append(output);
+    }
+}
+
+function adjustMinutesToTimeStr(timeStr, minutes) {
+    // map(Number) : 문자 -> 숫자
+    let [h, m, s] = timeStr.split(':').map(Number);
+
+    // 오늘 날짜 객체 생성
+    let date = new Date();
+    // 시, 분, 초 세팅
+    date.setHours(h, m, s, 0);
+    // + 또는 - minutes분 세팅
+    date.setMinutes(date.getMinutes() + minutes);
+
+    return `${String(date.getHours()).padStart(2, '0')}:
+            ${String(date.getMinutes()).padStart(2, '0')}:
+            ${String(date.getSeconds()).padStart(2, '0')}`;
+}
+function fromTimeStrToTodayTime(timeStr) {
+    // map(Number) : 문자 -> 숫자
+    let [h, m, s] = timeStr.split(':').map(Number);
+
+    let date = new Date();
+    date.setHours(h, m, s, 0);
+    return date;
+}
 
 function handleWeeklyStatusBtnClick() {
-    let pid = $(this).data('id');
-    console.log("버튼클릭: ", pid);
+    let partId = $(this).data('id');
+    console.log("버튼클릭: ", partId);
 
-    getReasonAndDisplay(pid);
+    getReasonAndDisplay(partId);
 }
-
-async function getReasonAndDisplay(pid) {
-    let partInfo = await apiGetRequestByPid(
-        `/api/management/participation/${pid}`);
+async function getReasonAndDisplay(partId) {
+    let partInfo = await apiGetRequestByPartId(
+        `/api/management/participation/${partId}`);
     console.log(partInfo);
 
     let rawHtml = `
       <tr>
         <td class="text-center align-middle">${partInfo.partParticipationDate}</td>
-        <td class="text-center align-middle text-primary">${getStatusFromPStatus(partInfo.partStatus)}</td>
+        <td class="text-center align-middle text-primary">${getKorStatusFromPartStatus(partInfo.partStatus)}</td>
         <td class="text-center align-middle">${partInfo.partExplanation}</td>
         <td class="text-center align-middle">${partInfo.partTrainingTime}H</td>
       </tr>
     `;
     $('#tbody-reason').html(rawHtml);
 }
-
-
-async function apiGetRequestByPid(endpoint) {
+async function apiGetRequestByPartId(endpoint) {
     try {
         const response = await axios.get(endpoint);
         return response.data.data;
@@ -181,7 +622,6 @@ function handleTabChange() {
         updateDateDisplay();
     }
 }
-
 // 이전, 다음 버튼
 function handlePrevBtnClick() {
     // 일간의 경우 (전 날로 이동, 주말 건너 뜀)
@@ -190,14 +630,14 @@ function handlePrevBtnClick() {
         if (currentDate.getDay() === 0) currentDate.setDate(currentDate.getDate() - 2);
         else if (currentDate.getDay() === 6) currentDate.setDate(currentDate.getDate() - 1);
         updateDateDisplay();
-        fetchLearnersByCondition();
+        fetchAndDisplayLearners();
     }
     // 주간의 경우 (전주 월요일로 이동)
     else {
         currentDate.setDate(currentDate.getDate() - 7);
         currentDate = adjustToMonday(currentDate);
         updateDateDisplay();
-        fetchLearnersByCondition();
+        fetchAndDisplayLearners();
     }
 
 }
@@ -208,16 +648,17 @@ function handleNextBtnClick() {
         if (currentDate.getDay() === 0) currentDate.setDate(currentDate.getDate() + 1);
         else if (currentDate.getDay() === 6) currentDate.setDate(currentDate.getDate() + 2);
         updateDateDisplay();
-        fetchLearnersByCondition();
+        fetchAndDisplayLearners();
     }
     // 주간의 경우 (그 다음 주 월요일로 이동)
     else {
         currentDate.setDate(currentDate.getDate() + 7);
         currentDate = adjustToMonday(currentDate);
         updateDateDisplay();
-        fetchLearnersByCondition();
+        fetchAndDisplayLearners();
     }
 }
+
 function adjustToMonday(date) {
     const day = date.getDay();
     // 일요일(0)일 경우 월요일로 이동
@@ -234,14 +675,13 @@ function adjustToMonday(date) {
     }
     return date;
 }
-
 // 날짜 출력
 function updateDateDisplay() {
     // 주말이면 월요일로 조정
     currentDate = adjustToWeekday(currentDate);
     // 2025.06.23. 월요일 형태로 출력
     $('#date-display').text(formatDate(currentDate));
-    fetchLearnersByCondition();
+    fetchAndDisplayLearners();
 }
 function adjustToWeekday(date) {
     const day = date.getDay();
@@ -270,126 +710,7 @@ function updateTimeDisplay() {
     const timeStr = `${ampm} ${formattedHour}:${minutes} 기준`;
     // 입·퇴실 현황 업데이트됨 (오후 9:54 기준)
     $('#time-check').text(timeStr);
-    fetchLearnersByCondition();
-}
-async function initCourseSelect() {
-    let coursesWithPagination = await apiGetRequestAboutCourses(
-        '/api/management/courses',
-        {
-            loginUserId: loginUserId,
-            loginUserType: loginUserType,
-            isInProgress: isInProgressByCourse});
-    courses = coursesWithPagination?.respDTOS || [];
-    if (!Array.isArray(courses)) courses = [];
-    updateSelectBox('#course-select', courses);
-}
-
-
-
-function updateSelectBox(selector, data) {
-    const $select = $(selector).empty().append('<option value="">전체</option>');
-    data.forEach(course => {
-        $select.append($('<option>').val(course.id).text(course.name));
-    });
-    $("#course-select").trigger("change");
-}
-
-async function apiGetRequestAboutCourses(endpoint, additionalParams = {}) {
-    try {
-        const response = await axios.get(endpoint, {
-            params: { ...courseConfig, ...additionalParams }
-        });
-        console.log(response.data);
-        return response.data.data;
-    } catch (error) {
-        console.error(`${endpoint} 요청 오류:`, error);
-        return [];
-    }
-}
-
-async function apiGetRequestAboutLearners(endpoint, additionalParams = {}) {
-    try {
-        const response = await axios.get(endpoint, {
-            params: { ...learnerConfig, ...additionalParams }
-        });
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`${endpoint} 요청 오류:`, error);
-        return [];
-    }
-}
-// 진행 상태 변경 핸들러
-async function handleProgressStatusChange() {
-    // 기존 검색 기록 삭제
-    learnerConfig.keyword = null;
-    $('search-input').val('');
-    learnerConfig.pageNo = 1;
-
-    isInProgressByCourse = $('#is-in-progress').val() === '' ? null : $('#is-in-progress').val();
-    isInProgressByLearner = isInProgressByCourse;
-    // saveListState();
-
-    let coursesWithPagination = await apiGetRequestAboutCourses(
-        '/api/management/courses',
-        {
-            loginUserId: loginUserId,
-            loginUserType: loginUserType,
-            isInProgress: isInProgressByCourse});
-    courses = coursesWithPagination?.respDTOS || [];
-    if (!Array.isArray(courses)) courses = [];
-
-    updateSelectBox('#course-select', courses);
-}
-
-async function handleCourseSelectChange() {
-    // 기존 검색 기록 삭제
-    learnerConfig.keyword = null;
-    $('search-input').val('');
-    learnerConfig.pageNo = 1;
-
-    // 진행상태는 진행상태 핸들러에서 선택한 옵션으로 저장되어있음
-    // 과정상태 불러옴
-    courseIdByLearner = $('#course-select').val() === '' ? null : $('#course-select').val();
-    fetchLearnersByCondition();
-}
-
-async function fetchLearnersByCondition() {
-    let learnersWithPagination = await apiGetRequestAboutLearners(
-        '/api/learners/all',
-        {
-            loginUserId: loginUserId,
-            loginUserType: loginUserType,
-            courseId: courseIdByLearner,
-            isInProgress: isInProgressByLearner });
-
-    let learners = Array.isArray(learnersWithPagination.respDTOS) ?
-                   learnersWithPagination.respDTOS : [learnersWithPagination.respDTOS];
-    //saveListState();
-    displayLearners(learners);
-    displayPagination(learnersWithPagination);
-}
-
-async function handleSearchChange() {
-
-    isInProgressByLearner = null;
-    $('#is-in-progress').val('');
-    courseIdByLearner = null;
-    $('#course-select').val('');
-
-    // initCourseSelect();
-
-    learnerConfig.pageNo = 1;
-    learnerConfig.pageSize = 10;
-    learnerConfig.keyword = $("#search-input").val();
-    fetchLearnersByCondition();
-}
-
-function handlePageBtnClick() {
-    learnerConfig.pageNo = $(this).data('page');
-    fetchLearnersByCondition();
-    // saveListState();
-    // displayCardView();
+    fetchAndDisplayLearners();
 }
 
 // 날짜 포맷팅 함수 (MM/DD)
@@ -398,259 +719,7 @@ function formatDateMMDD(date) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${month}/${day}`;
 }
-
-function addMinutesToTime(timeStr, minutes) {
-    let [h, m, s] = timeStr.split(':').map(Number);
-    let date = new Date();
-    date.setHours(h, m, s, 0);
-    date.setMinutes(date.getMinutes() + minutes);
-    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-}
-
-async function displayLearners(learners) {
-    // 일간뷰
-    if (activeTabText == 'pills-daily') {
-        let rowHtml = `
-        <div class="table-responsive">
-            <table class="table">
-              <thead>
-              <tr class="text-center">
-                <th scope="col" class="align-middle" style="width: 10%">진행상황</th>
-                <th scope="col" class="align-middle" style="width: 31%">과정명</th>
-                <th scope="col" class="align-middle" style="width: 9%">강사</th>
-                <th scope="col" class="align-middle" style="width: 15%">입퇴실 가능시간</th>
-                <th scope="col" class="align-middle" style="width: 9%">교육생</th>
-                <th scope="col" class="align-middle" style="width: 13%">입실</th>
-                <th scope="col" class="align-middle" style="width: 13%">퇴실</th>
-              </tr>
-              </thead>
-              <tbody>`;
-        if (learners.length == 0) {
-            rowHtml += `<tr><td class="text-center" colspan="7">데이터가 없습니다.</td></tr>`;
-        } else {
-            learners.forEach(learner => {
-                // 입퇴실가능시간
-                let checkInStartTimeStr = `07:00:00`;
-                let checkInEndTimeStr = learner.courseLessonStartTime; // .split(':').slice(0, 2).join(':');
-
-                let checkOutStartTimeStr = learner.courseLessonEndTime; //.split(':').slice(0, 2).join(':');
-                let checkOutEndTimeStr = addMinutesToTime(checkOutStartTimeStr, 10);
-
-                // 교육생의 입실, 퇴실시간
-                let currentDateCheckInTime = `<span>-</span>`;
-                let currentDateCheckOutTime = `<span>-</span>`;
-
-                learner.pageParticipationRespDTO.respDTOS.forEach(partDate => {
-                    const partDateObj = new Date(partDate.pparticipationDate);
-                    // for문 순회하면서 currentDate와 일치하는 row에서 처리
-                    if (partDateObj.getDate() == currentDate.getDate()) {
-                        // null이면 미입실, null이 아니면, checkInTime 출력
-                        if (partDate.pcheckIn != null) {
-                            const currentDateCheckInTimeObj = new Date(partDate.pcheckIn);
-                            const hours = String(currentDateCheckInTimeObj.getHours()).padStart(2, '0');
-                            const minutes = String(currentDateCheckInTimeObj.getMinutes()).padStart(2, '0');
-                            const seconds = String(currentDateCheckInTimeObj.getSeconds()).padStart(2, '0');
-                            const currentDateCheckInTimeStr = `${hours}:${minutes}:${seconds}`;
-                            currentDateCheckInTime = `${currentDateCheckInTimeStr}`;
-                        } else {
-                            // 입실시간 10분전부터 입실시간까지 알림 버튼 출력
-                            const nowTime = dayjs().format('HH:mm:ss');
-                            const checkInEndTime = dayjs(checkInEndTimeStr, 'HH:mm:ss');
-                            const nowTimeDayjs = dayjs(nowTime, 'HH:mm:ss');
-                            const checkInEndTimeDayjs = dayjs(checkInEndTime.format('HH:mm:ss'), 'HH:mm:ss');
-                            const checkInEndTimeMinus10Dayjs = checkInEndTimeDayjs.subtract(10, 'minute');
-
-                            if (nowTimeDayjs > checkInEndTimeMinus10Dayjs && nowTimeDayjs < checkInEndTimeDayjs) {
-                                currentDateCheckInTime = `
-                                <span class="text-danger font-weight-bold">미입실</span><br>
-                                <button class="btn btn-danger btn-icon-split btn-sm">
-                                  <span class="text">알림</span>
-                                </button>
-                                `;
-                            } else {
-                                currentDateCheckInTime = `<span>미입실</span>`;
-                            }
-                        }
-                        if (partDate.pcheckOut != null) {
-                            const currentDateCheckOutTimeObj = new Date(partDate.pcheckOut);
-                            const hours = String(currentDateCheckOutTimeObj.getHours()).padStart(2, '0');
-                            const minutes = String(currentDateCheckOutTimeObj.getMinutes()).padStart(2, '0');
-                            const seconds = String(currentDateCheckOutTimeObj.getSeconds()).padStart(2, '0');
-                            const currentDateCheckOutTimeStr = `${hours}:${minutes}:${seconds}`;
-                            currentDateCheckOutTime = `${currentDateCheckOutTimeStr}`;
-                        } else {
-                            // 퇴실시간가능시간에 알림버튼 출력
-                            const nowTime = dayjs().format('HH:mm:ss');
-                            const checkOutEndTime = dayjs(checkOutEndTimeStr, 'HH:mm:ss');
-
-                            const nowTimeDayjs = dayjs(nowTime, 'HH:mm:ss');
-                            const checkOutEndTimeDayjs = dayjs(checkOutEndTime.format('HH:mm:ss'), 'HH:mm:ss');
-                            const checkOutEndTimeMinus10Dayjs = checkOutEndTimeDayjs.subtract(10, 'minute');
-
-                            if (nowTimeDayjs > checkOutEndTimeMinus10Dayjs && nowTimeDayjs < checkOutEndTimeDayjs) {
-                                currentDateCheckOutTime = `
-                                <span class="text-danger font-weight-bold">미퇴실</span><br>
-                                <button class="btn btn-danger btn-icon-split btn-sm">
-                                  <span class="text">알림</span>
-                                </button>
-                                `;
-                            } else {
-                                currentDateCheckOutTime = `<span>미퇴실</span>`;
-                            }
-                        }
-                    }
-                });
-
-
-                rowHtml += `
-                    <tr>
-                        <td class="text-center align-middle">
-                        ${learner.courseIsInProgress ? '진행 중' : '종료'}</td>
-                        <td class="title align-middle">${learner.courseName}</td>
-                        <td class="text-center align-middle">${learner.courseFulltimeInstructor}</td>
-                        <td class="text-center align-middle">
-                        ${checkInStartTimeStr}~${checkInEndTimeStr}<br>
-                        ${checkOutStartTimeStr}~${checkOutEndTimeStr}</td>
-                        <td class="text-center align-middle">${learner.userFullname}</td>
-                        <td class="text-center align-middle">
-                          ${currentDateCheckInTime}
-                        </td>
-                        <td class="text-center align-middle">
-                          ${currentDateCheckOutTime}
-                        </td>
-                      </tr>
-                `;
-            });
-        }
-        rowHtml += `</tbody></table></div>`;
-        $('#pills-daily').html(rowHtml);
-
-    }
-    // 주간뷰
-    else {
-        console.log("주간뷰일 때");
-        let rowHtml = `
-        <div class="table-responsive">
-            <table class="table">
-              <thead>
-              <tr class="text-center">
-                <th scope="col" class="align-middle" style="width: 10%">진행상황</th>
-                <th scope="col" class="align-middle" style="width: 30%">과정명</th>
-                <th scope="col" class="align-middle" style="width: 10%">강사</th>
-                <th scope="col" class="align-middle border-right" style="width: 10%">교육생</th>
-                <th scope="col" class="align-middle" style="width: 8%" id="mon-header">월</th>
-                <th scope="col" class="align-middle" style="width: 8%" id="tue-header">화</th>
-                <th scope="col" class="align-middle" style="width: 8%" id="wed-header">수</th>
-                <th scope="col" class="align-middle" style="width: 8%" id="thu-header">목</th>
-                <th scope="col" class="align-middle" style="width: 8%" id="fri-header">금</th>
-              </tr>
-              </thead>
-              <tbody>
-        `;
-        if (learners.length == 0) {
-            rowHtml += `<tr><td class="text-center" colspan="9">데이터가 없습니다.</td></tr>`;
-        } else {
-            learners.forEach(learner => {
-                let nowDateObj = toYMD(new Date());
-
-                let monDateObj = toYMD(currentDate);
-                let tueDateObj = new Date(monDateObj);
-                tueDateObj.setDate(tueDateObj.getDate() + 1);
-                let wedDateObj= new Date(monDateObj);
-                wedDateObj.setDate(wedDateObj.getDate() + 2);
-                let thuDateObj= new Date(monDateObj);
-                thuDateObj.setDate(thuDateObj.getDate() + 3);
-                let friDateObj= new Date(monDateObj);
-                friDateObj.setDate(friDateObj.getDate() + 4);
-
-                const dayRecords = {
-                    mon: { status: '-', pid: null },
-                    tue: { status: '-', pid: null },
-                    wed: { status: '-', pid: null },
-                    thu: { status: '-', pid: null },
-                    fri: { status: '-', pid: null }
-                };
-                let monStatus = '-';
-                let tueStatus = '-';
-                let wedStatus = '-';
-                let thuStatus = '-';
-                let friStatus = '-';
-
-                // 출결기록 row를 순회
-                learner.pageParticipationRespDTO.respDTOS.forEach(partDate => {
-                    const status = getStatusFromPStatus(partDate.pstatus);
-                    const partDateObj = toYMD(new Date(partDate.pparticipationDate));
-
-                    // 날짜 비교 함수
-                    const isPastDate = (targetDate) =>
-                        nowDateObj.getTime() > targetDate.getTime() &&
-                        partDateObj.getTime() === targetDate.getTime();
-
-                    // 각 요일별로 상태와 PID 업데이트
-                    if (isPastDate(monDateObj)) {
-                        dayRecords.mon = { status, pid: partDate.pid };
-                    }
-                    if (isPastDate(tueDateObj)) {
-                        dayRecords.tue = { status, pid: partDate.pid };
-                    }
-                    if (isPastDate(wedDateObj)) {
-                        dayRecords.wed = { status, pid: partDate.pid };
-                    }
-                    if (isPastDate(thuDateObj)) {
-                        dayRecords.thu = { status, pid: partDate.pid };
-                    }
-                    if (isPastDate(friDateObj)) {
-                        dayRecords.fri = { status, pid: partDate.pid };
-                    }
-                });
-
-                const year = String(currentDate.getFullYear()).padEnd(2, '0');
-                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const day = String(currentDate.getDate()).padStart(2, '0');
-                const currentDateStr = `${year}-${month}-${day}`;
-                let againDateObj = new Date(currentDateStr);
-
-                rowHtml += `
-                <tr>
-                    <td class="text-center align-middle">
-                    ${learner.courseIsInProgress ? '진행 중' : '종료'}
-                    </td>
-                    <td class="title align-middle">${learner.courseName}</td>
-                    <td class="text-center align-middle">${learner.courseFulltimeInstructor}</td>
-                    <td class="text-center align-middle border-right">${learner.userFullname}</td>
-                   
-                    ${getStatusCell(dayRecords.mon.status, dayRecords.mon.pid, 'mon')}
-                    ${getStatusCell(dayRecords.tue.status, dayRecords.tue.pid, 'tue')}
-                    ${getStatusCell(dayRecords.wed.status, dayRecords.wed.pid, 'wed')}
-                    ${getStatusCell(dayRecords.thu.status, dayRecords.thu.pid, 'thu')}
-                    ${getStatusCell(dayRecords.fri.status, dayRecords.fri.pid, 'fri')}
-                  </tr>
-                `;
-            });
-        }
-        rowHtml += `</tbody></table>`;
-        $('#pills-weekly').html(rowHtml);
-
-        // 헤더에 표시할 날짜 계산
-        const monDate = new Date(currentDate);
-        const tueDate = new Date(monDate);
-        tueDate.setDate(tueDate.getDate() + 1);
-        const wedDate = new Date(monDate);
-        wedDate.setDate(wedDate.getDate() + 2);
-        const thuDate = new Date(monDate);
-        thuDate.setDate(thuDate.getDate() + 3);
-        const friDate = new Date(monDate);
-        friDate.setDate(friDate.getDate() + 4);
-        // 헤더 업데이트
-        $('#mon-header').html(`월(${formatDateMMDD(monDate)})`);
-        $('#tue-header').html(`화(${formatDateMMDD(tueDate)})`);
-        $('#wed-header').html(`수(${formatDateMMDD(wedDate)})`);
-        $('#thu-header').html(`목(${formatDateMMDD(thuDate)})`);
-        $('#fri-header').html(`금(${formatDateMMDD(friDate)})`);
-    }
-}
-
-function getStatusFromPStatus(pstatus) {
+function getKorStatusFromPartStatus(partStatus) {
     return {
                'ABSENCE': '결석',
                'ATTENDANCE': '출석',
@@ -659,11 +728,10 @@ function getStatusFromPStatus(pstatus) {
                'LEAVE_EARLY': '조퇴',
                'VACATION_PENDING': '휴가(전)',
                'IN_STUDY': '수업중'
-           }[pstatus] || '-';
+           }[partStatus] || '-';
 }
-
-function getStatusClass(status) {
-    switch(status) {
+function getTextColorByStatus(korStatus) {
+    switch(korStatus) {
         case '출석': return 'text-info';
         case '결석': return 'text-danger';
         case '휴가': return 'text-primary';
@@ -672,55 +740,17 @@ function getStatusClass(status) {
         default: return '';
     }
 }
-function getStatusCell(status, pid, day) {
-    let className = getStatusClass(status);
+function getStatusCell(korStatus, partId) {
+
+    let textColor = getTextColorByStatus(korStatus);
     let attrs = '';
 
-    if (status === '휴가') {
-        attrs = `data-toggle="modal" data-target="#participationModal" style="cursor: pointer"`;
-        if (pid) {
-            attrs += ` data-id="${pid}"`;
-        }
+    if (korStatus === '휴가') {
+        attrs = `data-toggle="modal" data-target="#participationModal" style="cursor: pointer" data-id="${partId}"`;
     }
-    return `<td class="weekly-status text-center align-middle font-weight-bold ${className}" ${attrs}>${status}</td>`;
+    return `<td class="weekly-status text-center align-middle font-weight-bold ${textColor}" ${attrs}>${korStatus}</td>`;
 }
-
-
-
-
-function displayPagination(data) {
-
-    let output = `<ul class="pagination justify-content-center" style="margin:20px 0">`;
-
-    // 이전 버튼
-    let prevBlockPage = data.blockStartPage > 1 ? data.blockStartPage - 1 : 1;
-    output += `
-    <li class="page-item ${data.blockStartPage == 1? 'disabled': ''}">
-      <a class="page-link page-btn" href="#" data-page="${prevBlockPage}">이전</a>
-    </li>`;
-
-    // 페이지 번호 버튼
-    for (let i = data.blockStartPage; i <= data.blockEndPage; i++) {
-        let active = data.pageNo == i ? "active" : "";
-        output += `
-      <li class="page-item ${active}">
-        <a class="page-link page-btn" href="#" data-page="${i}">${i}</a>
-      </li>`;
-    }
-
-    // 다음 버튼
-    let nextBlockPage = data.blockEndPage < data.lastPage ? data.blockEndPage + 1 : data.lastPage;
-    output += `
-    <li class="page-item ${data.blockEndPage == data.lastPage ? 'disabled': ''}">
-      <a class="page-link page-btn" href="#" data-page="${nextBlockPage}">다음</a>
-    </li></ul>`;
-    if (activeTabText == 'pills-daily') {
-        $("#pills-daily").append(output);
-    } else {
-        $("#pills-weekly").append(output);
-    }
-}
-
 function toYMD(date) {
+    // hms는 0으로
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
