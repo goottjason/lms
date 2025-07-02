@@ -48,10 +48,6 @@ public class ParticipationController {
     try {
       // 세션에서 로그인 사용자 정보 가져오기
       UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-      if (loginUser == null) {
-        log.warn("로그인 정보가 세션에 없습니다.");
-        return "redirect:/login";
-      }
 
       Integer userId = loginUser.getId();
       log.info("출결 조회 페이지 접근 - 사용자 ID: {}", userId);
@@ -454,6 +450,7 @@ public class ParticipationController {
       ));
     }
   }
+
 
 
 

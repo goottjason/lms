@@ -2,7 +2,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/basic}">
 <head>
-    <title>출결 조회</title>
     <!-- ======================== CSS 스타일 정의 ======================== -->
         <style>
             /* 전체 컨테이너 스타일 */
@@ -876,7 +875,6 @@
 
             // 1. basic.html의 courseSelector 설정 (상단 과정 선택 드롭다운)
             setupCourseSelector();
-
             // 2. 입퇴실 버튼 상태 업데이트 (노션 로직 적용)
             updateButtonStates();
 
@@ -1403,7 +1401,7 @@
                     document.querySelector('.stat-item:nth-child(3) .stat-number').textContent = data.earlyCount || 0;
                     document.querySelector('.stat-item:nth-child(4) .stat-number').textContent = data.absenceCount || 0;
                     document.querySelector('.stat-item:nth-child(5) .stat-number').textContent = data.vacationCount || 0;
-
+          //  console.log('휴가데이터 :',data.vacationCount);
                     // 과정진행률 업데이트
                     document.querySelector('.progress-percentage').textContent = `${data.progressRate || 0.0}%`;
                     document.querySelector('.progress-detail').textContent = `(${data.progressedDays || 0}/${data.totalDays || 0}일)`;
