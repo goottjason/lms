@@ -1,6 +1,5 @@
 package com.goott5.lms.courseboarddebate.domain;
 
-import com.goott5.lms.user.domain.UserVO;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -88,7 +88,7 @@
     <div class="card-body py-5" style="min-height: 280px; white-space: pre-wrap;" th:text="*{content}">
       여기에 내용이 들어옵니다~~~
     </div>
-    <!-- 첨부 파일1 -->
+    <!-- 첨부 파일 -->
     <div class="card-footer">
       <p class="mt-2">첨부파일</p>
       <div class="row">
@@ -144,7 +144,15 @@
       </button>
     </div>
 
-    <a th:href="|/courseBoardMaterials/materialsList?pageNo=${pagingRequestDTO.pageNo}${pagingRequestDTO.generateLinkExceptPageNo()}|">
+    <a th:href="@{/courseBoardMaterials/materialsList(pageNo=${pagingRequestDTO.pageNo},
+                                                 type=${pagingRequestDTO.type},
+                                                 keyword=${pagingRequestDTO.keyword},
+                                                 courseId=${pagingRequestDTO.courseId},
+                                                 isInProgress=${pagingRequestDTO.isInProgress},
+                                                 hasAttachment=${pagingRequestDTO.hasAttachment},
+                                                 orderBy=${pagingRequestDTO.orderBy},
+                                                 orderDirection=${pagingRequestDTO.orderDirection},
+                                                 pagingSize=${pagingRequestDTO.pagingSize})}">
       <button id="return-list" class="btn btn-secondary btn-icon-split" type="button">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
@@ -177,10 +185,9 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-    // 모든 코드는 페이지(DOM)가 완전히 로드된 후에 실행되도록 합니다.
     document.addEventListener('DOMContentLoaded', function() {
 
-      // --- 1. 변수 초기화 ---
+      // --- 변수 초기화 ---
       const loginUserId = document.getElementById('login-user-id')?.value;
       const loginUserType = document.getElementById('login-user-type')?.value;
 
@@ -189,12 +196,12 @@
       const currentCourseId = /*[[${currentCourseId}]]*/ null;
       /*]]>*/
 
-      // --- 2. 버튼 및 모달 요소 가져오기 ---
+      // --- 버튼 및 모달 요소 가져오기 ---
       const modifyButton = document.getElementById('modify-btn');
       const deleteButton = document.getElementById('delete-button');
       const confirmDeleteButton = document.getElementById('confirm-delete-btn');
 
-      // --- 3. 이벤트 리스너 설정 ---
+      // --- 이벤트 리스너 설정 ---
 
       // 수정 버튼 이벤트
       if (modifyButton) {
@@ -250,7 +257,7 @@
         });
       }
 
-      // --- 4. 페이지 초기화 (헤더 드롭다운) ---
+      // --- 페이지 초기화 (헤더 드롭다운) ---
       async function initializePage() {
         const headerCourseSelector = document.getElementById('courseSelector');
         if (headerCourseSelector) {

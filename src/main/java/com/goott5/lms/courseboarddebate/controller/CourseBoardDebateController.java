@@ -309,7 +309,9 @@ public class CourseBoardDebateController {
 
   // 수정 페이지(GET)
   @GetMapping("/debateModify")
-  public String getDebateModify(@RequestParam(required = false) int id, Model model,HttpSession session) {
+  public String getDebateModify(@RequestParam(required = false) int id,
+      @ModelAttribute CourseBoardDebatePagingRequestDTO pagingRequestDTO,
+      Model model,HttpSession session) {
 
     List<FileSelectDTO> attachments = utilService.selectFileList("course_forum",id);
 
@@ -332,6 +334,7 @@ public class CourseBoardDebateController {
 
     model.addAttribute("currentCourseId", dto.getCourseId());
     model.addAttribute("courseBoardDebate", dto);
+    model.addAttribute("pagingRequestDTO", pagingRequestDTO);
 
     return "courseBoardDebate/debateModify";
   }

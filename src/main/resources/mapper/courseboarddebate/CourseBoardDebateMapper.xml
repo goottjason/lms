@@ -4,7 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goott5.lms.courseboarddebate.mapper.CourseBoardDebateMapper">
 
-  <select id="selectRegularPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+  <select id="selectPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
     cf.*,
     c.name AS courseName,
@@ -32,7 +32,6 @@
     ON cf.id = cc.course_forum_id
     <where>
       cf.deleted_at IS NULL
-      AND cf.is_hotpost = FALSE
       <if test="courseId != null">
         AND cf.course_id = #{courseId}
       </if>
@@ -64,6 +63,7 @@
       </if>
     </where>
     ORDER BY
+    cf.is_hotpost DESC,
     <choose>
       <when test="orderBy == 'readCount'">cf.read_count</when>
       <when test="orderBy == 'title'">cf.title</when>
@@ -78,7 +78,7 @@
     LIMIT #{skip}, #{pagingSize}
   </select>
 
-  <select id="selectRegularPostsTotalCount" resultType="int">
+  <select id="selectPostsTotalCount" resultType="int">
     SELECT COUNT(*)
     FROM
     course_forum cf
@@ -91,7 +91,6 @@
     ON cf.id = f.table_id
     <where>
       cf.deleted_at IS NULL
-      AND cf.is_hotpost = FALSE
       <if test="courseId != null">
         AND cf.course_id = #{courseId}
       </if>
@@ -124,40 +123,6 @@
     </where>
   </select>
 
-  <select id="selectHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
-    SELECT
-    cf.*,
-    c.name AS courseName,
-    u.fullname AS writerName,
-    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached,
-    IFNULL(cc.comment_count, 0) AS commentCount,
-    (SELECT COUNT(*) FROM course_forum_report cfr WHERE cfr.course_forum_id = cf.id AND cfr.report_status = 'RESOLVED') AS approvedReportCount
-    FROM
-    course_forum cf
-    JOIN
-    course c ON cf.course_id = c.id
-    JOIN
-    `user` u ON cf.writer_id = u.id
-    LEFT JOIN
-    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_forum' AND deleted_at IS NULL) f ON cf.id = f.table_id
-    LEFT JOIN
-    (SELECT course_forum_id, COUNT(id) AS comment_count FROM course_forum_comment WHERE deleted_at IS NULL GROUP BY course_forum_id) cc ON cf.id = cc.course_forum_id
-    <where>
-      cf.deleted_at IS NULL
-      AND cf.is_hotpost = TRUE
-      <if test="courseId != null">
-        AND cf.course_id = #{courseId}
-      </if>
-      <if test="accessibleCourseIds != null and !accessibleCourseIds.isEmpty()">
-        AND cf.course_id IN
-        <foreach item="item" collection="accessibleCourseIds" open="(" separator="," close=")">
-          #{item}
-        </foreach>
-      </if>
-    </where>
-    ORDER BY cf.forum_like DESC, cc.comment_count DESC
-  </select>
-
   <insert id="insertCourseBoardDebate" useGeneratedKeys="true" keyProperty="dto.id">
     insert into course_forum(course_id, writer_id, title, content)
     values(#{dto.courseId}, #{dto.writerId}, #{dto.title}, #{dto.content})
@@ -183,6 +148,16 @@
   <update id="updateCourseBoardDebateReadCount">
     UPDATE course_forum SET read_count = read_count + 1 WHERE id = #{id}
   </update>
+
+  <select id="checkTodayReadCountLog" resultType="int">
+    SELECT COUNT(*)
+    FROM read_count_log
+    WHERE table_name = #{tableName}
+    AND table_id = #{tableId}
+    AND user_id = #{userId}
+    AND DATE(created_at) = CURDATE()
+  </select>
+
 
   <update id="softDeleteCourseBoardDebateById">
     UPDATE course_forum SET deleted_at = NOW() WHERE id = #{id}

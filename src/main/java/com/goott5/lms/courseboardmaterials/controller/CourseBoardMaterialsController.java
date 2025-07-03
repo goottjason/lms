@@ -142,6 +142,8 @@ public class CourseBoardMaterialsController {
 
         model.addAttribute("courseBoardMaterialsDTO", dto);
         model.addAttribute("currentCourseId", pagingRequestDTO.getCourseId());
+        model.addAttribute("pagingRequestDTO", pagingRequestDTO);
+
         return "courseBoardMaterials/materialsRegister";
     }
 
@@ -320,7 +322,7 @@ public class CourseBoardMaterialsController {
 
         CourseBoardMaterialsDTO dto = new CourseBoardMaterialsDTO();
         dto.setId(detail.getId());
-        dto.setCourseId(detail.getCourseId()); // (추가) courseId를 DTO에 설정
+        dto.setCourseId(detail.getCourseId()); // courseId를 DTO에 설정
         dto.setTitle(detail.getTitle());
         dto.setContent(detail.getContent());
         dto.setIsFixed(detail.getIsFixed());

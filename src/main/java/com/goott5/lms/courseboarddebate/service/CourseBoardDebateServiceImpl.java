@@ -63,28 +63,12 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
       }
     }
 
-    // 최종적으로 화면에 보여줄 글 목록 (인기글 + 일반글)
-    List<CourseBoardDebateVO> combinedList = new ArrayList<>();
+    // 하나의 쿼리로 정렬된 전체 목록(인기글+일반글)을 가져옴
+    List<CourseBoardDebateVO> posts = courseBoardDebateMapper.selectPosts(requestDTO);
+    int totalCount = courseBoardDebateMapper.selectPostsTotalCount(requestDTO);
 
-    // 첫 페이지(pageNo=1)일 경우에만 인기글 목록을 조회해서 리스트에 먼저 추가합니다.
-    if (requestDTO.getPageNo() == 1) {
-      List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.selectHotPosts(requestDTO);
-      if (hotPosts != null) {
-        combinedList.addAll(hotPosts);
-      }
-    }
-
-    // 페이지네이션 계산을 위한 "일반글"의 전체 개수를 조회합니다.
-    int regularPostsTotalCount = courseBoardDebateMapper.selectRegularPostsTotalCount(requestDTO);
-
-    // 현재 페이지에 해당하는 "일반글" 목록을 조회합니다.
-    List<CourseBoardDebateVO> regularPosts = courseBoardDebateMapper.selectRegularPosts(requestDTO);
-    if (regularPosts != null) {
-      combinedList.addAll(regularPosts);
-    }
-
-    // 조회된 VO 리스트를 화면에 보여줄 PageDTO 리스트로 변환합니다.
-    List<CourseBoardDebatePageDTO> dtoList = combinedList.stream().map(vo ->
+    // VO 리스트를 화면에 보여줄 PageDTO 리스트로 변환
+    List<CourseBoardDebatePageDTO> dtoList = posts.stream().map(vo ->
         CourseBoardDebatePageDTO.builder()
             .id(vo.getId())
             .title(vo.getTitle())
@@ -100,11 +84,11 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
             .build()
     ).collect(Collectors.toList());
 
-    // 페이지네이션 정보는 "일반글"의 전체 개수를 기준으로 생성하여 최종 반환합니다.
+    // 페이지네이션 정보와 함께 최종 결과 반환
     return CourseBoardDebatePagingResponseDTO.<CourseBoardDebatePageDTO>allInfo()
         .courseBoardDebatePagingRequestDTO(requestDTO)
-        .dtoList(dtoList) // 화면에 보여줄 목록은 인기글과 일반글이 합쳐진 리스트
-        .total(regularPostsTotalCount) // 페이지네이션 계산 기준은 일반글의 총 개수
+        .dtoList(dtoList)
+        .total(totalCount)
         .build();
   }
 
@@ -162,9 +146,14 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
   @Override
   @Transactional
   public boolean updateCourseBoardDebateReadCount(ReadCountLog readCountLog) {
-    int check = readCountLogMapper.checkReadCountLog(readCountLog.getTableName(), readCountLog.getTableId(), readCountLog.getUserId());
+    int check = courseBoardDebateMapper.checkTodayReadCountLog(
+        readCountLog.getTableName(),
+        readCountLog.getTableId(),
+        readCountLog.getUserId()
+    );
+
     if (check == 0) {
-      readCountLogMapper.insertReadCountLog(readCountLog);
+      readCountLogMapper.insertReadCountLog(readCountLog); // 로그 삽입은 공용 매퍼 그대로 사용
       courseBoardDebateMapper.updateCourseBoardDebateReadCount(readCountLog.getTableId());
       return true;
     }
