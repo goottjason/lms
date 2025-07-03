@@ -66,4 +66,10 @@ public interface TestSubmissionMapper {
   // 시험 점수 Select
   @Select("SELECT score FROM test_submission WHERE id = #{submissionId}")
   int selectUserScore(int submissionId);
+
+  // 자동 종료 처리
+  void updateNoShowToZero(int testId);
+
+  // 자동 종료 처리가 완료된 테스트는 true로 설정
+  void markAutoGraded(@Param("testId") int testId);
 }

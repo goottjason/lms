@@ -45,6 +45,7 @@
   </head>
   <body>
     <div layout:fragment="content">
+      <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
       <!-- content header 시작 -->
       <div class="row align-items-center">
         <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">HOME</h1>

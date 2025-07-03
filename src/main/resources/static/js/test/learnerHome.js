@@ -10,7 +10,12 @@ let inProg;
 
 let progressSummary;
 
+let userId;
+
 $(document).ready(async () => {
+
+  userId = $("#login-user-id").val();
+
   await getUserCourses();               // select 옵션 셋업
   selectedCourse = $courseSelect.val(); // 기본값 설정
   await loadCourseData(selectedCourse); // 첫 렌더
@@ -238,7 +243,7 @@ function renderDeadlineCarousel(data) {
     if (type === "homework") {
       location.href = `/homework/submissionDetail?submissionId=${id}`;
     } else {
-      location.href = `/test/learner/testDetail/${id}`;
+      location.href = `/test/learner/testDetail/${id}?userId=${userId}&currentPageNo=1&courseName=${selectedCourse}`;
     }
   });
 }
@@ -760,6 +765,7 @@ async function loadCourseData(courseName) {
 
   // 수업 스케줄
   const courseScheduleRes = await fetchCourseSchedule(courseName);
+  console.log(courseScheduleRes);
   renderSchedule(courseScheduleRes.data.data, inProg);
 
   // Inquiry / QnA / 자료 / 토론

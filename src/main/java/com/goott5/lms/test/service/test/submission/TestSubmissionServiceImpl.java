@@ -21,6 +21,8 @@ import java.util.List;
 import javax.print.DocFlavor.STRING;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -171,24 +173,24 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
     return "COMPLETED";
   }
 
-//  @Override
-//  public TestRegisterResultVO getTestResult(int testId, HttpSession session) {
-//
-//    TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
-//        ((UserVO) session.getAttribute("loginUser")).getId());
-//
-//    DecimalFormat df = new DecimalFormat("#0.00");
-//    double submissionTime = testSubmissionVO.getSubmissionTime() / 60.0;
-//
-//    return TestRegisterResultVO.builder()
-//        .submissionTime(df.format(submissionTime))
-//        .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
-//        .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
-//        .build();
-//  }
+  @Override
+  public TestRegisterResultVO getTestResult(int testId, HttpSession session) {
+
+    TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
+        ((UserVO) session.getAttribute("loginUser")).getId());
+
+    DecimalFormat df = new DecimalFormat("#0.00");
+    double submissionTime = testSubmissionVO.getSubmissionTime() / 60.0;
+
+    return TestRegisterResultVO.builder()
+        .submissionTime(df.format(submissionTime))
+        .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
+        .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
+        .build();
+  }
 
   @Override
-  public TestRegisterResultVO getTestResult(int testId, int userId) {
+  public TestRegisterResultVO getTestResult2(int testId, int userId) {
 
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
         userId);
@@ -213,6 +215,14 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
         .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
         .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
         .build();
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void assignZeroToNoShows(int testId) {
+
+    testSubmissionMapper.updateNoShowToZero(testId);
+    testSubmissionMapper.markAutoGraded(testId);
   }
 
   private int getCorrectMultipleAnswerNo(List<TestOptionVO> options) {

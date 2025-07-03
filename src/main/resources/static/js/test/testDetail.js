@@ -348,7 +348,7 @@ function getStudentScoreDisplay(isInvalidated, submissionStatus, score) {
 }
 
 function maskId(id) {
-  if (4 >= id.length) {
+  if (id === null || 4 >= id.length ) {
     return id;
   }
 

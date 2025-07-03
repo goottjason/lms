@@ -1,5 +1,6 @@
 package com.goott5.lms.test.domain.learnermain;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class InquiryVO {
   private String title;
   private Boolean isAnswered;
   private Boolean isAnsweredChecked;
+  private LocalDate createdAt;
 
   public Boolean getIsAnswered() {
     return isAnswered;

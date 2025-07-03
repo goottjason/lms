@@ -18,6 +18,7 @@ public class NoticeVO {
 
   private int id;
   private String title;
+  private String fullname;
   private Boolean isFixed;
   private LocalDateTime createdAt;
 

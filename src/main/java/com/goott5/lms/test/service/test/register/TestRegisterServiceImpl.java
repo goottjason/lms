@@ -11,6 +11,8 @@ import com.goott5.lms.test.domain.test.register.vo.TestRegisterVO;
 import com.goott5.lms.test.domain.test.submission.TestSubmissionVO;
 import com.goott5.lms.test.mapper.test.TestRegisterMapper;
 import com.goott5.lms.test.mapper.test.TestMapperUtil;
+import com.goott5.lms.test.service.test.submission.TestSubmissionService;
+import com.goott5.lms.test.util.TestScheduler;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class TestRegisterServiceImpl implements TestRegisterService {
 
   private final TestRegisterMapper testRegisterMapper;
+  private final TestScheduler testScheduler;
+  private final TestSubmissionService submissionService;
 
   @Override
   public ResponseVO<TestListDTO> getTestList(String courseName, int currentPageNo) {
@@ -34,8 +38,8 @@ public class TestRegisterServiceImpl implements TestRegisterService {
     log.info("courseName : {}", courseName);
 
     RequestVO requestVO = RequestVO.builder()
-            .currentPageNo(currentPageNo)
-            .build();
+        .currentPageNo(currentPageNo)
+        .build();
 
     List<TestListVO> testListVOS = testRegisterMapper.selectTestLists(courseName, requestVO);
     List<TestListDTO> testListDTOS = new ArrayList<>();
@@ -49,9 +53,9 @@ public class TestRegisterServiceImpl implements TestRegisterService {
     requestVO.setTotalItemsCount(totalTestCount);
 
     return ResponseVO.<TestListDTO>allInfo()
-            .requestVO(requestVO)
-            .items(testListDTOS)
-            .build();
+        .requestVO(requestVO)
+        .items(testListDTOS)
+        .build();
   }
 
   @Transactional(rollbackFor = Exception.class, timeout = 30)
@@ -88,21 +92,22 @@ public class TestRegisterServiceImpl implements TestRegisterService {
 
     // 교육생 ID(PK) 가져오기
     List<Integer> learnerIdList = testRegisterMapper.selectLearnerIdByCourseId(
-            testRegisterDTO.getCourseName());
+        testRegisterDTO.getCourseName());
     log.info("learnerId : {}", learnerIdList);
 
     // 해당 시험에 등록된 모든 수강생의 시험 제출 상태를 초기화하여 저장
     for (Integer learnerId : learnerIdList) {
 
       TestSubmissionVO testSubmissionVO = TestSubmissionVO.builder()
-              .testId(testRegisterVO.getId())
-              .learnerId(learnerId)
-              .submissionTime(testRegisterVO.getTestTime())
-              .submissionStatus("NOT_STARTED")
-              .build();
+          .testId(testRegisterVO.getId())
+          .learnerId(learnerId)
+          .submissionTime(testRegisterVO.getTestTime())
+          .submissionStatus("NOT_STARTED")
+          .build();
       testRegisterMapper.insertTestSubmissions(testSubmissionVO);
     }
 
-  }
+    testScheduler.scheduleAutoGrading(testRegisterVO.getId(), testRegisterVO.getEndDate());
 
+  }
 }
