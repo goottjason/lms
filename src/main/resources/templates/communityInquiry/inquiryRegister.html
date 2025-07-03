@@ -61,12 +61,13 @@
         </span>
         <span class="text px-5">등록</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <a id="" class="btn btn-secondary btn-icon-split"
+         th:href="|@{/communityInquiry/inquiryList}?${inquiryRequestParam.getQueryString()}">
         <span class="icon text-white-50">
             <i class="fas fa-times"></i>
         </span>
         <span class="text px-5">취소</span>
-      </button>
+      </a>
     </div>
   </form>
   <!-- content body 끝 -->
