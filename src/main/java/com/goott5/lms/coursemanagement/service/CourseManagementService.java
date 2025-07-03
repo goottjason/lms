@@ -86,4 +86,6 @@ public interface CourseManagementService {
   Map<String, Integer> getIncompleteTaskCount(
       BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest
   );
+
+  void endCoursesAutoProcess();
 }

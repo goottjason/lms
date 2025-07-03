@@ -8,6 +8,8 @@ import com.goott5.lms.operationsmanagement.domain.PageClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageStaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
+import com.goott5.lms.operationsmanagement.domain.dto.PageStaffRequest;
+import com.goott5.lms.operationsmanagement.domain.dto.StaffResponse;
 import java.time.LocalDate;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,6 +18,10 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface OperationsManagementMapper {
+
+  List<StaffResponse> selectStaffsByAuth(
+      @Param("base") BaseReqDTO baseReqDTO,
+      @Param("page") PageStaffRequest pageStaffRequest);
 
   List<StaffRespDTO> selectStaffsAllorOne(
       @Param("base") BaseReqDTO base,

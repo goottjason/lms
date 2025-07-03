@@ -31,9 +31,10 @@
       }
 
       .instructor-card {
-          /*height: 100%;*/
-        width: 100px;
-        height: 100px;
+        min-height: 180px;
+      }
+      .learner-card {
+        min-height: 180px;
       }
 
       .card-body {
@@ -48,7 +49,7 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       }
       .bg-soft-pink {
-        background-color: #FF6347 !important; /* Material Pink Lighten 4 */
+        background-color: #F96C07 !important; /* #FF6347 */
       }
 
   </style>
@@ -71,7 +72,7 @@
       <div class="card shadow mb-4">
         <div
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h6 class="m-0 font-weight-bold text-primary">진행 중인 과정현황(버블차트)</h6>
+          <h6 class="m-0 font-weight-bold text-primary">진행 중인 과정현황</h6>
         </div>
       <!-- 차트 영역 -->
         <div class="chart-container card">
@@ -82,7 +83,7 @@
       <div class="card shadow mb-4">
         <div
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h6 class="m-0 font-weight-bold text-primary">진행 중인 과정현황(표)</h6>
+          <h6 class="m-0 font-weight-bold text-primary">진행 중인 과정현황</h6>
         </div>
         <div id="" class="card-body">
           <div class="table-responsive">
@@ -103,14 +104,14 @@
                   <td class="align-middle" th:text="|${course.courseWithAssignedInfo.coStartDate} ~ ${course.courseWithAssignedInfo.coEndDate}|"></td>
                   <td class="align-middle">
                     <div class="progress-wrapper" style="position: relative;">
-                      <div class="progress">
+                      <div class="progress" style="height: 20px;">
                         <div class="progress-bar bg-success" role="progressbar"
                              th:style="'width: ' + ${course.scheduleOverview.courseProgressRate} + '%'"
                              th:attr="aria-valuenow=${course.scheduleOverview.courseProgressRate}"
                              aria-valuemin="0" aria-valuemax="100">
                         </div>
                       </div>
-                      <span class="progress-text"
+                      <span class="progress-text text-gray-800"
                             th:text="${course.scheduleOverview.courseProgressRate} + '%'"
                             style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
                       </span>
@@ -118,14 +119,14 @@
                   </td>
                   <td class="align-middle">
                     <div class="progress-wrapper" style="position: relative;">
-                      <div class="progress">
+                      <div class="progress" style="height: 20px;">
                         <div class="progress-bar bg-warning" role="progressbar"
                              th:style="'width: ' + ${course.courseLearnerOverview.courseAvgAttendanceRate} + '%'"
                              th:attr="aria-valuenow=${course.courseLearnerOverview.courseAvgAttendanceRate}"
                              aria-valuemin="0" aria-valuemax="100">
                         </div>
                       </div>
-                      <span class="progress-text"
+                      <span class="progress-text text-gray-800"
                             th:text="${course.courseLearnerOverview.courseAvgAttendanceRate} + '%'"
                             style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
                       </span>
@@ -195,11 +196,12 @@
             </div>
           </div>
         </div>
-      <!-- 당일 미입실/미퇴실 교육생 (수정중) -->
+      <!-- 당일 미입실/미퇴실 교육생 -->
       <div class="card shadow mb-4">
         <div
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h6 class="m-0 font-weight-bold text-primary">당일 미입실/미퇴실 교육생 (수정중)</h6>
+          <h6 class="m-0 font-weight-bold text-primary">당일 미입실/미퇴실 교육생</h6>
+          <span class="text-xs">입퇴실마감시간 10분 전부터 표시됩니다.</span>
         </div>
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-center">
@@ -210,7 +212,7 @@
 
             <!-- 슬라이더 (카드 3개씩) -->
             <div id="learnerCarousel" class="carousel slide w-100" style="max-width: 1000px;">
-              <div class="carousel-inner">
+              <div class="carousel-inner" id="learner-body">
                 <!-- 첫 슬라이드 -->
                 <div class="carousel-item active">
                   <div class="row">
@@ -323,7 +325,7 @@
       <div class="card shadow mb-4">
         <div
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h6 class="m-0 font-weight-bold text-primary">당일 훈련일지 미등록 강사 (수정중)</h6>
+          <h6 class="m-0 font-weight-bold text-primary">당일 훈련일지 미등록 강사</h6>
         </div>
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-center">
@@ -334,10 +336,34 @@
 
             <!-- 슬라이더 (카드 3개씩) -->
             <div id="instructorCarousel" class="carousel slide w-100" style="max-width: 1000px;">
-              <div class="carousel-inner">
+              <div class="carousel-inner" id="instructor-body">
                 <!-- 첫 슬라이드 -->
                 <div class="carousel-item active">
                   <div class="row">
+
+                    <div class="col-md-4">
+                      <div class="instructor-card card text-center shadow-sm h-100">
+                        <div class="card-body d-flex flex-column px-4 py-3">
+                          <div class="mb-3">
+                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                  style="font-size: 0.8rem;">
+                              미입실
+                            </span>
+                          </div>
+                          <div>
+                            <h6 class="card-title mb-1 text-dark fw-bold"
+                                style="font-size: 1rem;">[1회차] 자바과정</h6>
+                            <p class="card-text small mb-2 text-secondary"><b>김종원</b></p>
+                          </div>
+                          <div class="mt-auto">
+                            <a class="" href="#" role="button">
+                              <i class="fas fa-bell fa-fw"></i>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="col-md-4">
                       <div class="learner-card card text-center shadow-sm h-100">
                         <div class="card-body d-flex flex-column px-4 py-3">
@@ -360,28 +386,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-4">
-                      <div class="learner-card card text-center shadow-sm h-100">
-                        <div class="card-body d-flex flex-column px-4 py-3">
-                          <div class="mb-3">
-                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
-                                  style="font-size: 0.8rem;">
-                              미입실
-                            </span>
-                          </div>
-                          <div>
-                            <h6 class="card-title mb-1 text-dark fw-bold"
-                                style="font-size: 1rem;">[1회차] 자바과정</h6>
-                            <p class="card-text small mb-2 text-secondary"><b>김종원</b></p>
-                          </div>
-                          <div class="mt-auto">
-                            <a class="" href="#" role="button">
-                              <i class="fas fa-bell fa-fw"></i>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+
                     <div class="col-md-4">
                       <div class="learner-card card text-center shadow-sm h-100">
                         <div class="card-body d-flex flex-column px-4 py-3">
@@ -493,9 +498,10 @@
               <tbody>
               <tr>
                 <td class="text-center align-middle">출결 업데이트</td>
-                <td class="text-center align-middle">25-06-30 00:00:14 처리완료</td>
+                <td class="text-center align-middle" id="last-execution-time-for-part"></td>
                 <td class="text-center align-middle">
-                  <button class="btn btn-primary btn-icon-split btn-sm">
+                  <button class="btn btn-primary btn-icon-split btn-sm"
+                          id="trigger-scheduler-for-part">
                     <span class="text">수동 업데이트</span>
                   </button>
                 </td>

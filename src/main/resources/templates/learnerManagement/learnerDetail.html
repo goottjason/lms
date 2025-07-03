@@ -161,7 +161,10 @@
                   <span th:if="${test.tsSubmissionStatus == 'NOT_STARTED'}">-</span>
                   <button th:unless="${test.tsSubmissionStatus == 'NOT_STARTED'}"
                           class="btn btn-primary btn-icon-split btn-sm">
-                    <span class="text">답안보기</span>
+                    <a
+                        th:href="@{/test/learner/testDetail/{teId}(teId=${test.teId}, testStatus='종료', userId=${test.tsLearnerId})}">
+                        <span class="text">답안보기</span>
+                    </a>
                   </button>
                 </td>
                 <td class="text-center align-middle">

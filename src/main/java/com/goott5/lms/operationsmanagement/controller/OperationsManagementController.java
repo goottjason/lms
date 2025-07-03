@@ -5,6 +5,9 @@ import com.goott5.lms.learnermanagement.domain.LearnerReqDTO;
 import com.goott5.lms.learnermanagement.domain.LearnerRespDTO;
 import com.goott5.lms.learnermanagement.domain.PageLearnerReqDTO;
 import com.goott5.lms.learnermanagement.domain.PageLearnerRespDTO;
+import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
+import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
+import com.goott5.lms.learnermanagement.service.LearnerManagementService;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
@@ -20,6 +23,10 @@ import com.goott5.lms.operationsmanagement.domain.StaffHistoryReq;
 import com.goott5.lms.operationsmanagement.domain.StaffHistoryResp;
 import com.goott5.lms.operationsmanagement.domain.StaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
+import com.goott5.lms.operationsmanagement.domain.dto.PageStaffRequest;
+import com.goott5.lms.operationsmanagement.domain.dto.PageStaffResponse;
+import com.goott5.lms.operationsmanagement.domain.dto.StaffResponse;
+import com.goott5.lms.operationsmanagement.domain.integrated.StaffOverviewResp;
 import com.goott5.lms.operationsmanagement.service.OperationsManagementService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
@@ -49,6 +56,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequiredArgsConstructor
 public class OperationsManagementController {
   private final OperationsManagementService operationsManagementService;
+  private final LearnerManagementService learnerManagementService;
 
   @GetMapping("/operationsManagement/staffList")
   public String staffList() { return "operationsManagement/staffList"; }
@@ -135,18 +143,19 @@ public class OperationsManagementController {
 
     }
   }
-  @GetMapping("/api/management/staffs")
-  public ResponseEntity<ApiResponse<PageStaffRespDTO<StaffRespDTO>>> getStaffsAllorOne (
+  @GetMapping("/api/operationsmanagement/staffs")
+  public ResponseEntity<ApiResponse<PageStaffResponse<StaffResponse>>> getStaffsAllorOne (
       @ModelAttribute BaseReqDTO baseReqDTO,
-      @ModelAttribute PageStaffReqDTO<StaffReqDTO> pageStaffReqDTO
+      @ModelAttribute PageStaffRequest pageStaffRequest
   ) {
 
-    log.info("baseReqDTO:{}, pageStaffReqDTO: {}", baseReqDTO, pageStaffReqDTO);
-    PageStaffRespDTO<StaffRespDTO> staffs =
-        operationsManagementService.getStaffsAllorOne(baseReqDTO, pageStaffReqDTO);
-    log.info("staffs:{}", staffs);
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
 
-    return ApiResponse.okResponse(200, "success", staffs);
+    PageStaffResponse<StaffResponse> staffsWithPagination =
+        operationsManagementService.getStaffsByAuth(baseReqDTO, pageStaffRequest);
+    return ApiResponse.okResponse(200, "success", staffsWithPagination);
   }
 
   @GetMapping("/operationsManagement/classroomList")

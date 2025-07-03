@@ -132,14 +132,21 @@
           </div>
 
           <div class="row mb-2">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="form-group">
                 <label for="coInstructorName">강사명</label>
                 <input type="text" id="coInstructorName" class="form-control"
                        th:value="${record.courseWithAssignedInfo.coInstructorName}" readonly>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="coCourseHeadName">관리자</label>
+                <input type="text" id="coCourseHeadName" class="form-control"
+                       th:value="${record.courseWithAssignedInfo.coCourseHeadName}" readonly>
+              </div>
+            </div>
+            <div class="col-md-4">
               <div class="form-group">
                 <label for="coClassroomName">강의실</label>
                 <input type="text" id="coClassroomName" class="form-control"
