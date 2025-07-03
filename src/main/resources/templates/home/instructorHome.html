@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <style>
+      .circle-box {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+      }
+
+      .circle-number {
+          font-weight: bold;
+          font-size: 1.5rem;
+          line-height: 1.2;
+      }
+
+      .circle-label {
+          font-size: 0.8rem;
+      }
+
+      .btn-outline-secondary i {
+          font-size: 1.25rem;
+      }
+
+      .card-body {
+          min-height: 90px;
+      }
+  </style>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- content header 시작 -->
+  <div class="row align-items-center">
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">HOME</h1>
+  </div>
+  <!-- content header 끝 -->
+
+  <!-- content body 시작 -->
+  <div class="row align-items-stretch">
+    <div class="col-xl-8 mb-4">
+      <div class="card shadow mb-4 h-100">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">과정 Summary</h6>
+        </div>
+        <div id="" class="card-body row">
+          <div class="col-6">
+            <div class="row">
+              <div class="col-sm-4 pl-4">
+                <p class="mb-0">과정명</p>
+              </div>
+              <div class="col-sm-8">
+                <p class="text-muted mb-0">[1회차] 네트워크 이론</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-4 pl-4">
+                <p class="mb-0">과정기간</p>
+              </div>
+              <div class="col-sm-8">
+                <p class="text-muted mb-0">2025-01-05 ~ 2025-07-06</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-4 pl-4">
+                <p class="mb-0">훈련일</p>
+              </div>
+              <div class="col-sm-8">
+                <p class="text-muted mb-0">57/130</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-4 pl-4">
+                <p class="mb-0">총 교육생</p>
+              </div>
+              <div class="col-sm-8">
+                <p class="text-muted mb-0">7명</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-4 pl-4">
+                <p class="mb-0">수업시간</p>
+              </div>
+              <div class="col-sm-8">
+                <p class="text-muted mb-0">09:30 ~ 18:20</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 p-4 bg-gray-200">
+            여기에 과정 진행률 (위에 bg-gray-200을 지우세요)
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-xl-4 mb-4">
+      <div class="card shadow mb-4 h-100">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">2025-07-01 현황</h6>
+        </div>
+        <div id="" class="card-body px-5">
+          <div class="row justify-content-center text-center">
+
+            <div class="col-md-3 col-lg-6 mb-4">
+              <div class="circle-box bg-danger text-white mx-auto flex-column">
+                <div class="circle-number mb-2">6명</div>
+                <div class="circle-label small">출석 예정<br>교육생</div>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-lg-6 mb-4">
+              <div class="circle-box bg-primary text-white mx-auto flex-column">
+                <div class="circle-number mb-2">5명</div>
+                <div class="circle-label small">현재 출석<br>교육생</div>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-lg-6">
+              <div class="circle-box bg-info text-white mx-auto flex-column">
+                <div class="circle-number mb-2">3명</div>
+                <div class="circle-label small">시험 미응시<br>교육생</div>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-lg-6">
+              <div class="circle-box bg-warning text-white mx-auto flex-column">
+                <div class="circle-number mb-2">2명</div>
+                <div class="circle-label small">과제 미제출<br>교육생</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row align-items-stretch">
+    <div class="col-xl-6 mb-4">
+      <div class="card shadow mb-4 h-100">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">금주 일정</h6>
+        </div>
+        <div id="" class="card-body">
+          <div class="row text-center font-weight-bold">
+            <div class="col border p-2 bg-gray-100">7/1(월)</div>
+            <div class="col border p-2 bg-gray-100">7/2(화)</div>
+            <div class="col border p-2 bg-gray-100">7/3(수)</div>
+            <div class="col border p-2 bg-gray-100">7/4(목)</div>
+            <div class="col border p-2 bg-gray-100">7/5(금)</div>
+          </div>
+
+          <div class="row text-center" style="min-height: 80px">
+            <div class="col border p-2">네트워크 심화</div>
+            <div class="col border p-2">네트워크 심화</div>
+            <div class="col border p-2">네트워크 심화</div>
+            <div class="col border p-2 text-danger">휴강</div>
+            <div class="col border p-2">네트워크 심화</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+      <div class="card shadow mb-4 h-100">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">할 일</h6>
+        </div>
+        <div id="" class="card-body">
+          <div class="row">
+            <div class="col-md-4 col-sm-4 mb-2">
+              <div class="card border-left-primary shadow py-1">
+                <div class="card-body py-3 px-3">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="font-weight-bold text-primary mb-2">
+                      훈련일지 작성</div>
+                      <div class="mb-1 text-danger">미완료</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-calendar text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-sm-4 mb-2">
+              <div class="card border-left-info shadow py-1">
+                <div class="card-body py-3 px-3">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="font-weight-bold text-info mb-2">
+                        미완료 과제평가</div>
+                      <div class="mb-1 text-danger">5건</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-pen-square text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-sm-4 mb-2">
+              <div class="card border-left-success shadow py-1">
+                <div class="card-body py-3 px-3">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="font-weight-bold text-success mb-2">
+                        미승인 휴가요청</div>
+                      <div class="mb-1 text-danger">5건</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-car text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-6 mb-4">
+      <div class="card shadow mb-4">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">시험 현황</h6>
+        </div>
+        <div id="" class="card-body">
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-xl-6 mb-4">
+      <div class="card shadow mb-4">
+        <div
+              class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">게시판 조회</h6>
+        </div>
+        <div class="card-body">
+
+          <!-- 탭 메뉴 -->
+          <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="qna-tab" data-toggle="tab" href="#qna"
+                 role="tab" aria-controls="qna" aria-selected="false">미답변 Q&A</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="inquiry-tab" data-toggle="tab" href="#inquiry"
+                 role="tab" aria-controls="inquiry" aria-selected="true">1:1문의</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="debate-tab" data-toggle="tab" href="#debate"
+                 role="tab" aria-controls="debate" aria-selected="false">토론 인기글</a>
+            </li>
+          </ul>
+
+          <!-- 탭 콘텐츠 -->
+          <div class="tab-content p-3" id="myTabContent">
+
+            <div class="tab-pane fade show active" id="qna" role="tabpanel" aria-labelledby="qna-tab">
+
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr class="text-center">
+                    <th scope="col" class="align-middle" style="width: 20%;">작성자</th>
+                    <th scope="col" class="align-middle" style="width: 50%;">제목</th>
+                    <th scope="col" class="align-middle" style="width: 30%;">작성일</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="text-center align-middle">류준규</td>
+                    <td class="align-middle">어쩌구 저쩌구 질문</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  <tr>
+                    <td class="text-center align-middle">류준규</td>
+                    <td class="align-middle">어쩌구 저쩌구 질문</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="inquiry" role="tabpanel" aria-labelledby="inquiry-tab">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr class="text-center">
+                    <th scope="col" class="align-middle" style="width: 20%;">답변여부</th>
+                    <th scope="col" class="align-middle" style="width: 50%;">제목</th>
+                    <th scope="col" class="align-middle" style="width: 30%;">작성일</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="text-center align-middle text-danger">답변대기</td>
+                    <td class="align-middle">어쩌구 저쩌구 문의</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  <tr>
+                    <td class="text-center align-middle text-info">답변완료</td>
+                    <td class="align-middle">어쩌구 저쩌구 문의</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="debate" role="tabpanel" aria-labelledby="debate-tab">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr class="text-center">
+                    <th scope="col" class="align-middle" style="width: 20%;">작성자</th>
+                    <th scope="col" class="align-middle" style="width: 50%;">제목</th>
+                    <th scope="col" class="align-middle" style="width: 30%;">작성일</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="text-center align-middle">이학생</td>
+                    <td class="align-middle">어쩌구 저쩌구 토론</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  <tr>
+                    <td class="text-center align-middle">김학생</td>
+                    <td class="align-middle">어쩌구 저쩌구 토론</td>
+                    <td class="text-center align-middle">2025-07-01</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- content body 끝 -->
+</div>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+
+
+
+  </script>
+</th:block>
+</body>
+</html>
