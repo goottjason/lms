@@ -172,12 +172,22 @@ function renderPagination(data) {
 
   $paginationContainer.off();
   $paginationContainer.on("click", ".prev-page-group", function () {
+    if ($(this).hasClass("disabled")) {
+      e.preventDefault();
+      return;
+    }
+
     onPageChange($(this).data("page-no"));
   });
   $paginationContainer.on("click", ".page-no", function () {
     onPageChange($(this).data("page-no"));
   });
   $paginationContainer.on("click", ".next-page-group", function () {
+    if ($(this).hasClass("disabled")) {
+      e.preventDefault();
+      return;
+    }
+
     onPageChange($(this).data("page-no"));
   });
 
@@ -271,10 +281,12 @@ function renderTestList(userType, data) {
   }
 
   console.log(data);
+  let testNo = 1;
   $.each(data, function (index, el) {
     console.log(el);
 
     let test = {
+      testNo: testNo++,
       testId: el.id,
       testTitle: el.title,
       courseName: el.courseName,

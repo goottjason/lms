@@ -100,4 +100,19 @@
     WHERE question_id = #{questionId}
   </select>
 
+  <update id="updateNoShowToZero" parameterType="int">
+    UPDATE test_submission
+    SET score = 0,
+    is_invalidated = 1,
+    submission_status = 'COMPLETED'
+    WHERE test_id = #{testId}
+    AND submission_status IN ('NOT_STARTED', 'IN_PROGRESS')
+  </update>
+
+  <update id="markAutoGraded" parameterType="int">
+    UPDATE test
+    SET auto_graded = TRUE
+    WHERE id = #{testId}
+  </update>
+
 </mapper>

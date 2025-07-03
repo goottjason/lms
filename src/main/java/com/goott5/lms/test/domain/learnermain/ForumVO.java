@@ -18,6 +18,7 @@ public class ForumVO {
 
   private int id;
   private String title;
+  private String fullname;
   private int forumLike;
   private LocalDateTime hotpostAt;
   private int commentCount;

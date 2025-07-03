@@ -5,7 +5,7 @@
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:th="http://www.thymeleaf.org">
   <head>
-    <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
+    <script defer th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
     <script defer th:src="@{/js/test/testApi.js}"></script>
     <script defer th:src="@{/js/test/testCommon.js}"></script>
     <script defer th:src="@{/js/test/testList.js}"></script>
@@ -14,24 +14,26 @@
     <div layout:fragment="content">
       <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
       <!-- content header 시작 -->
-      <div class="row align-items-center" id="admin-filter">
+      <div class="row align-items-center">
         <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">시험 조회</h1>
         <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
-        <div class="col d-flex justify-content-end">
-          <form class="row col-12 mb-3">
-            <div class="col-3">`
-              <select class="form-control" id="progress-filter">
-                <option value="">전체(진행상황별)</option>
-                <option value="true">진행 중</option>
-                <option value="false">종료</option>
-              </select>
-            </div>
-            <div class="col">
-              <select class="form-control" id="course-filter">
-                <option value="">전체(과정별)</option>
-              </select>
-            </div>
-          </form>
+        <div id="admin-filter">
+          <div class="col d-flex justify-content-end">
+            <form class="row col-12 mb-3">
+              <div class="col-3">`
+                <select class="form-control" id="progress-filter">
+                  <option value="">전체(진행상황별)</option>
+                  <option value="true">진행 중</option>
+                  <option value="false">종료</option>
+                </select>
+              </div>
+              <div class="col">
+                <select class="form-control" id="course-filter">
+                  <option value="">전체(과정별)</option>
+                </select>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
       <!-- content header 끝 -->
@@ -69,7 +71,7 @@
                   <th class="align-middle" scope="col">No</th>
                   <th class="align-middle" scope="col">시험명</th>
                   <th class="align-middle" scope="col">과정명</th>
-                  <th class="align-middle" scope="col">응시시간</th>
+                  <th class="align-middle" scope="col">응시기간</th>
                   <th class="align-middle" scope="col">진행상태</th>
                   <th class="align-middle" scope="col">제한시간</th>
                   <th class="align-middle" scope="col">응시자수</th>

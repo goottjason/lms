@@ -52,13 +52,14 @@ $(document).on("click", "#test-start-btn", function (e) {
   // 재응시 여부
   const isRestart = $("#test-start-btn").data("restart-test") === true;
 
+  const userId = UrlUtils.getQueryParam("userId");
   const testId = $(this).data("test-id");
   const currentPageNo = $(this).data("current-page-no");
   const courseName = $(this).data("course-name");
 
   // iframe이 로드할 url
   let src = `/test/testSubmission`
-      + `?testId=${encodeURIComponent(testId)}`
+      + `?userId=${userId}&testId=${encodeURIComponent(testId)}`
       + `&currentPageNo=${currentPageNo}`
       + `&courseName=${encodeURIComponent(courseName)}`;
 
@@ -81,6 +82,13 @@ $(document).on("click", "#test-start-btn", function (e) {
 // ──────────────────────────────────────────────────────────────────────────
 // [[자식(iframe) → 부모 메시지 수신 & 처리]]
 // ──────────────────────────────────────────────────────────────────────────
+function preventEsc(e) {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
 window.addEventListener("message", (e) => {
   // 유효하지 않은 메시지 또는 시험 시작 전/종류 후의 경우 무시
   if (!e.data || !examStarted || testFinished) {
@@ -98,7 +106,16 @@ window.addEventListener("message", (e) => {
         title: "전체화면이 해제되었습니다.",
         text: "시험은 전체화면 모드에서만 진행됩니다.",
         confirmButtonText: "다시 전체화면으로",
-        allowOutsideClick: false
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        backdrop: true,
+        didOpen: () => {
+          document.addEventListener("keydown", preventEsc, true);
+        },
+        willClose: () => {
+          document.removeEventListener("keydown", preventEsc, true);
+        }
       }).then(() => {
 
         iframe.style.display = "block";
@@ -138,6 +155,7 @@ window.addEventListener("message", (e) => {
 
       Swal.fire({
         icon: "error",
+        confirmButtonText: "확인",
         title: "시험이 무효 처리되었습니다",
         html: [
           "부정행위 또는 전체화면 이탈이 반복되어",
@@ -146,7 +164,6 @@ window.addEventListener("message", (e) => {
           "응시 기록만 저장되었으며,",
           "<strong>재응시는 불가능</strong>합니다."
         ].join("<br>"),
-        confirmButtonText: "확인",
         allowOutsideClick: false
       }).then(() => {
         iframe.style.display = "none";

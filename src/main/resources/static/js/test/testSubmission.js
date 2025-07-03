@@ -8,6 +8,7 @@ let testFinished = false; // 시험 종료 여부
 let abnormalFinished = false; // 비정상 제출 여부
 
 let testId;
+let userId;
 let currentPageNo;
 let courseName;
 
@@ -68,6 +69,8 @@ $(document).ready(async function () {
   lockTestPage();
 
   testId = UrlUtils.getQueryParam("testId");
+  userId = UrlUtils.getQueryParam("userId");
+  console.log(userId);
   currentPageNo = parseInt(UrlUtils.getQueryParam("currentPageNo"));
   courseName = UrlUtils.getQueryParam("courseName");
 
@@ -358,6 +361,7 @@ function submitAnswers(userTestAnswer) {
       userTestAnswer, {}, { "Content-Type": "application/json" })
   .then(() => apiCall("get", `/api/my/tests/${testId}`))
   .then(res => {
+    console.log(res);
     const userScore = res.data.data.userScore;
     return finishTestWithScore(userScore, testId);
   })
@@ -427,7 +431,7 @@ function finishTestWithScore(userScore, testId) {
 
         // 해제 완료 후 iframe 숨기고 리다이렉트
         $("#examFrame", window.parent.document).hide().attr("src", "");
-        window.parent.location.href = `/test/learner/testDetail/${testId}?currentPageNo=${currentPageNo}&courseName=${courseName}`;
+        window.parent.location.href = `/test/learner/testDetail/${testId}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${courseName}`;
       });
 }
 

@@ -123,7 +123,7 @@
   </select>
 
   <select id="selectInquiryBoard" resultType="com.goott5.lms.test.domain.learnermain.InquiryVO">
-    SELECT id, title, is_answered, is_answered_checked
+    SELECT id, title, is_answered, is_answered_checked, created_at
     FROM community_inquiry
     WHERE writer = #{userId} AND is_posted = 1
     ORDER BY created_at DESC
@@ -131,7 +131,8 @@
   </select>
 
   <select id="selectQnABoard" resultType="com.goott5.lms.test.domain.learnermain.QnAVO">
-    SELECT id, title, is_answer FROM course_qna
+    SELECT id, title, is_answer, created_at
+    FROM course_qna
     WHERE writer_id = #{userId}
     ORDER BY created_at DESC
     LIMIT 3
@@ -139,17 +140,19 @@
 
   <select id="selectNoticeBoard" resultType="com.goott5.lms.test.domain.learnermain.NoticeVO">
     (
-    SELECT id, title, is_fixed, created_at
-    FROM course_notice
-    WHERE is_fixed = true AND course_id = #{courseId}
+    SELECT n.id, n.title, u.fullname, n.is_fixed, n.created_at
+    FROM course_notice n
+    JOIN user u ON u.id = n.writer_id
+    WHERE is_fixed = true AND course_id = 38
     ORDER BY created_at DESC
-    LIMIT 3
+    LIMIT 5
     )
     UNION ALL
     (
-    SELECT id, title, is_fixed, created_at
-    FROM course_notice
-    WHERE is_fixed= false AND course_id = #{courseId}
+    SELECT n.id, n.title, u.fullname, n.is_fixed, n.created_at
+    FROM course_notice n
+    JOIN user u ON u.id = n.writer_id
+    WHERE is_fixed = false AND course_id = 38
     ORDER BY created_at DESC
     LIMIT 2
     )
@@ -159,10 +162,12 @@
     SELECT
     f.id,
     f.title,
+    u.fullname,
     f.forum_like,
     f.hotpost_at,
     COUNT(c.id) AS comment_count
     FROM course_forum f
+    JOIN user u ON u.id = f.writer_id
     LEFT JOIN course_forum_comment c ON c.course_forum_id = f.id
     WHERE f.course_id = #{courseId} AND f.is_hotpost = 1
     GROUP BY f.id, f.title, f.forum_like, f.hotpost_at

@@ -24,9 +24,11 @@ public interface TestSubmissionService {
   String modifySubmissionToCompleted(TestAnswerDTO testAnswerDTO, HttpSession session);
 
   // 시험 결과 가져오기
-//  TestRegisterResultVO getTestResult(int testId, HttpSession session);
-  TestRegisterResultVO getTestResult(int testId, int userId);
+  TestRegisterResultVO getTestResult(int testId, HttpSession session);
+  TestRegisterResultVO getTestResult2(int testId, int userId);
 
   TestRegisterResultVO getTestResultByLearnerId(int testId, int learnerId);
 
+  // 자동 종료 처리
+  void assignZeroToNoShows(int testId);
 }

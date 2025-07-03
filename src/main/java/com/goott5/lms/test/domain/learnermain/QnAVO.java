@@ -1,5 +1,6 @@
 package com.goott5.lms.test.domain.learnermain;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class QnAVO {
   private int id;
   private String title;
   private Boolean isAnswer;
+  private LocalDate createdAt;
 
   public Boolean getIsAnswer() {
     return isAnswer;

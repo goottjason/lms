@@ -36,7 +36,7 @@ public class TestRegisterDTO {
   @NotBlank(message = "종료일을 입력하세요.")
   private String endDate;
 
-  @Min(value = 10, message = "시험 시간은 1분 이상")
+  @Min(value = 10, message = "시험 시간은 10분 이상")
   private int testTime;
 
   @Min(value = 1, message = "총 배점은 최소 1점")

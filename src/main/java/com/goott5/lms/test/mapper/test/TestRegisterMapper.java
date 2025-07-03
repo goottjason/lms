@@ -39,4 +39,8 @@ public interface TestRegisterMapper {
   // 해당 시험에 등록된 모든 수강생의 시험 제출 상태를 초기화하여 저장
   void insertTestSubmissions(TestSubmissionVO testSubmissionVO);
 
+  // 자동 종료처리가 안되어있는 시험 select
+  @Select("SELECT id, end_date FROM test"
+      + " WHERE auto_graded = FALSE")
+  List<TestRegisterVO> findPendingAutoGradeTests();
 }
