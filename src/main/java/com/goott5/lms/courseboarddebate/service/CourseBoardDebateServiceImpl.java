@@ -2,7 +2,15 @@ package com.goott5.lms.courseboarddebate.service;
 
 import com.goott5.lms.common.domain.ReadCountLog;
 import com.goott5.lms.common.mapper.ReadCountLogMapper;
-import com.goott5.lms.courseboarddebate.domain.*;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateCommentDTO;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateDTO;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateDetailInfo;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateLike;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebatePageDTO;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebatePagingRequestDTO;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebatePagingResponseDTO;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateReport;
+import com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO;
 import com.goott5.lms.courseboarddebate.mapper.CourseBoardDebateMapper;
 import com.goott5.lms.coursemanagement.domain.CommonReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
@@ -10,16 +18,18 @@ import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseRespDTO;
 import com.goott5.lms.coursemanagement.service.CourseManagementService;
+import com.goott5.lms.notification.domain.NotificationSaveDTO;
+import com.goott5.lms.notification.mapper.NotificationMapper;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +39,8 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
   private final CourseBoardDebateMapper courseBoardDebateMapper;
   private final ReadCountLogMapper readCountLogMapper;
   private final CourseManagementService courseManagementService;
+  private final NotificationMapper notificationMapper;
+  private final SimpMessagingTemplate messagingTemplate;
 
 
   @Override
@@ -258,6 +270,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
       if (currentHotPostCount < HOT_POST_LIMIT) {
         log.info("인기글 자리가 남아있어 바로 승격합니다.");
         courseBoardDebateMapper.promoteToHotPost(forumId);
+        sendHotPostNotification(forumId);
         result = true;
       } else {
         log.info("인기글이 꽉 차 있어, 기존 인기글과 점수 비교를 시작합니다.");
@@ -283,6 +296,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
             log.info("승격 후보의 점수가 더 높아 교체를 진행합니다. ({} -> {})", worstHotPost.getId(), forumId);
             courseBoardDebateMapper.demoteHotPost(worstHotPost.getId());
             courseBoardDebateMapper.promoteToHotPost(forumId);
+            sendHotPostNotification(forumId);
             result = true;
           } else {
             log.info("승격 후보의 점수가 기존 인기글보다 낮거나 같아 승격하지 않습니다.");
@@ -300,6 +314,41 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     return result;
   }
 
+
+  // 인기글 승격 알림을 전송하는 메소드(notificationMapper를 주입받아 사용함)
+  private void sendHotPostNotification(int forumId) {
+    try {
+      // 게시글 ID로 작성자의 User ID를 조회합니다.
+      int authorId = courseBoardDebateMapper.selectUserId(forumId);
+
+      // 알림 내용과 링크(URI)를 설정합니다.
+      List<Integer> userIds = new ArrayList<>();
+      userIds.add(authorId);
+      String content = "토론 게시판에 작성하신 글이 인기글로 되었습니다.";
+      String targetURI = "/courseBoardDebate/debateDetail?id=" + forumId;
+
+      NotificationSaveDTO notificationSaveDTO = NotificationSaveDTO.builder()
+          .userIds(userIds)
+          .content(content)
+          .isWarning(false)
+          .targetURI(targetURI)
+          .build();
+      // 실제 알림 전송 로직을 호출합니다.
+      log.info("인기글 알림 전송: userId={}, content={}, targetURI={}", authorId, content, targetURI);
+
+      if(notificationMapper.insertNotification(notificationSaveDTO) > 0){
+          for(Integer userId : notificationSaveDTO.getUserIds()) {
+
+            messagingTemplate.convertAndSend("/topic/notification/" + userId, "notified");
+
+          }
+
+      };
+
+    } catch (Exception e) {
+      log.error("인기글 승격 알림 전송 중 오류 발생", e);
+    }
+  }
   @Override
   public int getUserId(int forumId) {
     return courseBoardDebateMapper.selectUserId(forumId);

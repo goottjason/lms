@@ -64,16 +64,29 @@
     </where>
     ORDER BY
     cf.is_hotpost DESC,
-    <choose>
-      <when test="orderBy == 'readCount'">cf.read_count</when>
-      <when test="orderBy == 'title'">cf.title</when>
-      <when test="orderBy == 'forumLike'">cf.forum_like</when>
-      <otherwise>cf.created_at</otherwise>
-    </choose>
-    <choose>
-      <when test="orderDirection == 'asc'">ASC,</when>
-      <otherwise>DESC,</otherwise>
-    </choose>
+    CASE WHEN cf.is_hotpost = TRUE THEN cf.hotpost_at END DESC,
+    <if test="orderDirection == 'desc'">
+      CASE WHEN cf.is_hotpost = FALSE THEN
+      <choose>
+        <when test="orderBy == 'comment'">commentCount</when>
+        <when test="orderBy == 'readCount'">cf.read_count</when>
+        <when test="orderBy == 'forumLike'">cf.forum_like</when>
+        <when test="orderBy == 'title'">cf.title</when>
+        <otherwise>cf.created_at</otherwise>
+      </choose>
+      END DESC,
+    </if>
+    <if test="orderDirection == 'asc'">
+      CASE WHEN cf.is_hotpost = FALSE THEN
+      <choose>
+        <when test="orderBy == 'comment'">commentCount</when>
+        <when test="orderBy == 'readCount'">cf.read_count</when>
+        <when test="orderBy == 'forumLike'">cf.forum_like</when>
+        <when test="orderBy == 'title'">cf.title</when>
+        <otherwise>cf.created_at</otherwise>
+      </choose>
+      END ASC,
+    </if>
     cf.id DESC
     LIMIT #{skip}, #{pagingSize}
   </select>
@@ -121,6 +134,22 @@
         AND c.name = #{courseName}
       </if>
     </where>
+  </select>
+
+  <select id="findHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+    SELECT
+    cf.*,
+    IFNULL(cc.comment_count, 0) AS commentCount
+    FROM
+    course_forum cf
+    LEFT JOIN
+    (SELECT course_forum_id, COUNT(id) AS comment_count
+    FROM course_forum_comment
+    WHERE deleted_at IS NULL
+    GROUP BY course_forum_id) cc
+    ON cf.id = cc.course_forum_id
+    WHERE
+    cf.is_hotpost = TRUE
   </select>
 
   <insert id="insertCourseBoardDebate" useGeneratedKeys="true" keyProperty="dto.id">
