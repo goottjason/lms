@@ -315,4 +315,24 @@ public class UserController {
     return "user/invalidAccess";
   }
 
+  @PostMapping("/findId")
+  public ResponseEntity<ApiResponse<String>> findId(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+
+    String fullname = data.get("fullname");
+    String email = data.get("email");
+
+    UserVO userVO = userService.findUserByEmail(email);
+
+    if (userVO == null) {
+      return ApiResponse.respondFail(409, "없는 이메일", "과정 신청 시 등록된 이메일 주소가 아닙니다.",
+              HttpStatus.CONFLICT);
+    } else if (!userVO.getFullName().equals(fullname)) {
+      return ApiResponse.respondFail(409, "사용자 이름 오류", "이메일 주소가 등록된 사용자 이름과 다릅니다.",
+              HttpStatus.CONFLICT);
+    } else {
+      return ApiResponse.respondOk(200, "ID찾기 성공", userVO.getLoginId());
+    }
+  }
+
 }
