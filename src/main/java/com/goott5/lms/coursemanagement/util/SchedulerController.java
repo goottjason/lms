@@ -1,5 +1,6 @@
 package com.goott5.lms.coursemanagement.util;
 
+import com.goott5.lms.participation.util.AttendanceScheduler;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ public class SchedulerController {
 
   private final CourseEndScheduler courseEndScheduler;
   private final SchedulerStatusService schedulerStatusService;
+  private final AttendanceScheduler attendanceScheduler;
   // private final CourseSchedulerService schedulerService;
   // private final SchedulerStatusService statusService;
 
@@ -30,8 +32,28 @@ public class SchedulerController {
     }
   }
 
+  @PostMapping("/api/scheduler/trigger-create-daily-attendance-records")
+  public ResponseEntity<String> triggerCreateDailyAttendanceRecords() {
+    try {
+      // 기존 스케줄러 로직 호출
+      attendanceScheduler.createDailyAttendanceRecords();
+
+      // 수동으로 작동되면, 최근실행시간을 지금 시간으로 업데이트
+      schedulerStatusService.updateLastExecutionForPart();
+      return ResponseEntity.ok("Scheduler executed successfully");
+    } catch (Exception e) {
+      return ResponseEntity.status(500).body("Execution failed: " + e.getMessage());
+    }
+  }
+
+
   @GetMapping("/api/scheduler/last-execution")
   public ResponseEntity<LocalDateTime> getLastExecutionTime() {
     return ResponseEntity.ok(schedulerStatusService.getLastExecutionTime());
+  }
+
+  @GetMapping("/api/scheduler/last-execution-for-part")
+  public ResponseEntity<LocalDateTime> getLastExecutionTimeForPart() {
+    return ResponseEntity.ok(schedulerStatusService.getLastExecutionTimeForPart());
   }
 }

@@ -1,5 +1,6 @@
 package com.goott5.lms.operationsmanagement.service;
 
+import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomReqDTO;
 import com.goott5.lms.operationsmanagement.domain.ClassroomRespDTO;
@@ -11,6 +12,10 @@ import com.goott5.lms.operationsmanagement.domain.PageStaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.PageStaffRespDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffReqDTO;
 import com.goott5.lms.operationsmanagement.domain.StaffRespDTO;
+import com.goott5.lms.operationsmanagement.domain.dto.PageStaffRequest;
+import com.goott5.lms.operationsmanagement.domain.dto.PageStaffResponse;
+import com.goott5.lms.operationsmanagement.domain.dto.StaffResponse;
+import com.goott5.lms.operationsmanagement.domain.integrated.StaffOverviewResp;
 import com.goott5.lms.operationsmanagement.mapper.OperationsManagementMapper;
 import java.time.LocalDate;
 import java.util.List;
@@ -163,5 +168,33 @@ public class OperationsManagementServiceImpl implements OperationsManagementServ
   @Override
   public List<ClassroomUsageResp> getClassroomUsage() {
     return operationsManagementMapper.selectClassroomUsage();
+  }
+
+  @Override
+  public PageStaffResponse<StaffResponse> getStaffsByAuth(
+      BaseReqDTO baseReqDTO,
+      PageStaffRequest pageStaffRequest) {
+
+    Integer originalPageNo = pageStaffRequest.getPageNo();
+    Integer originalPageSize = pageStaffRequest.getPageSize();
+    if (originalPageNo != null && originalPageSize != null) {
+      pageStaffRequest.setPageNo(null);
+      pageStaffRequest.setPageSize(null);
+    }
+    List<StaffResponse> staffs = operationsManagementMapper.selectStaffsByAuth(
+        baseReqDTO, pageStaffRequest);
+    Integer totalRecords = staffs.size();
+
+    if (originalPageNo != null && originalPageSize != null) {
+      pageStaffRequest.setPageNo(originalPageNo);
+      pageStaffRequest.setPageSize(originalPageSize);
+      staffs = operationsManagementMapper.selectStaffsByAuth(
+          baseReqDTO, pageStaffRequest);
+    }
+    return PageStaffResponse.<StaffResponse>withPageInfo()
+        .request(pageStaffRequest)
+        .totalRecords(totalRecords)
+        .records(staffs)
+        .build();
   }
 }

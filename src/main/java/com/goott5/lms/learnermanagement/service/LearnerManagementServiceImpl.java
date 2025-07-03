@@ -443,7 +443,7 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
     List<HomeworkWithSubEval> details =
         learnerManagementMapper.selectHomeworkByCourseIdAndUserId(leCourseId, leUserId);
-
+    log.info("details: " + details);
     // 과제 평균패스율
     Integer denominator = 0;
     Integer numerator = 0;
@@ -459,8 +459,11 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
           }
         }
       }
-      homeworkPassRate = Math.round((numerator/denominator) * 100 * 100.0) / 100.0;
+      if (denominator != 0) {
+        homeworkPassRate = Math.round((numerator/denominator) * 100 * 100.0) / 100.0;
+      }
     }
+    log.info("homeworkPassRate: " + homeworkPassRate);
     // isCompletionAboutHomework (1번이상 패스가 있는지 체크하여 true)
 
     return HomeworkOverviewResp.<HomeworkWithSubEval>builder()

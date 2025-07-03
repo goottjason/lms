@@ -1,7 +1,7 @@
 const loginUserId   = $("#login-user-id").val();
 const loginUserType = $("#login-user-type").val();
 
-const todayDate = new Date();
+// const todayDate = new Date();
 
 let coursesWithPaging = [];
 
@@ -21,7 +21,6 @@ let courseConfig = {
     coId: null
 };
 
-// 사용 예시
 const { datesYYYYMMDD, datesMD } = getRecent4WeeksWeekdays();
 
 $(document).ready(function() {
@@ -30,16 +29,17 @@ $(document).ready(function() {
 
     fetchAndDisplayCourses();
     updateLastExecutionTime();
+    updateLastExecutionTimeForPart();
 
 
     $(document).on('click', '#trigger-scheduler', handleTriggerSchedulerClick);
+    $(document).on('click', '#trigger-scheduler-for-part', handleTriggerSchedulerForPartClick);
     $(document).on("change", "#part-course-select", handlePartCourseSelectChange);
 });
 async function fetchAndDisplayIncompleteTask() {
     let countList = await apiGetRequestParams(
         '/api/coursemanagement/incompletetaskcount',
         {...baseConfig, ...courseConfig});
-    console.log(countList);
     displayIncompleteTask(countList);
 }
 function displayIncompleteTask(countList) {
@@ -59,7 +59,6 @@ function displayIncompleteTask(countList) {
             }
         });
     });
-    console.log(`esIsCounselingReceived가 false인 데이터 개수: ${falseCounselingCount}`);
     $('#inquery-count').text(countList.inquiryCount);
     $('#forum-report-count').text(countList.forumReportCount);
     $('#counseling-count').text(falseCounselingCount);
@@ -71,6 +70,7 @@ async function fetchAndDisplayCourses() {
     console.log(coursesWithPaging);
     displayBubleChart();
     displayTrainingLogChart();
+    displayLearnerCard()
     loadPartCourseSelect();
     fetchAndDisplayIncompleteTask();
     fetchAndDisplayClassroomUsage();
@@ -120,7 +120,26 @@ function displayBubleChart() {
 
     const options = {
         series,
-        chart: { height: 400, type: 'bubble' },
+        chart: {
+            height: 400,
+            type: 'bubble',
+            zoom: {
+                enabled: true,
+                type: 'xy',
+                autoScaleYaxis: false
+            },
+            toolbar: {
+                show: true,
+                tools: {
+                    pan: true,
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    reset: true
+                },
+                autoSelected: 'pan' // ← 팬 모드가 기본값!
+            }
+        },
         dataLabels: { enabled: true },
         fill: { opacity: 0.85 },
         title: { text: '', align: 'center', style: { fontSize: '16px' } },
@@ -157,6 +176,7 @@ function displayTrainingLogChart() {
         console.log("진행중인 과정이 없는 상태");
         return;
     }
+
     // 데이터 가공: 필요한 정보 추출
     const extractedData = courses.map(course => ({
         // name: course.courseWithAssignedInfo.coName,
@@ -179,7 +199,7 @@ function displayTrainingLogChart() {
                         {
                             from: 1, // 데이터가 있는 값
                             to: 100,
-                            color: "#92fdaa",
+                            color: "#BFC513",
                             name: "등록"
                         },
                         {
@@ -192,7 +212,7 @@ function displayTrainingLogChart() {
                 }
             }
         },
-        colors: ["#aceebb"],
+        colors: ["#BFC513"],
         tooltip: {
             y: {
                 formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
@@ -209,7 +229,259 @@ function displayTrainingLogChart() {
     var chart = new ApexCharts(document.querySelector("#heatmap-chart"), options);
     chart.render();
 
+    const cardData = courses.map((course) => ({
+        coInstructorName: course.courseWithAssignedInfo.coInstructorName,
+        isTodaySubmit: getIsTodaySubmit(course.courseTrainingDates),
+        coInstructorId: course.courseWithAssignedInfo.coInstructorId,
+        coName: course.courseWithAssignedInfo.coName,
+        coId: course.courseWithAssignedInfo.coId
+    }));
+
+    displayInstructorCard(cardData);
+
 }
+function displayLearnerCard() {
+    $('#learner-body').empty();
+    let currentDate = new Date();
+    const cards = [];
+
+    let courses = coursesWithPaging?.records || [];
+    if (!Array.isArray(courses)) courses = [];
+    if(courses.length == 0) {
+        console.log("진행중인 과정이 없는 상태");
+        return;
+    }
+
+    courses.forEach(course => {
+       console.log(course);
+       course.courseLearnerOverview.learnerList.forEach(learner => {
+           console.log(learner);
+
+           if (learner.learnerCourse == null) {
+               return;
+           }
+
+           let course = learner.learnerCourse;
+
+           // 입실가능시간
+           let checkInStartTimeStr = `07:00:00`;
+           let checkInEndTimeStr = course.coLessonStartTime;
+           // 퇴실가능시간
+           let checkOutStartTimeStr = course.coLessonEndTime;
+           let checkOutEndTimeStr = adjustMinutesToTimeStr(checkOutStartTimeStr, 10);
+
+           // 교육생의 입실, 퇴실시간
+           let learnerCheckInStr = '-';
+           let learnerCheckOutStr = '-';
+
+           learner.partOverview.partList.forEach((part) => {
+               const partDate = new Date(part.partParticipationDate);
+               // 오늘 날짜와 동일한 데이터에 대한 처리
+               if (partDate.getDate() == currentDate.getDate()) {
+
+                   if (part.partCheckIn == null) {
+                       // null이 아니면(입실함)
+                       /*null이면(미입실함),
+                        '입실마감시간-10분'부터 퇴실시작시간 직전까지 이메일알림 버튼 출력
+                        그 외의 시간은 초기 세팅대로 '-' 출력*/
+                       let buttonStartTime = fromTimeStrToTodayTime(
+                           adjustMinutesToTimeStr(checkInEndTimeStr, -10));
+                       let buttonEndTime   = fromTimeStrToTodayTime(
+                           checkOutStartTimeStr);
+
+                       if (buttonStartTime.getTime() <= currentDate.getTime() &&
+                           currentDate.getTime() <= buttonEndTime.getTime()) {
+                           // 카드작성
+                           let colHtmlIn = `
+                               <div class="col-md-4">
+                                  <div class="learner-card card text-center shadow-sm h-100">
+                                    <div class="card-body d-flex flex-column px-4 py-3">
+                                      <div class="mb-3">
+                                        <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                              style="font-size: 0.8rem;">
+                                          미입실
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <h6 class="card-title mb-1 text-dark fw-bold"
+                                            style="font-size: 1rem;">${course.coName}</h6>
+                                        <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
+                                      </div>
+                                      <div class="mt-auto">
+                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                          <i class="fas fa-solid fa-envelope"></i>
+                                        </a>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                           `;
+                           cards.push(colHtmlIn);
+                       }
+                   }
+
+                   if (part.partCheckOut == null) {
+                       /*null이면(미퇴실함),
+                        '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
+                        그 외의 시간은 초기 세팅대로 '-' 출력*/
+                       let buttonStartTime = fromTimeStrToTodayTime(adjustMinutesToTimeStr(checkOutEndTimeStr, -10));
+                       let buttonEndTime = fromTimeStrToTodayTime('23:59:59');
+
+                       if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
+                           // 카드작성
+                           let colHtmlOut = `
+                               <div class="col-md-4">
+                                  <div class="learner-card card text-center shadow-sm h-100">
+                                    <div class="card-body d-flex flex-column px-4 py-3">
+                                      <div class="mb-3">
+                                        <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                              style="font-size: 0.8rem;">
+                                          미퇴실
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <h6 class="card-title mb-1 text-dark fw-bold"
+                                            style="font-size: 1rem;">${course.coName}</h6>
+                                        <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
+                                      </div>
+                                      <div class="mt-auto">
+                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                          <i class="fas fa-solid fa-envelope"></i>
+                                        </a>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                           `;
+                           cards.push(colHtmlOut);
+                       }
+                   }
+               }
+           })
+       })
+    });
+
+    let cardCnt = 0;
+    let html = ``;
+    for (let i= 0; i < cards.length/3; i++) {
+        if (i == 0) {
+            html += `<div class="carousel-item active"><div class="row">`;
+        } else {
+            html += `<div class="carousel-item"><div class="row">`;
+        }
+        for(let j= 0; j < 3; j++) {
+            if (cardCnt < cards.length) { // 0 > 5
+                html += cards[cardCnt];
+                cardCnt++;
+            } else {
+                break;
+            }
+        }
+        html += `</div></div>`;
+    }
+    $('#learner-body').html(html);
+
+}
+
+function fromTimeStrToTodayTime(timeStr) {
+    // map(Number) : 문자 -> 숫자
+    let [h, m, s] = timeStr.split(':').map(Number);
+
+    let date = new Date();
+    date.setHours(h, m, s, 0);
+    return date;
+}
+function adjustMinutesToTimeStr(timeStr, minutes) {
+    // map(Number) : 문자 -> 숫자
+    let [h, m, s] = timeStr.split(':').map(Number);
+
+    // 오늘 날짜 객체 생성
+    let date = new Date();
+    // 시, 분, 초 세팅
+    date.setHours(h, m, s, 0);
+    // + 또는 - minutes분 세팅
+    date.setMinutes(date.getMinutes() + minutes);
+
+    return `${String(date.getHours()).padStart(2, '0')}:
+            ${String(date.getMinutes()).padStart(2, '0')}:
+            ${String(date.getSeconds()).padStart(2, '0')}`;
+}
+function displayInstructorCard(cardData) {
+    $('#instructor-body').empty();
+    const cards = [];
+    cardData.forEach((item) => {
+        let colHtml = `
+            <div class="col-md-4">
+              <div class="instructor-card card text-center shadow-sm h-100">
+                <div class="card-body d-flex flex-column px-4 py-3">
+                  <div class="mb-3">
+                    <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                          style="font-size: 0.8rem;">
+                      미등록
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1 text-dark fw-bold"
+                        style="font-size: 1rem;">${item.coName}</h6>
+                    <p class="card-text small mb-2 text-secondary"><b>${item.coInstructorName}</b></p>
+                  </div>
+                  <div class="mt-auto">
+                    <a onclick="callAlarm(${item.coInstructorId}, '${item.coInstructorName}', '${item.coName}');" role="button">
+                      <i class="fas fa-bell fa-fw"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+        `;
+        cards.push(colHtml);
+    });
+
+    let cardCnt = 0;
+    let html = ``;
+    for (let i= 0; i < cards.length/3; i++) {
+        if (i == 0) {
+            html += `<div class="carousel-item active"><div class="row">`;
+        } else {
+            html += `<div class="carousel-item"><div class="row">`;
+        }
+        for(let j= 0; j < 3; j++) {
+            if (cardCnt < cards.length) { // 0 > 5
+                html += cards[cardCnt];
+                cardCnt++;
+            } else {
+                break;
+            }
+        }
+        html += `</div></div>`;
+    }
+    $('#instructor-body').html(html);
+}
+function callAlarm(coInstructorId, coInstructorName, coName) {
+    let content = `${coInstructorName}님 ${coName} 훈련일지 작성해주세요.`;
+    let isWarning = true;
+    let targetURI = null;
+
+    sendNotification([coInstructorId], content, isWarning, targetURI);
+    Swal.fire({
+                  title: `${coInstructorName}님에게 알림 전송완료`,
+                  icon: "success",
+                  draggable: true
+              });
+}
+
+function getIsTodaySubmit(courseTrainingDates) {
+    let todayDate = new Date();
+    let isValid = false;
+    let todayDateStr = formatDate(todayDate);
+    courseTrainingDates.forEach((courseTrainingDate) => {
+        if(courseTrainingDate == todayDateStr) {
+            isValid = true;
+        }
+    })
+    return isValid;
+}
+
 // (datesYYYYMMDD, course.courseTrainingDates, datesMD)
 function generateData(datesYYYYMMDD, courseTrainingDates, datesMD) {
     var i = 0;
@@ -275,16 +547,16 @@ function displayPartBarChart(coId) {
                 {
                     name: '과정평균출결률',
                     value: course.courseLearnerOverview.courseAvgAttendanceRate,
-                    strokeWidth: 2,
-                    strokeDashArray: 2,
-                    strokeColor: '#46b3a9'
+                    strokeWidth: 5,
+                    strokeDashArray: 3,
+                    strokeColor: '#1F7F4B'
                 },
                 {
                     name: '수료충족출결률',
                     value: 80,
                     strokeWidth: 5,
                     strokeHeight: 300,
-                    strokeColor: '#46b3a9'
+                    strokeColor: '#1F7F4B'
                 }
             ]
         }
@@ -316,7 +588,7 @@ function displayPartBarChart(coId) {
                 horizontal: true,
             }
         },
-        colors: ['#26e7a6'],
+        colors: ['#2DB87D'],
         dataLabels: {
             formatter: function(val, opt) {
                 const goals =
@@ -334,7 +606,7 @@ function displayPartBarChart(coId) {
             showForSingleSeries: true,
             customLegendItems: ['교육생 출결률', '평균/목표 출결률'],
             markers: {
-                fillColors: ['#00E396', '#775DD0']
+                fillColors: ['#2DB87D', '#1F7F4B']
             }
         }
     };
@@ -395,6 +667,21 @@ function updateLastExecutionTime() {
              $('#last-execution-time').text('마지막 실행: 조회 실패');
          });
 }
+function updateLastExecutionTimeForPart() {
+    axios.get('/api/scheduler/last-execution-for-part')
+         .then(function(response) {
+             const data = response.data;
+             if (data) {
+                 const formattedTime = new Date(data).toLocaleString('ko-KR');
+                 $('#last-execution-time-for-part').text(`마지막 실행: ${formattedTime}`);
+             } else {
+                 $('#last-execution-time-for-part').text('마지막 실행: 기록 없음');
+             }
+         })
+         .catch(function() {
+             $('#last-execution-time-for-part').text('마지막 실행: 조회 실패');
+         });
+}
 function handleTriggerSchedulerClick() {
     axios.post('/api/scheduler/trigger-end-course-process')
          .then(function (response) {
@@ -404,12 +691,19 @@ function handleTriggerSchedulerClick() {
              console.log(error);
          });
 }
+function handleTriggerSchedulerForPartClick() {
+    axios.post('/api/scheduler/trigger-create-daily-attendance-records')
+         .then(function (response) {
+             updateLastExecutionTimeForPart();
+         })
+         .catch(function (error) {
+             console.log(error);
+         });
+}
 
 async function fetchAndDisplayClassroomUsage() {
     let classroomUsageList = await apiGetRequestParams(
         '/api/operationmanagement/classroom/usage', {});
-    console.log("강의실데이터!!");
-    console.log(classroomUsageList);
     displayTimeLineChart(classroomUsageList);
 }
 
@@ -486,9 +780,9 @@ function displayTimeLineChart(classroomUsageList) {
     });
 
     const colors = [
-        '#1b60a1', '#66bb61', '#e78b24', '#e72b40',
-        '#2bd2f6', '#ffcc4e', '#59b4b5', '#ff3413',
-        '#FF66C3', '#00db32'
+        '#4267D6', '#C93327', '#52CC5A', '#BFC513',
+        '#6B71C3', '#468DC5', '#16B891', '#EF49B5',
+        '#485244', '#64810E'
     ];
 
     // 7. ApexCharts 옵션 설정
@@ -586,14 +880,13 @@ function displayTimeLineChart(classroomUsageList) {
         );
         chart.render();
 
-        // 로그 출력 (디버깅용)
-        console.log("차트 렌더링 완료");
-        console.log("강의실 수:", classroomNames.length);
-        console.log("x축 범위:",
-                    new Date(minDate).toLocaleDateString(), "~",
-                    new Date(maxDate).toLocaleDateString());
-
     } catch (e) {
         console.error("차트 렌더링 오류:", e);
     }
+}
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }

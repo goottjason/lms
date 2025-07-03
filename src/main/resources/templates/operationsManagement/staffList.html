@@ -21,12 +21,18 @@
   <div class="card shadow mb-4">
     <div class="card-header py-3">
       <div class="row align-items-center">
-        <div class="col-2">
+        <div class="col-2 ml-auto">
           <h6 class="m-0 font-weight-bold text-primary">교직원 조회</h6>
         </div>
-        <div class="col-3">
-          <input type="checkbox" id="include-leaver">
-          <span class="mb-2">퇴사자 포함</span>
+        <div class="col-3 ml-auto d-flex justify-content-end">
+            <input type="radio" id="only-active" name="staff-filter" value="false" checked="checked">
+            <label for="only-active" style="margin-bottom: 0">&nbsp;&nbsp;재직자만&nbsp;&nbsp;&nbsp;&nbsp;</label>
+
+            <input type="radio" id="only-leaver" name="staff-filter" value="true">
+            <label for="only-leaver" style="margin-bottom: 0">&nbsp;&nbsp;퇴사자만&nbsp;&nbsp;&nbsp;&nbsp;</label>
+
+            <input type="radio" id="all" name="staff-filter" value="">
+            <label for="all" style="margin-bottom: 0">&nbsp;&nbsp;전체</label>
         </div>
         <div class="col-2 ml-auto">
           <!--분류별-->
@@ -45,7 +51,7 @@
             <option value="FULLTIME_INSTRUCTOR">전임강사</option>
           </select>
         </div>
-        <div class="input-group col-3">
+        <div class="col-3 input-group">
           <div class="input-group">
             <input type="text" class="form-control" id="search-input" placeholder="이름으로 검색하세요.">
             <div class="input-group-append">
@@ -60,6 +66,14 @@
     </div>
 
     <div class="card-body">
+      <div class="mb-2 row">
+        <p class="col">
+          <span id="categorize-content"></span>
+        </p>
+        <p class="justify-content-end mx-5">
+          <span id="number-of-staff"></span>
+        </p>
+      </div>
       <!-- 카드 리스트 -->
       <div class="row row-cols-1 row-cols-md-4" id="card-list">
 

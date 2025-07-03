@@ -307,9 +307,9 @@ async function displayTableList(learnersWithPaging) {
                             if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
                                 learnerCheckInStr = `
                                     <span class="text-danger font-weight-bold">미입실</span><br>
-                                    <button class="btn btn-danger btn-icon-split btn-sm">
-                                      <span class="text">이메일알림</span>
-                                    </button>
+                                    <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                      <i class="fas fa-solid fa-envelope"></i>
+                                    </a>
                                 `;
                             }
                         }
@@ -327,9 +327,9 @@ async function displayTableList(learnersWithPaging) {
                             if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
                                 learnerCheckOutStr = `
                                     <span class="text-danger font-weight-bold">미퇴실</span><br>
-                                    <button class="btn btn-danger btn-icon-split btn-sm" data-id="${learner.leId}">
-                                      <span class="text">이메일알림</span>
-                                    </button>
+                                    <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                      <i class="fas fa-solid fa-envelope"></i>
+                                    </a>
                                 `;
                             }
                         }
@@ -612,7 +612,8 @@ function handleTabChange() {
     activeTabText = $('.nav-link.active').attr('aria-controls');
     // 일간으로 탭 이동
     if (activeTabText == 'pills-daily') {
-        // 그대로 월요일 보여줌
+        // 다시 오늘 날짜 보여줌
+        currentDate = new Date();
         updateDateDisplay();
     }
     // 주간으로 탭 이동

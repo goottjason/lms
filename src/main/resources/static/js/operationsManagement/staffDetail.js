@@ -1,12 +1,14 @@
 const loginUserId = $('#login-user-id').val();
 const loginUserType = $('#login-user-type').val();
-const params = new URLSearchParams(window.location.search);
-const staffId = params.get('staffId');
+
+const queryStrings = new URLSearchParams(window.location.search);
+const staffId = queryStrings.get('staffId');
 
 let baseConfig = {
     loginUserId: loginUserId,
     loginUserType: loginUserType
 }
+
 let historyPageConfig = {
     pageNo: 1,
     pageSize: 3,
@@ -17,11 +19,6 @@ let historyPageConfig = {
     staffId: staffId,
     staffType: null,
 }
-
-
-
-
-
 
 $(document).ready(function() {
 
