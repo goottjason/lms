@@ -253,6 +253,8 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+      $("#courseSelector").hide();
+
       $("#profileImgInput").hide();
 
       $("#profileImgBtn").click(function () {
@@ -405,6 +407,10 @@
                });
 
         }
+      });
+
+      $("#passwordChangeModal").on("hidden.bs.modal", function () {
+        $(this).find("input").val("");
       });
 
   </script>

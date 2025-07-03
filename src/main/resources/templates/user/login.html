@@ -179,8 +179,8 @@
 
 <script>
   $("#findIdModal").on("shown.bs.modal", function () {
-    $("#search-area").show();
     $("#id-area").html("");
+    $("#search-area").show();
     $("#findIdBtn").show();
     $("#fullname-msg").text("");
     $("#email-msg").text("");
@@ -216,9 +216,16 @@
          .then(function (response) {
            if (response.data.code === 200) {
 
-             let id = `${fullname}님의 로그인ID는 ${response.data.data}입니다.`;
+             let id    = response.data.data;
+             let idMsg = "";
+
+             if (id == null) {
+               idMsg = "회원가입이 필요합니다. 회원가입을 해주세요.";
+             } else {
+               idMsg = `${fullname}님의 로그인ID는 ${response.data.data}입니다.`;
+             }
              $("#search-area").hide();
-             $("#id-area").html(id);
+             $("#id-area").html(idMsg);
              $("#findIdBtn").hide();
 
            }
