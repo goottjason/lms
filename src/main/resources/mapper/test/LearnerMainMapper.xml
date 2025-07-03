@@ -18,8 +18,10 @@
   </select>
 
   <select id="selectMyTestAvgScore" resultType="Integer">
-    SELECT AVG(score)
-    FROM test_submission
+    SELECT AVG(s.score)
+    FROM test_submission s
+    JOIN test t ON t.id = s.test_id
+    JOIN course c ON t.course_id = c.id AND c.id = #{courseId}
     WHERE learner_id = #{userId} and submission_status = 'COMPLETED'
   </select>
 
@@ -164,7 +166,7 @@
     LEFT JOIN course_forum_comment c ON c.course_forum_id = f.id
     WHERE f.course_id = #{courseId} AND f.is_hotpost = 1
     GROUP BY f.id, f.title, f.forum_like, f.hotpost_at
-    ORDER BY f.hotpost_at DESC;
+    ORDER BY f.hotpost_at DESC
   </select>
 
 
