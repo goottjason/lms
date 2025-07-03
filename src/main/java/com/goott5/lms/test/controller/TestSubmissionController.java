@@ -95,15 +95,26 @@ public class TestSubmissionController {
     return ApiResult.respondOk(200, "SUCCESS", "SUCCESS");
   }
 
+//  @GetMapping("/my/tests/{testId}")
+//  public ResponseEntity<ApiResult<TestRegisterResultVO>> getTestResult(
+//      @PathVariable(required = true) int testId,
+//      HttpSession session
+//  ) {
+//
+//    return ApiResult.respondOk(200, "SUCCESS",
+//        testSubmissionService.getTestResult(testId, session));
+//  }
+
   @GetMapping("/my/tests/{testId}")
   public ResponseEntity<ApiResult<TestRegisterResultVO>> getTestResult(
       @PathVariable(required = true) int testId,
-      HttpSession session
+      @RequestParam(name = "userId", required = true) int userId
   ) {
 
     return ApiResult.respondOk(200, "SUCCESS",
-        testSubmissionService.getTestResult(testId, session));
+        testSubmissionService.getTestResult(testId, userId));
   }
+
 
   @GetMapping("/my/tests/{testId}/learner/{learnerId}")
   public ResponseEntity<ApiResult<TestRegisterResultVO>> getTestResultByLearnerId(

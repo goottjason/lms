@@ -171,11 +171,27 @@ public class TestSubmissionServiceImpl implements TestSubmissionService {
     return "COMPLETED";
   }
 
+//  @Override
+//  public TestRegisterResultVO getTestResult(int testId, HttpSession session) {
+//
+//    TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
+//        ((UserVO) session.getAttribute("loginUser")).getId());
+//
+//    DecimalFormat df = new DecimalFormat("#0.00");
+//    double submissionTime = testSubmissionVO.getSubmissionTime() / 60.0;
+//
+//    return TestRegisterResultVO.builder()
+//        .submissionTime(df.format(submissionTime))
+//        .userScore(testSubmissionMapper.selectUserScore(testSubmissionVO.getId()))
+//        .questions(testSubmissionMapper.selectTestResult(testId, testSubmissionVO.getId()))
+//        .build();
+//  }
+
   @Override
-  public TestRegisterResultVO getTestResult(int testId, HttpSession session) {
+  public TestRegisterResultVO getTestResult(int testId, int userId) {
 
     TestSubmissionVO testSubmissionVO = testSubmissionMapper.selectTestSubmission(testId,
-        ((UserVO) session.getAttribute("loginUser")).getId());
+        userId);
 
     DecimalFormat df = new DecimalFormat("#0.00");
     double submissionTime = testSubmissionVO.getSubmissionTime() / 60.0;

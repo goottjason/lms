@@ -58,7 +58,8 @@ $(document).ready(async function () {
 
     if (submissionStatus === "COMPLETED") {
 
-      const quizRes = await apiCall("get", `/api/my/tests/${testId}`);
+      const quizRes = await apiCall("get", `/api/my/tests/${testId}`, null,
+          { userId: userId });
       console.log(quizRes);
       buildQuiz(quiz, quizRes.data.data.questions);
       buildUserAnswer(quizRes.data.data.questions,
