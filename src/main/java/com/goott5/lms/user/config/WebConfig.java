@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/user/idDuplicateCheck", "/user/sendAuthCodeForSignup",
                     "/user/certificateAuthCode", "/user/removeCertificateNo",
                     "/user/mobileDuplicateCheck", "/user/changePwd", "/user/changePwdForSignup",
-                    "/user/needLogin", "/user/invalidAccess",
+                    "/user/needLogin", "/user/invalidAccess", "/user/findId",
                     "/.well-known/**",
                     "/swagger-ui/**",
                     "/css/**", "/js/**",
@@ -42,7 +42,8 @@ public class WebConfig implements WebMvcConfigurer {
                     "/cancelDateManagement",
                     "/operationsManagement/userRegister", "/communityInquiry/answerRegister",
                     "/communityInquiry/answerDelete", "/admin/reports",
-                    "/communityNotice/noticeRegister", "/communityNotice/noticeModify");
+                    "/communityNotice/noticeRegister", "/communityNotice/noticeModify",
+                    "learnerManagement/sendEmail");
 
     registry.addInterceptor(authInterceptorForINSTRUCTOR)
             .addPathPatterns("/homework/homeworkRegister", "/homework/homeworkModify",
@@ -54,14 +55,14 @@ public class WebConfig implements WebMvcConfigurer {
     registry.addInterceptor(authInterceptorForLEARNER)
             .addPathPatterns("/participation/participationView", "/homework/submissionRegister",
                     "/homework/submissionModify", "/homework/submissionDelete",
-                    "/test/learner/testDetail/**", "/test/testSubmission",
+                    "/test/testSubmission",
                     "/courseBoardQnA/register", "/courseBoardQnA/modify/**");
 
     registry.addInterceptor(authInterceptorForADMINISTRATORandINSTRUCTOR)
             .addPathPatterns("/learnerManagement/learnerList", "/learnerManagement/learnerDetail",
                     "/learnerManagement/employment", "/courseBoardMaterials/materialsRegister",
                     "/courseBoardMaterials/materialsModify",
-                    "/traininglog/traningList", "/training/trainingDetail", "/test/testDetail/**",
+                    "/traininglog/traningList", "/training/trainingDetail",
                     "/learnerManagement/employment");
 
     registry.addInterceptor(authInterceptorForLEARNERandINSTRUCTOR)

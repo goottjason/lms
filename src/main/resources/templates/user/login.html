@@ -19,6 +19,13 @@
   <link th:href="@{/css/sb-admin-2.min.css}" rel="stylesheet">
   <link th:href="@{/css/user/login.css}" rel="stylesheet">
   <style>
+    a:hover {
+      text-decoration: none;
+    }
+
+    #searchId:hover {
+      color: #4e73df;
+    }
 
   </style>
 </head>
@@ -69,9 +76,13 @@
                   </div>
                 </div>
 
-                <!-- 비밀번호 변경 링크 -->
+                <!-- 아이디 / 비밀번호 변경  -->
                 <div class="col-7 text-right pr-4">
-                  <a th:href="@{/user/changePwd}" class="small">비밀번호 변경이 필요하신가요?</a>
+                  <span
+                    id="searchId"
+                    class="small mr-3" style="cursor: pointer" data-toggle="modal"
+                    data-target="#findIdModal">ID 찾기</span>
+                  <a th:href="@{/user/changePwd}" class="small">비밀번호 변경</a>
                 </div>
               </div>
               <button type="submit" id="loginBtn" class="btn btn-primary btn-user btn-block">
@@ -80,7 +91,7 @@
             </form>
             <hr>
             <div class="text-center">
-              <a th:href="@{/user/signup}">회원이 아니신가요? 여기서 가입하세요!</a>
+              <a th:href="@{/user/signup}">아직 가입 전이신가요? 여기서 가입하세요!</a>
             </div>
           </div>
 
@@ -95,6 +106,64 @@
   </div>
 </div>
 
+<!-- ID찾기 모달 -->
+  <div
+    class="modal fade"
+    id="findIdModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">ID 찾기</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="search-area">
+            <div class="row mb-2">
+              <div class="col-md-5">
+                <div class="form-group">
+                  <label for="fullname">이름<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+                  <span id="fullname-msg" class="text-danger small"></span>
+                  <input type="text" id="fullname" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="email">이메일 주소<span class="text-danger">*
+                  </span>&nbsp;&nbsp;</label>
+                  <span id="email-msg" class="text-danger small"></span>
+                  <input type="text" id="email" class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="id-area"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="findIdBtn" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-upload"></i>
+            </span>
+            <span class="text px-3">찾기요청</span>
+          </button>
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- 모달 끝 -->
 <!-- Bootstrap core JavaScript-->
 <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
 <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
@@ -109,8 +178,60 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+  $("#findIdModal").on("shown.bs.modal", function () {
+    $("#search-area").show();
+    $("#id-area").html("");
+    $("#findIdBtn").show();
+    $("#fullname-msg").text("");
+    $("#email-msg").text("");
+  });
 
+  $("#findIdModal").on("hidden.bs.modal", function () {
+    $(this).find("input").val("");
+  });
 
+  $("#findIdBtn").on("click", function () {
+
+    let fullname = $("#fullname").val();
+    let email    = $("#email").val();
+
+    if (fullname == "") {
+      $("#fullname-msg").text("이름을 입력해주세요.");
+      return;
+    } else {
+      $("#fullname-msg").text("");
+    }
+    if (email == "") {
+      $("#email-msg").text("이메일을 입력해주세요.");
+      return;
+    } else {
+      $("#email-msg").text("");
+    }
+
+    axios.post("/user/findId", {
+      fullname: fullname,
+      email   : email
+
+    })
+         .then(function (response) {
+           if (response.data.code === 200) {
+
+             let id = `${fullname}님의 로그인ID는 ${response.data.data}입니다.`;
+             $("#search-area").hide();
+             $("#id-area").html(id);
+             $("#findIdBtn").hide();
+
+           }
+         })
+         .catch(function (error) {
+           console.log(error);
+           if (error.response.data.code === 409) {
+             $("#email-msg").text(error.response.data.data).removeClass("text-info")
+                            .addClass("text-danger");
+             idValidate = false;
+           }
+         });
+  });
 
 </script>
 </body>
