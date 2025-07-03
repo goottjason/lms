@@ -58,7 +58,7 @@ public interface TrainingService {
   boolean isHoliday(String trainingDate);
 
   //기존 훈련일지 여부
-  boolean isReRegister(String trainingDate, int instructorId);
+  boolean isReRegister(String trainingDate, int instructorId,int courseId);
 
   // 로그인 유저 == 해당 훈련일지 작성자 판단 여부 (수정용-강사만)
   boolean isMyTrainingLog(int id, int instructorId);

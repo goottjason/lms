@@ -298,8 +298,8 @@ public class TrainingServiceImpl implements TrainingService {
   }
 
   @Override
-  public boolean isReRegister(String trainingDate, int instructorId) {
-    return trainingMapper.isReRegister(trainingDate, instructorId);
+  public boolean isReRegister(String trainingDate, int instructorId, int courseId) {
+    return trainingMapper.isReRegister(trainingDate, instructorId, courseId);
   }
 
   @Override

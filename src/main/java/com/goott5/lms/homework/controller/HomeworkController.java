@@ -332,6 +332,7 @@ public class HomeworkController {
       return "redirect:/homework/homeworkList";
     }
 
+    model.addAttribute("courseName", courseName);
     model.addAttribute("resultMap", resultMap);
     model.addAttribute("courseId", resultMap.get("course_id"));
     model.addAttribute("userId", resultMap.get("user_id"));

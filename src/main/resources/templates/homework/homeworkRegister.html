@@ -7,7 +7,9 @@
 <head>
   <style>
     #courseSelector {
-      display: none;
+      pointer-events: none;
+      background-color: #eee;
+      color: rgb(131, 131, 131);
     }
   </style>
 </head>
@@ -120,6 +122,19 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
 
+    // 상단 과정명
+    let courseName = /*[[${courseName}]]*/ null;
+
+    // 상단 과정명 출력
+    function showCourseSelector() {
+      $("#courseSelector").empty();
+      $("#courseSelector").append($("<option>", {
+            value: courseName,
+            text: courseName
+          })
+      );
+      $("#courseSelector").val(courseName);
+    }
 
     let errorMap = new Map();
 
@@ -226,6 +241,9 @@
     // $function 모음
     $(function(){
 
+      //상단 과정명 출력
+      showCourseSelector();
+
       // file input될 때 마다 file 담기
       $("#file").on("change",function () {
         pushFileList();
@@ -251,7 +269,7 @@
           console.log(response.data)
           let targetNum = response.data.data;
           sendNotificationToAllInCourse(courseId, "과제가 등록 되었습니다", false, "/homework/homeworkDetail?homeworkId="+ targetNum);
-          location.href = "/homework/homeworkList";
+          location.href = "/homework/homeworkDetail?homeworkId="+ targetNum;
         }).catch(function (error) {
           console.log("error",error);
           if(error.response.data.data != null){
