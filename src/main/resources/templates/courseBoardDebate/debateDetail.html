@@ -107,8 +107,6 @@
             <i th:unless="${debateDetail.isLikedByCurrentUser}" class="far fa-heart text-danger"></i>
           </span>
 
-          <!-- 좋아요 클릭 후 -->
-          <!-- <span style="cursor: pointer"><i class="fas fa-heart text-primary"></i></span> -->
         </div>
       </div>
     </div>
@@ -243,10 +241,17 @@
             th:if="${session.loginUser != null and session.loginUser.id != debateDetail.writerId}">
       <span class="icon text-white-50"><i class="fa fa-exclamation-triangle"></i></span><span class="text">신고</span>
     </button>
-      <a th:href="|/courseBoardDebate/debateList?pageNo=${pagingRequestDTO.pageNo}${pagingRequestDTO.generateLinkExceptPageNo()}|" class="btn btn-secondary btn-icon-split">
-        <span class="icon text-white-50"><i class="fas fa-list"></i></span>
-        <span class="text">목록</span>
-      </a>
+    <a th:href="@{/courseBoardDebate/debateList(courseId=${pagingRequestDTO.courseId},
+                                          pageNo=${pagingRequestDTO.pageNo},
+                                          pagingSize=${pagingRequestDTO.pagingSize},
+                                          keyword=${pagingRequestDTO.keyword},
+                                          type=${pagingRequestDTO.type},
+                                          orderBy=${pagingRequestDTO.orderBy},
+                                          orderDirection=${pagingRequestDTO.orderDirection},
+                                          hasAttachment=${pagingRequestDTO.hasAttachment})}" class="btn btn-secondary btn-icon-split">
+      <span class="icon text-white-50"><i class="fas fa-list"></i></span>
+      <span class="text">목록</span>
+    </a>
   </div>
 </div>
   <!-- content body 끝 -->

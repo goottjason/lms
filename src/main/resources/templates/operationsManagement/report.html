@@ -74,16 +74,14 @@
       <nav aria-label="Page navigation" class="col mt-4" th:if="${responseDTO != null and responseDTO.total > 0}">
         <ul class="pagination justify-content-center">
           <li class="page-item" th:classappend="${!responseDTO.prev} ? 'disabled'">
-            <a class="page-link" th:href="@{/admin/reports(pageNo=${responseDTO.start - 1})}">이전</a>
+            <a class="page-link" th:href="@{/operationsManagement/reports(pageNo=${responseDTO.start - 1})}">이전</a>
           </li>
-
           <li class="page-item" th:each="i : ${#numbers.sequence(responseDTO.start, responseDTO.end)}"
               th:classappend="${i == responseDTO.pageNo} ? 'active'">
-            <a class="page-link" th:href="@{/admin/reports(pageNo=${i})}" th:text="${i}"></a>
+            <a class="page-link" th:href="@{/operationsManagement/reports(pageNo=${i})}" th:text="${i}"></a>
           </li>
-
           <li class="page-item" th:classappend="${!responseDTO.next} ? 'disabled'">
-            <a class="page-link" th:href="@{/admin/reports(pageNo=${responseDTO.end + 1})}">다음</a>
+            <a class="page-link" th:href="@{/operationsManagement/reports(pageNo=${responseDTO.end + 1})}">다음</a>
           </li>
         </ul>
       </nav>
@@ -97,8 +95,8 @@
           <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
         </div>
         <div class="modal-body">
-          <div class="form-group"><label for="report-reason">신고사유</label><textarea id="report-reason" class="form-control" style="height: 100px;" readonly></textarea></div>
           <div class="form-group"><label for="post-content">신고글 내용</label><textarea id="post-content" class="form-control" style="height: 180px;" readonly></textarea></div>
+          <div class="form-group"><label for="report-reason">신고사유</label><textarea id="report-reason" class="form-control" style="height: 100px;" readonly></textarea></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button></div>
       </div>
@@ -124,14 +122,14 @@
         reportListBody.addEventListener('click', function(e) {
           const target = e.target;
 
-          // 기능 1: 제목 클릭 -> 상세 모달
+          // 제목 클릭 -> 상세 모달
           if (target.classList.contains('title')) {
             const row = target.closest('tr');
             document.getElementById('report-reason').value = row.dataset.reason;
             document.getElementById('post-content').value = row.dataset.postContent;
           }
 
-          // 기능 2: 승인 버튼
+          // 승인 버튼
           if (target.classList.contains('approve-btn')) {
             const reportId = target.dataset.reportId;
             Swal.fire({
@@ -143,7 +141,7 @@
             }).then(result => result.isConfirmed && processReport(reportId, 'RESOLVED', target));
           }
 
-          // 기능 3: 거부 버튼
+          // 거부 버튼
           if (target.classList.contains('reject-btn')) {
             const reportId = target.dataset.reportId;
             Swal.fire({
@@ -156,7 +154,7 @@
             }).then(result => result.isConfirmed && processReport(reportId, 'DISMISSED', target));
           }
 
-          // 기능 4: 즉시삭제 버튼
+          // 즉시삭제 버튼
           if (target.classList.contains('delete-btn')) {
             const forumId = target.dataset.forumId;
             Swal.fire({

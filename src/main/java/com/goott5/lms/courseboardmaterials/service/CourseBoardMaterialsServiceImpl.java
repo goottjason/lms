@@ -139,17 +139,17 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
   @Transactional
   public CourseBoardMaterialsDetailInfo getCourseBoardMaterialsDetail(int id) {
 
-    // 1. Mapper의 새로운 메소드를 호출하여 게시글+작성자 정보 조회
+    // Mapper의 새로운 메소드를 호출하여 게시글+작성자 정보 조회
     CourseBoardMaterialsFlatDTO flatDTO = courseBoardMaterialsMapper.selectCourseBoardMaterialsDetailFlat(id);
 
     if (flatDTO == null) {
       return null; // 게시글이 없으면 null 반환
     }
 
-    // 2. Mapper의 새로운 메소드를 호출하여 첨부파일 목록 조회
+    // Mapper의 새로운 메소드를 호출하여 첨부파일 목록 조회
     List<FileSelectDTO> attachments = courseBoardMaterialsMapper.selectAttachmentsByBoardId(id);
 
-    // 3. 조회된 두 종류의 데이터를 조합하여 최종 DetailInfo 객체를 직접 생성
+    // 조회된 두 종류의 데이터를 조합하여 최종 DetailInfo 객체를 직접 생성
     UserVO user = UserVO.builder()
         .id(flatDTO.getWriterId())
         .fullName(flatDTO.getWriterName())
@@ -225,18 +225,18 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
   @Override
   @Transactional
   public int updateCourseBoardMaterials(CourseBoardMaterialsDTO courseBoardMaterialsDTO) {
-    // 1. '고정'으로 설정하려는 경우에만 개수 체크 로직을 수행합니다.
+    // '고정'으로 설정하려는 경우에만 개수 체크 로직을 수행합니다.
     if (courseBoardMaterialsDTO.getIsFixed()) {
-      // 2. 이 게시글의 원래 상태를 조회하여, 원래는 고정글이 아니었는지 확인합니다.
-      //    (이미 고정된 글을 다시 저장하는 경우는 개수 제한에 걸리지 않도록 하기 위함)
+      // 이 게시글의 원래 상태를 조회하여, 원래는 고정글이 아니었는지 확인합니다.
+      // (이미 고정된 글을 다시 저장하는 경우는 개수 제한에 걸리지 않도록 하기 위함)
       CourseBoardMaterialsDetailInfo originalPost = this.getCourseBoardMaterialsDetail(courseBoardMaterialsDTO.getId());
 
-      // 3. 원래 고정글이 아니었던 글을 새로 고정하려는 경우
+      // 원래 고정글이 아니었던 글을 새로 고정하려는 경우
       if (originalPost != null && !originalPost.getIsFixed()) {
-        // 4. 현재 고정된 글의 총 개수를 DB에서 조회합니다.
+        // 현재 고정된 글의 총 개수를 DB에서 조회합니다.
         int fixedCount = courseBoardMaterialsMapper.countFixedPosts(courseBoardMaterialsDTO.getCourseId());
 
-        // 5. 조회된 고정글이 5개 이상이면, 수정을 막고 실패(0)를 반환합니다.
+        // 조회된 고정글이 5개 이상이면, 수정을 막고 실패(0)를 반환합니다.
         if (fixedCount >= 5) {
           log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
           return 0; // 0을 반환하여 업데이트 실패를 알림
@@ -251,24 +251,24 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
   @Override
   @Transactional
   public void deleteCourseBoardMaterials(int courseBoardMaterialsId) {
-    // 1. 삭제할 게시글에 연결된 모든 첨부파일 목록을 DB에서 조회
+    // 삭제할 게시글에 연결된 모든 첨부파일 목록을 DB에서 조회
     //    UtilService의 메소드를 사용합니다.
     List<FileSelectDTO> filesToDelete = utilService.selectFileList("course_notice", courseBoardMaterialsId);
 
-    // 2. 첨부파일이 존재하면 S3와 DB에서 모두 삭제
+    // 첨부파일이 존재하면 S3와 DB에서 모두 삭제
     if (filesToDelete != null && !filesToDelete.isEmpty()) {
       for (FileSelectDTO file : filesToDelete) {
-        // 2-1. S3 저장소에서 물리적인 파일 삭제
+        // S3 저장소에서 물리적인 파일 삭제
         // S3 key는 '폴더명/저장된파일명' 형태여야 합니다.
         String s3Key = "course-materials/" + file.getNewName();
         s3Uploader.deleteFile(s3Key);
 
-        // 2-2. DB의 file 테이블에서 해당 파일 정보 삭제
+        // DB의 file 테이블에서 해당 파일 정보 삭제
         utilService.deleteFileById(file.getId());
       }
     }
 
-    // 마지막으로 게시글을 soft delete 처리 (deleted_at 컬럼 업데이트)
+    // 마지막으로 게시글을 soft delete 처리
     courseBoardMaterialsMapper.softDeleteById(courseBoardMaterialsId);
   }
 

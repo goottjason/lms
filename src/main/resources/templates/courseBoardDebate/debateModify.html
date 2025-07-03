@@ -83,7 +83,14 @@
         <span class="icon text-white-50"><i class="fas fa-save"></i></span>
         <span class="text px-5">저장</span>
       </button>
-      <a th:href="@{|/courseBoardDebate/debateDetail?id=${courseBoardDebate.id}|}" class="btn btn-secondary btn-icon-split">
+      <a th:href="@{/courseBoardDebate/debateDetail(id=${courseBoardDebate.id},
+                                             pageNo=${pagingRequestDTO.pageNo},
+                                             pagingSize=${pagingRequestDTO.pagingSize},
+                                             keyword=${pagingRequestDTO.keyword},
+                                             type=${pagingRequestDTO.type},
+                                             orderBy=${pagingRequestDTO.orderBy},
+                                             orderDirection=${pagingRequestDTO.orderDirection},
+                                             hasAttachment=${pagingRequestDTO.hasAttachment})}" class="btn btn-secondary btn-icon-split">
         <span class="icon text-white-50"><i class="fas fa-times"></i></span>
         <span class="text px-5">취소</span>
       </a>
@@ -118,7 +125,7 @@
           const form = this;
           const formData = new FormData(form);
 
-          // courseId를 formData에 추가 (만약 필요하다면)
+          // courseId를 formData에 추가
           const currentCourseId = /*[[${currentCourseId}]]*/ null;
           if (currentCourseId) {
             formData.append("courseId", currentCourseId);

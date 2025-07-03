@@ -207,11 +207,8 @@
         }
       }
 
-      // --- Helper 함수들 ---
 
-      /**
-       * API를 통해 과정 목록을 가져오는 함수
-       */
+      // API를 통해 과정 목록을 가져오는 함수
       async function fetchCourses() {
         // 관리자는 모든 과정을 볼 필요가 없으므로 빈 배열 반환 (또는 역할에 맞게 수정)
         if (loginUserType === 'ADMINISTRATOR') return [];
@@ -226,9 +223,7 @@
         }
       }
 
-      /**
-       * 과정 목록으로 Select Box(드롭다운) UI를 생성/업데이트하는 함수
-       */
+      // 과정 목록으로 Select Box(드롭다운) UI를 생성/업데이트하는 함수
       function updateCourseSelectBox(selector, data, selectedValue) {
         const selectElement = document.querySelector(selector);
         if (!selectElement) return;
