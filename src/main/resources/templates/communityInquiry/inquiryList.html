@@ -150,7 +150,7 @@
     $("#courseSelector").hide();
 
     let searchType = $("#searchTypeSelect").val();
-    let keyword    = $("#keyword").val();
+    let keyword    = $("#keyword").val().trim();
     let sort       = $("#sort").val();
     let orderBy    = $("#orderBy").val();
 
@@ -159,7 +159,7 @@
     });
 
     $("#keyword").change(function () {
-      keyword = $(this).val();
+      keyword = $(this).val().trim();
     });
 
     $("#sort").change(function () {
@@ -181,7 +181,7 @@
 
     $("#searchBtn").click(function () {
 
-      keyword = $("#keyword").val();
+      keyword = $("#keyword").val().trim();
 
       getBoardList(1);
     });
