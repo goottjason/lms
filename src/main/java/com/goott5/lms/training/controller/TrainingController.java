@@ -133,25 +133,33 @@ public class TrainingController {
     }
 
     //리스트의 요소를 순회하며 맵을 만들기
-    Map<String, SelectTrainingDTO> resultMap = new HashMap<>();
+    Map<String, List<SelectTrainingDTO>> resultMap = new HashMap<>();
     List<SelectTrainingDTO> trainingDTOList = new ArrayList<>();
 
-    //관리자일 경우
     if (loginUser != null) {
       if ("INSTRUCTOR".equals(loginUser.getType())) {
         trainingDTOList = trainingService.selectTrainingLogForTeacher(loginUser.getId(),
-            decodeCourseName);
+            decodeCourseName); //강사일 경우
       } else {
-        trainingDTOList = trainingService.selectTrainingLog(decodeCourseName);
+        trainingDTOList = trainingService.selectTrainingLog(decodeCourseName);  //관리자일 경우
       }
     }
 
     if (trainingDTOList != null) {
-      for (SelectTrainingDTO selectTrainingDTO : trainingDTOList) {
-        String courseNameById = trainingService.selectCourseNameById(
-            selectTrainingDTO.getCourseId()); //공통용
-        log.info("courseNameById:{}", courseNameById); //여기선 잘 받아옴
-        resultMap.put(courseNameById, selectTrainingDTO);
+
+      //if decodeCourseName이 ""일 경우(전체)일 때는 해당 과정명에 맞는 SelectTrainingDTO만 조회해 리스트로 만들어 맵으로 넣어주기
+      if ((decodeCourseName.trim()).isEmpty()) {
+        for (SelectTrainingDTO selectTrainingDTO : trainingDTOList) {
+          String courseNameById = trainingService.selectCourseNameById(
+              selectTrainingDTO.getCourseId()); //공통용
+          log.info("courseNameById:{}", courseNameById); //여기선 잘 받아옴
+
+          resultMap.computeIfAbsent(courseNameById, k -> new ArrayList<>())
+              .add(selectTrainingDTO);
+        }
+      } else {
+        String key = trainingService.selectCourseNameById(trainingDTOList.get(0).getCourseId());
+        resultMap.put(key, trainingDTOList); //이때 해당 dto
       }
     }
 
@@ -336,7 +344,7 @@ public class TrainingController {
     model.addAttribute("loginUser", loginUser);
 
     // 금일 훈련 일지 등록 일자는 금일 퇴실 시간 이후부터
-    DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//    DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     LocalDate thisRegisterDate = LocalDate.parse(decodeRegisterDate, dtf);
 
@@ -368,7 +376,14 @@ public class TrainingController {
     log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
 
     //해당 일자의 훈련일지가 있으면, 등록 막기
-    boolean isReRegister = trainingService.isReRegister(decodeRegisterDate, userId);
+    int courseId = selectAllWithoutActualDTO.getSelectCourseDTO().getId(); //현재 진행중인 해당 강사의 과정 dto
+
+    boolean isReRegister = false;
+    if (trainingService.selectCourseDTO(userId) != null) {
+      isReRegister = trainingService.isReRegister(decodeRegisterDate, userId,
+          courseId);
+    }
+
     if (isReRegister) {
       redirectAttributes.addFlashAttribute("noGet", "훈련일지는 두 번 등록 할 수 없습니다.");
       return "redirect:/training/trainingList";

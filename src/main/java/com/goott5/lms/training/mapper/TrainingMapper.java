@@ -19,7 +19,9 @@ import org.apache.ibatis.annotations.Update;
 public interface TrainingMapper {
   //================== 공통 ============================
 
-  //강사의 아이디 확인
+//  //courseId 출력
+//  @Select("select id from course where name = #{name}")
+//  int selectCourseIdByName(String name);
 
   //현재 강사가 진행 중인 과정 아이디, 과정명 출력
   @Select("select c.id,c.name from course c\n"
@@ -135,8 +137,8 @@ public interface TrainingMapper {
   boolean isHoliday(String trainingDate);
 
   // 재등록 막기(현재 날짜로 등록할 경우 막기)
-  @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId})")
-  boolean isReRegister(String trainingDate, int instructorId);
+  @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId} and course_id = #{courseId})")
+  boolean isReRegister(String trainingDate, int instructorId, int courseId);
 
   //=================== 훈련일지 수정 ===========================
   @Update("update training_detail set actual = #{actual}, updated_at = now() where id = #{trainingId}")

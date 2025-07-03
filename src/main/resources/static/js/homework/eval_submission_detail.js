@@ -3,6 +3,7 @@
 let modifyFileList = []; //eval 수정 시 들어갈 파일들
 let deleteModifyFileList = []; //eval 수정 시 들어갈 파일 id(삭제 예정)
 
+
 //평가 수정 란 보이게 하기
 function showEvalModify() {
 
@@ -80,9 +81,9 @@ function showEvalModify() {
         <span class="icon text-white-50"><i class="fa fa-wrench"></i></span>
         <span class="text px-3">평가 수정 등록</span>
       </button>
-      <button class="btn btn-secondary btn-icon-split mr-2">
+      <button class="btn btn-secondary btn-icon-split mr-2" id = "toDetail" type="button">
         <span class="icon text-white-50"><i class="fa fa-times"></i></span>
-        <span class="text px-3">목록</span>
+        <span class="text px-3" >목록</span>
       </button>
     </div>
   </div>
@@ -98,10 +99,10 @@ function showEvalModify() {
 // passValue 고정
 function passValue() {
   if (evalDTO != null) {
-    let isPass = /*[[${evalDTO?.isPass != null ?evalDTO.isPass :false}]]*/ false;
-    console.log("isPass", isPass);
+    console.log("evalDTO", evalDTO);
+    console.log("isPass", isPass); //null
     console.log("isPass select 박스값 존재 여부",$("#isPass").length);
-    $("#isPass").val(isPass ? "1" : "0");
+    $("#isPass").val(evalDTO.isPass ? "1" : "0");
   }
 }
 
@@ -333,6 +334,13 @@ $(function () {
     deleteEvalPost();
 
   });
+
+  //목록으로(취소)
+  $(document).on("click","#toDetail", function () {
+    console.log("instructorId", instructorId);
+    location.href = "/homework/submissionDetail?submissionId=" + submissionId;
+
+  })
 
 });
 
