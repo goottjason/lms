@@ -87,9 +87,9 @@
       <div id="courseManagement" class="collapse" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded">
           <a class="collapse-item" th:href="@{/courseManagement/courseList}">과정 조회</a>
-          <a class="collapse-item" th:href="@{/courseSchedule}">수업시간표 조회</a>
+          <a class="collapse-item" th:href="@{/courseManagement/courseSchedule}">수업시간표 조회</a>
           <a class="collapse-item" th:href="@{/courseManagement/learnerAssignment}">교육생 배정</a>
-          <a class="collapse-item" th:href="@{/cancelDateManagement}">휴강일
+          <a class="collapse-item" th:href="@{/courseManagement/cancelDateManagement}">휴강일
                                                                                            관리</a>
         </div>
       </div>
@@ -125,7 +125,10 @@
           <a class="collapse-item" th:href="@{/learnerManagement/learnerList}">교육생 조회</a>
           <a class="collapse-item" th:href="@{/learnerManagement/participationList}">출결 조회</a>
           <a class="collapse-item" th:href="@{/learnerManagement/employment}">취업 관리</a>
-          <a class="collapse-item" th:href="@{/vacation/vacationApproval}">휴가 승인</a>
+          <a class="collapse-item" th:if="${session.loginUser.type == 'INSTRUCTOR'}"
+             th:href="@{/learnerManagement/vacationApproval}">휴가 승인</a>
+          <a class="collapse-item" th:if="${session.loginUser.type == 'ADMINISTRATOR'}"
+             th:href="@{/learnerManagement/sendEmail}">이메일 발송</a>
         </div>
       </div>
     </li>
@@ -186,7 +189,7 @@
 
     <!-- Nav Item - 공지사항 -->
     <li class="nav-item nav-single">
-      <a class="nav-link" href="#">
+      <a class="nav-link" th:href="@{/communityNotice/noticeList}">
         <i class="fa fa-bullhorn"></i>
         <span>공지사항</span></a>
     </li>
@@ -228,7 +231,7 @@
       </li>
       <!-- Nav Item - 신고 관리 -->
       <li class="nav-item nav-single">
-        <a class="nav-link" href="#">
+        <a class="nav-link" th:href="@{/operationsManagement/reports}">
           <i class="fa fa-exclamation-triangle"></i>
           <span>신고 관리</span></a>
       </li>

@@ -35,4 +35,7 @@ public interface CourseScheduleMapper {
 
   @Select("select c.id, c.is_in_progress, c.name, c.number_of_learner, c.start_date, c.end_date, c.total_hours, c.total_days, c.daily_hours, c.break_time, c.lesson_start_time, c.lesson_end_time, c.lunch_start_time, c.lunch_end_time from course c join staff_assignment sa on c.id = sa.course_id where sa.course_id = #{courseId} and sa.user_id = #{loginUser.id}")
   CourseVO selectCourseByIdAndUser(@Param("courseId") int courseId, @Param("loginUser") UserVO loginUser);
+
+  @Select("select count(id) from training_log where course_id = #{courseId} and training_date = current_date()")
+  int selectTrainingLogCount(int courseId);
 }
