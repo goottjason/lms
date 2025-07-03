@@ -31,9 +31,8 @@
               <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                 질문자
               </div>
-              <div class="h6 mb-0 text-gray-800" th:text="${inquiryDetail.writerName}">
-              </div>
-
+              <div class="h6 mb-0 text-gray-800" th:text="${inquiryDetail.writerName}"></div>
+              <input id="writerId" type="hidden" th:value="${inquiryDetail.writer}">
             </div>
             <div class="col-auto">
               <i class="fas fa-user fa-lg text-gray-300"></i>
@@ -95,12 +94,12 @@
               <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                 답변일</div>
               <div
-                class="h6 mb-0 text-info"
+                class="h6 mb-0 text-gray-800"
                 th:if="${inquiryDetail.answeredAt != null}"
                 th:text="${#temporals.format(inquiryDetail.answeredAt, 'yy-MM-dd')}">
               </div>
               <div
-                class="h6 mb-0 text-secondary"
+                class="h6 mb-0 text-gray-800"
                 th:if="${inquiryDetail.answeredAt == null}"
                 th:text="${'-'}">
               </div>
@@ -353,6 +352,10 @@
       })
            .then(function (response) {
              if (response.data.code === 200) {
+               let writerId = $("#writerId").val();
+               sendNotification([writerId], `1:1문의에 답변이 등록되었습니다.`, false,
+                                "/communityInquiry/inquiryList");
+
                $("#answerRegisterSuccessModal").modal("show");
 
                $("#answerRegisterSuccessModal").on("hidden.bs.modal", function () {
