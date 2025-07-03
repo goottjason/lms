@@ -106,7 +106,7 @@ public class LearnerMainServiceImpl implements LearnerMainService {
     Integer courseId = learnerMainMapper.selectCourseId(courseName);
     int userId = ((UserVO) session.getAttribute("loginUser")).getId();
 
-    Integer testAvgScore = learnerMainMapper.selectMyTestAvgScore(userId);
+    Integer testAvgScore = learnerMainMapper.selectMyTestAvgScore(courseId, userId);
     Map<String, Object> hwData = learnerMainMapper.selectMyHwData(courseId, userId);
 
     Map<String, Object> result = new HashMap<>();

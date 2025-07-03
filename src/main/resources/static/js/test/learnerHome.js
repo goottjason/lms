@@ -6,67 +6,14 @@ const $avgTestScore = $("#avg-test-score");
 const $hwScore = $("#hw-score");
 
 let selectedCourse;
+let inProg;
 
 let progressSummary;
 
-$(document).ready(async function () {
-
-  progressSummary = {
-    "progressRate": 0,
-    "attendanceRate": 0,
-    "avgTestScore": 0,
-    "hwScore": 0
-  };
-
-  await getUserCourses();
-
-  const rateRes = await fetchAttendanceRateCourseProgressRate(selectedCourse);
-  console.log(rateRes);
-  progressSummary.progressRate = rateRes.data.data.progressRate + "%";
-  progressSummary.attendanceRate = rateRes.data.data.attendanceRate + "%";
-
-  const testHwScoreRes = await fetchTestHwScore(selectedCourse);
-  console.log(testHwScoreRes);
-  progressSummary.avgTestScore = testHwScoreRes.data.data.testAvgScore + "점";
-  progressSummary.hwScore = testHwScoreRes.data.data.learner_homework_cnt + "/"
-      + testHwScoreRes.data.data.homework_total_cnt;
-
-  console.log(progressSummary);
-  renderProgressSummary(progressSummary);
-
-  const testHwScheduleRes = await fetchTestHwSchedule(selectedCourse);
-  console.log(testHwScheduleRes);
-  renderDeadlineCarousel(testHwScheduleRes.data.data);
-
-  console.log(selectedCourse);
-  const attendanceStatusRes = await fetchAttendanceStatus(selectedCourse);
-  console.log(attendanceStatusRes);
-  renderAttendance(attendanceStatusRes.data.data);
-
-  const courseScheduleRes = await fetchCourseSchedule(selectedCourse);
-  console.log(courseScheduleRes);
-  renderSchedule(courseScheduleRes.data.data);
-
-  const inquiryRes = await fetchInquiry();
-  console.log(inquiryRes);
-  renderInquiries(inquiryRes.data.data);
-
-  const qnaRes = await fetchQnA();
-  console.log(qnaRes);
-  renderQna(qnaRes.data.data);
-
-  const noticeRes = await fetchNotice(selectedCourse);
-  console.log(noticeRes);
-  renderMaterials(noticeRes.data.data);
-
-  const forumRes = await fetchForum(selectedCourse);
-  console.log(forumRes);
-  renderDebate(forumRes.data.data);
-
-  const testStatisticRes = await fetchTestStatistic(selectedCourse);
-  console.log(testStatisticRes);
-  renderTestChart(testStatisticRes.data.data);
-
+$(document).ready(async () => {
+  await getUserCourses();               // select 옵션 셋업
+  selectedCourse = $courseSelect.val(); // 기본값 설정
+  await loadCourseData(selectedCourse); // 첫 렌더
 });
 
 //------------------------------------------------------------------------------
@@ -153,6 +100,19 @@ function renderProgressSummary(summary) {
 function renderDeadlineCarousel(data) {
   const $inner = $("#deadlineCarousel .carousel-inner");
   $inner.empty();
+
+  if (!Array.isArray(data) || data.length === 0) {
+    const $emptyItem = $("<div>")
+    .addClass("carousel-item active");
+    const $row = $("<div>").addClass("row");
+    const $col = $("<div>")
+    .addClass("col-12 text-center py-5 text-muted")
+    .text("등록된 과제나 시험이 없습니다.");
+    $row.append($col);
+    $emptyItem.append($row);
+    $inner.append($emptyItem);
+    return;
+  }
 
   const itemsPerSlide = 3;
   const slideCount = Math.ceil(data.length / itemsPerSlide);
@@ -287,30 +247,42 @@ function renderDeadlineCarousel(data) {
 // [[Attendance render]]
 //------------------------------------------------------------------------------
 
-function renderAttendance(data) {
+function renderAttendance(data, inProg) {
   // Attendance 카드와 테이블, 통계 영역 선택
   const $card = $(".card-header:contains(\"Attendance\")").closest(".card");
   const $tbody = $card.find("table tbody");
   const $countSpans = $card.find(".mt-2 span > span"); // [출석, 결석, 휴가, 지각, 조퇴] 순
 
-  // 초기화
+  // 초기화: 기존 내용 지우기
   $tbody.empty();
-  // stats 초기값
-  const stats = { attendance: 0, absence: 0, vacation: 0, late: 0, early: 0 };
+  $countSpans.text("-");
 
-  // 한 줄(tr) 생성
+  // 과정이 진행중이지 않을 때
+  if (!inProg) {
+    // 안내 메시지 행
+    const $emptyRow = $("<tr>").append(
+        $("<td>")
+        .attr("colspan", 5)
+        .addClass("text-center py-4 text-muted")
+        .text("현재 진행중이지 않은 과정입니다.")
+    );
+    $tbody.append($emptyRow);
+    return;
+  }
+
+  // 진행중인 과정일 때만 기존 로직 수행
+  const stats = { attendance: 0, absence: 0, vacation: 0, late: 0, early: 0 };
   const $row = $("<tr>");
+
   data.forEach(item => {
-    let iconHtml = "";
+    let iconHtml = "-";
     switch (item.status) {
       case "ATTENDANCE":
         iconHtml = "<i class=\"fa fa-check text-info\"></i>";
         stats.attendance++;
         break;
       case "ABSENCE":
-        if (!item.checkIn && !item.checkOut) {
-          iconHtml = "-";
-        } else {
+        if (item.checkIn || item.checkOut) {
           iconHtml = "<i class=\"fa fa-times text-danger\"></i>";
           stats.absence++;
         }
@@ -327,15 +299,14 @@ function renderAttendance(data) {
         iconHtml = "<i class=\"fa fa-plane text-primary\"></i>";
         stats.vacation++;
         break;
-      default:  // '미등록' 등
-        iconHtml = "-";
+        // default: 미등록 등은 '-'
     }
     $row.append($("<td>").addClass("text-center align-middle").html(iconHtml));
   });
+
   $tbody.append($row);
 
-  // 테이블 아래 통계값 반영
-  // ( span.eq(0) → 출석, eq(1) → 결석, eq(2) → 휴가, eq(3) → 지각, eq(4) → 조퇴 )
+  // 하단 통계 반영
   $countSpans.eq(0).text(stats.attendance || "-");
   $countSpans.eq(1).text(stats.absence || "-");
   $countSpans.eq(2).text(stats.vacation || "-");
@@ -347,20 +318,35 @@ function renderAttendance(data) {
 // [[Schedule render]]
 //------------------------------------------------------------------------------
 
-function renderSchedule(data) {
-  // 1) Schedule 카드와 두 개의 행(헤더/내용) 선택
+function renderSchedule(data, inProg) {
   const $card = $(".card-header:contains(\"Schedule\")").closest(".card");
-  const $rows = $card.find(".card-body .row");
-  const $headerRow = $rows.first();  // 날짜 표시 행
-  const $bodyRow = $rows.eq(1);    // 과목명 표시 행
+  const $body = $card.find(".card-body");
+  const $headerRow = $body.find(".row").first();
+  const $bodyRow = $body.find(".row").eq(1);
 
-  // 2) 초기화
+  // 진행중이지 않은 과정일 때
+  if (!inProg) {
+    // 기존 스케줄 영역 비우고
+    $body.empty();
+    // 안내 메시지 한 줄만 추가
+    $body.append(
+        $("<div>").addClass("row").append(
+            $("<div>")
+            .addClass("col-12 text-center py-4 text-muted")
+            .text("현재 진행중이지 않은 과정입니다.")
+        )
+    );
+    return;
+  }
+
+  // 진행중인 과정일 때: 기존 렌더링 로직
+
+  // 초기화
   $headerRow.empty();
   $bodyRow.empty();
 
-  // 3) 데이터 순회
+  // 날짜 → 스케줄 데이터 순회
   data.forEach(item => {
-    // 날짜 포맷: 'YYYY-MM-DD' -> 'M/D(요일)'
     const dt = new Date(item.classDate);
     const month = dt.getMonth() + 1;
     const day = dt.getDate();
@@ -368,26 +354,23 @@ function renderSchedule(data) {
     const weekday = weekdayMap[dt.getDay()];
     const dateText = `${month}/${day}(${weekday})`;
 
-    // 4) 헤더 셀 추가
+    // 헤더 셀
     $headerRow.append(
         $("<div>")
-        .addClass("col border p-2 bg-gray-100")
+        .addClass("col border p-2 bg-gray-100 text-center font-weight-bold")
         .text(dateText)
     );
 
-    // 5) 바디 셀 생성
-    const $cell = $("<div>").addClass("col border p-2");
+    // 바디 셀
+    const $cell = $("<div>").addClass("col border p-2 text-center");
     if (!item.subjectNames) {
-      // 휴강
       $cell.addClass("text-danger").text("휴강");
     } else {
-      // ','로 분리하여 여러 줄로 표시
       item.subjectNames.split(",").forEach((subj, idx) => {
-        const name = subj.trim();
-        if (idx > 0) {
+        if (idx) {
           $cell.append("<br>");
         }
-        $cell.append(document.createTextNode(name));
+        $cell.append(document.createTextNode(subj.trim()));
       });
     }
     $bodyRow.append($cell);
@@ -667,15 +650,32 @@ function renderDebate(data) {
 //------------------------------------------------------------------------------
 
 function renderTestChart(data) {
-  // 카테고리(시험 제목) 배열
-  const categories = data.map(d => d.title);
+  const $container = $(".test-chart");
+  // 이전 차트나 메시지 초기화
+  $container.empty();
 
-  // 각 시리즈용 점수 배열
+  // 데이터가 없으면 안내 메시지 표시
+  if (!Array.isArray(data) || data.length === 0) {
+    $container
+    .append(
+        $("<div>")
+        .addClass("text-center text-muted py-5")
+        .text("시험 통계 데이터가 없습니다.")
+    );
+    return;
+  }
+
+  // 데이터가 있으면, 차트를 넣을 <div> 생성
+  const chartDiv = $("<div>").get(0);
+  $container.append(chartDiv);
+
+  // 카테고리·시리즈 추출
+  const categories = data.map(d => d.title);
   const myScores = data.map(d => d.myScore);
   const avgScores = data.map(d => d.avgScore);
   const percentiles = data.map(d => d.percentile);
 
-  // 차트 옵션에 할당
+  // 옵션 구성
   const options = {
     series: [
       { name: "내 점수", type: "column", data: myScores },
@@ -720,9 +720,78 @@ function renderTestChart(data) {
   };
 
   // 렌더링
-  const chart = new ApexCharts(document.querySelector(".test-chart"), options);
+  const chart = new ApexCharts(chartDiv, options);
   chart.render();
 }
+
+//------------------------------------------------------------------------------
+// [[공통 render 함수]]
+//------------------------------------------------------------------------------
+
+async function loadCourseData(courseName) {
+  // 1) inProg 갱신
+  inProg = $courseSelect.find("option:selected").data("is-in-progress");
+  progressSummary = {
+    "progressRate": "",
+    "attendanceRate": "",
+    "avgTestScore": "",
+    "hwScore": ""
+  };
+  // 진행률/출석률/시험·과제 점수 불러오기
+  const rateRes = await fetchAttendanceRateCourseProgressRate(courseName);
+  console.log(rateRes);
+  const testHwScoreRes = await fetchTestHwScore(courseName);
+  console.log(testHwScoreRes);
+  progressSummary.progressRate = rateRes.data.data.progressRate + "%";
+  progressSummary.attendanceRate = rateRes.data.data.attendanceRate + "%";
+  progressSummary.avgTestScore = testHwScoreRes.data.data.testAvgScore + "점";
+  progressSummary.hwScore = testHwScoreRes.data.data.learner_homework_cnt
+      + "/"
+      + testHwScoreRes.data.data.homework_total_cnt;
+  renderProgressSummary(progressSummary);
+
+  // 마감 일정
+  const scheduleRes = await fetchTestHwSchedule(courseName);
+  renderDeadlineCarousel(scheduleRes.data.data);
+
+  // 출석표
+  const attendanceRes = await fetchAttendanceStatus(courseName);
+  renderAttendance(attendanceRes.data.data, inProg);
+
+  // 수업 스케줄
+  const courseScheduleRes = await fetchCourseSchedule(courseName);
+  renderSchedule(courseScheduleRes.data.data, inProg);
+
+  // Inquiry / QnA / 자료 / 토론
+  const [inqRes, qnaRes, matRes, forumRes] = await Promise.all([
+    fetchInquiry(), fetchQnA(),
+    fetchNotice(courseName), fetchForum(courseName)
+  ]);
+  renderInquiries(inqRes.data.data);
+  renderQna(qnaRes.data.data);
+  renderMaterials(matRes.data.data);
+  renderDebate(forumRes.data.data);
+
+  // 시험 통계 차트
+  const statRes = await fetchTestStatistic(courseName);
+  console.log(statRes);
+  renderTestChart(statRes.data.data);
+}
+
+//------------------------------------------------------------------------------
+// [[과정 변경 이벤트]]
+//------------------------------------------------------------------------------
+
+$courseSelect.on("change", async function () {
+
+  const $opt = $(this).find("option:selected");
+  const inProg = $opt.attr("data-is-in-progress");
+  console.log(inProg);
+  console.log($(this).val());
+  selectedCourse = $(this).val();
+  await loadCourseData(selectedCourse);
+
+});
 
 //------------------------------------------------------------------------------
 // [[필터]]

@@ -23,7 +23,7 @@ public interface LearnerMainMapper {
       @Param("userId") int userId);
 
   // 시험 평균 점수
-  Integer selectMyTestAvgScore(int userId);
+  Integer selectMyTestAvgScore(@Param("courseId") int courseId, @Param("userId") int userId);
 
   // 과제 data
   Map<String, Object> selectMyHwData(@Param("courseId") int courseId, @Param("userId") int userId);
