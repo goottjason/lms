@@ -104,7 +104,7 @@
 
     <!-- Nav Item - 수업시간표 조회 -->
     <li th:if="${session.loginUser.type != 'ADMINISTRATOR'}" class="nav-item nav-single">
-      <a class="nav-link" th:href="@{/courseSchedule}">
+      <a class="nav-link" th:href="@{/courseManagement/courseSchedule}">
         <i class="fa fa-calendar"></i>
         <span>수업시간표 조회</span></a>
     </li>

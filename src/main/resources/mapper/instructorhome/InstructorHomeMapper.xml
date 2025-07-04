@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.instructorhome.mapper.InstructorHomeMapper">
+
+  <select id="selectCourseSchedules" resultType="com.goott5.lms.instructorhome.domain.CourseScheduleVO">
+
+    SELECT
+    d.date AS class_date,
+    GROUP_CONCAT(DISTINCT cs.name ORDER BY s.period_start_time SEPARATOR ', ') AS subject_names
+    FROM (
+    SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL (DAYOFWEEK(#{today}) - 1) DAY), INTERVAL 1 DAY) AS date
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL (DAYOFWEEK(#{today}) - 1) DAY), INTERVAL 2 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL (DAYOFWEEK(#{today}) - 1) DAY), INTERVAL 3 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL (DAYOFWEEK(#{today}) - 1) DAY), INTERVAL 4 DAY)
+    UNION ALL SELECT DATE_ADD(DATE_SUB(#{today}, INTERVAL (DAYOFWEEK(#{today}) - 1) DAY), INTERVAL 5 DAY)
+    ) d
+    LEFT JOIN course_schedule s ON s.course_id = #{courseId} AND s.class_date = d.date
+    LEFT JOIN course_subject cs ON s.subject_id = cs.id
+    GROUP BY d.date
+    ORDER BY d.date
+
+  </select>
+
+
+</mapper>

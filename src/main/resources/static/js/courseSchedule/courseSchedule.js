@@ -24,7 +24,7 @@ $(function(){
         })
 
         $.ajax({
-                   url: "/courseSchedule/getCoursesByUser",
+                   url: "/courseManagement/courseSchedule/getCoursesByUser",
                    type    : "GET",
                    dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                    // data       : JSON.stringify(courseId),
@@ -77,7 +77,7 @@ $(function(){
     if(loginUser.type == "ADMINISTRATOR" && params.get("courseId") != null && params.get("courseId") != ""){
 
         $.ajax({
-                   url: "/courseSchedule/getCourseByIdAndUser",
+                   url: "/courseManagement/courseSchedule/getCourseByIdAndUser",
                    type    : "GET",
                    dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                    data       : {
@@ -237,7 +237,7 @@ function calTotalWeeks(startDateStr, endDateStr) {
 function getAndShowSchedules(course, weekRange){
 
     $.ajax({
-               url: "/courseSchedule/getCourseScheduleByWeekRange",
+               url: "/courseManagement/courseSchedule/getCourseScheduleByWeekRange",
                type    : "GET",
                dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                data       : {
@@ -321,7 +321,7 @@ function makeScheduleTable(course, weekRange){
 // inProgressType에 따라 과정별 리스트 불러오기
 function getCoursesByInProgressType(){
     $.ajax({
-               url: "/courseSchedule/getCoursesByInProgressAndLoginUser",
+               url: "/courseManagement/courseSchedule/getCoursesByInProgressAndLoginUser",
                type    : "GET",
                dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                data       : {
@@ -352,7 +352,7 @@ function getCoursesByInProgressType(){
 function selectFirstCourse(){
 
     $.ajax({
-               url: "/courseSchedule/getFirstCourseByUser",
+               url: "/courseManagement/courseSchedule/getFirstCourseByUser",
                type    : "GET",
                dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                // data       : JSON.stringify(courseId),

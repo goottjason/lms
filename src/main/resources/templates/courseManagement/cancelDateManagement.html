@@ -181,7 +181,7 @@
               let courseId = $(this).data("id");
 
               $.ajax({
-                         url        : "/cancelDateManagement/removeCancelDate", // 데이터가 송수신될 서버의 주소
+                         url        : "/courseManagement/cancelDateManagement/removeCancelDate", // 데이터가 송수신될 서버의 주소
                          type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
                          dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
                          data       : JSON.stringify(courseId),
@@ -203,7 +203,7 @@
 
           // 휴강일 등록 - 기존 전체적용 휴강일 (공휴일 포함) 불러오기
           $.ajax({
-                     url: "/cancelDateManagement/getCancelDatesByIsAll",
+                     url: "/courseManagement/cancelDateManagement/getCancelDatesByIsAll",
                      // 데이터가 송수신될 서버의 주소
                      type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -258,7 +258,7 @@
 
               if ($("#is-all").val() == 1) {
                   $.ajax({
-                             url: "/cancelDateManagement/saveCancelDates",
+                             url: "/courseManagement/cancelDateManagement/saveCancelDates",
                              // 데이터가 송수신될 서버의 주소
                              type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
                              dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -297,7 +297,7 @@
                   });
 
                   $.ajax({
-                             url: "/cancelDateManagement/saveCancelDates",
+                             url: "/courseManagement/cancelDateManagement/saveCancelDates",
                              // 데이터가 송수신될 서버의 주소
                              type       : "POST", // 통신 방식 (GET, POST, PUT, DELETE)
                              dataType   : "text", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -329,7 +329,7 @@
 
           // 페이지 로딩 시 두번째 카테고리 과정 가져오기
           $.ajax({
-                     url: "/cancelDateManagement/getCoursesByInProgress",
+                     url: "/courseManagement/cancelDateManagement/getCoursesByInProgress",
                      // 데이터가 송수신될 서버의 주소
                      type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -360,7 +360,7 @@
           // console.log($("#first-category").val());
 
           $.ajax({
-                     url: "/cancelDateManagement/getCoursesByInProgress",
+                     url: "/courseManagement/cancelDateManagement/getCoursesByInProgress",
                      // 데이터가 송수신될 서버의 주소
                      type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -491,7 +491,7 @@
           console.log(holidaysJson);
 
           $.ajax({
-                     url : "/cancelDateManagement/saveHoliday", // 데이터가 송수신될 서버의 주소
+                     url : "/courseManagement/cancelDateManagement/saveHoliday", // 데이터가 송수신될 서버의 주소
                      type: "POST", // 통신 방식 (GET, POST, PUT, DELETE)
                      // dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                      data       : holidaysJson,
@@ -532,7 +532,7 @@
           decideCategorizeType();
 
           $.ajax({
-                     url: "/cancelDateManagement/getCancelDates",
+                     url: "/courseManagement/cancelDateManagement/getCancelDates",
                      // 데이터가 송수신될 서버의 주소
                      type       : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType   : "json", // 수신받을 데이터의 타입 (MIME TYPE)
@@ -677,7 +677,7 @@
               return;
           }
           $.ajax({
-                     url: "/cancelDateManagement/getCoursesInProgressByDate",
+                     url: "/courseManagement/courseManagement/cancelDateManagement/getCoursesInProgressByDate",
                      // 데이터가 송수신될 서버의 주소
                      type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)

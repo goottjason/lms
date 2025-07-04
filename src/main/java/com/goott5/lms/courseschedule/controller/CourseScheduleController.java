@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-@RequestMapping("/courseSchedule")
+@RequestMapping("/courseManagement/courseSchedule")
 @RequiredArgsConstructor
 @Slf4j
 public class CourseScheduleController {
