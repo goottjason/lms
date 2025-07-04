@@ -20,7 +20,7 @@ public class ForumVO {
   private String title;
   private String fullname;
   private int forumLike;
-  private LocalDateTime hotpostAt;
+  private LocalDateTime createdAt;
   private int commentCount;
 
 }

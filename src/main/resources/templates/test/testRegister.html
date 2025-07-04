@@ -50,7 +50,7 @@
             <div class="row mb-4 align-items-end">
               <div class="col-md-12">
                 <label class="form-label">시험 제목</label>
-                <span class="test-title-err-msg"></span>
+                <small class="test-title-err-msg"></small>
                 <input
                     id="test-title"
                     type="text"
@@ -61,25 +61,25 @@
             </div>
 
             <div class="row mb-4">
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <label class="form-label">시험 시작일시</label>
-                <span class="test-start-date-err-msg"></span>
+                <small class="test-start-date-err-msg"></small>
                 <input id="start-date" type="datetime-local" class="form-control"/>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <label class="form-label">시험 종료일시</label>
-                <span class="test-end-date-err-msg"></span>
+                <small class="test-end-date-err-msg"></small>
                 <input id="end-date" type="datetime-local" class="form-control"/>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <label class="form-label">시험 시간 (분)</label>
-                <span class="test-time-err-msg"></span>
                 <input id="test-time" type="number" class="form-control" placeholder="예: 60"/>
+                <small class="test-time-err-msg"></small>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <label class="form-label">총 배점</label>
-                <span class="total-score-err-msg"></span>
                 <input id="total-score" type="number" class="form-control" value="0" readonly/>
+                <small class="total-score-err-msg"></small>
               </div>
             </div>
           </div>
@@ -136,7 +136,7 @@
                 <div class="row mb-3">
                   <div class="col-md-10">
                     <label class="form-label">문항 설명</label>
-                    <span class="question-title-err-msg"></span>
+                    <small class="question-title-err-msg"></small>
                     <input
                         type="text"
                         class="form-control question-title"
@@ -145,7 +145,7 @@
                   </div>
                   <div class="col-md-2">
                     <label class="form-label">배점</label>
-                    <span class="question-score-err-msg"></span>
+                    <small class="question-score-err-msg"></small>
                     <input
                         type="number"
                         class="form-control question-score"
@@ -158,7 +158,7 @@
                 <div class="mb-3 question-answer-section">
                   <label class="form-label">객관식 보기 및 정답 선택</label>
                   <span><small class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
-                  <span class="question-options-err-msg"></span>
+                  <small class="question-options-err-msg"></small>
 
                   <div class="option-list">
                     <div class="row align-items-center mb-2 option-row">

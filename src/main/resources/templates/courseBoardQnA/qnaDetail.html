@@ -4,205 +4,226 @@
     layout:decorate="~{layout/basic.html}"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:th="http://www.thymeleaf.org">
-<head>
-  <script th:src="@{https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js}"></script>
-  <script th:src="@{https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js}"></script>
+  <head>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js}"></script>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js}"></script>
 
-  <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
-  <script defer th:src="@{/js/test/testCommon.js}"></script>
-  <script defer th:src="@{/js/courseBoardQnA/qnaApi.js}"></script>
-  <script defer th:src="@{/js/courseBoardQnA/qnaDetail.js}"></script>
-</head>
-<body>
-<div layout:fragment="content">
-  <!-- content header 시작 -->
-  <div class="row align-items-center">
-    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">Q&A 상세</h1>
-  </div>
-  <!-- content header 끝 -->
+    <script th:src="@{https://cdn.jsdelivr.net/npm/sweetalert2@11}"></script>
+    <script defer th:src="@{/js/test/testCommon.js}"></script>
+    <script defer th:src="@{/js/courseBoardQnA/qnaApi.js}"></script>
+    <script defer th:src="@{/js/courseBoardQnA/qnaDetail.js}"></script>
+  </head>
+  <body>
+    <div layout:fragment="content">
 
-  <!-- content body 시작 -->
-  <!-- 상단 카드 시작-->
-  <div class="row">
-    <div class="col-md-3 col-sm-6 mb-3">
-      <div class="card border-left-primary shadow-sm py-1">
-        <div class="card-body py-2 px-3">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                작성자
-              </div>
-              <div class="h6 mb-0 text-gray-800" id="qna-writer">홍길동</div>
-
-            </div>
-            <div class="col-auto">
-              <i class="fas fa-user fa-lg text-gray-300"></i>
-            </div>
-          </div>
-        </div>
+      <!-- content header 시작 -->
+      <div class="row align-items-center">
+        <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">Q&A 상세</h1>
       </div>
-    </div>
+      <!-- content header 끝 -->
 
-    <div class="col-md-3 col-sm-6 mb-3">
-      <div class="card border-left-primary shadow py-1">
-        <div class="card-body py-2 px-3">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                작성일</div>
-              <div class="h6 mb-0 text-gray-800" id="qna-regdate">2025-05-04</div>
-            </div>
-            <div class="col-auto">
-              <i class="fas fa-calendar fa-lg text-gray-300"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <!-- content body 시작 -->
+      <!-- 상단 카드 시작-->
+      <div class="row">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card border-left-primary shadow-sm py-1">
+            <div class="card-body py-2 px-3">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    작성자
+                  </div>
+                  <div class="h6 mb-0 text-gray-800" id="qna-writer">홍길동</div>
 
-    <div class="col-md-3 col-sm-6 mb-3">
-      <div class="card border-left-info shadow py-1">
-        <div class="card-body py-2 px-3">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                답변상태</div>
-              <div class="h6 mb-0 text-gray-800" id="qna-comment-status">답변완료</div>
-            </div>
-            <div class="col-auto">
-              <i class="fas fa-comments fa-lg text-gray-300"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3 col-sm-6 mb-3">
-      <div class="card border-left-info shadow py-1">
-        <div class="card-body py-2 px-3">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                답변일</div>
-              <div class="h6 mb-0 text-gray-800" id="comment-regdate">2025-05-04</div>
-            </div>
-            <div class="col-auto">
-              <i class="fas fa-calendar fa-lg text-gray-300"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- 상단 카드 끝 -->
-
-  <!-- 본문 시작 -->
-  <div class="card shadow mb-4">
-    <input id="qna-board-no" th:value="${boardNo}" type="hidden">
-      <!-- 제목 -->
-    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary" id="qna-title">여기에 제목이 들어옵니다~~</h6>
-    </div>
-      <!-- 내용 -->
-    <div class="card-body py-5" id="qna-content">
-      여기에 내용이 들어옵니다~~~
-    </div>
-      <!-- 첨부 파일 -->
-    <div class="card-footer">
-      <p class="mt-2">첨부파일</p>
-      <div class="row" id="qna-attachment-row">
-
-        <div class="col-4 card mb-2">
-          <div class="row g-0 m-0">
-            <div class="col-md-3 pl-2">
-              <img
-                  class="img-fluid rounded-start"
-                  style="width: 60px; object-fit: cover;"
-                  th:src="@{/img/no-image.jpg}">
-            </div>
-            <div class="col-md-9 d-flex align-items-center">
-              <div class="card-body p-0">
-                <p class="card-title mb-1 text-truncate">첨부파일123.pdf</p>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-user fa-lg text-gray-300"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-      </div>
-    </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card border-left-primary shadow py-1">
+            <div class="card-body py-2 px-3">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    작성일
+                  </div>
+                  <div class="h6 mb-0 text-gray-800" id="qna-regdate">2025-05-04</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar fa-lg text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <div class="col-12 d-flex justify-content-end mt-3 mb-4">
-<!--      <a th:href="@{/qnaModify}">-->
-        <button class="btn btn-info btn-icon-split mr-2" id="qna-modify-btn" type="button">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card border-left-info shadow py-1">
+            <div class="card-body py-2 px-3">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    답변상태
+                  </div>
+                  <div class="h6 mb-0 text-gray-800" id="qna-comment-status">답변완료</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-comments fa-lg text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card border-left-info shadow py-1">
+            <div class="card-body py-2 px-3">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    답변일
+                  </div>
+                  <div class="h6 mb-0 text-gray-800" id="comment-regdate">2025-05-04</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-calendar fa-lg text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 상단 카드 끝 -->
+
+      <!-- 본문 시작 -->
+      <div class="card shadow mb-4">
+        <input id="qna-board-no" th:value="${boardNo}" type="hidden">
+        <!-- 제목 -->
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary" id="qna-title">여기에 제목이 들어옵니다~~</h6>
+        </div>
+        <!-- 내용 -->
+        <div class="card-body py-5" id="qna-content">
+          여기에 내용이 들어옵니다~~~
+        </div>
+        <!-- 첨부 파일 -->
+        <div class="card-footer">
+          <p class="mt-2">첨부파일</p>
+          <div class="row" id="qna-attachment-row">
+
+            <div class="col-4 card mb-2">
+              <div class="row g-0 m-0">
+                <div class="col-md-3 pl-2">
+                  <img
+                      class="img-fluid rounded-start"
+                      style="width: 60px; object-fit: cover;"
+                      th:src="@{/img/no-image.jpg}">
+                </div>
+                <div class="col-md-9 d-flex align-items-center">
+                  <div class="card-body p-0">
+                    <p class="card-title mb-1 text-truncate">첨부파일123.pdf</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+          <!--      <a th:href="@{/qnaModify}">-->
+          <button class="btn btn-info btn-icon-split mr-2" id="qna-modify-btn" type="button">
         <span class="icon text-white-50">
             <i class="fa fa-wrench"></i>
         </span>
-          <span class="text px-3">질문수정</span>
-        </button>
-<!--      </a>-->
-      <button class="btn btn-danger btn-icon-split mr-2" id="qna-delete-btn">
+            <span class="text px-3">질문수정</span>
+          </button>
+          <!--      </a>-->
+          <button class="btn btn-danger btn-icon-split mr-2" id="qna-delete-btn">
       <span class="icon text-white-50">
           <i class="fa fa-times"></i>
       </span>
-        <span class="text px-3">질문삭제</span>
-      </button>
-    </div>
-  </div>
-  <!-- 본문 끝 -->
+            <span class="text px-3">질문삭제</span>
+          </button>
+        </div>
+      </div>
+      <!-- 본문 끝 -->
 
-  <!-- 답변 -->
-  <div class="card shadow mb-4 qna-comment-container">
-    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary">답변</h6>
-    </div>
-    <div class="card-body py-3">
-      <div class="form-group">
+      <!-- 답변 -->
+      <div class="card shadow mb-4 qna-comment-container">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">답변</h6>
+        </div>
+        <div class="card-body py-3">
+          <div class="form-group">
         <textarea
             class="form-control"
             id="qna-comment-text"
             placeholder="답변을 작성하세요."
             style="height: 200px;"></textarea>
-      </div>
-    </div>
-    <div class="col-12 d-flex justify-content-end mb-4">
-      <button type="button" class="btn btn-primary btn-icon-split mr-2" id="comment-register-btn">
-        <span class="icon text-white-50">
-          <i class="fas fa-upload"></i>
-        </span>
-        <span class="text px-3">답변등록</span>
-      </button>
-      <button class="btn btn-info btn-icon-split mr-2" id="comment-modify-btn">
-        <span class="icon text-white-50">
-          <i class="fa fa-wrench"></i>
-        </span>
-        <span class="text px-3">답변수정</span>
-      </button>
-      <button class="btn btn-danger btn-icon-split mr-2" id="comment-delete-btn">
-        <span class="icon text-white-50">
-          <i class="fa fa-times"></i>
-        </span>
-        <span class="text px-3">답변삭제</span>
-      </button>
-    </div>
-  </div>
+          </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end mb-4">
+          <!-- 등록된 답변이 없을 때만 보이는 등록 버튼 -->
+          <button type="button"
+                  class="btn btn-primary btn-icon-split js-comment-register mr-2">
+            <span class="icon text-white-50"><i class="fas fa-upload"></i></span>
+            <span class="text px-3">답변등록</span>
+          </button>
 
-  <div class="col-12 d-flex justify-content-end mt-3 mb-4">
-<!--    <a th:href="@{/qnaList}">-->
-      <button class="btn btn-secondary btn-icon-split" id="prev-page" type="button">
+          <!-- 답변 수정 진입 버튼 -->
+          <button type="button"
+                  class="btn btn-info btn-icon-split js-comment-modify mr-2">
+            <span class="icon text-white-50"><i class="fa fa-wrench"></i></span>
+            <span class="text px-3">답변수정</span>
+          </button>
+
+          <!-- 답변 삭제 버튼 -->
+          <button type="button"
+                  class="btn btn-danger btn-icon-split js-comment-delete mr-2">
+            <span class="icon text-white-50"><i class="fa fa-times"></i></span>
+            <span class="text px-3">답변삭제</span>
+          </button>
+
+          <!-- 수정 중에만 보이는 저장/취소 -->
+          <button type="button"
+                  class="btn btn-success btn-icon-split js-comment-confirm mr-2"
+                  style="display:none;">
+            <span class="icon text-white-50"><i class="fa fa-check"></i></span>
+            <span class="text px-3">답변저장</span>
+          </button>
+
+          <button type="button"
+                  class="btn btn-secondary btn-icon-split js-comment-cancel"
+                  style="display:none;">
+            <span class="icon text-white-50"><i class="fa fa-times"></i></span>
+            <span class="text px-3">수정취소</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+        <!--    <a th:href="@{/qnaList}">-->
+        <button class="btn btn-secondary btn-icon-split" id="prev-page" type="button">
           <span class="icon text-white-50">
               <i class="fas fa-list"></i>
           </span>
-        <span class="text px-5">목록</span>
-      </button>
-<!--    </a>-->
-  </div>
-  <!-- content body 끝 -->
-</div>
-<th:block layout:fragment="script" th:inline="javascript">
-  <script>
-      // javascript 개발은 여기에...
+          <span class="text px-5">목록</span>
+        </button>
+        <!--    </a>-->
+      </div>
+      <!-- content body 끝 -->
+    </div>
+    <th:block layout:fragment="script" th:inline="javascript">
+      <script>
+        // javascript 개발은 여기에...
 
-  </script>
-</th:block>
-</body>
+      </script>
+    </th:block>
+  </body>
 </html>

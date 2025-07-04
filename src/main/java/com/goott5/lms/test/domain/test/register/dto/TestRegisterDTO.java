@@ -2,6 +2,7 @@ package com.goott5.lms.test.domain.test.register.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Duration;
@@ -37,6 +38,7 @@ public class TestRegisterDTO {
   private String endDate;
 
   @Min(value = 10, message = "시험 시간은 10분 이상")
+  @Max(value = 100, message = "시험 시간은 최대 100분까지 가능합니다.")
   private int testTime;
 
   @Min(value = 1, message = "총 배점은 최소 1점")
@@ -46,20 +48,24 @@ public class TestRegisterDTO {
   private List<TestQuestionDTO> questions;
 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(
-          "yyyy-MM-dd HH:mm:ss");
+      "yyyy-MM-dd HH:mm:ss");
 
   @AssertTrue(message = "시험 시간은 시작~종료 시간보다 짧아야 합니다.")
   public boolean isTestTimeValid() {
-    if (!(testTime >= 10)) {
+    if (startDate == null || startDate.isBlank() ||
+        endDate == null || endDate.isBlank()) {
       return true;
     }
-
+    // testTime 최소 10분 검사
+    if (testTime < 10) {
+      return false;
+    }
     LocalDateTime start = LocalDateTime.parse(startDate, FORMATTER);
     LocalDateTime end = LocalDateTime.parse(endDate, FORMATTER);
 
     Duration duration = Duration.between(start, end);
     int minutes = (int) duration.toMinutes();
-    return (minutes > testTime);
+    return (minutes >= testTime);
   }
 
 
@@ -76,7 +82,7 @@ public class TestRegisterDTO {
   @AssertTrue(message = "종료일은 시작일 이후여야 합니다.")
   public boolean isEndDateAfterStartDate() {
     if ((startDate == null || startDate.trim().isEmpty()) || (endDate == null || endDate.trim()
-            .isEmpty())) {
+        .isEmpty())) {
       return true;
     }
 

@@ -34,6 +34,12 @@ $(document).ready(async function () {
 
     const coursesRes = await apiCall("get", "/api/courses");
     renderCourseFilterOptionsForAdminForUser(coursesRes.data.data);
+    const param = UrlUtils.getQueryParam("courseName");
+    if (param) {
+      $("#courseSelector").val(param);
+    }
+
+    $("#courseSelector").prop("disabled", true);
 
     const testRes = await apiCall("get", `/api/tests/${testId}`);
     const data = testRes.data.data;

@@ -10,7 +10,7 @@ public class LearnerMainViewController {
 
   @GetMapping("/learnerHome")
   public String getTestHomePage() {
-    return "test/learnerHome";
+    return "home/learnerHome";
   }
 
 }
