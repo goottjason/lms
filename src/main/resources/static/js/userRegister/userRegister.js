@@ -67,6 +67,7 @@ $(function(){
                     </div>
                   </div>`;
             $(".staff-detail-box").html(output);
+            $("#hire-date").attr("max", new Date().toISOString().split("T")[0]);
 
         }
 
@@ -162,6 +163,12 @@ $(function(){
 
     });
 
+    $("#birthday").attr("max", new Date().toISOString().split("T")[0]);
+
+
+
+
+
 
 });
 
@@ -224,18 +231,23 @@ function checkStaffValid(){
     }
 
     if($('input[name="gender"]:checked').val() == undefined){
-        $("#gender-msg").text("성별을 입력해주세요.")
+        $("#gender-msg").text("성별을 입력해주세요.");
         result = false;
     }
 
 
     if($("#position").val() == ""){
-        $("#position-msg").text("직급을 입력해주세요.")
+        $("#position-msg").text("직급을 입력해주세요.");
         result = false;
     }
 
     if($("#hire-date").val() == ""){
-        showErr("hire-date", "입사일자를 입력해주세요.")
+        showErr("hire-date", "입사일자를 입력해주세요.");
+        result = false;
+    }
+
+    if($("#hire-date").val() < $("#birthday").val()){
+        showErr("hire-date", "잘못된 입사일자입니다.");
         result = false;
     }
 
