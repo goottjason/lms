@@ -28,4 +28,8 @@ public interface CourseBoardMaterialsService {
 
   // 게시글 삭제
   void deleteCourseBoardMaterials(int courseBoardMaterialsId);
+
+  // 고정글 개수
+  int countFixedPostsByCourseId(Long courseId);
+
 }

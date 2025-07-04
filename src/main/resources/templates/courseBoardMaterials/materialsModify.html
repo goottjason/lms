@@ -105,151 +105,163 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
-      // javascript 개발은 여기에...
+    // javascript 개발은 여기에...
 
-      const loginUserId = $("#login-user-id").val();
-      const loginUserType = $("#login-user-type").val();
-      const currentCourseId = /*[[${currentCourseId}]]*/ null;
+    const loginUserId = $("#login-user-id").val();
+    const loginUserType = $("#login-user-type").val();
+    const currentCourseId = /*[[${currentCourseId}]]*/ null;
 
-      let courseId = [[${courseId}]];
-      let userId = [[${userId}]];
-      let fileList = [];
-      const MAX_FILE_SIZE = 1024 * 1024 * 8;
+    const wasOriginallyFixed = /*[[${wasOriginallyFixed}]]*/ false;
+    const fixedPostCount = /*[[${fixedPostCount}]]*/ 0;
 
-      // --- 페이지 로드 완료 시 초기화 함수 실행 ---
-      document.addEventListener('DOMContentLoaded', function() {
-        initializePage();
-      });
 
-      $(function() {
-        // 폼(form) 전체의 submit 이벤트를 감지합니다.
-        $('form').on('submit', function(e) {
-          // 기본 폼 전송(새로고침)을 막습니다.
-          e.preventDefault();
+    // --- 페이지 로드 완료 시 초기화 함수 실행 ---
+    document.addEventListener('DOMContentLoaded', function() {
+      initializePage();
+    });
 
-          const form = this;
-          const formData = new FormData(form);
+    $(function() {
+      // 폼(form) 전체의 submit 이벤트를 감지합니다.
+      $('form').on('submit', function(e) {
+        // 기본 폼 전송(새로고침)을 막습니다.
+        e.preventDefault();
 
-          // courseId를 formData에 추가 (만약 필요하다면)
-          if (currentCourseId) {
-            formData.append("courseId", currentCourseId);
-          }
-
-          // axios를 사용해 form 데이터를 서버로 전송합니다.
-          axios.post('/courseBoardMaterials/materialsModify', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          }).then(function(response) {
-            // 서버로부터 받은 응답(response)을 확인합니다.
-            console.log(response.data);
-
-            // 서버 응답 코드(code)가 200 (성공)일 경우
-            if (response.data.code === 200) {
-              Swal.fire(response.data.message).then(()=>{location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`});
-              sendNotificationToLearnerInCourse(currentCourseId,'공지 및 수업자료 게시판에 글이 수정 되었습니다.',false,
-                  `/courseBoardMaterials/materialsDetail?id=${response.data.data.id}`);
-              // 응답 데이터에 포함된 게시글 ID(id)를 가져옵니다.
-              const materialId = response.data.data.id;
-
-            } else {
-              // 성공이 아닐 경우 서버가 보낸 에러 메시지를 띄웁니다.
-              Swal.fire('수정 실패: ' + response.data.message);
-            }
-          }).catch(function(error) {
-            // 통신 중 에러가 발생했을 경우
-            console.error(error);
-            Swal.fire({
-              title: '수정 중 오류가 발생했습니다.',
-              icon: "error"
-            });
-
-            // 유효성 검사(validation) 실패 시 에러 메시지 처리
-            if (error.response && error.response.data && error.response.data.data) {
-              const errorMap = error.response.data.data;
-              let errorMsg = '';
-              for (const key in errorMap) {
-                errorMsg += `${errorMap[key]}\n`;
-              }
-              Swal.fire(errorMsg);
-            }
+        const isFixedCheckbox = document.getElementById('isFixed');
+        // "고정"이 체크되었고, 원래는 고정글이 아니었으며, 이미 고정글이 5개 이상이면
+        if (isFixedCheckbox.checked && !wasOriginallyFixed && fixedPostCount >= 5) {
+          Swal.fire({
+            title: '수정에 실패했습니다.',
+            text: '고정글은 5개까지 등록 가능합니다.',
+            icon: 'warning'
           });
-        });
+          return; // 여기서 수정을 중단합니다.
+        }
 
-        $('input[name="deleteFiles"]').on('change', function() {
-          const labelSpan = $(this).closest('li').find('span');
 
-          if ($(this).is(':checked')) {
-            labelSpan.addClass('text-decoration-line-through');
+
+        const form = this;
+        const formData = new FormData(form);
+
+        // courseId를 formData에 추가
+        if (currentCourseId) {
+          formData.append("courseId", currentCourseId);
+        }
+
+        // axios를 사용해 form 데이터를 서버로 전송합니다.
+        axios.post('/courseBoardMaterials/materialsModify', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }).then(function(response) {
+          // 서버로부터 받은 응답(response)을 확인합니다.
+          console.log(response.data);
+
+          // 서버 응답 코드(code)가 200 (성공)일 경우
+          if (response.data.code === 200) {
+            // 응답 데이터에 포함된 게시글 ID(id)를 가져옵니다.
+            const materialId = response.data.data.id;
+            sendNotificationToLearnerInCourse(currentCourseId,'공지 및 수업자료 게시판에 글이 수정 되었습니다.',false,
+                `/courseBoardMaterials/materialsDetail?id=${materialId}`);
+            Swal.fire(response.data.message).then(()=>{location.href = `/courseBoardMaterials/materialsDetail?id=${materialId}`});
+
           } else {
-            labelSpan.removeClass('text-decoration-line-through');
+            // 성공이 아닐 경우 서버가 보낸 에러 메시지를 띄웁니다.
+            Swal.fire('수정 실패: ' + response.data.message);
           }
-        });
+        }).catch(function(error) {
+          // 통신 중 에러가 발생했을 경우
+          console.error(error);
+          Swal.fire({
+            title: '수정 중 오류가 발생했습니다.',
+            icon: "error"
+          });
 
-
-        // 파일 input에 파일명이 표시되도록 하는 스크립트
-        $('.custom-file-input').on('change', function() {
-          let fileNames = [];
-          for (let i = 0; i < $(this)[0].files.length; i++) {
-            fileNames.push($(this)[0].files[i].name);
+          // 유효성 검사(validation) 실패 시 에러 메시지 처리
+          if (error.response && error.response.data && error.response.data.data) {
+            const errorMap = error.response.data.data;
+            let errorMsg = '';
+            for (const key in errorMap) {
+              errorMsg += `${errorMap[key]}\n`;
+            }
+            Swal.fire(errorMsg);
           }
-          $(this).siblings('.custom-file-label').html(fileNames.join(', '));
         });
       });
 
-      // --- 페이지 핵심 기능 초기화 함수 ---
-      async function initializePage() {
-        const headerCourseSelector = document.getElementById('courseSelector');
-        if (headerCourseSelector) {
-          const courses = await fetchCourses(loginUserId, loginUserType);
-          updateCourseSelectBox('#courseSelector', courses, currentCourseId);
-          headerCourseSelector.disabled = true;
+      $('input[name="deleteFiles"]').on('change', function() {
+        const labelSpan = $(this).closest('li').find('span');
+
+        if ($(this).is(':checked')) {
+          labelSpan.addClass('text-decoration-line-through');
+        } else {
+          labelSpan.removeClass('text-decoration-line-through');
         }
-      }
+      });
 
 
-      // API를 통해 과정 목록을 가져오는 함수
-      async function fetchCourses() {
-        // 관리자는 모든 과정을 볼 필요가 없으므로 빈 배열 반환 (또는 역할에 맞게 수정)
-        if (loginUserType === 'ADMINISTRATOR') return [];
-        try {
-          const response = await axios.get('/api/management/courses', {
-            params: { loginUserId: loginUserId, loginUserType: loginUserType }
-          });
-          return response.data?.data?.respDTOS || [];
-        } catch (error) {
-          console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
-          return [];
+      // 파일 input에 파일명이 표시되도록 하는 스크립트
+      $('.custom-file-input').on('change', function() {
+        let fileNames = [];
+        for (let i = 0; i < $(this)[0].files.length; i++) {
+          fileNames.push($(this)[0].files[i].name);
         }
+        $(this).siblings('.custom-file-label').html(fileNames.join(', '));
+      });
+    });
+
+    // --- 페이지 핵심 기능 초기화 함수 ---
+    async function initializePage() {
+      const headerCourseSelector = document.getElementById('courseSelector');
+      if (headerCourseSelector) {
+        const courses = await fetchCourses(loginUserId, loginUserType);
+        updateCourseSelectBox('#courseSelector', courses, currentCourseId);
+        headerCourseSelector.disabled = true;
       }
+    }
 
-      // 과정 목록으로 Select Box(드롭다운) UI를 생성/업데이트하는 함수
-      function updateCourseSelectBox(selector, data, selectedValue) {
-        const selectElement = document.querySelector(selector);
-        if (!selectElement) return;
 
-        // 드롭다운 메뉴를 비움
-        selectElement.innerHTML = '';
-
-        // 기본 안내 옵션 추가
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '과정을 선택하세요';
-        selectElement.appendChild(defaultOption);
-
-        // API로 받아온 과정 목록을 옵션으로 추가
-        data.forEach(course => {
-          const option = document.createElement('option');
-          option.value = course.id;
-          option.textContent = course.name;
-
-          // 전달받은 courseId와 일치하는 옵션을 'selected' 상태로 만듦
-          if (course.id == selectedValue) {
-            option.selected = true;
-          }
-          selectElement.appendChild(option);
+    // API를 통해 과정 목록을 가져오는 함수
+    async function fetchCourses() {
+      // 관리자는 모든 과정을 볼 필요가 없으므로 빈 배열 반환 (또는 역할에 맞게 수정)
+      if (loginUserType === 'ADMINISTRATOR') return [];
+      try {
+        const response = await axios.get('/api/management/courses', {
+          params: { loginUserId: loginUserId, loginUserType: loginUserType }
         });
+        return response.data?.data?.respDTOS || [];
+      } catch (error) {
+        console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
+        return [];
       }
+    }
+
+    // 과정 목록으로 Select Box(드롭다운) UI를 생성/업데이트하는 함수
+    function updateCourseSelectBox(selector, data, selectedValue) {
+      const selectElement = document.querySelector(selector);
+      if (!selectElement) return;
+
+      // 드롭다운 메뉴를 비움
+      selectElement.innerHTML = '';
+
+      // 기본 안내 옵션 추가
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = '과정을 선택하세요';
+      selectElement.appendChild(defaultOption);
+
+      // API로 받아온 과정 목록을 옵션으로 추가
+      data.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.id;
+        option.textContent = course.name;
+
+        // 전달받은 courseId와 일치하는 옵션을 'selected' 상태로 만듦
+        if (course.id == selectedValue) {
+          option.selected = true;
+        }
+        selectElement.appendChild(option);
+      });
+    }
   </script>
 </th:block>
 </body>

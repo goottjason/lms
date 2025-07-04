@@ -32,6 +32,8 @@ public interface CourseBoardDebateMapper {
   CourseBoardDebateCommentDTO findCommentById(int commentId);
   int updateComment(CourseBoardDebateCommentDTO comment);
   int softDeleteComment(int commentId);
+  void deleteCommentsByForumId(int forumId);
+
 
   // 좋아요
   int countCourseBoardDebateLikesByForumId(@Param("forumId") int forumId);

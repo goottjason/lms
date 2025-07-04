@@ -28,7 +28,7 @@ public class ReportApiController {
     String newStatus = payload.get("status");
 
     // 유효하지 않은 status 값이 들어오면 에러 반환
-    if (newStatus == null || (!newStatus.equals("RESOLVED") && !newStatus.equals("DISMISSED"))) {
+    if (newStatus == null || (!newStatus.equals("RESOLVED") && !newStatus.equals("DISMISSED") && !newStatus.equals("DELETED"))) {
       return ResponseEntity.badRequest().build();
     }
 

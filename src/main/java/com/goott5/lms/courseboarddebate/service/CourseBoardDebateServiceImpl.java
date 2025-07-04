@@ -152,7 +152,13 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
   @Override
   @Transactional
   public void deleteCourseBoardDebate(int debateId) {
+
+    // 이 게시글에 달린 모든 댓글을 먼저 soft delete 합니다.
+    courseBoardDebateMapper.deleteCommentsByForumId(debateId);
+
+    // 댓글이 모두 삭제된 후, 원본 게시글을 soft delete 합니다.
     courseBoardDebateMapper.softDeleteCourseBoardDebateById(debateId);
+
   }
 
   @Override
@@ -241,6 +247,9 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     int finalCommentCount = courseBoardDebateMapper.countCommentsByForumId(forumId);
     updateHotPostStatus(forumId, finalLikeCount, finalCommentCount);
   }
+
+
+
 
   @Override
   public boolean updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount) {
