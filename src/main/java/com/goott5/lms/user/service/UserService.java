@@ -36,4 +36,8 @@ public interface UserService {
   void changePwdForSignup(ChangePwdDTO changePwdDTO);
 
   UserVO checkAutoLogin(String sessionId);
+
+  boolean checkEnrollment(int userId);
+
+  boolean checkAssignment(int userId);
 }

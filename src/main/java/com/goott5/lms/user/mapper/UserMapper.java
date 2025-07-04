@@ -54,4 +54,10 @@ public interface UserMapper {
   @Select("select id, type, login_id, password, fullname, gender, birthday, mobile, email, address, "
           + "profile_img, session_id, auto_login_limit, wrong_password_count, created_at, updated_at, deleted_at from user where session_id = #{sessionId} and auto_login_limit > now()")
   UserVO checkAutoLogin(@Param("sessionId") String sessionId);
+
+  @Select("select count(*) from learner_enrollment where user_id = #{userId}")
+  int selectCountLearnerEnrollment(@Param("userId") int userId);
+
+  @Select("select count(*) from staff_assignment where user_id = #{userId}")
+  int selectStaffAssignment(@Param("userId") int userId);
 }
