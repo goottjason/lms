@@ -5,6 +5,8 @@ import com.goott5.lms.coursemanagement.domain.CourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseRespDTO;
+import com.goott5.lms.coursemanagement.domain.dto.CourseClassDate;
+import com.goott5.lms.coursemanagement.domain.dto.CourseTrainingDate;
 import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
 import com.goott5.lms.coursemanagement.domain.dto.PageCourseResponse;
 import com.goott5.lms.coursemanagement.domain.integrated.CourseInstructorOverviewResp;
@@ -20,13 +22,17 @@ import com.goott5.lms.coursemanagement.mapper.CourseManagementMapper;
 import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
+import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
+import com.goott5.lms.learnermanagement.mapper.LearnerManagementMapper;
 import com.goott5.lms.learnermanagement.service.LearnerManagementService;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.operationsmanagement.service.OperationsManagementService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -47,6 +53,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
   private final CourseManagementMapper courseManagementMapper;
   private final LearnerManagementService learnerManagementService;
   private final OperationsManagementService operationsManagementService;
+  private final LearnerManagementMapper learnerManagementMapper;
 
   @Override
   public PageCourseRespDTO<CourseRespDTO> findCoursesAllorOne(
@@ -221,65 +228,6 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     int result = courseManagementMapper.deleteLearnerFromCourse(learnerId, courseId);
     return result > 0;
   }
-
-
-
-  public PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
-      BaseReqDTO baseReqDTO,
-      PageCourseRequest pageCourseRequest
-  ) {
-    Integer originalPageNo = pageCourseRequest.getPageNo();
-    Integer originalPagesize = pageCourseRequest.getPageSize();
-    if (originalPageNo != null && originalPagesize != null) {
-      pageCourseRequest.setPageNo(null);
-      pageCourseRequest.setPageSize(null);
-    }
-    List<CourseWithAssignedInfo> courses = courseManagementMapper.selectCoursesByAuth(
-        baseReqDTO, pageCourseRequest
-    );
-    Integer totalRecords = courses.size();
-
-    if (originalPageNo != null && originalPagesize != null) {
-      pageCourseRequest.setPageNo(originalPageNo);
-      pageCourseRequest.setPageSize(originalPagesize);
-      courses = courseManagementMapper.selectCoursesByAuth(
-          baseReqDTO, pageCourseRequest
-      );
-    }
-
-    List<CourseOverviewResp> courseOverviewResps =
-        courses.stream().map(course -> {
-          CourseOverviewResp resp = new CourseOverviewResp();
-
-          if (course.getCoId() != null) {
-            // 1. 과정 정보 추가
-            resp.setCourseWithAssignedInfo(course);
-
-            // 2. 과정의 교과목 및 교재 정보 추가
-            resp.setSubjectOverview(
-                fetchSubjectOverview(course.getCoId())
-            );
-            // 3. 과정의 수업일자와 현재 과정진행률 정보 추가
-            resp.setScheduleOverview(
-                fetchScheduleOverview(course.getCoId(), course.getCoTotalDays())
-            );
-            // 4. 과정의 교육생 전체 정보 추가
-            resp.setCourseLearnerOverview(fetchLearnerOverview(baseReqDTO, course.getCoId()));
-
-            // 5. 과정의 강사의 훈련일지 정보 추가 List<LocalDate> trainingLogDates =
-            resp.setCourseTrainingDates(fetchCourseTrainingDates(course.getCoId()));
-          }
-          return resp;
-        }).collect(Collectors.toList());
-
-    return PageCourseResponse.<CourseOverviewResp>withPageInfo()
-        .request(pageCourseRequest)
-        .totalRecords(totalRecords)
-        .records(courseOverviewResps)
-        .build();
-  }
-
-
   @Override
   public Boolean removeCoursesByAuth(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest) {
 
@@ -290,6 +238,186 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
     return courseManagementMapper.deleteCourseByAuth(baseReqDTO, pageCourseRequest);
   }
+
+
+  public PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
+      BaseReqDTO baseReqDTO,
+      PageCourseRequest pageCourseRequest,
+      HttpServletRequest request
+  ) {
+    // 카운트 쿼리
+    Integer totalRecords = courseManagementMapper.selectCountCoursesByAuth(
+        baseReqDTO, toCountRequest(pageCourseRequest));
+
+    // 데이터 쿼리
+    List<CourseWithAssignedInfo> courses = courseManagementMapper.selectCoursesByAuth(
+        baseReqDTO, pageCourseRequest);
+
+    // coId 리스트
+    List<Integer> coIds = courses.stream().map(
+        CourseWithAssignedInfo::getCoId).collect(Collectors.toList());
+
+    log.info(coIds.toString());
+
+    Map<Integer, List<CourseSubject>> subjectMap;
+    Map<Integer, List<CourseClassDate>> classDateMap;
+    Map<Integer, List<LearnerOverviewResp>> learnerOverviewMap;
+    Map<Integer, List<CourseTrainingDate>> trainingDateMap;
+
+    String referer = null;
+    String requestURI = null;
+
+    if (request != null) {
+      referer = request.getHeader("referer");
+      requestURI = request.getRequestURI();
+    }
+    log.info("■■■referer: {}", referer);
+    log.info("■■■requestURI: {}", requestURI);
+
+    final boolean isCourseListPage = (referer != null && requestURI != null)
+        && referer.contains("courseList") && !requestURI.contains("courseDetail");
+
+    if (isCourseListPage) {
+      subjectMap = Collections.emptyMap();
+      classDateMap = Collections.emptyMap();
+      trainingDateMap = Collections.emptyMap();
+      learnerOverviewMap = Collections.emptyMap();
+    } else {
+
+      List<CourseSubject> subjectList =
+          courseManagementMapper.selectSubjectByCoIds(coIds);
+      List<CourseClassDate> classDateList =
+          courseManagementMapper.selectClassDateByCoIds(coIds);
+      List<LearnerOverviewResp> learnersByAuthByCoIds = learnerManagementService.getLearnersByAuthByCoIds(
+          baseReqDTO, coIds);
+      List<CourseTrainingDate> trainingDateList =
+          courseManagementMapper.selectTrainingDateByCoIds(coIds);
+      subjectMap = subjectList.stream()
+          .collect(Collectors.groupingBy(CourseSubject::getCuCourseId));
+      classDateMap = classDateList.stream()
+          .collect(Collectors.groupingBy(CourseClassDate::getCsCourseId));
+      learnerOverviewMap = learnersByAuthByCoIds.stream()
+          .collect(Collectors.groupingBy(LearnerOverviewResp::getLeCourseId));
+      trainingDateMap = trainingDateList.stream()
+          .collect(Collectors.groupingBy(CourseTrainingDate::getTlCourseId));
+    }
+
+    LocalDate today = LocalDate.now();
+
+    List<CourseOverviewResp> courseOverviewResps =
+        courses.stream().map(course -> {
+          return buildCourseOverviewResp(
+              course,
+              subjectMap,
+              classDateMap,
+              learnerOverviewMap,
+              trainingDateMap,
+              today,
+              isCourseListPage);
+        }).collect(Collectors.toList());
+
+    return PageCourseResponse.<CourseOverviewResp>withPageInfo()
+        .request(pageCourseRequest)
+        .totalRecords(totalRecords)
+        .records(courseOverviewResps)
+        .build();
+  }
+
+  private CourseOverviewResp buildCourseOverviewResp (
+      CourseWithAssignedInfo course,
+      Map<Integer, List<CourseSubject>> subjectMap,
+      Map<Integer, List<CourseClassDate>> classDateMap,
+      Map<Integer, List<LearnerOverviewResp>> learnerOverviewMap,
+      Map<Integer, List<CourseTrainingDate>> trainingDateMap,
+      LocalDate today,
+      Boolean isCourseListPage
+  ) {
+    CourseOverviewResp resp = new CourseOverviewResp();
+
+    if (course.getCoId() == null) { return resp; }
+
+    // 1. 과정 정보 추가
+    resp.setCourseWithAssignedInfo(course);
+
+    if (isCourseListPage) {
+      return resp;
+    }
+    // 2. 과정의 교과목 및 교재 정보 추가
+    List<CourseSubject> courseSubjectListByCoId
+        = subjectMap.getOrDefault(course.getCoId(), Collections.emptyList());
+
+    resp.setSubjectOverview(
+        CourseSubjectOverviewResp.<CourseSubject>builder()
+            .subjectList(courseSubjectListByCoId)
+            .totalCount(courseSubjectListByCoId.size())
+            .build()
+    );
+    // 3. 과정의 수업일자와 현재 과정진행률 정보 추가
+    List<LocalDate> classDateList = classDateMap.getOrDefault(
+            course.getCoId(), Collections.emptyList())
+        .stream()
+        .map(CourseClassDate::getCsClassDate)
+        .collect(Collectors.toList());
+
+    Integer progressedCount = 0;
+    for (LocalDate courseClassDate : classDateList) {
+      if (courseClassDate.isBefore(today)) {
+        progressedCount++;
+      }
+    }
+    // 과정진행률 (현재 날짜의 전일 기준, xx%)
+    Double courseProgressRate =
+        Math.round((progressedCount / (double) course.getCoTotalDays()) * 100.0 * 100.0) / 100.0;
+
+    resp.setScheduleOverview(
+        CourseScheduleOverviewResp.<CourseSchedule>builder()
+            .scheduleList(null)
+            .classdateList(classDateList)
+            .totalCount(classDateList.size())
+            .courseProgressRate(courseProgressRate)
+            .build()
+    );
+
+    // 4. 과정의 교육생 전체 정보 추가
+    List<LearnerOverviewResp> learnerOverviewResps
+        = learnerOverviewMap.getOrDefault(course.getCoId(),
+        Collections.emptyList());
+    Integer denominator = learnerOverviewResps.size();
+    Double numerator = 0.0;
+    Double courseAvgAttendanceRate = 0.0;
+
+    if (learnerOverviewResps.size() > 0) {
+      for (LearnerOverviewResp record : learnerOverviewResps) {
+        numerator += record.getPartOverview().getAttendanceRate();
+      }
+      courseAvgAttendanceRate = Math.round((numerator/denominator) * 100.0) / 100.0;
+    }
+    resp.setCourseLearnerOverview(
+        CourseLearnerOverviewResp.<LearnerOverviewResp>builder()
+            .learnerList(learnerOverviewResps)
+            .totalCount(learnerOverviewResps.size())
+            .courseAvgAttendanceRate(courseAvgAttendanceRate)
+            .build()
+    );
+
+    // 5. 과정의 강사의 훈련일지 정보 추가
+    List<LocalDate> trainingDateListByCoId = trainingDateMap.getOrDefault(
+            course.getCoId(), Collections.emptyList())
+        .stream()
+        .map(CourseTrainingDate::getTlTrainingDate)
+        .collect(Collectors.toList());
+    resp.setCourseTrainingDates(trainingDateListByCoId);
+
+    return resp;
+  }
+
+  private PageCourseRequest toCountRequest(PageCourseRequest req) {
+    return req.toBuilder()
+        .pageNo(null)
+        .pageSize(null)
+        .build();
+  }
+
 
   private CourseScheduleOverviewResp<CourseSchedule> fetchScheduleOverview(Integer coId, Integer totalDays) {
     /*List<CourseSchedule> details =
@@ -322,12 +450,13 @@ public class CourseManagementServiceImpl implements CourseManagementService {
   private CourseSubjectOverviewResp<CourseSubject> fetchSubjectOverview(Integer coId) {
     List<CourseSubject> details =
         courseManagementMapper.selectSubjectByCoId(coId);
+
+
     return CourseSubjectOverviewResp.<CourseSubject>builder()
         .subjectList(details)
         .totalCount(details.size())
         .build();
   }
-
   private CourseLearnerOverviewResp<LearnerOverviewResp> fetchLearnerOverview(
       BaseReqDTO baseReqDTO,
       Integer coId) {
@@ -364,7 +493,6 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         .courseAvgAttendanceRate(courseAvgAttendanceRate)
         .build();
   }
-
   private List<LocalDate> fetchCourseTrainingDates(Integer coId) {
     return courseManagementMapper.selectCourseTrainingDates(coId);
   }
@@ -397,6 +525,8 @@ public class CourseManagementServiceImpl implements CourseManagementService {
   @Transactional
   @Override
   public void endCoursesAutoProcess() {
+
+    HttpServletRequest request = null;
     LocalDate today = LocalDate.now();
 
     BaseReqDTO baseReqDTO = BaseReqDTO.builder()
@@ -406,8 +536,13 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         .build();
     PageCourseRequest pageCourseRequest = PageCourseRequest.builder().build();
 
+
+
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-        getCoursesByAuth(baseReqDTO, pageCourseRequest);
+        getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
+
+
+
     coursesWithPagination.getRecords().forEach(course -> {
       // 오늘을 포함하여 이미 종료된 과정 조회
       if(today.isAfter(course.getCourseWithAssignedInfo().getCoEndDate())) {

@@ -235,7 +235,7 @@ function handleTypeSelectChange() {
     var $positionSelect = $('#position-select');
     var $positionOptions = $positionSelect.find('option');
 
-    // $positionOptions.show();
+    $positionOptions.show();
 
     // 타입별로 포지션옵션 필터 후 전체 보이도록
     if (type === 'ADMINISTRATOR') {

@@ -16,6 +16,7 @@ import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.learnermanagement.service.LearnerManagementService;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import com.goott5.lms.user.domain.UserVO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
@@ -188,9 +189,11 @@ public class CourseManagementController {
   public ResponseEntity<ApiResponse<PageCourseResponse<CourseOverviewResp>>>
   getCoursesByAuth(
       @ModelAttribute BaseReqDTO baseReqDTO,
-      @ModelAttribute PageCourseRequest pageCourseRequest
+      @ModelAttribute PageCourseRequest pageCourseRequest,
+      HttpServletRequest request
   ) {
-
+    String referer = request.getHeader("Referer");
+    log.info("■■■■■ referer: {}", referer);
     // 로그인유저 포지션 요청 후 SET
     String loginUserPosition =
         learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
@@ -198,18 +201,23 @@ public class CourseManagementController {
 
     log.info("pageCourseRequest: {}", pageCourseRequest);
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
     log.info("coursesWithPagination: {}", coursesWithPagination);
     return ApiResponse.okResponse(200, "success", coursesWithPagination);
   }
+
 
   @GetMapping("/courseManagement/courseDetail")
   public String courseDetail(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer coId,
       Model model,
-      HttpSession session
+      HttpSession session,
+      HttpServletRequest request
   ) {
+    String referer = request.getHeader("Referer");
+    String requestURI = request.getRequestURI();
 
+    log.info("requestURI: {}", requestURI);
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     Integer loginUserId = Integer.valueOf(loginUser.getId());
     String loginUserType = loginUser.getType();
@@ -240,11 +248,11 @@ public class CourseManagementController {
       // 진행중이면서 과정시작일 빠른 순서로 조회되는 첫번째 과정
       pageCourseRequest.setCoId(null);
       PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-          courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+          courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
     }
 
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
 
     model.addAttribute("record", coursesWithPagination.getRecords().get(0));
 
@@ -275,11 +283,14 @@ public class CourseManagementController {
 
   }
 
+  /*Model model,
+  HttpSession session,
+  HttpServletRequest request*/
   @GetMapping("/home/administratorHome")
   public String administratorHome(
-      Model model,
-      HttpSession session
   ) {
+    /*String referer = request.getHeader("Referer");
+
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     Integer loginUserId = Integer.valueOf(loginUser.getId());
     String loginUserType = loginUser.getType();
@@ -305,8 +316,8 @@ public class CourseManagementController {
         .coId(null)
         .build();
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest);
-    model.addAttribute("records", coursesWithPagination.getRecords());
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, referer);
+    model.addAttribute("records", coursesWithPagination.getRecords());*/
 
     return "home/administratorHome";
   }

@@ -5,6 +5,8 @@ import com.goott5.lms.coursemanagement.domain.CourseRespDTO;
 import com.goott5.lms.coursemanagement.domain.CourseSubjectRespDTO;
 import com.goott5.lms.coursemanagement.domain.PageCourseReqDTO;
 import com.goott5.lms.coursemanagement.domain.PageListReqDTO;
+import com.goott5.lms.coursemanagement.domain.dto.CourseClassDate;
+import com.goott5.lms.coursemanagement.domain.dto.CourseTrainingDate;
 import com.goott5.lms.coursemanagement.domain.dto.PageCourseRequest;
 import com.goott5.lms.coursemanagement.domain.table.CourseSchedule;
 import com.goott5.lms.coursemanagement.domain.table.CourseSubject;
@@ -15,6 +17,7 @@ import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -188,4 +191,16 @@ public interface CourseManagementMapper {
   @Select("SELECT count(*) FROM course_forum_report cfr WHERE cfr.report_status = 'PENDING'")
   Integer selectIncompleteReportCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
   Integer selectIncompleteEmployCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
+
+  Integer selectCountCoursesByAuth(
+      @Param("base") BaseReqDTO baseReqDTO,
+      @Param("page") PageCourseRequest pageCourseRequest);
+
+  List<CourseSubject> selectSubjectByCoIds(List<Integer> coIds);
+
+  List<CourseSchedule> selectScheduleByCoIds(List<Integer> coIds);
+
+  List<CourseClassDate> selectClassDateByCoIds(List<Integer> coIds);
+
+  List<CourseTrainingDate> selectTrainingDateByCoIds(List<Integer> coIds);
 }

@@ -7,6 +7,7 @@ import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest
 import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
+import com.goott5.lms.learnermanagement.domain.dto.PartModifyRequest;
 import com.goott5.lms.learnermanagement.domain.homework.HomeworkRespDTO;
 import com.goott5.lms.learnermanagement.domain.integrated.HomeworkOverviewResp;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
@@ -243,6 +244,7 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
 
 
+
   public PageLearnerResponse<LearnerOverviewResp> getLearnersByAuth(
       BaseReqDTO baseReqDTO,
       PageLearnerRequest pageLearnerRequest
@@ -263,6 +265,170 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
       pageLearnerRequest.setPageNo(originalPageNo);
       pageLearnerRequest.setPageSize(originalPageSize);
       learners = learnerManagementMapper.selectLearnersByAuth(
+          baseReqDTO, pageLearnerRequest);
+    }
+
+    List<LearnerOverviewResp> learnerOverviewResps =
+        learners.stream().map(learner -> {
+
+          LearnerOverviewResp resp = new LearnerOverviewResp();
+
+          // 2-1. 사용자 정보 설정
+          Optional.ofNullable(learner.getUserId())
+              .ifPresent(userId -> resp.setLearnerUser(fetchUser(userId)));
+
+          // 2-2. 수강 등록 정보 설정 (기존 조회 데이터 활용)
+          if (learner.getLeId() != null) {
+            resp.setLeId(learner.getLeId());
+            resp.setLeUserId(learner.getLeUserId());
+            resp.setLeCourseId(learner.getLeCourseId());
+            resp.setLeCompletionStatus(learner.getLeCompletionStatus());
+
+            // 2-3. 취업 지원 정보
+            resp.setLearnerEmploymentSupport(
+                fetchEmploymentSupport(learner.getLeId())
+            );
+
+            // 2-4. 출석 정보 (1:N)
+            resp.setPartOverview(
+                fetchParticipationOverview(learner.getLeId())
+            );
+          }
+
+          // 2-5. 과제 정보 (1:N)
+          if (learner.getLeCourseId() != null && learner.getLeUserId() != null) {
+
+            resp.setHomeOverview(
+                fetchHomeworkOverview(learner.getLeCourseId(), learner.getLeUserId())
+            );
+
+            // 2-6. 시험 정보 (1:N)
+            resp.setTestOverview(
+                fetchTestOverview(learner.getLeCourseId(), learner.getLeUserId())
+            );
+          }
+
+          // 2-7. 과정 정보 (배정 포함)
+          if (learner.getLeCourseId() != null) {
+            CourseWithAssignedInfo course = fetchCourse(learner.getLeCourseId());
+            resp.setLearnerCourse(course);
+            // 과정 배정 정보 설정 (null-safe)
+            if (course != null) {
+              Optional.ofNullable(learner.getCoInstructorId())
+                  .ifPresent(course::setCoInstructorId);
+              Optional.ofNullable(learner.getCoCourseHeadId())
+                  .ifPresent(course::setCoCourseHeadId);
+              Optional.ofNullable(learner.getCoInstructorName())
+                  .ifPresent(course::setCoInstructorName);
+              Optional.ofNullable(learner.getCoCourseHeadName())
+                  .ifPresent(course::setCoCourseHeadName);
+            }
+          }
+
+          return resp;
+
+        }).collect(Collectors.toList());
+
+    return PageLearnerResponse.<LearnerOverviewResp>withPageInfo()
+        .request(pageLearnerRequest)
+        .totalRecords(totalRecords)
+        .records(learnerOverviewResps)
+        .build();
+  }
+
+  public List<LearnerOverviewResp> getLearnersByAuthByCoIds(
+      BaseReqDTO baseReqDTO,
+      List<Integer> coIds
+  ) {
+
+    List<LearnerResponse> learners = learnerManagementMapper.selectLearnersByAuthByCoIds(
+        baseReqDTO, coIds);
+    Integer totalRecords = learners.size();
+
+    List<LearnerOverviewResp> learnerOverviewResps =
+        learners.stream().map(learner -> {
+
+          LearnerOverviewResp resp = new LearnerOverviewResp();
+
+          // 2-1. 사용자 정보 설정
+          Optional.ofNullable(learner.getUserId())
+              .ifPresent(userId -> resp.setLearnerUser(fetchUser(userId)));
+
+          // 2-2. 수강 등록 정보 설정 (기존 조회 데이터 활용)
+          if (learner.getLeId() != null) {
+            resp.setLeId(learner.getLeId());
+            resp.setLeUserId(learner.getLeUserId());
+            resp.setLeCourseId(learner.getLeCourseId());
+            resp.setLeCompletionStatus(learner.getLeCompletionStatus());
+
+            // 2-3. 취업 지원 정보
+            resp.setLearnerEmploymentSupport(
+                fetchEmploymentSupport(learner.getLeId())
+            );
+
+            // 2-4. 출석 정보 (1:N)
+            resp.setPartOverview(
+                fetchParticipationOverview(learner.getLeId())
+            );
+          }
+
+          // 2-5. 과제 정보 (1:N)
+          if (learner.getLeCourseId() != null && learner.getLeUserId() != null) {
+
+            resp.setHomeOverview(
+                fetchHomeworkOverview(learner.getLeCourseId(), learner.getLeUserId())
+            );
+
+            // 2-6. 시험 정보 (1:N)
+            resp.setTestOverview(
+                fetchTestOverview(learner.getLeCourseId(), learner.getLeUserId())
+            );
+          }
+
+          // 2-7. 과정 정보 (배정 포함)
+          if (learner.getLeCourseId() != null) {
+            CourseWithAssignedInfo course = fetchCourse(learner.getLeCourseId());
+            resp.setLearnerCourse(course);
+            // 과정 배정 정보 설정 (null-safe)
+            if (course != null) {
+              Optional.ofNullable(learner.getCoInstructorId())
+                  .ifPresent(course::setCoInstructorId);
+              Optional.ofNullable(learner.getCoCourseHeadId())
+                  .ifPresent(course::setCoCourseHeadId);
+              Optional.ofNullable(learner.getCoInstructorName())
+                  .ifPresent(course::setCoInstructorName);
+              Optional.ofNullable(learner.getCoCourseHeadName())
+                  .ifPresent(course::setCoCourseHeadName);
+            }
+          }
+
+          return resp;
+
+        }).collect(Collectors.toList());
+
+    return learnerOverviewResps;
+  }
+
+  public PageLearnerResponse<LearnerOverviewResp> getLearnersOnlyPartByAuth(
+      BaseReqDTO baseReqDTO,
+      PageLearnerRequest pageLearnerRequest
+  ) {
+    Integer originalPageNo = pageLearnerRequest.getPageNo();
+    Integer originalPageSize = pageLearnerRequest.getPageSize();
+    if (originalPageNo != null && originalPageSize != null) {
+      pageLearnerRequest.setPageNo(null);
+      pageLearnerRequest.setPageSize(null);
+    }
+    log.info("◆baseReqDTO: " + baseReqDTO);
+    log.info("◆pageLearnerRequest: " + pageLearnerRequest);
+    List<LearnerResponse> learners = learnerManagementMapper.selectLearnersOnlyPartByAuth(
+        baseReqDTO, pageLearnerRequest);
+    Integer totalRecords = learners.size();
+
+    if (originalPageNo != null && originalPageSize != null) {
+      pageLearnerRequest.setPageNo(originalPageNo);
+      pageLearnerRequest.setPageSize(originalPageSize);
+      learners = learnerManagementMapper.selectLearnersOnlyPartByAuth(
           baseReqDTO, pageLearnerRequest);
     }
 
@@ -383,6 +549,12 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
       log.info("updateCompletionStatusByCoId: " + record.getLeId() + " " + completionStatus);
     }
     return true;
+  }
+
+  @Override
+  public Boolean modifyPartInfo(PartModifyRequest request) {
+    // 일단 나중에!!!
+    return null;
   }
 
 
