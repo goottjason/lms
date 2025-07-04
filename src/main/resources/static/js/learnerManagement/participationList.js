@@ -28,7 +28,7 @@ let courseConfig = {
     orderBy       : "coStartDate",
     orderDirection: "ASC",
     // 필터링
-    coIsInProgress: null,
+    coIsInProgress: true,
     coId          : null
 };
 
@@ -70,8 +70,6 @@ $(document).ready(() => {
         // 리스트 로드
         fetchAndDisplayLearners();
 
-        $(document)
-        .on("change", "#is-in-progress", handleIsInProgressSelectChange);
         $(document).on("change", "#course-select", handleCourseSelectChange);
 
     }
@@ -141,6 +139,7 @@ function LoadTopCourseSelectorOption(selector, records) {
     } else if (learnerConfig.leCourseId != null) {
         $select.find(`option[value="${learnerConfig.leCourseId}"]`).prop("selected", true);
     }
+    $select.prop("disabled", true);
 }
 
 async function fetchAndLoadCourseSelect() {
@@ -184,25 +183,7 @@ function handleCourseTopSelectorChange() {
 
     fetchAndDisplayLearners();
 }
-function handleIsInProgressSelectChange() {
-    // 기존 검색과 페이징 초기화
-    learnerConfig.keyword = null;
-    $("#search-input").val("");
-    learnerConfig.pageNo     = 1;
-    learnerConfig.pageSize   = 8;
 
-    // is-in-progress 옵션 변경
-    learnerConfig.coIsInProgress =
-        $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
-
-    // course-select 옵션 로드 후 변경
-    courseConfig.coIsInProgress =
-        $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
-
-    fetchAndLoadCourseSelect();
-
-    fetchAndDisplayLearners();
-}
 function handleCourseSelectChange() {
     // 기존 검색과 페이징 초기화
     learnerConfig.keyword = null;
@@ -225,9 +206,6 @@ function handleSearchButtonClick() {
     learnerConfig.keyword  = $("#search-input").val();
 
     if (loginUserType == "ADMINISTRATOR") {
-        // 관리자의 경우 전체에서 검색
-        learnerConfig.coIsInProgress = null;
-        $("#is-in-progress").val("");
         learnerConfig.leCourseId = null;
         $("#course-select").val("");
     } else if (loginUserType == "INSTRUCTOR") {
@@ -243,7 +221,7 @@ function handlePageButtonClick() {
 async function fetchAndDisplayLearners() {
     console.log("learnerConfig: ", learnerConfig);
     let learnersWithPaging = await apiGetRequestParams(
-        "/api/learnermanagement/learners",
+        "/api/learnermanagement/learnersonlypart",
         {...baseConfig, ...learnerConfig});
     displayView(learnersWithPaging);
 }
@@ -563,9 +541,7 @@ function adjustMinutesToTimeStr(timeStr, minutes) {
     // + 또는 - minutes분 세팅
     date.setMinutes(date.getMinutes() + minutes);
 
-    return `${String(date.getHours()).padStart(2, '0')}:
-            ${String(date.getMinutes()).padStart(2, '0')}:
-            ${String(date.getSeconds()).padStart(2, '0')}`;
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
 }
 function fromTimeStrToTodayTime(timeStr) {
     // map(Number) : 문자 -> 숫자

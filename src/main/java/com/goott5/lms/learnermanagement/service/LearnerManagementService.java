@@ -4,6 +4,7 @@ import com.goott5.lms.learnermanagement.domain.*;
 import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
+import com.goott5.lms.learnermanagement.domain.dto.PartModifyRequest;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationReqDTO;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationRespDTO;
@@ -11,6 +12,7 @@ import com.goott5.lms.learnermanagement.domain.participation.ParticipationReqDTO
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.table.ParticipationWithReason;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
+import java.util.List;
 
 public interface LearnerManagementService {
 
@@ -35,6 +37,15 @@ public interface LearnerManagementService {
       BaseReqDTO baseReqDTO,
       PageLearnerRequest pageLearnerRequest
   );
+  List<LearnerOverviewResp> getLearnersByAuthByCoIds(
+      BaseReqDTO baseReqDTO,
+      List<Integer> coIds
+  );
+
+  PageLearnerResponse<LearnerOverviewResp> getLearnersOnlyPartByAuth(
+      BaseReqDTO baseReqDTO,
+      PageLearnerRequest pageLearnerRequest
+  );
 
   String getLoginUserPositionByUserId(Integer loginUserId);
 
@@ -43,4 +54,6 @@ public interface LearnerManagementService {
   Boolean modifyCompletionStatus(CompletionStatusUpdateRequest request);
 
   Boolean modifyCompletionStatusByCoId(BaseReqDTO baseReqDTO, Integer coId);
+
+  Boolean modifyPartInfo(PartModifyRequest request);
 }

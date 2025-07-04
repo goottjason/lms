@@ -19,13 +19,13 @@
     <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
       <form class="row col-12 mb-3" th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
-        <div class="col-2">
+        <!--<div class="col-2">
           <select id="is-in-progress" class="form-control">
             <option value="">전체</option>
             <option value="1">진행 중</option>
             <option value="0">종료</option>
           </select>
-        </div>
+        </div>-->
         <div class="col-6">
           <select id="course-select" class="form-control">
             <option value="">전체</option>

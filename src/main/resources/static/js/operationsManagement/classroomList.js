@@ -13,14 +13,18 @@ let classroomPageConfig = {
     orderBy: "id",
     orderDirection: "ASC"
 }
-let staffPageConfig = {
+let staffConfig = {
     pageNo: null,
     pageSize: null,
-    type: null,
+    type: "fullname",
     keyword: null,
-    orderBy: "id",
+    orderBy: "fullname",
     orderDirection: "ASC",
-    staffType: "ADMINISTRATOR"
+    // 필터링
+    staffId: null,
+    staffType: "ADMINISTRATOR",
+    staffPosition: null,
+    onlyLeaver: false,
 }
 let staffs = null;
 $(document).ready(() => {
@@ -237,18 +241,29 @@ async function apiDeleteRequestAboutClassroom(endpoint, additionalParams) {
 
 async function initState() {
     // 관리자(정), 관리자(부) 셀렉트 박스 읽어오기
-    let staffsWithPagination = await apiGetRequestAboutStaff(
-        '/api/management/staffs');
-    staffs = staffsWithPagination?.staffRepsDTOS || [];
-    if (!Array.isArray(staffs)) staffs = [];
-    console.log(staffs);
+    let staffsWithPaging = await apiGetRequestParams(
+        '/api/operationsmanagement/staffs',
+        {...baseConfig, ...staffConfig});
+    console.log(staffsWithPaging);
+
+    staffs = staffsWithPaging?.records || [];
+    if (!Array.isArray(staffs)) {
+        staffs = [];
+    }
 
     updateSelectBox('#primary-select', staffs);
     updateSelectBox('#secondary-select', staffs);
 
     displayTableView();
 }
-
+async function apiGetRequestParams(endpoint, params) {
+    try {
+        const response = await axios.get(endpoint, {params: params});
+        return response.data.data;
+    } catch (error) {
+        return [];
+    }
+}
 async function displayTableView() {
 
     let classroomsWithPagination = await apiGetRequestAboutClassroom(
@@ -354,18 +369,6 @@ function updateModSelectBox(selector, data, userId) {
     $select.find(`option[value="${userId}"]`).prop('selected', true);
 }
 
-async function apiGetRequestAboutStaff(endpoint, additionalParams = {}) {
-    try {
-        const response = await axios.get(endpoint, {
-            params: { ...baseConfig, ...staffPageConfig }
-        });
-        console.log(response.data);
-        return response.data.data;
-    } catch (error) {
-        console.error(`${endpoint} 요청 오류:`, error);
-        return [];
-    }
-}
 
 async function apiGetRequestAboutClassroom(endpoint, additionalParams = {}) {
     try {

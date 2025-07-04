@@ -69,6 +69,7 @@ async function fetchAndDisplayCourses() {
         {...baseConfig, ...courseConfig});
     console.log(coursesWithPaging);
     displayBubleChart();
+    displayCourseTable();
     displayTrainingLogChart();
     displayLearnerCard()
     loadPartCourseSelect();
@@ -95,7 +96,7 @@ function displayBubleChart() {
         courseName: course.courseWithAssignedInfo.coName,
         learnerCount: course.courseWithAssignedInfo.coNumberOfLearner,
         progressRate: course.scheduleOverview.courseProgressRate,
-        attendanceRate: course.courseLearnerOverview.courseAvgAttendanceRate
+        attendanceRate: Math.floor(course.courseLearnerOverview.courseAvgAttendanceRate)
     }));
 
     const colors = [
@@ -124,28 +125,51 @@ function displayBubleChart() {
             height: 400,
             type: 'bubble',
             zoom: {
-                enabled: true,
-                type: 'xy',
-                autoScaleYaxis: false
+                enabled: false
             },
             toolbar: {
                 show: true,
                 tools: {
-                    pan: true,
-                    zoom: true,
-                    zoomin: true,
-                    zoomout: true,
-                    reset: true
+                    pan: false,
+                    zoom: false,
+                    zoomin: false,
+                    zoomout: false,
+                    reset: false
                 },
-                autoSelected: 'pan' // ← 팬 모드가 기본값!
             }
         },
-        dataLabels: { enabled: true },
+        dataLabels: { enabled: true, style: { fontSize: '16px', fontWeight: 400, color: '#858796' }  },
         fill: { opacity: 0.85 },
-        title: { text: '', align: 'center', style: { fontSize: '16px' } },
-        xaxis: { title: { text: '과정진행률 (%)' }, min: 0, max: 100, tickAmount: 10 },
-        yaxis: { title: { text: '교육생출결률 (%)' }, min: 0, max: 100 },
+        /*title: { text: '', align: 'center', style: { fontSize: '16px' } },*/
+        xaxis: {
+            title: { text: '과정진행률 (%)', style: { fontSize: '16px', fontWeight: 400, color: '#858796' } },
+            min: 0, max: 100, tickAmount: 10,
+            labels: { style: { fontSize: '16px', fontWeight: 400, color: '#858796' } }
+        },
+        yaxis: {
+            title: {
+                text: '교육생출결률',
+                style: { fontSize: '16px', fontWeight: 400, color: '#858796', fontFamily: 'Nunito, sans-serif'},
+                /*rotate: 0,*/
+                offsetX: 0,
+                offsetY: 0,
+            },
+            min: 0, max: 100,
+            labels: {
+                style: {
+                    fontSize: '16px',
+                    color: '#858796',
+                    fontFamily: 'Nunito, sans-serif'
+                }
+            }
+        },
+        /*grid: {
+            padding: {
+                left: 40
+            }
+        },*/
         tooltip: {
+            style: { fontSize: '16px' },
             custom: function({ seriesIndex, dataPointIndex, w }) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 return `
@@ -160,14 +184,63 @@ function displayBubleChart() {
         },
         plotOptions: {
             bubble: {
-                minBubbleRadius: 25,
-                maxBubbleRadius: 60
+                minBubbleRadius: 50,
+                maxBubbleRadius: 500
             }
         }
     };
 
     const chart = new ApexCharts(document.querySelector("#bubble-chart"), options);
     chart.render();
+}
+function displayCourseTable() {
+    $('#course-table').empty();
+    let courses = coursesWithPaging?.records || [];
+    if (!Array.isArray(courses)) courses = [];
+    if(courses.length == 0) {
+        console.log("진행중인 과정이 없는 상태");
+        return;
+    }
+    courses.forEach(course => {
+        let html = `
+            <tr class="text-center">
+              <td class="align-middle">${course.courseWithAssignedInfo.coName}</td>
+              <td class="align-middle">${course.courseWithAssignedInfo.coInstructorName}</td>
+              <td class="align-middle">${course.courseWithAssignedInfo.coStartDate} ~ ${course.courseWithAssignedInfo.coEndDate}</td>
+              <td class="align-middle">
+                <div class="progress-wrapper" style="position: relative;">
+                  <div class="progress" style="height: 20px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: ${course.scheduleOverview.courseProgressRate}%"
+                         attr="aria-valuenow=${course.scheduleOverview.courseProgressRate}"
+                         aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                  </div>
+                  <span class="progress-text text-gray-800"
+                        style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
+                        ${course.scheduleOverview.courseProgressRate}%
+                  </span>
+                </div>
+              </td>
+              <td class="align-middle">
+                <div class="progress-wrapper" style="position: relative;">
+                  <div class="progress" style="height: 20px;">
+                    <div class="progress-bar bg-warning" role="progressbar"
+                         style="width: ${course.courseLearnerOverview.courseAvgAttendanceRate}%"
+                         attr="aria-valuenow=${course.courseLearnerOverview.courseAvgAttendanceRate}"
+                         aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                  </div>
+                  <span class="progress-text text-gray-800"
+                        style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
+                        ${course.courseLearnerOverview.courseAvgAttendanceRate}%
+                  </span>
+                </div>
+              </td>
+            </tr>
+        `;
+        $('#course-table').append(html);
+    });
 }
 function displayTrainingLogChart() {
     let courses = coursesWithPaging?.records || [];
@@ -253,9 +326,7 @@ function displayLearnerCard() {
     }
 
     courses.forEach(course => {
-       console.log(course);
        course.courseLearnerOverview.learnerList.forEach(learner => {
-           console.log(learner);
 
            if (learner.learnerCourse == null) {
                return;
@@ -794,7 +865,19 @@ function displayTimeLineChart(classroomUsageList) {
         chart: {
             type: 'rangeBar',
             height: 600,
-            toolbar: { show: true }
+            zoom: {
+                enabled: false
+            },
+            toolbar: {
+                show: true,
+                tools: {
+                    pan: false,
+                    zoom: false,
+                    zoomin: false,
+                    zoomout: false,
+                    reset: false
+                },
+            },
         },
         plotOptions: {
             bar: {

@@ -97,42 +97,7 @@
                   <th scope="col" class="align-middle" style="width: 20%;">교육생출결률</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr th:each="course : ${records}" class="text-center">
-                  <td class="align-middle" th:text="${course.courseWithAssignedInfo.coName}"></td>
-                  <td class="align-middle" th:text="${course.courseWithAssignedInfo.coInstructorName}"></td>
-                  <td class="align-middle" th:text="|${course.courseWithAssignedInfo.coStartDate} ~ ${course.courseWithAssignedInfo.coEndDate}|"></td>
-                  <td class="align-middle">
-                    <div class="progress-wrapper" style="position: relative;">
-                      <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-success" role="progressbar"
-                             th:style="'width: ' + ${course.scheduleOverview.courseProgressRate} + '%'"
-                             th:attr="aria-valuenow=${course.scheduleOverview.courseProgressRate}"
-                             aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                      </div>
-                      <span class="progress-text text-gray-800"
-                            th:text="${course.scheduleOverview.courseProgressRate} + '%'"
-                            style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
-                      </span>
-                    </div>
-                  </td>
-                  <td class="align-middle">
-                    <div class="progress-wrapper" style="position: relative;">
-                      <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-warning" role="progressbar"
-                             th:style="'width: ' + ${course.courseLearnerOverview.courseAvgAttendanceRate} + '%'"
-                             th:attr="aria-valuenow=${course.courseLearnerOverview.courseAvgAttendanceRate}"
-                             aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                      </div>
-                      <span class="progress-text text-gray-800"
-                            th:text="${course.courseLearnerOverview.courseAvgAttendanceRate} + '%'"
-                            style="position: absolute; top: 0; left: 0; right: 0; text-align: center; line-height: 20px;">
-                      </span>
-                    </div>
-                  </td>
-                </tr>
+              <tbody id="course-table">
               </tbody>
             </table>
           </div>

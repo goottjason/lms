@@ -204,8 +204,8 @@ function displayCardList(learnersWithPaging) {
                 let user   = learner.learnerUser;
                 rowHtml += `
                     <div class="col mb-4">
-                        <div class="card text-center card-null"}
-                        style="border-top: 5px solid #f6c23e; border-bottom: 5px solid #f6c23e">
+                        <div class="card text-center card-null"
+                        style="border-top: 5px solid #f6c23e;">
                             <img src="${user.userProfileImg != null ? user.userProfileImg: baseImg}" 
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
@@ -241,7 +241,7 @@ function displayCardList(learnersWithPaging) {
                           learner.leCompletionStatus === 'DROPPED' ? 'btn-danger' : '';
                 rowHtml += `
                     <div class="col mb-4">
-                        <div class="card text-center ${learner.leCompletionStatus === 'DROPPED' ? 'card-dropped' : ''}"  style="border-top: 5px solid ${colorStatus}; border-bottom: 5px solid ${colorStatus}">
+                        <div class="card text-center ${learner.leCompletionStatus === 'DROPPED' ? 'card-dropped' : ''}"  style="border-top: 5px solid ${colorStatus};">
                             <img src="${user.userProfileImg != null ? user.userProfileImg: baseImg}" 
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">

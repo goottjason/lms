@@ -13,6 +13,7 @@ import com.goott5.lms.learnermanagement.domain.PageUserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,8 @@ public interface CourseManagementService {
 
   PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
       BaseReqDTO baseReqDTO,
-      PageCourseRequest pageCourseRequest
+      PageCourseRequest pageCourseRequest,
+      HttpServletRequest request
   );
 
   Boolean removeCoursesByAuth(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);

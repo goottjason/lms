@@ -5,6 +5,7 @@ import com.goott5.lms.learnermanagement.domain.*;
 import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerResponse;
+import com.goott5.lms.learnermanagement.domain.dto.PartModifyRequest;
 import com.goott5.lms.learnermanagement.domain.integrated.LearnerOverviewResp;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationReqDTO;
 import com.goott5.lms.learnermanagement.domain.participation.PageParticipationRespDTO;
@@ -210,6 +211,21 @@ public class LearnerManagementController {
     return ApiResponse.okResponse(200, "success", learnersWithPagination);
   }
 
+  @GetMapping("/api/learnermanagement/learnersonlypart")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<PageLearnerResponse<LearnerOverviewResp>>> getLearnersOnlyPartByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageLearnerRequest pageLearnerRequest
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    PageLearnerResponse<LearnerOverviewResp> learnersWithPagination =
+        learnerManagementService.getLearnersOnlyPartByAuth(baseReqDTO, pageLearnerRequest);
+    return ApiResponse.okResponse(200, "success", learnersWithPagination);
+  }
+
   @GetMapping("/learnerManagement/learnerDetail")
   public String learnerDetail(
       @RequestParam(value = "leId", defaultValue = "-1") Integer leId,
@@ -279,4 +295,26 @@ public class LearnerManagementController {
       return ApiResponse.okResponse(200, "fail", result);
     }
   }
+
+  @PatchMapping("/api/learnermanagement/learners/participations/{partId}")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<Boolean>> modifyParticipationStatus(
+      @PathVariable Integer partId,
+      @RequestBody PartModifyRequest request
+  ) {
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(request.getLoginUserId());
+    request.setLoginUserPosition(loginUserPosition);
+    request.setPartId(partId);
+    Boolean result = false;
+    if (request.getLoginUserType().equals("ADMINISTRATOR")) {
+      result = learnerManagementService.modifyPartInfo(request);
+    }
+    if (result) {
+      return ApiResponse.okResponse(200, "success", result);
+    } else {
+      return ApiResponse.okResponse(200, "fail", result);
+    }
+  }
+
 }

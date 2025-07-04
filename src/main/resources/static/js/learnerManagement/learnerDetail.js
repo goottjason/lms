@@ -384,6 +384,7 @@ async function modifyCompletionStatus() {
                 text: "해당 수강이력이 중도탈퇴로 변경되었습니다.",
                 footer: ''
               });
+    $('#drop-button').hide();
   } else {
     Swal.fire({
                 icon: "error",
@@ -501,7 +502,7 @@ function handlePartSaveButtonClick() {
     partTrainingTime: trainingTimeVal
   };
   console.log(partRequest);
-  // savePartInfoByPartId($(this).data('id'), partRequest);
+  savePartInfoByPartId($(this).data('id'), partRequest);
 
   // 요청한 value 그대로 text로 출력
 

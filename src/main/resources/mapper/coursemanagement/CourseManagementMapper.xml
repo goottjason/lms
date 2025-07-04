@@ -198,7 +198,53 @@
         <include refid="mapper.learnermanagement.CommonManagement.filteringForCourse"/>
         <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForCourse"/>
   </select>
-
+  <select id="selectCountCoursesByAuth"
+    resultType="INTEGER">
+    SELECT
+    COUNT(*)
+    FROM
+    (
+    SELECT
+    co.id AS coId,
+    co.is_in_progress AS coIsInProgress,
+    co.name AS coName,
+    co.number_of_learner AS coNumberOfLearner,
+    co.start_date AS coStartDate,
+    co.end_date AS coEndDate,
+    co.total_hours AS coTotalHours,
+    co.total_days AS coTotalDays,
+    co.daily_hours AS coDailyHours,
+    co.break_time AS coBreakTime,
+    co.lesson_start_time AS coLessonStartTime,
+    co.lesson_end_time AS coLessonEndTime,
+    co.lunch_start_time AS coLunchStartTime,
+    co.lunch_end_time AS coLunchEndTime,
+    co.created_at AS coCreatedAt,
+    co.updated_at AS coUpdatedAt,
+    co.deleted_at AS coDeletedAt,
+    cr.id AS coClassroomId,
+    cr.name AS coClassroomName,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN sa.user_id END) AS coCourseHeadId,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN sa.user_id END) AS coInstructorId,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN us.fullname END) AS coCourseHeadName,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN us.fullname END) AS coInstructorName
+    FROM course co
+    LEFT JOIN staff_assignment sa ON co.id = sa.course_id
+    LEFT JOIN user us ON sa.user_id = us.id
+    LEFT JOIN staff_detail sd ON us.id = sd.user_id
+    LEFT JOIN classroom_allocation ca ON ca.course_id = co.id
+    LEFT JOIN classroom cr ON cr.id = ca.classroom_id
+    GROUP BY
+    co.id, co.is_in_progress, co.name, co.number_of_learner,
+    co.start_date, co.end_date, co.total_hours, co.total_days, co.daily_hours, co.break_time,
+    co.lesson_start_time, co.lesson_end_time, co.lunch_start_time, co.lunch_end_time,
+    co.created_at, co.updated_at, co.deleted_at, cr.id, cr.name
+    ) AS origin
+    WHERE
+    <include refid="mapper.learnermanagement.CommonManagement.authForCourse"/>
+    <include refid="mapper.learnermanagement.CommonManagement.filteringForCourse"/>
+    <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForCourse"/>
+  </select>
   <!--교과목 조회-->
   <select id="selectSubjectByCoId"
     resultType="com.goott5.lms.coursemanagement.domain.table.CourseSubject">
@@ -219,7 +265,28 @@
     cu.course_id = #{coId}
     ORDER BY cu.subject_order ASC
   </select>
+  <select id="selectSubjectByCoIds"
+    resultType="com.goott5.lms.coursemanagement.domain.table.CourseSubject">
 
+    SELECT
+    cu.id AS cuId,
+    cu.course_id AS cuCourseId,
+    cu.subject_order AS cuSubjectOrder,
+    cu.name AS cuName,
+    cu.hours AS cuHours,
+    cu.textbook_name AS cuTextbookName,
+    cu.textbook_author AS cuTextbookAuthor,
+    cu.created_at AS cuCreatedAt,
+    cu.updated_at AS cuUpdatedAt,
+    cu.deleted_at AS cuDeletedAt
+    FROM course_subject cu
+    WHERE
+    cu.course_id IN
+    <foreach collection="coIds" item="coId" open="(" separator="," close=")">
+      #{coId}
+    </foreach>
+    ORDER BY cu.subject_order ASC
+  </select>
   <!--시간표 조회-->
   <select id="selectScheduleByCoId"
     resultType="com.goott5.lms.coursemanagement.domain.table.CourseSchedule">
@@ -239,6 +306,27 @@
     cs.course_id = #{coId}
     ORDER BY cs.class_date ASC, cs.period ASC
   </select>
+  <select id="selectScheduleByCoIds"
+    resultType="com.goott5.lms.coursemanagement.domain.table.CourseSchedule">
+    SELECT
+    cs.id AS csId,
+    cs.subject_id AS csSubjectId,
+    cs.course_id AS csCourseId,
+    cs.class_date AS csClassDate,
+    cs.period AS csPeriod,
+    cs.period_start_time AS csPeriodStartTime,
+    cs.period_end_time AS csPeriodEndTime,
+    cs.created_at AS csCreatedAt,
+    cs.updated_at AS csUpdatedAt,
+    cs.deleted_at AS csDeletedAt
+    FROM course_schedule cs
+    WHERE
+    cs.course_id IN
+    <foreach collection="coIds" item="coId" open="(" separator="," close=")">
+      #{coId}
+    </foreach>
+    ORDER BY cs.class_date ASC, cs.period ASC
+  </select>
 
   <select id="selectClassDateByCoId" resultType="java.time.LocalDate">
     SELECT DISTINCT
@@ -248,6 +336,28 @@
     cs.course_id = #{coId}
     ORDER BY cs.class_date ASC, cs.period ASC
   </select>
-
-
+  <select id="selectClassDateByCoIds"
+    resultType="com.goott5.lms.coursemanagement.domain.dto.CourseClassDate">
+    SELECT DISTINCT
+    cs.course_id AS csCourseId,
+    cs.class_date AS csClassDate
+    FROM course_schedule cs
+    WHERE
+    cs.course_id IN
+    <foreach collection="coIds" item="coId" open="(" separator="," close=")">
+      #{coId}
+    </foreach>
+    ORDER BY cs.class_date ASC, cs.period ASC
+  </select>
+<select id="selectTrainingDateByCoIds"
+  resultType="com.goott5.lms.coursemanagement.domain.dto.CourseTrainingDate">
+  SELECT
+  tl.course_id AS tlCourseId,
+  tl.training_date AS tlTrainingDate
+  FROM training_log tl
+  WHERE tl.course_id IN
+  <foreach collection="coIds" item="coId" open="(" separator="," close=")">
+    #{coId}
+  </foreach>
+</select>
 </mapper>

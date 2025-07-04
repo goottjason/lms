@@ -21,6 +21,7 @@ import com.goott5.lms.learnermanagement.domain.participation.PageParticipationRe
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationReqDTO;
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.test.TestRespDTO;
+import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -116,4 +117,11 @@ public interface LearnerManagementMapper {
 
   Boolean updateCompletionStatus(CompletionStatusUpdateRequest request);
 
+  List<LearnerResponse> selectLearnersByAuthByCoIds(
+      @Param("base") BaseReqDTO baseReqDTO,
+      @Param("coIds") List<Integer> coIds);
+
+  List<LearnerResponse> selectLearnersOnlyPartByAuth(
+      @Param("base") BaseReqDTO baseReqDTO,
+      @Param("page") PageLearnerRequest pageLearnerRequest);
 }

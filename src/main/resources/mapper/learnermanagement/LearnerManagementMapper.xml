@@ -326,6 +326,104 @@
       <include refid="mapper.learnermanagement.CommonManagement.filteringForLearner"/>
       <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForLearner"/>
   </select>
+  <select id="selectLearnersByAuthByCoIds"
+    resultType="com.goott5.lms.learnermanagement.domain.dto.LearnerResponse">
+    SELECT
+    userId,
+    userFullname,
+    leId,
+    leUserId,
+    leCourseId,
+    leCompletionStatus,
+    coIsInProgress,
+    coInstructorId,
+    coInstructorName,
+    coCourseHeadId,
+    coCourseHeadName,
+    coClassroomId,
+    coClassroomName
+    FROM (
+    SELECT
+    ul.id AS userId,
+    ul.fullname AS userFullname,
+    le.id AS leId,
+    le.user_id AS leUserId,
+    le.course_id AS leCourseId,
+    le.completion_status AS leCompletionStatus,
+    co.is_in_progress AS coIsInProgress,
+    cr.id AS coClassroomId,
+    cr.name AS coClassroomName,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN sa.user_id END) AS coCourseHeadId,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN sa.user_id END) AS coInstructorId,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN us.fullname END) AS coCourseHeadName,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN us.fullname END) AS coInstructorName
+    FROM user ul
+    LEFT JOIN learner_enrollment le ON ul.id = le.user_id
+    LEFT JOIN course co ON le.course_id = co.id
+    LEFT JOIN staff_assignment sa ON co.id = sa.course_id
+    LEFT JOIN user us ON sa.user_id = us.id
+    LEFT JOIN staff_detail sd ON us.id = sd.user_id
+    LEFT JOIN classroom_allocation ca ON ca.course_id = co.id
+    LEFT JOIN classroom cr ON cr.id = ca.classroom_id
+    WHERE ul.type = 'LEARNER'
+    GROUP BY ul.id, ul.fullname, le.id, le.user_id, le.course_id, le.completion_status, co.is_in_progress, cr.id, cr.name
+    ) AS origin
+    WHERE
+    <include refid="mapper.learnermanagement.CommonManagement.authForLearner"/>
+    AND leCourseId IN
+    <foreach collection="coIds" item="coId" open="(" separator="," close=")">
+      #{coId}
+    </foreach>
+    ORDER BY userFullname ASC
+  </select>
+  <select id="selectLearnersOnlyPartByAuth"
+    resultType="com.goott5.lms.learnermanagement.domain.dto.LearnerResponse">
+    SELECT
+    userId,
+    userFullname,
+    leId,
+    leUserId,
+    leCourseId,
+    leCompletionStatus,
+    coIsInProgress,
+    coInstructorId,
+    coInstructorName,
+    coCourseHeadId,
+    coCourseHeadName,
+    coClassroomId,
+    coClassroomName
+    FROM (
+    SELECT
+    ul.id AS userId,
+    ul.fullname AS userFullname,
+    le.id AS leId,
+    le.user_id AS leUserId,
+    le.course_id AS leCourseId,
+    le.completion_status AS leCompletionStatus,
+    co.is_in_progress AS coIsInProgress,
+    cr.id AS coClassroomId,
+    cr.name AS coClassroomName,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN sa.user_id END) AS coCourseHeadId,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN sa.user_id END) AS coInstructorId,
+    MAX(CASE WHEN sd.position = 'COURSE_HEAD' THEN us.fullname END) AS coCourseHeadName,
+    MAX(CASE WHEN sd.position = 'FULLTIME_INSTRUCTOR' THEN us.fullname END) AS coInstructorName
+    FROM user ul
+    LEFT JOIN learner_enrollment le ON ul.id = le.user_id
+    LEFT JOIN course co ON le.course_id = co.id
+    LEFT JOIN staff_assignment sa ON co.id = sa.course_id
+    LEFT JOIN user us ON sa.user_id = us.id
+    LEFT JOIN staff_detail sd ON us.id = sd.user_id
+    LEFT JOIN classroom_allocation ca ON ca.course_id = co.id
+    LEFT JOIN classroom cr ON cr.id = ca.classroom_id
+    WHERE ul.type = 'LEARNER'
+    GROUP BY ul.id, ul.fullname, le.id, le.user_id, le.course_id, le.completion_status, co.is_in_progress, cr.id, cr.name
+    ) AS origin
+    WHERE
+    <include refid="mapper.learnermanagement.CommonManagement.authForLearner"/>
+    <include refid="mapper.learnermanagement.CommonManagement.filteringForLearner"/>
+    AND leCompletionStatus = 'IN_PROGRESS'
+    <include refid="mapper.learnermanagement.CommonManagement.orderAndPagingForLearner"/>
+  </select>
 
   <!--사용자 조회-->
   <select id="selectUserById" resultType="com.goott5.lms.learnermanagement.domain.table.User">
