@@ -206,4 +206,20 @@ public class UserServiceImpl implements UserService {
     return userMapper.checkAutoLogin(sessionId);
   }
 
+  @Override
+  public boolean checkEnrollment(int userId) {
+
+    int result = userMapper.selectCountLearnerEnrollment(userId);
+
+    return result != 0;
+  }
+
+  @Override
+  public boolean checkAssignment(int userId) {
+
+    int result = userMapper.selectStaffAssignment(userId);
+
+    return result != 0;
+  }
+
 }

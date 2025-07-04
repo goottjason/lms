@@ -65,6 +65,22 @@ public class UserController {
     UserVO loginUser = userService.login(loginDTO);
 
     if (loginUser != null) {
+
+      // 과정 배정여부 검사
+      if (loginUser.getType().equals("LEARNER")) {
+        if (!userService.checkEnrollment(loginUser.getId())) {
+          redirectAttributes.addFlashAttribute("msg", "과정배정이 완료되어야 로그인이 가능합니다. 관리자에게 문의해주세요.");
+          return "redirect:/";
+        }
+      }
+
+      if (loginUser.getType().equals("INSTRUCTOR")) {
+        if (!userService.checkAssignment(loginUser.getId())) {
+          redirectAttributes.addFlashAttribute("msg", "과정배정이 완료되어야 로그인이 가능합니다. 관리자에게 문의해주세요.");
+          return "redirect:/";
+        }
+      }
+
       session.setAttribute("loginUser", loginUser);
 
       // autoLogin 체크여부...
