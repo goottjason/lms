@@ -17,8 +17,10 @@ import com.goott5.lms.training.service.TrainingService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,12 +32,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -367,6 +372,7 @@ public class TrainingController {
       return "redirect:/training/trainingList";
     }
 
+
     int userId = loginUser.getId();
 
     SelectAllWithoutActualDTO selectAllWithoutActualDTO =
@@ -377,6 +383,13 @@ public class TrainingController {
 
     //해당 일자의 훈련일지가 있으면, 등록 막기
     int courseId = selectAllWithoutActualDTO.getSelectCourseDTO().getId(); //현재 진행중인 해당 강사의 과정 dto
+
+    // 훈련일지는 해당 과정의 시작일과 종료일 사이에만(해당 안되면 막기)
+    boolean isRegisterDate = trainingService.isRegisterDate(registerDate, courseId);
+    if (!isRegisterDate) {
+      redirectAttributes.addFlashAttribute("noGet", "해당 과정에 속한 날짜가 아닙니다.");
+      return "redirect:/training/trainingList";
+    }
 
     boolean isReRegister = false;
     if (trainingService.selectCourseDTO(userId) != null) {
@@ -398,7 +411,8 @@ public class TrainingController {
 
 
   @PostMapping("/trainingRegister")
-  public ResponseEntity<?> trainingRegister(@RequestBody InsertFinalRegisterDTO finalData,
+  public ResponseEntity<?> trainingRegister(@Valid @RequestBody InsertFinalRegisterDTO finalData,
+      BindingResult bindingResult,
       HttpSession session) {
 
     log.info("finalData: {}", finalData);
@@ -428,8 +442,22 @@ public class TrainingController {
         .instructorId(loginUser.getId())
         .build();
 
+    // 바인딩 필드 에러 검사(insert 전)
+    // 필드 에러 넣어주기
+    List<RegisterTrainingParamDTO> registerTrainingParamList = finalData.getDataArray();
+    trainingService.addFieldErrorsRegister(bindingResult, registerTrainingParamList); //void
+
+    if (bindingResult.hasErrors()) {
+      // actual 이라는 같은 키에 value로 받은 리스트에 계속 fieldError 넣어주기
+      Map<String, List<FieldError>> errorMap = new HashMap<>();
+      for (FieldError fieldError : bindingResult.getFieldErrors()) {
+        errorMap.computeIfAbsent(fieldError.getField(), key -> new ArrayList<>()).add(fieldError);
+      }
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorMap));
+    }
+
     int isInsertAll = trainingService.insertTrainingAll(insertTrainingDTO,
-        finalData.getDataArray());
+        registerTrainingParamList);
 
     if (isInsertAll == 0 || isInsertAll == -1) {
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "훈련일지 등록 실패", null));
@@ -443,7 +471,8 @@ public class TrainingController {
   }
 
   @PostMapping("/trainingModify")
-  public ResponseEntity<?> trainingModify(@RequestBody ModifyFinalDTO modifyFinalDTO,
+  public ResponseEntity<?> trainingModify(@Valid @RequestBody ModifyFinalDTO modifyFinalDTO,
+      BindingResult bindingResult,
       HttpSession session) {
 
     //로그인 유저가 해당 훈련일지의 작성자가 아니면 수정 불가
@@ -451,11 +480,23 @@ public class TrainingController {
     if (loginUser != null) {
       if (!trainingService.isMyTrainingLog(modifyFinalDTO.getTrainingId(), loginUser.getId())) {
         return ResponseEntity.badRequest()
-            .body(new MyResponseWithDataPYJ(400, "해당 과제의 작성자가 아닙니다", loginUser));
+            .body(new MyResponseWithDataPYJ(401, "해당 과제의 작성자가 아닙니다", loginUser));
       }
     }
 
     log.info("modifyFinalDTO: {}", modifyFinalDTO); //성공
+
+    // 필드에러 (유효성) 추가
+    trainingService.addFieldErrorsModify(bindingResult, modifyFinalDTO);
+    
+    // 필드 에러 검사
+    Map<String, List<FieldError>> errorMap = new HashMap<>();
+    if (bindingResult.hasErrors()) {
+      for (FieldError error : bindingResult.getFieldErrors()) {
+        errorMap.computeIfAbsent(error.getField(), key -> new ArrayList<>()).add(error);
+      }
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400,"필드 에러 발생", errorMap));
+    }
 
     int trainingId = modifyFinalDTO.getTrainingId();
 

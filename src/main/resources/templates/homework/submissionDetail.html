@@ -15,13 +15,20 @@
     }
 
 
+
+    #modifySubmission {
+      position: relative;
+      z-index: 1; /* 또는 더 큰 값 */
+    }
+
+
   </style>
 </head>
 <body>
 <div layout:fragment="content">
   <!-- content header 시작 -->
   <div class="row align-items-center">
-    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 상세</h1>
+    <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">과제 제출 상세</h1>
   </div>
   <!-- content header 끝 -->
 
@@ -78,24 +85,6 @@
   </div>
   <!-- 본문 끝 -->
 
-
-  <!-- eval  삭제 모달 -->
-  <div class="container" style="position: relative;">
-    <div class="toast" data-autohide="false"
-         style="position: absolute; right: 100px; z-index: 1060; width: 600px; height: 200px;">
-      <div class="toast-header">
-        <strong class="mr-auto text-primary">평가 삭제</strong>
-        <small class="text-muted">delete</small>
-        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
-      </div>
-      <div class="toast-body" style="position: relative; ">
-        정말 삭제하시겠습니까?
-        <button class="btn btn-danger custom-danger-btn-sm" id="toastDeleteBtn"
-                style="position: absolute; bottom: 50px; right: 10px;">예
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- eval  시작 -->
   <div class="container-fluid" id="eval" th:if="${eval != null}">
@@ -166,10 +155,15 @@
   </div>
   <!-- eval 끝() -->
 
+  <!-- 평가 등록 시작 (동적 태그)-->
+  <div th:if="${loginUser.getType() == 'INSTRUCTOR' && eval == null}">
+    <div id="evalRegister"></div> <!-- 이 안에 card 전체 삽입 -->
+  </div>
+  <!-- 평가 등록 끝 -->
 
   <!--eval이 null && loginUser.getId() == homeworkDTO.instructorId() 일때만 eval 등록 폼 보이기-->
 
-  <!-- 목록 -->
+  <!-- 버튼 목록 -->
   <div class="col-12 d-flex justify-content-end mb-4">
 
     <th:block
@@ -188,20 +182,22 @@
       </button>
     </th:block>
 
+
+
     <!-- 상단 카드 시작-->
     <th:block
-        th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId()}">
+        th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId() && eval == null}">
       <button id="modifySubmission" class="btn btn-info btn-icon-split mr-2" type="button">
       <span class="icon text-white-50">
         <i class="fa fa-wrench"></i>
       </span>
-        <span class="text px-3">과제수정</span>
+        <span class="text px-3">과제 수정</span>
       </button>
       <button id="deleteSubmission" class="btn btn-danger btn-icon-split mr-2" type="button">
       <span class="icon text-white-50">
         <i class="fa fa-times"></i>
       </span>
-        <span class="text px-3">과제삭제</span>
+        <span class="text px-3">과제 삭제</span>
       </button>
     </th:block>
     <button id="toList" class="btn btn-secondary btn-icon-split" type="button">
@@ -214,11 +210,7 @@
   </div>
 
 
-  <!-- 평가 등록 시작 (동적 태그)-->
-  <div th:if="${loginUser.getType() == 'INSTRUCTOR' && eval == null}">
-    <div id="evalRegister"></div> <!-- 이 안에 card 전체 삽입 -->
-  </div>
-  <!-- 평가 등록 끝 -->
+
 
   <!-- The Modal -->
   <div class="modal delete" id="myModal">
@@ -245,7 +237,7 @@
     </div>
   </div>
 
-  <!--평가용 삭제 모달-->
+  <!--평가용 삭제 모달 => sweetAlert로 변경-->
 
 
   <!-- content body 끝 -->

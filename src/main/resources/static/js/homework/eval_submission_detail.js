@@ -3,7 +3,6 @@
 let modifyFileList = []; //eval 수정 시 들어갈 파일들
 let deleteModifyFileList = []; //eval 수정 시 들어갈 파일 id(삭제 예정)
 
-
 //평가 수정 란 보이게 하기
 function showEvalModify() {
 
@@ -101,7 +100,7 @@ function passValue() {
   if (evalDTO != null) {
     console.log("evalDTO", evalDTO);
     console.log("isPass", isPass); //null
-    console.log("isPass select 박스값 존재 여부",$("#isPass").length);
+    console.log("isPass select 박스값 존재 여부", $("#isPass").length);
     $("#isPass").val(evalDTO.isPass ? "1" : "0");
   }
 }
@@ -320,23 +319,28 @@ $(function () {
     modifyEvalPost();
   });
 
-  // eval 삭제 버튼 클릭 시 창 띄우기
+  // eval 삭제 버튼 클릭 시 창 띄우기 => sweetAlert로 변경
   $(document).on("click", "#deleteEval", function () {
     // alert("!"); //문제x
     // showDeleteEval();
-    $('.toast').toast('show');
+    // $('.toast').toast('show');
+    Swal.fire({
+      title: '평가가 삭제됩니다',
+      text: "삭제하시겠습니까?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '예',
+      cancelButtonText: '아니오'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteEvalPost();
+      }
+    })
   });
 
-  //eval 정말 삭제
-  $("#toastDeleteBtn").on("click", function (e) {
-    // alert("!"); //작동 ok
-    e.preventDefault();
-    deleteEvalPost();
-
-  });
 
   //목록으로(취소)
-  $(document).on("click","#toDetail", function () {
+  $(document).on("click", "#toDetail", function () {
     console.log("instructorId", instructorId);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
 

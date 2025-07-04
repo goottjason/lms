@@ -295,6 +295,16 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public int selectSubmissionIdForLearner(int homeworkId, int learnerId) {
+    List<Integer> submissionIdList = homeworkMapper.selectSubmissionIdForLearner(homeworkId, learnerId);
+
+    if( submissionIdList == null || submissionIdList.isEmpty() || submissionIdList.get(0) == null ) {
+      return -1;
+    }
+    return submissionIdList.get(0);
+  }
+
+  @Override
   public HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId) {
     return homeworkMapper.selectHomeworkDTOBySubmissionId(submissionId) == null ? null
         : homeworkMapper.selectHomeworkDTOBySubmissionId(submissionId);

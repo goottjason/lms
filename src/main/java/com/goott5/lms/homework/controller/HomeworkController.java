@@ -367,9 +367,18 @@ public class HomeworkController {
           .body(new MyResponseWithDataPYJ(404, "등록한 과제 전달 실패했습니다.", null));
     }
 
-    //content와 관련된 bindingresult 추가
+    //title과 관련된 bindingResultFieldError 추가
+    String title = homeworkDTO.getTitle();
+    int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
+    if (titleLength > 100 || titleLength < 10) {
+      bindingResult.addError(new FieldError("homeworkDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    }else if(title.trim().isEmpty()){
+      bindingResult.addError(new FieldError("homeworkDTO", "title", "공백만 쓸 수는 없습니다."));
+    }
+
+    //content와 관련된 bindingResultFieldError 추가
     String content = homeworkDTO.getContent();
-    if (content == null || content.isBlank()) {
+    if (content == null || content.trim().isBlank()) {
       bindingResult.addError(new FieldError("homeworkDTO", "content", "글자를 입력해주세요."));
     } else {
       int contentLength = content.getBytes(StandardCharsets.UTF_8).length;
@@ -391,7 +400,7 @@ public class HomeworkController {
     //과제 마감 날짜가 시작일 이전일 때
     LocalDateTime endDate = homeworkDTO.getEndDate();
     if (endDate != null) {
-      if (endDate.isBefore(startDate)) {
+      if (endDate.isBefore(startDate) || endDate.isEqual(Objects.requireNonNull(startDate))) {
         bindingResult.addError(new FieldError("homeworkDTO", "endDate", "과제 마감일은 시작일 이후여야 합니다."));
       }
     }
@@ -530,9 +539,18 @@ public class HomeworkController {
       log.info("전송 받은 deleteFiles:{}", deleteFiles);
     }
 
+    //title과 관련된 bindingResultFieldError 추가
+    String title = homeworkModifyDTO.getTitle();
+    int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
+    if (titleLength > 100 || titleLength < 10) {
+      bindingResult.addError(new FieldError("homeworkModifyDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    }else if(title.trim().isEmpty()){
+      bindingResult.addError(new FieldError("homeworkModifyDTO", "title", "공백만 쓸 수는 없습니다."));
+    }
+
     //content와 관련된 필드에러 추가
     String content = homeworkModifyDTO.getContent();
-    if (content == null || content.isEmpty()) {
+    if (content == null || content.trim().isEmpty()) {
       bindingResult.addError(new FieldError("homeworkModifyDTO", "content", "내용을 입력해주세요."));
 //        log.info("content 에러:{}", bindingResult.getFieldErrors().get(0).getDefaultMessage());
     } else {

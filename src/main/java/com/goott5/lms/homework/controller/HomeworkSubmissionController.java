@@ -111,7 +111,18 @@ public class HomeworkSubmissionController {
     //로그인한 학생이 보낸 homework
     log.info("homeworkId:{}", homeworkId);
 
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200,"학생의 submissionData 성공", null));
+    //로그인한 학생의 id
+    int loginUserId = -1;
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    if(loginUser != null) loginUserId = loginUser.getId();
+
+    // 둘을 기반으로 submissionId 조회
+    int submissionId = homeworkService.selectSubmissionIdForLearner(homeworkId, loginUserId);
+    if(submissionId == -1){
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400,"아직 제출한 과제가 없습니다.",null));
+    }
+
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200,"학생의 submissionData 성공", submissionId));
   }
 
   //submissionDetail
@@ -346,9 +357,18 @@ public class HomeworkSubmissionController {
       homeworkSubmissionDTO.setLearnerId(loginUser.getId());
       log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
 
+      //title과 관련된 bindingResultFieldError 추가
+      String title = homeworkSubmissionDTO.getTitle();
+      int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
+      if (titleLength > 100 || titleLength < 10) {
+        bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+      } else if(title.trim().isEmpty()){
+        bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
+      }
+
       //content와 관련된 필드에러 추가
       String content = homeworkSubmissionDTO.getContent();
-      if (content == null || content.isEmpty()) {
+      if (content == null || content.trim().isEmpty()) {
         bindingResult.addError(new FieldError("homeworkSubmissionDTO", "content", "내용을 입력해주세요."));
 //        log.info("content 에러:{}", bindingResult.getFieldErrors().get(0).getDefaultMessage());
       } else {
@@ -488,9 +508,18 @@ public class HomeworkSubmissionController {
       @RequestParam(required = false) List<Integer> deleteFileList)
       throws UnsupportedEncodingException {
 
+    //title과 관련된 bindingResultFieldError 추가
+    String title = homeworkSubmissionDTO.getTitle();
+    int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
+    if (titleLength > 100 || titleLength < 10) {
+      bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    }else if(title.trim().isEmpty()){
+      bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
+    }
+
     //content와 관련된 필드에러 추가
     String content = homeworkSubmissionDTO.getContent();
-    if (content == null || content.isEmpty()) {
+    if (content == null || content.trim().isEmpty()) {
       bindingResult.addError(new FieldError("homeworkSubmissionDTO", "content", "내용을 입력해주세요."));
 //        log.info("content 에러:{}", bindingResult.getFieldErrors().get(0).getDefaultMessage());
     } else {
@@ -704,7 +733,7 @@ public class HomeworkSubmissionController {
     //필드에러
     //content와 관련된 필드에러 추가
     String content = homeworkEvalDTO.getContent();
-    if (content == null || content.isEmpty()) {
+    if (content == null || content.trim().isEmpty()) {
       bindingResult.addError(new FieldError("homeworkEvalDTO", "content", "내용을 입력해주세요."));
     } else {
       int length = content.getBytes(StandardCharsets.UTF_8).length;
@@ -788,7 +817,7 @@ public class HomeworkSubmissionController {
     //필드에러
     //content와 관련된 필드에러 추가
     String content = homeworkEvalModifyDTO.getContent();
-    if (content == null || content.isEmpty()) {
+    if (content == null || content.trim().isEmpty()) {
       bindingResult.addError(new FieldError("homeworkEvalModifyDTO", "content", "내용을 입력해주세요."));
     } else {
       int length = content.getBytes(StandardCharsets.UTF_8).length;

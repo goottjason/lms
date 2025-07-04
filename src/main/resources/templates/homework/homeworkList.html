@@ -142,7 +142,7 @@
               </td>
               <td class="text-center align-middle">
                 <button
-                    th:if="${loginUser.getType() == 'INSTRUCTOR'}"
+                    th:if="${loginUser.getType() == 'INSTRUCTOR' || loginUser.getType() == 'ADMINISTRATOR'}"
                     class="btn btn-primary btn-sm submissionBtn"
                     th:data-id="${homework.getId()}" style="text-align: center"
                     data-toggle="modal" data-target="#homeworkSubmissionModal">클릭
@@ -340,13 +340,14 @@
       const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
       console.log("currentCourse", currentCourse); //인코딩된 param 값을 디코딩
 
+      // 값이 바뀌지 않았으면 이동 x
+      if(nameForLt === currentCourse) return;
+
       // 값이 바뀐 경우에만 이동
-      if (nameForLt !== currentCourse) {
         params.set("nameForLt", nameForLt ? encodeURIComponent(nameForLt.trim()) : "");
         params.set("keyword", ""); // 검색어 초기화 (선택사항)
 
         location.href = `${url.pathname}?${params.toString()}`;
-      }
 
     }
 

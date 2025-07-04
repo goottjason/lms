@@ -4,6 +4,7 @@ import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
 import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
@@ -11,6 +12,7 @@ import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.springframework.validation.BindingResult;
 
 public interface TrainingService {
 
@@ -47,6 +49,9 @@ public interface TrainingService {
   // 훈련일지 등록 시 자료 불러오기
   SelectAllWithoutActualDTO selectAllWithoutActual(int userId, String trainingDate, RequestParticipationDTO request, SelectTrainingDetailDTO selectTrainingDetailDTO);
 
+  // 훈련일지 등록 시 필드 에러 추가
+  void addFieldErrorsRegister(BindingResult bindingResult, List<RegisterTrainingParamDTO> registerTrainingParamList);
+
   // 훈련일지 등록
   int insertTrainingAll(InsertTrainingDTO insertTrainingDTO,
       List<RegisterTrainingParamDTO> registerParamList);
@@ -60,11 +65,17 @@ public interface TrainingService {
   //기존 훈련일지 여부
   boolean isReRegister(String trainingDate, int instructorId,int courseId);
 
+  //registerDate가 해당 과정의 start_date와 end_date 사이에 있는지 확인
+  boolean isRegisterDate(String trainingDate, int courseId);
+
   // 로그인 유저 == 해당 훈련일지 작성자 판단 여부 (수정용-강사만)
   boolean isMyTrainingLog(int id, int instructorId);
 
   // 훈련 일지 업데이트
   boolean updateTrainingDetail(Map<String, String> map,int trainingId);
+
+  // 훈련일지 수정 시 필드 에러 추가
+  void addFieldErrorsModify(BindingResult bindingResult, ModifyFinalDTO modifyFinalDTO);
 
   //(삭제 시) 유효성 검사 (강사 + 관리자)
   boolean canDeleteTraining(int trainingId, int courseId, int userId);

@@ -76,20 +76,20 @@ class HomeworkTest {
   }
 
 
-  @Test
-  public void HomeworkSubmissionTest() {
-
-    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(1,
-        PagingRequestDTO.builder().pageNo(1).pageSize(5).build());
-
-    if (submissionDTOS != null) {
-
-      log.info("submissionDTOS:{}", submissionDTOS);
-    } else {
-      log.info("null");
-    }
-
-  }
+//  @Test
+//  public void HomeworkSubmissionTest() {
+//
+//    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(1,
+//        PagingRequestDTO.builder().pageNo(1).pageSize(5).build());
+//
+//    if (submissionDTOS != null) {
+//
+//      log.info("submissionDTOS:{}", submissionDTOS);
+//    } else {
+//      log.info("null");
+//    }
+//
+//  }
 
   @Test
   public void menuSelectTest() {
@@ -485,23 +485,30 @@ class HomeworkTest {
 
   }
 
+//  @Test
+//  public void selectHomeworkSubmissionIdByHomework() {
+//
+//    PagingRequestDTO pagingRequestDTO = PagingRequestDTO.builder()
+//        .pageNo(1)
+//        .pageSize(5)
+//        .build();
+//
+//    List<HomeworkSubmissionDTO> submissionDTOList = homeworkMapper.selectSubmissionById(47,
+//        pagingRequestDTO);
+//
+//    if (submissionDTOList != null) {
+//      for (HomeworkSubmissionDTO homeworkSubmissionDTO : submissionDTOList) {
+//        log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
+//      }
+//    } else {
+//      log.info("null");
+//    }
+//  }
+
   @Test
-  public void selectHomeworkSubmissionIdByHomework() {
+  public void selectSubmissionIdForLearner(){
+    List<Integer> submissionIdList = homeworkMapper.selectSubmissionIdForLearner(50,36);
 
-    PagingRequestDTO pagingRequestDTO = PagingRequestDTO.builder()
-        .pageNo(1)
-        .pageSize(5)
-        .build();
-
-    List<HomeworkSubmissionDTO> submissionDTOList = homeworkMapper.selectSubmissionById(47,
-        pagingRequestDTO);
-
-    if (submissionDTOList != null) {
-      for (HomeworkSubmissionDTO homeworkSubmissionDTO : submissionDTOList) {
-        log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
-      }
-    } else {
-      log.info("null");
-    }
+    log.info("submissionIdList:{}",submissionIdList);
   }
 }

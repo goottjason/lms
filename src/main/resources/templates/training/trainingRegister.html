@@ -30,7 +30,7 @@
 <div layout:fragment="content" id="content">
   <!-- content header 시작 -->
 
-  <div class="container bg-white shadow rounded p-4">
+  <div class="container bg-white shadow rounded p-4 mb-4">
     <div class="mb-4">
       <h1 class="h3 mb-6 text-gray-800 text-center">훈련 일지 등록</h1>
       <hr/>
@@ -97,6 +97,7 @@
     <div class="table-responsive mb-4">
       <table class="table table-bordered text-center">
         <thead class="thead-light">
+        <span id="fieldError" style="color: red;"></span>
         <tr>
           <th>교시</th>
           <th>훈련 과목</th>
@@ -195,8 +196,9 @@
         }
       }).catch(function (error) {
         console.log("error", error);
-        let errorCode = error.data.code;
-        let errorMessage = error.data.message;
+        let errorCode = error.response.data.code;
+        let errorMessage = error.response.data.message;
+        let errorData = error.response.data.data;
         // let errorData = error.data.data;
         if (errorCode === 500 || errorCode === 401) {
           Swal.fire({
@@ -214,9 +216,22 @@
             icon: 'error',
             confirmButtonText: '예'
           })
+        } else if (errorCode === 400) {
+          // fieldError
+          for (let [key, value] of Object.entries(errorData)) {
+            //value : dataArray[0].actual:Array(1)
+            //value[0].defaultMessage,
+            let errorMsg = value[0].defaultMessage;
+            console.log("errorMsg", errorMsg);
+            if (errorMsg != null && errorMsg.length > 0) {
+              $("#fieldError").html(errorMsg);
+              // alert(errorMsg);
+            } else {
+              $("#fieldError").html("");
+            }
+          }
         }
       })
-
     }
 
     $(function () {

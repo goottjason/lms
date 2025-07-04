@@ -67,24 +67,39 @@ function modifyData() {
   }).catch(function (error) {
     console.log("error", error);
     let errorMessage = error.response.data.message;
-    swal.fire({
-      title: '훈련일지 수정 실패',
-      text: error.data,
-      icon: 'error',
-      confirmButtonText: '예'
-    }).then((result) => {
-      location.href = "/training/trainingDetail?trainingId=" + trainingId;
-    })
+    let errorCode = error.response.data.code;
+    let errorData = error.response.data.data;
 
     if (errorMessage != null && errorMessage.length > 0) {
-      swal.fire({
-        title: '훈련일지 수정 실패',
-        text: errorMessage,
-        icon: 'error',
-        confirmButtonText: '예'
-      }).then((result) => {
-        location.href = "/training/trainingList";
-      })
+      if (errorCode === 400) {
+        // alert(errorMessage);
+        Object.entries(errorData).forEach(([key, value]) => {
+          let errorMsg = value[0].defaultMessage;
+          // alert(errorMsg);
+          if (errorMsg) {
+            $("#fieldError").html(errorMsg);
+          }
+        })
+        // $("#fieldError").html(errorData.);
+      } else if (errorCode === 401 || errorCode === 404) {
+        swal.fire({
+          title: '훈련일지 수정 실패',
+          text: error.data,
+          icon: 'error',
+          confirmButtonText: '예'
+        }).then((result) => {
+          location.href = "/training/trainingDetail?trainingId=" + trainingId;
+        })
+      } else {
+        swal.fire({
+          title: '훈련일지 수정 실패',
+          text: errorMessage,
+          icon: 'error',
+          confirmButtonText: '예'
+        }).then((result) => {
+          location.href = "/training/trainingList";
+        })
+      }
     }
   })
 }
@@ -111,7 +126,6 @@ function deleteTraining() {
       location.href = "/training/trainingList";
     })
   })
-
 }
 
 // $function 모음
@@ -128,12 +142,15 @@ $(function () {
   //수정할 정보 서버로 보내기
   $(document).on("click", "#modifyRegister", function () {
     // alert("!");
-    modifyData();
+    if ($("")) {
+      modifyData();
+    }
   })
 
   // 삭제 모달 버튼 클릭 시
   $(document).on("click", "#deleteTraining", function () {
     // alert("!");
+
     deleteTraining();
   })
 

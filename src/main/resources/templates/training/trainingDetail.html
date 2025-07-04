@@ -15,6 +15,13 @@
       display: none;
     }
 
+    .tooltip-inner {
+      max-width: 300px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
 
     #content {
       opacity: 1;
@@ -63,20 +70,20 @@
   <!-- Signature Modal 끝 -->
 
   <!-- 학생 이름(해당 창 hover or click시 토스트창 띄우기) -->
-  <div class="toast" data-autohide="false"
-       style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">
-    <div class="toast-header">
-      <strong class="mr-auto text-primary toast-strong"></strong>
-      <small class="text-muted"></small>
-      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
-    </div>
-    <div class="toast-body">
-      Some text inside the toast body
-    </div>
-  </div>
+<!--  <div class="toast" data-autohide="false"-->
+<!--       style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">-->
+<!--    <div class="toast-header">-->
+<!--      <strong class="mr-auto text-primary toast-strong"></strong>-->
+<!--      <small class="text-muted"></small>-->
+<!--      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>-->
+<!--    </div>-->
+<!--    <div class="toast-body">-->
+<!--      Some text inside the toast body-->
+<!--    </div>-->
+<!--  </div>-->
   <!-- toast 끝 -->
 
-  <div class="container bg-white shadow rounded p-4">
+  <div class="container bg-white shadow rounded p-4 mb-4">
     <h1 class="h3 mb-2 text-gray-800 text-center" id="detailTitle">훈련 일지 상세</h1>
     <!-- 상단 버튼 -->
     <div class="d-flex justify-content-between mb-3">
@@ -124,44 +131,40 @@
         <tbody>
         <tr>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAttendanceCount()}"
-              th:data-id="${finalSelectTraining.getResponseParticipationDTO().getAttendanceList()}"
+              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getAttendanceList()}"
               style="cursor: pointer;"
-              onclick="showToast(this)" data-name="출석">조회
+              data-name="출석">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLateCount()}"
-              th:data-id="${finalSelectTraining.getResponseParticipationDTO().getLateList()}"
+              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getLateList()}"
               style="cursor: pointer;"
-              onclick="showToast(this)" data-name="지각">조회
+              data-name="지각">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAbsenceCount()}"
-              th:data-id="${finalSelectTraining.getResponseParticipationDTO().getAbsenceList()}"
+              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getAbsenceList()}"
               style="cursor: pointer;"
-              onclick="showToast(this)" data-name="결석">조회
+               data-name="결석">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyCount()}"
-              th:data-id="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyList()}"
+              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyList()}"
               style="cursor: pointer;"
-              onclick="showToast(this)" data-name="조퇴">조회
+              data-name="조퇴">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingCount()}"
               th:data-id="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
+              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
               style="cursor: pointer;"
-              onclick="showToast(this)" data-name="휴가">조회
+              data-name="휴가">조회
           </td>
         </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- 훈련생 이름 -->
-    <!--    <div class="mb-4">-->
-    <!--      <span class="clickable-name" onclick="alert('박철수')">박 ○○</span>,-->
-    <!--      <span class="clickable-name" onclick="alert('김민수')">김 ○○</span>-->
-    <!--      <small class="text-muted ml-2">(클릭 or 호버하면 이름 조회되게)</small>-->
-    <!--    </div>-->
 
     <!-- 훈련 과목 -->
     <div class="table-responsive mb-4">
+      <span id = "fieldError" style="color: red;"></span>
       <table class="table table-bordered text-center">
         <thead class="thead-light">
         <tr>
@@ -239,18 +242,15 @@
     let detailWithSubMap = /*[[${detailWithSubMap}]]*/ null;
     let courseId = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
 
-    function showToast(div) {
-      let dataId = $(div).data("id");
-      let dataName = $(div).data("name");
-      console.log("dataId", dataId); //성공
-      if ($(div).text() === "0") {
-        $(".toast-body").text("해당 학생이 없습니다.");
-      } else {
-        $(".toast-body").text(dataId);
-      }
-      $(".toast-strong").text(dataName);
-      $(".toast").toast("show");
-    }
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip({
+        placement: 'top',
+        boundary: 'window',
+        trigger: 'hover',
+        html: true,
+        container: 'body'
+      });
+    });
 
     $(function () {
       console.log("finalSelectTraining", finalSelectTraining);

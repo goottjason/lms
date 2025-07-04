@@ -9,6 +9,7 @@ import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
 import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
@@ -16,6 +17,8 @@ import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.domain.registerdto.SelectSchSubDTO;
 import com.goott5.lms.training.mapper.TrainingMapper;
+import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 @Slf4j
 @Service
@@ -242,6 +247,21 @@ public class TrainingServiceImpl implements TrainingService {
   }
 
   @Override
+  public void addFieldErrorsRegister(BindingResult bindingResult, List<RegisterTrainingParamDTO> registerTrainingParamList) {
+    if(registerTrainingParamList == null) return;
+    for (int i = 0; i < registerTrainingParamList.size(); i++) {
+      RegisterTrainingParamDTO registerTrainingParamDTO = registerTrainingParamList.get(i);
+      if(registerTrainingParamDTO == null) continue;
+      String actual = registerTrainingParamList.get(i).getActual();
+
+      int fieldByte = actual.getBytes(StandardCharsets.UTF_8).length;
+      if(registerTrainingParamList.get(i) != null  && fieldByte > 1000){
+        bindingResult.addError(new FieldError("finalData","dataArray[" + i + "].actual", "1000자 이상 입력할 수 없습니다."));
+      }
+    }
+  }
+
+  @Override
   @Transactional(rollbackFor = Exception.class)
   public int insertTrainingAll(InsertTrainingDTO insertTrainingDTO,
       List<RegisterTrainingParamDTO> registerParamList) {
@@ -264,6 +284,8 @@ public class TrainingServiceImpl implements TrainingService {
     log.info("lastAutoNum={}", lastAutoNum);
 
     for (RegisterTrainingParamDTO registerTrainingParamDTO : registerParamList) {
+
+
       //훈련일지 detail insert
       InsertTrainingDetailDTO insertTrainingDetailDTO = InsertTrainingDetailDTO.builder()
           .trainingId(lastAutoNum)
@@ -303,6 +325,11 @@ public class TrainingServiceImpl implements TrainingService {
   }
 
   @Override
+  public boolean isRegisterDate(String trainingDate, int courseId) {
+    return trainingMapper.isRegisterDate(trainingDate, courseId);
+  }
+
+  @Override
   public boolean isMyTrainingLog(int id, int instructorId) {
     return trainingMapper.isMyTrainingLog(id, instructorId);
   }
@@ -329,6 +356,18 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     return true;
+  }
+
+  @Override
+  public void addFieldErrorsModify(BindingResult bindingResult, ModifyFinalDTO modifyFinalDTO) {
+    // modifyFinalDTO의 postMap의 value(actual)이 1000이상이면 막기
+    if(modifyFinalDTO == null) return;
+    if(modifyFinalDTO.getPostMap() == null) return;
+    for(String s :modifyFinalDTO.getPostMap().keySet()){
+      if(modifyFinalDTO.getPostMap().get(s).getBytes(StandardCharsets.UTF_8).length > 1000){
+        bindingResult.addError(new FieldError("modifyFinalDTO", "modifyFinalDTO.postMap[" + s + "]","1000자 이상 입력할 수 없습니다."));
+      }
+    }
   }
 
   @Override
