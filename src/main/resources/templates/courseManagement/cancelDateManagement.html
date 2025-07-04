@@ -168,11 +168,13 @@
       let categorizeType  = 0;
       let pageNo          = 1;
       let alreadyHolidays = [];
-      const today         = new Date().toISOString().split("T")[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
 
       $(function () {
 
-          $("#cancel-date").attr("min", today);
+          $("#cancel-date").attr("min", tomorrow.toISOString().split("T")[0]);
 
           showCancelDatesByCategorizingAndPaging();
 
@@ -659,6 +661,10 @@
               result = false;
           }
 
+          if(!result){
+            return result;
+          }
+
           if ($("#is-all").val() == 0 && applyCount == 0) {
               showErr("rangeErr", "최소 하나의 과정은 선택해야 합니다.");
               result = false;
@@ -677,7 +683,7 @@
               return;
           }
           $.ajax({
-                     url: "/courseManagement/courseManagement/cancelDateManagement/getCoursesInProgressByDate",
+                     url: "/courseManagement/cancelDateManagement/getCoursesInProgressByDate",
                      // 데이터가 송수신될 서버의 주소
                      type    : "GET", // 통신 방식 (GET, POST, PUT, DELETE)
                      dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)

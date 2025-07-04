@@ -18,6 +18,7 @@ import lombok.ToString;
 public class HomeResponseDTO {
 
   private CourseVO course;
+  private String classroom;
   private List<EnrolledLearnerVO> enrolledLearnerVOS;
   private int countOfCompletedDays;
   private float progress;

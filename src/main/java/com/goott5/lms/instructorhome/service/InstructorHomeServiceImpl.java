@@ -30,6 +30,7 @@ public class InstructorHomeServiceImpl implements InstructorHomeService {
 
     HomeResponseDTO homeResponseDTO = new HomeResponseDTO();
     homeResponseDTO.setCourse(instructorHomeMapper.selectCourseById(courseId));
+    homeResponseDTO.setClassroom(instructorHomeMapper.selectClassroom(courseId));
     homeResponseDTO.setEnrolledLearnerVOS(instructorHomeMapper.selectEnrolledLearners(courseId));
 
 
