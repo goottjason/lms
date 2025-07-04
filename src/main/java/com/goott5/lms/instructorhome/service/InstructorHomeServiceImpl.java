@@ -2,12 +2,16 @@ package com.goott5.lms.instructorhome.service;
 
 import com.goott5.lms.courseschedule.domain.ScheduleRequestDTO;
 import com.goott5.lms.courseschedule.mapper.CourseScheduleMapper;
+import com.goott5.lms.instructorhome.domain.CourseVO;
+import com.goott5.lms.instructorhome.domain.CustomCourseVO;
 import com.goott5.lms.instructorhome.domain.CustomTestDTO;
 import com.goott5.lms.instructorhome.domain.CustomTestSubmissionDTO;
 import com.goott5.lms.instructorhome.domain.HomeResponseDTO;
 import com.goott5.lms.instructorhome.mapper.InstructorHomeMapper;
+import com.goott5.lms.user.domain.UserVO;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,16 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class InstructorHomeServiceImpl implements InstructorHomeService {
 
-  private InstructorHomeMapper instructorHomeMapper;
-  private CourseScheduleMapper courseScheduleMapper;
+  private final InstructorHomeMapper instructorHomeMapper;
 
   @Override
-  public HomeResponseDTO getHomeData(int courseId) {
+  public HomeResponseDTO getHomeData(int courseId, UserVO loginUser) {
 
     HomeResponseDTO homeResponseDTO = new HomeResponseDTO();
     homeResponseDTO.setCourse(instructorHomeMapper.selectCourseById(courseId));
+    homeResponseDTO.setEnrolledLearnerVOS(instructorHomeMapper.selectEnrolledLearners(courseId));
+
 
     int countOfCompletedDays = instructorHomeMapper.selectCountOfCompletedDays(courseId, LocalDate.now());
+    homeResponseDTO.setCountOfCompletedDays(countOfCompletedDays);
     float progress = Math.round((float) countOfCompletedDays / homeResponseDTO.getCourse().getTotalDays() * 10000) / 100f;
     homeResponseDTO.setProgress(progress);
 
@@ -37,9 +43,9 @@ public class InstructorHomeServiceImpl implements InstructorHomeService {
     homeResponseDTO.setNotSubmitTestLearnerCount(instructorHomeMapper.selectCountOfNotSubmitTestLearner(courseId));
     homeResponseDTO.setNotSubmitHomeworkLearnerCount(instructorHomeMapper.setCountOfNotSubmitHomeworkLearner(courseId));
 
-    homeResponseDTO.setScheduleVOS(courseScheduleMapper.selectCourseSchedulesByWeek(makeScheduleRequestDTO(courseId)));
+    homeResponseDTO.setCourseScheduleVOS(instructorHomeMapper.selectCourseSchedules(LocalDate.now(), courseId));
 
-    if(courseScheduleMapper.selectTrainingLogCount(courseId) > 0){
+    if(instructorHomeMapper.selectTrainingLogCount(courseId) > 0){
       homeResponseDTO.setWriteTrainingLogToday(true);
     } else {
       homeResponseDTO.setWriteTrainingLogToday(false);
@@ -60,7 +66,7 @@ public class InstructorHomeServiceImpl implements InstructorHomeService {
       for(CustomTestSubmissionDTO customTestSubmissionDTO : customTestDTO.getCustomTestSubmissionDTOS()){
         total += customTestSubmissionDTO.getScore();
       }
-      avg = total / customTestDTO.getCustomTestSubmissionDTOS().size();
+      avg = total / (float)customTestDTO.getCustomTestSubmissionDTOS().size();
       customTestDTO.setAverage(avg);
       for(CustomTestSubmissionDTO customTestSubmissionDTO : customTestDTO.getCustomTestSubmissionDTOS()){
         sumOfSquares += Math.pow(customTestSubmissionDTO.getScore() - avg, 2);
@@ -73,17 +79,21 @@ public class InstructorHomeServiceImpl implements InstructorHomeService {
 
       double standardDeviation = Math.sqrt(variance);
       customTestDTO.setStandardDeviation(Math.round(standardDeviation * 100) / 100f);
-
     }
 
-
-
-
-
-
+    homeResponseDTO.setCustomCourseQnAVOS(instructorHomeMapper.selectCourseQnA(courseId));
+    homeResponseDTO.setCustomInquiryVOS(instructorHomeMapper.selectInquiry(loginUser));
+    homeResponseDTO.setCustomCourseNoticeVOS(instructorHomeMapper.selectCourseNotice(courseId));
+    homeResponseDTO.setCustomCourseForumVOS(instructorHomeMapper.selectCourseForum(courseId));
 
     return homeResponseDTO;
   }
+
+  @Override
+  public List<CourseVO> getCourseLists(UserVO loginUser) {
+    return instructorHomeMapper.selectCourseLists(loginUser);
+  }
+
 
   private ScheduleRequestDTO makeScheduleRequestDTO(int courseId){
     LocalDate today = LocalDate.now();

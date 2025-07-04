@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/cancelDateManagement")
+@RequestMapping("/courseManagement/cancelDateManagement")
 public class CancelDateManagementController {
 
   private final CancelDateManagementService cancelDateManagementService;
