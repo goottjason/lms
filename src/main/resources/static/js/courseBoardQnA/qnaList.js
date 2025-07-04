@@ -408,16 +408,21 @@ $courseSelect.on("change", function () {
 $qnaSearchBtn.on("click", function () {
 
   console.log($searchType.val());
+  const rawKeyword = $qnaSearchKeyword.val();
+  const trimmedKeyword = rawKeyword.trim();
 
-  // if (!$qnaSearchKeyword.val().trim()) {
-  //     Swal.fire({
-  //                   icon             : "warning",
-  //                   title            : "검색어를 입력해주세요",
-  //                   text             : "검색어 없이 검색할 수 없습니다.",
-  //                   confirmButtonText: "확인"
-  //               });
-  //     return;
-  // }
+  if (rawKeyword.length > 0 && trimmedKeyword.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "유효하지 않은 검색어",
+      text: "공백만으로는 검색할 수 없습니다.",
+      confirmButtonText: "확인"
+    }).then(() => {
+
+      $qnaSearchKeyword.val("").focus();
+    });
+    return;
+  }
 
   qnaRequest.currentPageNo = 1;
   qnaRequest.searchOptions.searchType = $searchType.val();

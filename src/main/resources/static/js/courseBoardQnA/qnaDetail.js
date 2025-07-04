@@ -92,6 +92,11 @@ function renderQnAUpdateBtn(data) {
 
   const isAnswer = data.isAnswer;
 
+  if (userType !== "LEARNER") {
+    $qnaModifyBtn.remove();
+    $qnaDeleteBtn.remove();
+  }
+
   if (isAnswer) {
     $qnaModifyBtn.remove();
     $qnaDeleteBtn.remove();
