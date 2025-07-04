@@ -155,7 +155,7 @@ function removeFile(index) {
 $("#qna-register-btn").on("click", async function (e) {
   e.preventDefault();
 
-  // 1) FormData 에 form 필드들 append
+  // FormData 에 form 필드들 append
   const formData = new FormData();
   formData.append("title", $titleInput.val().trim());
   formData.append("content", $contentInput.val().trim());
@@ -165,14 +165,14 @@ $("#qna-register-btn").on("click", async function (e) {
   .get("searchOptions.courseName") || "";
   formData.append("courseName", courseName);
 
-  // 2) 파일 여러 개 append
+  // 파일 여러 개 append
   const files = $fileInput[0].files;
   for (let i = 0; i < files.length; i++) {
     formData.append("uploadFiles", files[i]);
   }
 
   try {
-    // 3) multipart/form-data 로 POST
+    // multipart/form-data 로 POST
     const res = await axios.post(
         "/api/qna",
         formData,
@@ -180,7 +180,7 @@ $("#qna-register-btn").on("click", async function (e) {
     );
 
     console.log(res);
-    // 4) 성공 시 응답 처리
+    // 성공 시 응답 처리
     if (res.data.data) {
       Swal.fire("완료", "Q&A가 등록되었습니다.", "success")
           .then(() => {
@@ -191,9 +191,26 @@ $("#qna-register-btn").on("click", async function (e) {
     }
   } catch (err) {
     console.error(err);
-    Swal.fire("오류", "등록에 실패했습니다.", "error");
+    showValidationErrors(err.response.data.data);
   }
 
-})
-;
+});
+
+function showValidationErrors(errorData) {
+  // 초기화
+  $("#qna-title").removeClass("is-invalid");
+  $("#qna-content").removeClass("is-invalid");
+  $("#title-error").text("");
+  $("#content-error").text("");
+
+  if (errorData.title) {
+    $("#qna-title").addClass("is-invalid");
+    $("#title-error").text(errorData.title);
+  }
+
+  if (errorData.content) {
+    $("#qna-content").addClass("is-invalid");
+    $("#content-error").text(errorData.content);
+  }
+}
 

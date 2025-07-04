@@ -42,6 +42,7 @@
                 <div class="form-group">
                   <label for="qna-title">제목</label>
                   <input class="form-control" id="qna-title" type="text" value="작성된 제목">
+                  <small class="text-danger" id="title-error"></small>
                 </div>
               </div>
             </div>
@@ -51,6 +52,7 @@
                   <label for="qna-content">내용</label>
                   <textarea class="form-control" id="qna-content"
                             style="height: 280px;">작성된 내용</textarea>
+                  <small class="text-danger" id="content-error"></small>
                 </div>
               </div>
             </div>
@@ -63,7 +65,7 @@
                 </div>
 
                 <div class="mb-3" id="existing-preview">
-                  
+
                 </div>
                 <div id="new-preview" class="mt-2"></div>
 

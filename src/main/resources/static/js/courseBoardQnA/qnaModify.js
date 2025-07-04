@@ -237,13 +237,28 @@ $qnaModifyBtn.on("click", async function () {
     });
   } catch (err) {
     console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "수정 실패",
-      text: err.response?.data?.message || "서버 오류가 발생했습니다."
-    });
+    showValidationErrors(err.response.data.data);
+
   }
 });
+
+function showValidationErrors(errorData) {
+  // 초기화
+  $("#qna-title").removeClass("is-invalid");
+  $("#qna-content").removeClass("is-invalid");
+  $("#title-error").text("");
+  $("#content-error").text("");
+
+  if (errorData.title) {
+    $("#qna-title").addClass("is-invalid");
+    $("#title-error").text(errorData.title);
+  }
+
+  if (errorData.content) {
+    $("#qna-content").addClass("is-invalid");
+    $("#content-error").text(errorData.content);
+  }
+}
 
 const $prevPage = $("#prev-page");
 
