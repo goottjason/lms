@@ -40,8 +40,11 @@ public class WebConfig implements WebMvcConfigurer {
     registry.addInterceptor(authInterceptorForADMINISTRATOR)
             .addPathPatterns("home/administratorHome", "/courseRegister",
                     "/courseManagement/courseModify",
-                    "/cancelDateManagement",
-                    "/operationsManagement/userRegister", "/communityInquiry/answerRegister",
+                    "/courseManagement/learnerAssignment",
+                    "/courseManagement/cancelDateManagement",
+                    "/operationsManagement/userRegister", "/operationsManagement/staffList",
+                    "/operationsManagement/classroomList",
+                    "/communityInquiry/answerRegister",
                     "/communityInquiry/answerDelete", "/admin/reports",
                     "/communityNotice/noticeRegister", "/communityNotice/noticeModify");
 

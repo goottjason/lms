@@ -34,7 +34,7 @@ public interface InquiryMapper {
   int updateInquiryForAnswer(@Param("id") int id, @Param("answer") String answer,
           @Param("answerer") int answerer);
 
-  @Update("update community_inquiry set answer = null, answerer = null, is_answered = 0, deleted_at = now() where id = #{id}")
+  @Update("update community_inquiry set answer = null, answerer = null, is_answered = 0, answered_at = null where id = #{id}")
   int updateInquiryForAnswerDelete(int id);
 
   @Update("update community_inquiry set is_answered_checked = 1 where id = #{id}")
