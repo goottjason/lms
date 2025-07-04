@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class ParticipationController {
 
   private final ParticipationService participationService;
   private final ParticipationCourseMapper participationCourseMapper;
+  private final SimpMessagingTemplate messagingTemplate;
 
   // ========== 페이지 렌더링 ==========
 
@@ -312,6 +314,9 @@ public class ParticipationController {
         ParticipationVO updated = participationService.getTodayParticipationWithDisplayStatus(
             learnerEnrollmentId, participationDate);
 
+
+        messagingTemplate.convertAndSend("/topic/participation", "checkInOrOut");
+
         log.info("입실 처리 성공 - learnerEnrollmentId: {}", learnerEnrollmentId);
         return ResponseEntity.ok(Map.of(
             "success", true,
@@ -395,6 +400,8 @@ public class ParticipationController {
       if (result) {
         ParticipationVO updated = participationService.getTodayParticipationWithDisplayStatus(
             learnerEnrollmentId, participationDate);
+
+        messagingTemplate.convertAndSend("/topic/participation", "checkInOrOut");
 
         log.info("퇴실 처리 성공 - learnerEnrollmentId: {}", learnerEnrollmentId);
         return ResponseEntity.ok(Map.of(

@@ -1,7 +1,115 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.goott5.lms.communitynotice.mapper.NoticeMapper">
 
-<mapper namespace="com.goott5.lms.participation.mapper.ParticipationMapper">
+  <sql id="searchConditions">
+    <if test="keyword != null and keyword != ''">
+      <choose>
+        <when test="searchType == 'title'">
+          AND n.title LIKE CONCAT('%', #{keyword}, '%')
+        </when>
+        <when test="searchType == 'content'">
+          AND n.content LIKE CONCAT('%', #{keyword}, '%')
+        </when>
+        <when test="searchType == 'title_content'">
+          AND (n.title LIKE CONCAT('%', #{keyword}, '%') OR n.content LIKE CONCAT('%', #{keyword}, '%'))
+        </when>
+      </choose>
+    </if>
+  </sql>
+
+  <select id="selectNoticeList" resultType="com.goott5.lms.communitynotice.domain.NoticeDTO">
+    SELECT
+    n.id, n.title, n.content, n.read_count, n.created_at, n.is_fixed,
+    u.fullname as writerName
+    FROM
+    community_notice n
+    JOIN
+    user u ON n.writer = u.id WHERE
+    n.deleted_at IS NULL
+    AND n.is_fixed = 0
+    <include refid="searchConditions"/>
+    ORDER BY
+    <choose>
+      <when test="sortProperty == 'readCount'">
+        n.read_count ${sortOrder}, n.id DESC
+      </when>
+      <when test="sortProperty == 'createdAt'">
+        n.created_at ${sortOrder}, n.id DESC
+      </when>
+      <otherwise>
+        n.id DESC
+      </otherwise>
+    </choose>
+    LIMIT #{skip}, #{pagingSize}
+  </select>
+
+  <select id="selectAllPinnedNotices" resultType="com.goott5.lms.communitynotice.domain.NoticeDTO">
+    SELECT
+    n.id, n.title, n.content, n.read_count, n.created_at, n.is_fixed,
+    u.fullname as writerName
+    FROM
+    community_notice n
+    JOIN
+    user u ON n.writer = u.id WHERE
+    n.deleted_at IS NULL
+    AND n.is_fixed = 1
+    ORDER BY
+    n.updated_at DESC
+  </select>
+
+  <select id="getNoticeCount" resultType="int">
+    SELECT count(id)
+    FROM community_notice n WHERE deleted_at IS NULL AND is_fixed = 0
+    <include refid="searchConditions"/>
+  </select>
+
+  <select id="countPinnedNotices" resultType="int">
+    SELECT COUNT(id)
+    FROM community_notice
+    WHERE is_fixed = 1 AND deleted_at IS NULL
+  </select>
+
+  <select id="getNotice" resultType="com.goott5.lms.communitynotice.domain.NoticeDTO">
+    SELECT
+    n.id, n.title, n.content, n.read_count, n.created_at, n.is_fixed, n.writer as writerId,
+    u.fullname as writerName
+    FROM
+    community_notice n
+    JOIN
+    user u ON n.writer = u.id WHERE
+    n.id = #{id}
+    AND n.deleted_at IS NULL
+  </select>
+
+  <update id="incrementReadCount">
+    UPDATE community_notice
+    SET read_count = read_count + 1
+    WHERE id = #{id}
+  </update>
+
+  <insert id="insertNotice" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO community_notice (title, content, writer, is_fixed)
+    VALUES (#{title}, #{content}, #{writerId}, #{isFixed})
+  </insert>
+
+  <update id="updateNotice">
+    UPDATE community_notice
+    SET
+    title = #{title},
+    content = #{content},
+    is_fixed = #{isFixed},
+    updated_at = NOW()
+    WHERE
+    id = #{id}
+  </update>
+
+  <update id="softDeleteNotice">
+    UPDATE community_notice
+    SET deleted_at = NOW()
+    WHERE id = #{id}
+  </update>
 
 </mapper>

@@ -620,31 +620,32 @@
     <div class="attendance-stats">
         <div class="stat-item">
             <div class="stat-circle attendance-circle">
-                <span class="stat-number" th:text="${attendanceStats.attendanceCount ?: 0}">109</span>
+                <span class="stat-number" th:text="${attendanceStats?.attendanceCount ?: 0}">109
+                </span>
             </div>
             <span class="stat-label">출석</span>
         </div>
         <div class="stat-item">
             <div class="stat-circle late-circle">
-                <span class="stat-number" th:text="${attendanceStats.lateCount ?: 0}">2</span>
+                <span class="stat-number" th:text="${attendanceStats?.lateCount ?: 0}">2</span>
             </div>
             <span class="stat-label">지각</span>
         </div>
         <div class="stat-item">
             <div class="stat-circle early-circle">
-                <span class="stat-number" th:text="${attendanceStats.earlyCount ?: 0}">3</span>
+                <span class="stat-number" th:text="${attendanceStats?.earlyCount ?: 0}">3</span>
             </div>
             <span class="stat-label">조퇴</span>
         </div>
         <div class="stat-item">
             <div class="stat-circle absence-circle">
-                <span class="stat-number" th:text="${attendanceStats.absenceCount ?: 0}">0</span>
+                <span class="stat-number" th:text="${attendanceStats?.absenceCount ?: 0}">0</span>
             </div>
             <span class="stat-label">결석</span>
         </div>
         <div class="stat-item">
             <div class="stat-circle vacation-circle">
-                <span class="stat-number" th:text="${attendanceStats.vacationCount ?: 0}">5</span>
+                <span class="stat-number" th:text="${attendanceStats?.vacationCount ?: 0}">5</span>
             </div>
             <span class="stat-label">휴가</span>
         </div>
@@ -652,22 +653,31 @@
 
     <!-- 과정 진행률 (실제 진행일수 기준) -->
     <div class="course-progress">
-        <div class="progress-text">
-            <span class="progress-label">과정진행률</span>
-            <span class="progress-percentage" th:text="${courseProgress.progressRate ?: '0.0'} + '%'">84.6%</span>
-            <span class="progress-detail" th:text="'(' + ${courseProgress.progressedDays ?: 0} + '/' + ${courseProgress.totalDays ?: 0} + '일)'">
-                (110/130일)
-            </span>
-        </div>
+    <div class="progress-text">
+        <span class="progress-label">과정진행률</span>
+        <!-- 진행률: courseProgress가 null이 아닐 때만 값 출력, 아니면 0.0% -->
+        <span class="progress-percentage">
+            <span th:if="${courseProgress != null}" th:text="${courseProgress.progressRate + '%'}"></span>
+            <span th:unless="${courseProgress != null}">0.0%</span>
+        </span>
+        <span class="progress-detail">
+            <span th:if="${courseProgress != null}" th:text="'(' + ${courseProgress.progressedDays} + '/' + ${courseProgress.totalDays} + '일)'"></span>
+            <span th:unless="${courseProgress != null}">(0/0일)</span>
+        </span>
+    </div>
 
         <!-- 프로그레스 바 -->
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill"
-                 th:style="'width: ' + ${courseProgress.progressRate ?: 0} + '%;'">
-                <span class="progress-bar-text" th:text="${courseProgress.progressRate ?: '0.0'} + '%'">84.6%</span>
-            </div>
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill"
+             th:style="${courseProgress != null} ? 'width: ' + ${courseProgress.progressRate} + '%;' : 'width: 0%;'">
+            <span class="progress-bar-text">
+                <span th:if="${courseProgress != null}" th:text="${courseProgress.progressRate + '%'}"></span>
+                <span th:unless="${courseProgress != null}">0.0%</span>
+            </span>
         </div>
     </div>
+</div>
+
 </div>
 
 </div>
@@ -715,7 +725,7 @@
                 </div>
 
                 <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
-                <div class="calendar-grid" id="calendarGrid">
+                <div class="calendar-grid" id="calendarGrid" th:if="${currentCourse != null}">
                     <!-- JavaScript에서 요일 헤더와 날짜들을 동적으로 생성 -->
                 </div>
             </div>
@@ -2013,6 +2023,17 @@
                 alert('휴가 삭제 중 오류가 발생했습니다.');
             });
         }
+
+        /*<![CDATA[*/
+        var hasCurrentCourse = /*[[${currentCourse != null}]]*/ false;
+        if (!hasCurrentCourse) {
+            var selector = document.getElementById('courseSelector');
+            if (selector) {
+                selector.style.display = 'none';
+            }
+        }
+        /*]]>*/
+
     </script>
 </body>
 </html>

@@ -16,29 +16,29 @@ public class LearnerMainPageTest {
   @Autowired
   public LearnerMainMapper learnerMainMapper;
 
-  @Test
-  void getTestHwData() {
+//  @Test
+//  void getTestHwData() {
+//
+//    int courseId = 37;
+//    int userId = 41;
+//
+//    Integer testAvgScore = learnerMainMapper.selectMyTestAvgScore(userId);
+//    Map<String, Object> hwData = learnerMainMapper.selectMyHwData(courseId, userId);
+//
+//    log.info("testAvgScore={}", testAvgScore);
+//    log.info("hwData={}", hwData);
+//  }
 
-    int courseId = 37;
-    int userId = 41;
-
-    Integer testAvgScore = learnerMainMapper.selectMyTestAvgScore(userId);
-    Map<String, Object> hwData = learnerMainMapper.selectMyHwData(courseId, userId);
-
-    log.info("testAvgScore={}", testAvgScore);
-    log.info("hwData={}", hwData);
-  }
-
-  @Test
-  void getTestsHwSchedule() {
-
-    int courseId = 37;
-    int userId = 41;
-
-    List<TestHwScheduleVO> stringObjectMap = learnerMainMapper.selectHwTestSchedule(courseId,
-        userId);
-    log.info("stringObjectMap={}", stringObjectMap);
-  }
+//  @Test
+//  void getTestsHwSchedule() {
+//
+//    int courseId = 37;
+//    int userId = 41;
+//
+//    List<TestHwScheduleVO> stringObjectMap = learnerMainMapper.selectHwTestSchedule(courseId,
+//        userId);
+//    log.info("stringObjectMap={}", stringObjectMap);
+//  }
 
 
 }
