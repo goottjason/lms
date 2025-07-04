@@ -9,6 +9,7 @@ import com.goott5.lms.homework.domain.HomeworkDTO;
 import com.goott5.lms.homework.domain.HomeworkEvalDTO;
 import com.goott5.lms.homework.domain.HomeworkEvalModifyDTO;
 import com.goott5.lms.homework.domain.HomeworkSubmissionDTO;
+import com.goott5.lms.homework.domain.HomeworkSubmissionForListDTO;
 import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
 import com.goott5.lms.homework.domain.PagingRequestDTO;
 import com.goott5.lms.homework.domain.PagingResponseDTO;
@@ -72,7 +73,7 @@ public class HomeworkSubmissionController {
   //submission 리스트 조회 d
   @GetMapping("/homeworkSubmissionList")
   @ResponseBody
-  public Map<String, PagingResponseDTO<HomeworkSubmissionDTO>> getHomeworkSubmissionList(
+  public Map<String, PagingResponseDTO<HomeworkSubmissionForListDTO>> getHomeworkSubmissionList(
       @RequestParam(required = false) Integer submissionPageNo,
       @RequestParam(required = false) Integer submissionPageSize,
       @RequestParam(required = false) Integer homeworkId) {
@@ -88,19 +89,29 @@ public class HomeworkSubmissionController {
       submissionPageSize = 5;
     }
 
-    PagingResponseDTO<HomeworkSubmissionDTO> pagingResponseSubmission =
+    PagingResponseDTO<HomeworkSubmissionForListDTO> pagingResponseSubmission =
         homeworkService.pagingSubmissionDTO((int) homeworkId,
             PagingRequestDTO.builder().pageNo((int) submissionPageNo)
                 .pageSize((int) submissionPageSize).build());
     log.info("pageNo:{}", submissionPageNo);
     log.info("pageSize:{}", submissionPageSize);
 
-    Map<String, PagingResponseDTO<HomeworkSubmissionDTO>> resultMap = new HashMap<>();
+    Map<String, PagingResponseDTO<HomeworkSubmissionForListDTO>> resultMap = new HashMap<>();
     if (pagingResponseSubmission != null) {
       resultMap.put(homeworkService.homeworkName(homeworkId), pagingResponseSubmission);
       return resultMap;
     }
     return null;
+  }
+
+  @GetMapping("/submissionListForLearner")
+  @ResponseBody
+  public ResponseEntity<?> homeworkSubmissionListForLearner(@RequestParam(required = false) Integer homeworkId, HttpSession session) {
+
+    //로그인한 학생이 보낸 homework
+    log.info("homeworkId:{}", homeworkId);
+
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200,"학생의 submissionData 성공", null));
   }
 
   //submissionDetail

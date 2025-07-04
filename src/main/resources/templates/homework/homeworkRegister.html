@@ -37,7 +37,7 @@
             <div class="form-group">
               <label for="title">제목</label>
               <span id="titleError" style="color: red"></span>
-              <input type="text" id="title" th:name="title" class="form-control" placeholder="과제명을 작성하세요.">
+              <input type="text" id="title" th:name="title" class="form-control" placeholder="답안 제목을 작성하세요.">
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@
           </span>
         <span class="text px-5">등록</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <button id="resetHomework" class="btn btn-secondary btn-icon-split" type="button">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
@@ -300,6 +300,12 @@
           }
 
         })
+      })
+
+      // 취소 버튼 클릭 시
+      $("#resetHomework").on("click",function (e) {
+        e.preventDefault();
+        location.href = "/homework/homeworkList";
       })
 
 

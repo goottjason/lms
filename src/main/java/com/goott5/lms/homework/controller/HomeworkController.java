@@ -85,7 +85,6 @@ public class HomeworkController {
 
     //디폴트 nameForLt (현재 듣는 과정의 과제가 디폴트로 출력되게)
 
-
     if (nameForLt == null) {
       nameForLt = "";
     }
@@ -93,7 +92,7 @@ public class HomeworkController {
       keyword = "";
     }
     if (order == null || order.trim().isEmpty()) {
-      order = "asc"; //추후 프론트에서 설정해주는게 편하면 바꾸기
+      order = "desc"; //추후 프론트에서 설정해주는게 편하면 바꾸기
     }
     if (sortBy == null || sortBy.trim().isEmpty()) {
       sortBy = "endDate"; //추후 프론트에서 설정해주는게 편하면 바꾸기
@@ -176,6 +175,17 @@ public class HomeworkController {
     model.addAttribute("pagingResponseDTO", pagingResponseDTO); // 과제 게시글 리스트가 있는 페이징
     model.addAttribute("homeworkList", pagingResponseDTO.getDtoList()); //페이징 dto 안에 있는 과제 리스트
 
+    //(기능 추가) 해당 homeworkId에 로그인한 학생이 제출했는지 여부
+    Map<Integer,Boolean> isSubmissionMap = new HashMap<>();
+    for (HomeworkDTO homeworkDTO : pagingResponseDTO.getDtoList()) {
+      boolean isSubmissionHomework = homeworkService.selectSubmissionLearner(homeworkDTO.getId(),
+          loginUser.getId());
+      isSubmissionMap.put(homeworkDTO.getId(),isSubmissionHomework);
+    }
+    if(isSubmissionMap != null && !isSubmissionMap.isEmpty()) {
+      model.addAttribute("isSubmissionMap", isSubmissionMap);
+    }
+
     model.addAttribute("order", order); // 강사, 학생이 속해있는 과정명 select
     model.addAttribute("sortBy", sortBy); // 강사, 학생이 속해있는 과정명 select
 
@@ -199,7 +209,6 @@ public class HomeworkController {
       }
     });
     model.addAttribute("homeworkFileMap", homeworkFileMap);
-
 
     return "homework/homeworkList";
   }
@@ -441,11 +450,13 @@ public class HomeworkController {
 
     } else {
       log.info("파일 등록 없는 insert 성공");
-      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkIdForFile));
+      return ResponseEntity.ok(
+          new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkIdForFile));
     }
 
     log.info("파일 등록 with insert 성공");
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkIdForFile));
+    return ResponseEntity.ok(
+        new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkIdForFile));
 
   }
 

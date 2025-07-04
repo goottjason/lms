@@ -82,7 +82,7 @@
           </span>
         <span class="text px-5">등록</span>
       </button>
-      <button id="" class="btn btn-secondary btn-icon-split">
+      <button id="resetSubmission" class="btn btn-secondary btn-icon-split" type="button">
           <span class="icon text-white-50">
               <i class="fas fa-times"></i>
           </span>
@@ -287,7 +287,11 @@
       $("#formSubmit").on("submit", function (e) {
         e.preventDefault();
         register();
+      })
 
+      $("#resetSubmission").on("click", function (e) {
+        e.preventDefault();
+        location.href = "/homework/homeworkList";
       })
 
     })

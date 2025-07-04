@@ -26,22 +26,6 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <!-- 상단 카드 시작-->
-  <div class="d-flex justify-content-end mb-4"
-       th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId()}">
-    <button id="modifySubmission" class="btn btn-info btn-icon-split mr-2">
-      <span class="icon text-white-50">
-        <i class="fa fa-wrench"></i>
-      </span>
-      <span class="text px-3">과제수정</span>
-    </button>
-    <button id="deleteSubmission" class="btn btn-danger btn-icon-split mr-2">
-      <span class="icon text-white-50">
-        <i class="fa fa-times"></i>
-      </span>
-      <span class="text px-3">과제삭제</span>
-    </button>
-  </div>
 
 
   <!-- 상단 카드 끝 -->
@@ -69,11 +53,13 @@
             <div class="row g-0 m-0">
               <div class="col-md-3 pl-2">
                 <th:block th:if="${fileDTO.getIsImage()}">
-                  <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                  <img th:src="${fileDTO.path}" class="img-fluid rounded-start"
+                       style="width: 200px; height: 70px; object-fit: contain;">
                 </th:block>
 
                 <th:block th:unless="${fileDTO.getIsImage()}">
-                  <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start" style="width: 100px; height: 70px; object-fit: cover;">
+                  <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start"
+                       style="width: 100px; height: 70px; object-fit: cover;">
                 </th:block>
               </div>
               <div class="col-md-9 d-flex align-items-center ps-2">
@@ -93,23 +79,27 @@
   <!-- 본문 끝 -->
 
 
-  <!-- eval  시작 -->
+  <!-- eval  삭제 모달 -->
   <div class="container" style="position: relative;">
-    <div class="toast" data-autohide="false" style="position: absolute; right: 100px; z-index: 1060; width: 600px; height: 200px;">
+    <div class="toast" data-autohide="false"
+         style="position: absolute; right: 100px; z-index: 1060; width: 600px; height: 200px;">
       <div class="toast-header">
         <strong class="mr-auto text-primary">평가 삭제</strong>
         <small class="text-muted">delete</small>
         <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
       </div>
-      <div class="toast-body" style="position: relative; height: 100%;">
+      <div class="toast-body" style="position: relative; ">
         정말 삭제하시겠습니까?
-        <button class="btn btn-danger custom-danger-btn-sm" id="toastDeleteBtn" style="position: absolute; bottom: 50px; right: 10px;">예</button>
+        <button class="btn btn-danger custom-danger-btn-sm" id="toastDeleteBtn"
+                style="position: absolute; bottom: 50px; right: 10px;">예
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="container-fluid" id="eval">
-    <div class="card shadow mb-4 justify-content-center mt-6" th:if="${eval != null}"
+  <!-- eval  시작 -->
+  <div class="container-fluid" id="eval" th:if="${eval != null}">
+    <div class="card shadow mb-4 justify-content-center mt-6"
          style="margin-top: 100px;">
       <!-- 제목 -->
       <!--      <span th:text="${eval.isPass}"></span>-->
@@ -149,11 +139,13 @@
               <div class="row g-0 m-0">
                 <div class="col-md-3 pl-2">
                   <th:block th:if="${fileDTO.getIsImage()}">
-                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start"
+                         style="width: 200px; height: 70px; object-fit: contain;">
                   </th:block>
 
                   <th:block th:unless="${fileDTO.getIsImage()}">
-                    <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start" style="width: 100px; height: 70px; object-fit: cover;">
+                    <img th:src="@{/img/no-image.jpg}" class="img-fluid rounded-start"
+                         style="width: 100px; height: 70px; object-fit: cover;">
                   </th:block>
                 </div>
                 <div class="col-md-9 d-flex align-items-center ps-2">
@@ -196,12 +188,29 @@
       </button>
     </th:block>
 
-    <button id="toList" class="btn btn-secondary btn-icon-split">
+    <!-- 상단 카드 시작-->
+    <th:block
+        th:if="${loginUser.getType() == 'LEARNER' && loginUser.getId() == submission.getLearnerId()}">
+      <button id="modifySubmission" class="btn btn-info btn-icon-split mr-2" type="button">
+      <span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+        <span class="text px-3">과제수정</span>
+      </button>
+      <button id="deleteSubmission" class="btn btn-danger btn-icon-split mr-2" type="button">
+      <span class="icon text-white-50">
+        <i class="fa fa-times"></i>
+      </span>
+        <span class="text px-3">과제삭제</span>
+      </button>
+    </th:block>
+    <button id="toList" class="btn btn-secondary btn-icon-split" type="button">
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-      <span class="text px-4" th:href="@{/homework/homeworkList}">목록</span>
+      <span class="text px-4">목록</span>
     </button>
+
   </div>
 
 
@@ -257,7 +266,6 @@
     let evalDTO = /*[[${eval}]]*/ null; //eval은 내장함수랑 충돌 가능성
 
     let evalId = /*[[${eval} != null? ${eval.id} : -1]]*/ -1; //: EL1007E: Property or field 'id' cannot be found on null
-
 
     let evalFiles = /*[[${evalFiles}]]*/ null;
 
@@ -356,7 +364,7 @@
             cancelButtonText: '아니오'
           }).then((result) => {
             if (result.isConfirmed) {
-                location.href = "/homework/submissionDetail?submissionId=" + submissionId;
+              location.href = "/homework/submissionDetail?submissionId=" + submissionId;
             }
           })
 
@@ -393,7 +401,8 @@
       .then(function (response) {
         console.log(response);
         let userARR = [learnerId];
-        sendNotification(userARR, "평가가 등록 되었습니다", false, "/homework/submissionDetail?submissionId=" + submissionId);
+        sendNotification(userARR, "평가가 등록 되었습니다", false,
+            "/homework/submissionDetail?submissionId=" + submissionId);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId;
       }).catch(function (error) {
         console.log("error", error);
@@ -440,7 +449,7 @@
             icon: 'error',
             confirmButtonText: '예'
           })
-        }else if(ext.trim() === "exe"){
+        } else if (ext.trim() === "exe") {
           Swal.fire({
             title: '실행 파일은 업로드할 수 없습니다.',
             icon: 'error',
@@ -509,7 +518,7 @@
       //상단 과정명 출력
       showCourseSelector();
 
-      console.log("eval",evalDTO); //평가가 null 일때 evalDTO를 못읽음
+      console.log("eval", evalDTO); //평가가 null 일때 evalDTO를 못읽음
 
       // 평가 등록 보여주기
       if (evalDTO === null) {
@@ -524,13 +533,16 @@
       })
 
       // // 삭제 모달창 뜨기
-      $("#deleteSubmission").on("click", function () {
+      $("#deleteSubmission").on("click", function (e) {
         // alert("!");
+        e.preventDefault();
         $(".delete").modal("show");
       })
 
       // 수정 하기
-      $("#modifySubmission").on("click", function () {
+      $("#modifySubmission").on("click", function (e) {
+        e.preventDefault();
+        // alert("!");
         location.href = "/homework/submissionModify?submissionId=" + submissionId;
       })
 

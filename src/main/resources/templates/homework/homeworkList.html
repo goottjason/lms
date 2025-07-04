@@ -5,6 +5,7 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
+  <script defer th:src="@{/js/homework/homework_list_submissionlearner.js}"></script>
   <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
@@ -27,7 +28,7 @@
   <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-4 mx-3 mb-3 text-gray-800">과제 조회</h1>
-      <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
+    <!-- 과정 검색 필터 (관리자만 나오도록 개발해주세요.) -->
     <div class="col d-flex justify-content-end">
       <form class="row col-12 mb-3" method="get" th:action="@{/homework/homeworkList}">
         <div class="col-3" th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
@@ -100,19 +101,24 @@
         <table class="table">
           <thead>
           <tr class="text-center">
-            <th scope="col" class="align-middle">No</th>
+            <!--            <th scope="col" class="align-middle">No</th>-->
             <th scope="col" class="align-middle">과제명</th>
             <th scope="col" class="align-middle">과정명</th>
             <th scope="col" class="align-middle">제출기한</th>
             <th scope="col" class="align-middle">조회수</th>
             <th scope="col" class="align-middle">제출 조회</th>
+            <th scope="col" class="align-middle" th:if="${loginUser.getType() == 'LEARNER'}">제출
+              여부
+            </th>
           </tr>
           </thead>
           <tbody>
-          <th:block th:each="homework:${homeworkList}">
+          <th:block
+              th:each="homework:${homeworkList}"
+              th:if="${homeworkList != null && homeworkList.size() > 0}">
             <tr>
-              <td class="text-center align-middle" th:text="${homework.getId()}">2</td>
-              <td class="title align-middle">
+              <!--              <td class="text-center align-middle" th:text="${homework.getId()}">2</td>-->
+              <td class="title text-center align-middle">
                 <a
                     th:text="${homework.getTitle()}"
                     th:onclick="|prevPage('/homework/homeworkDetail?homeworkId=${homework.getId()}')|"
@@ -122,7 +128,8 @@
                     class="fas fa-cog text-secondary"></i></span>
               </td>
               <td
-                  class="title align-middle text-truncate" style="max-width: 200px;"
+                  class="title title text-center align-middle text-truncate"
+                  style="max-width: 200px;"
                   th:text="${courseNameMap.get(homework.getCourseId())}">[1회] 자바 웹 서비스와 CI/CD 자동화를
                 위한 컨테이너
                 기술 종합과정
@@ -135,16 +142,36 @@
               </td>
               <td class="text-center align-middle">
                 <button
+                    th:if="${loginUser.getType() == 'INSTRUCTOR'}"
                     class="btn btn-primary btn-sm submissionBtn"
                     th:data-id="${homework.getId()}" style="text-align: center"
                     data-toggle="modal" data-target="#homeworkSubmissionModal">클릭
                 </button>
+                <button
+                    th:if="${loginUser.getType() == 'LEARNER'}"
+                    type="button"
+                    class="btn btn-primary btn-sm submissionBtnForLearner"
+                    th:data-id="${homework.getId()}"
+                    style="text-align: center">클릭
+                </button>
               </td>
+              <td
+                  class="text-center align-middle"
+                  th:if="${loginUser.getType() == 'LEARNER'}"
+                  th:text="${isSubmissionMap.get(homework.getId())? '제출 완료' : ''}"></td>
             </tr>
           </th:block>
           </tbody>
         </table>
       </div>
+
+      <th:block th:if="${homeworkList == null || homeworkList.isEmpty()}">
+        <nav aria-label="Page navigation example" class="col mt-4  mb-4">
+          <ul class="pagination justify-content-center">
+            결과가 없습니다.
+          </ul>
+        </nav>
+      </th:block>
 
       <!-- 페이지 -->
       <nav aria-label="Page navigation example" class="col mt-4">
@@ -155,7 +182,7 @@
                 th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getStart() -1})}">이전</a>
             <a
                 class="page-link" th:unless="${pagingResponseDTO.isPrev()}" disabled="true"
-                style="color: grey">이전</a>
+                style="color: grey; cursor: default;">이전</a>
           </li>
           <th:block
               th:each="i:${#numbers.sequence(pagingResponseDTO.getStart(),pagingResponseDTO.getEnd())}">
@@ -181,7 +208,7 @@
                 th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getEnd() +1})}">다음</a>
             <a
                 class="page-link" th:unless="${pagingResponseDTO.isNext()}" disabled="true"
-                style="color: grey">다음</a>
+                style="color: grey; cursor: default;">다음</a>
           </li>
         </ul>
       </nav>
@@ -207,9 +234,9 @@
             <table class="table">
               <thead>
               <tr class="text-center">
-                <th scope="col" class="align-middle">id</th>
+                <th scope="col" class="align-middle">작성자</th>
                 <th scope="col" class="align-middle">과제명</th>
-                <th scope="col" class="align-middle">제출 과제명</th>
+                <th scope="col" class="align-middle">제출 답안명</th>
                 <th scope="col" class="align-middle">조회수</th>
                 <th scope="col" class="align-middle">바로 가기</th>
               </tr>
@@ -217,6 +244,7 @@
               <tbody id="submission">
               </tbody>
             </table>
+            <div id="notSubmission"></div>
             <div id="paginationArea"></div>
           </div>
         </div>
@@ -243,7 +271,7 @@
     console.log(pagingRequestDTO);
 
     //정렬
-    let order  = $("#order").val();
+    let order = $("#order").val();
     let sortBy = $("#sortBy").val();
 
     // 학생, 강사용 메뉴 select
@@ -261,11 +289,11 @@
 
     //관리자면 학생, 강사용 메뉴 select 삭제
     function courseSelectorForLtRemove() {
-        if (loginUserType === "ADMINISTRATOR") {
-            $("#courseSelector").remove(); // 완전 제거
-        } else {
-            $("#courseSelector").show(); // 권한 사용자에게만 보여줌
-        }
+      if (loginUserType === "ADMINISTRATOR") {
+        $("#courseSelector").remove(); // 완전 제거
+      } else {
+        $("#courseSelector").show(); // 권한 사용자에게만 보여줌
+      }
     }
 
     //+) 현재 진행 중인 nameForLt가 아니면 등록 버튼 막기
@@ -275,157 +303,167 @@
 
     //강사, 교육생용 select 박스 값 나타내주기
     function createOptionForLT(selected) {
-        courseSelector.empty();
-        console.log("nameForLtList", nameForLtList);
+      courseSelector.empty();
+      console.log("nameForLtList", nameForLtList);
 
-        //nameForLtlist가 존재할때만 실행
-        if (nameForLtList && nameForLtList.length > 0) {
-            const defaultSelected = selected || nameForLtList[0];
+      //nameForLtlist가 존재할때만 실행
+      if (nameForLtList && nameForLtList.length > 0) {
+        const defaultSelected = selected || nameForLtList[0];
 
-            nameForLtList.forEach(function (name) {
-                const isSelected = defaultSelected === name ? "selected" : "";
-                courseSelector.append(
-                    `<option value="${name}" ${isSelected} accept-charset="UTF-8">${name}</option>`);
-            });
+        nameForLtList.forEach(function (name) {
+          const isSelected = defaultSelected === name ? "selected" : "";
+          courseSelector.append(
+              `<option value="${name}" ${isSelected} accept-charset="UTF-8">${name}</option>`);
+        });
 
-        }
+      }
     }
 
     function getOrder(order, sortBy) {
-        const url    = new URL(window.location.href);
-        const params = url.searchParams;
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
 
-        // 정렬 파라미터만 갱신
-        params.set("order", order);
-        params.set("sortBy", sortBy);
-        params.set("keyword", "");
+      // 정렬 파라미터만 갱신
+      params.set("order", order);
+      params.set("sortBy", sortBy);
+      params.set("keyword", "");
 
-        window.location.href = `${url.pathname}?${params.toString()}`;
+      window.location.href = `${url.pathname}?${params.toString()}`;
     }
 
     // 강사 교육생용 select 박스 값 컨트롤러로 보내기
     function sendNameForLt(nameForLt) {
-        const url    = new URL(window.location.href);
-        const params = url.searchParams; // 일부 인코딩된 상태
+      const url = new URL(window.location.href);
+      const params = url.searchParams; // 일부 인코딩된 상태
 
-        // 현재 URL에 있는 nameForLt를 디코딩해서 비교
-        const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
-        console.log("currentCourse", currentCourse); //인코딩된 param 값을 디코딩
+      // 현재 URL에 있는 nameForLt를 디코딩해서 비교
+      const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
+      console.log("currentCourse", currentCourse); //인코딩된 param 값을 디코딩
 
-        // 값이 바뀐 경우에만 이동
-        if (nameForLt !== currentCourse) {
-            params.set("nameForLt", nameForLt ? encodeURIComponent(nameForLt.trim()) : "");
-            params.set("keyword", ""); // 검색어 초기화 (선택사항)
+      // 값이 바뀐 경우에만 이동
+      if (nameForLt !== currentCourse) {
+        params.set("nameForLt", nameForLt ? encodeURIComponent(nameForLt.trim()) : "");
+        params.set("keyword", ""); // 검색어 초기화 (선택사항)
 
-            location.href = `${url.pathname}?${params.toString()}`;
-        }
+        location.href = `${url.pathname}?${params.toString()}`;
+      }
 
     }
 
     //관리자용 select 박스 값(string->boolean) 컨트롤러로 보내기
     function sendBooleanForAdmin() {
-        progress = $("#isInProgressForAdmin").val(); //string 상태
-        console.log("progress", progress);
+      progress = $("#isInProgressForAdmin").val(); //string 상태
+      console.log("progress", progress);
 
-        axios.get("/homework/homeworkForAdminBoolean?progress=" + progress, {
-            params: {
-                progress: progress
-            }
-        }).then(function (response) {
-            console.log(response);
-            let menuForAdminName = response.data; //boolean에 따라 받은 것
-            createOptionForAdminName(menuForAdminName);
-            console.log(menuForAdminName);
+      axios.get("/homework/homeworkForAdminBoolean?progress=" + progress, {
+        params: {
+          progress: progress
+        }
+      }).then(function (response) {
+        console.log(response);
+        let menuForAdminName = response.data; //boolean에 따라 받은 것
+        createOptionForAdminName(menuForAdminName);
+        console.log(menuForAdminName);
 
-            //location.href = "/homework/homeworkList?progress=" + progress;
-        }).catch(function (error) {
-            console.log(error);
-        });
+        //location.href = "/homework/homeworkList?progress=" + progress;
+      }).catch(function (error) {
+        console.log(error);
+      });
 
     }
 
     //관리자용 select 박스(boolean에 따라 과정명 출력)
     function createOptionForAdminName(datas) {
-        const urlParams   = new URLSearchParams(location.search);
-        const currentName = decodeURIComponent(urlParams.get("nameForAdmin") || "").trim();
-        // const currentProgress = urlParams.get("progress");
+      const urlParams = new URLSearchParams(location.search);
+      const currentName = decodeURIComponent(urlParams.get("nameForAdmin") || "").trim();
+      // const currentProgress = urlParams.get("progress");
 
-        adminNameSelectBox.empty();
-        adminNameSelectBox.append(`<option value="" selected>전체</option>`);
+      adminNameSelectBox.empty();
+      adminNameSelectBox.append(`<option value="" selected>전체</option>`);
 
-        datas.forEach(function (data) {
-            const selected = (data.trim() === currentName) ? "selected" : "";
-            adminNameSelectBox.append(`<option value="${data}" ${selected}>${data}</option>`);
-        });
+      datas.forEach(function (data) {
+        const selected = (data.trim() === currentName) ? "selected" : "";
+        adminNameSelectBox.append(`<option value="${data}" ${selected}>${data}</option>`);
+      });
     }
 
     //관리자용 select 값 boolean 뷰단에 requestparam 보내기
     function sendForAdminName() {
-        // 진행상황 값
-        //progress = $("#is_in_progress").val(); //string 상태
+      // 진행상황 값
+      //progress = $("#is_in_progress").val(); //string 상태
 
-        progress         = $("#isInProgressForAdmin").val();
-        let nameForAdmin = encodeURIComponent((adminNameSelectBox.val().trim()));
+      progress = $("#isInProgressForAdmin").val();
+      let nameForAdmin = encodeURIComponent((adminNameSelectBox.val().trim()));
 
-        axios.get("/homework/homeworkList", {
-            params: {
-                progress    : progress,
-                nameForAdmin: nameForAdmin
-            }
-        }).then(function (response) {
+      axios.get("/homework/homeworkList", {
+        params: {
+          progress: progress,
+          nameForAdmin: nameForAdmin
+        }
+      }).then(function (response) {
 
-            const url    = new URL(window.location.href);
-            const params = url.searchParams;
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
 
-            const currentProgress     = params.get("progress");
-            const currentNameForAdmin = params.get("nameForAdmin");
+        const currentProgress = params.get("progress");
+        const currentNameForAdmin = params.get("nameForAdmin");
 
-            if (currentProgress === progress && currentNameForAdmin === nameForAdmin) {
-                location.reload();
-            } else {
-                params.set("progress", progress);
-                params.set("nameForAdmin", nameForAdmin);
-                params.set("pageNo", "1");
-                params.set("keyword", "");
+        if (currentProgress === progress && currentNameForAdmin === nameForAdmin) {
+          location.reload();
+        } else {
+          params.set("progress", progress);
+          params.set("nameForAdmin", nameForAdmin);
+          params.set("pageNo", "1");
+          params.set("keyword", "");
 
-                if (nameForAdmin === "") {
-                    params.set("nameForAdmin", "");
-                }
+          if (nameForAdmin === "") {
+            params.set("nameForAdmin", "");
+          }
 
-                location.href = `${url.pathname}?${params.toString()}`;
+          location.href = `${url.pathname}?${params.toString()}`;
 
-            }
+        }
 
-        });
+      });
 
     }
 
     //submission 모달창 조회 + 업데이트
     function updateModal(homeworkId, submissionPageNo, submissionPageSize) {
-        axios.get("/homework/homeworkSubmissionList", {
-            params: {
-                homeworkId        : homeworkId,
-                submissionPageNo  : submissionPageNo,
-                submissionPageSize: submissionPageSize
-            }
-            // homeworkId를 제외한 두 개 값은 모두 현 쿼리스트링에 붙어있음
-        }).then(function (response) {
-            console.log(response);
-            console.log(Object.entries(response.data)); //배열
-            let resultMap   = Object.entries(response.data);
-            let homeworkMap = resultMap[0];
-            console.log("homeworkMap", homeworkMap);
-            let homeworkName   = homeworkMap[0];
-            let pagingData     = homeworkMap[1];
-            let submissionList = pagingData.dtoList;
-            console.log(submissionList); //리스트 맞음
+      axios.get("/homework/homeworkSubmissionList", {
+        params: {
+          homeworkId: homeworkId,
+          submissionPageNo: submissionPageNo,
+          submissionPageSize: submissionPageSize
+        }
+        // homeworkId를 제외한 두 개 값은 모두 현 쿼리스트링에 붙어있음
+      }).then(function (response) {
+        console.log(response);
+        console.log(Object.entries(response.data)); //배열
+        let resultMap = Object.entries(response.data);
+        let homeworkMap = resultMap[0];
+        console.log("homeworkMap", homeworkMap);
+        let homeworkName = homeworkMap[0];
+        let pagingData = homeworkMap[1];
+        let submissionList = pagingData.dtoList;
+        console.log(submissionList); //리스트 맞음
 
-            let output = "";
-            submissionList.forEach(function (submission) {
-                // console.log(submission.id);
+        let output = "";
+        let outputNull = "";
+        if (submissionList.length === 0) {
+          outputNull += `<nav aria-label="Page navigation example " class="col mt-4">
+        <ul class="pagination justify-content-center">
+        <li class="page-item">
+         제출한 과제가 없습니다.
+        </li>
+        </ul>
+        </nav>`;
+        } else {
+          submissionList.forEach(function (submission) {
+            // console.log(submission.id);
 
-                output += `<tr>
-                <td class="text-center align-middle">${submission.id}</td>
+            output += `<tr>
+                <td class="text-center align-middle">${submission.fullname}</td>
                 <td class="text-center align-middle">${homeworkName}</td>
                 <td class="text-center align-middle" >${submission.title}</td>
                 <td class="text-center align-middle"> ${submission.readCount}</td>
@@ -436,273 +474,269 @@
                 </td>
               </tr>`;
 
-            });
+          });
 
-            let pagingOutput = "";
+        }
 
-            pagingOutput += `<nav aria-label="Page navigation example " class="col mt-4">
+        let pagingOutput = "";
+
+        pagingOutput += `<nav aria-label="Page navigation example " class="col mt-4">
         <ul class="pagination justify-content-center">`;
 
-            if (pagingData.prev) {
-                pagingOutput += `<li class="page-item">
+        if (pagingData.prev) {
+          pagingOutput += `<li class="page-item">
             <a class="page-link" onclick="updateModal(${homeworkId},${pagingData.start
-                                                                      - 1},${pagingData.pageSize})">이전</a>
+          - 1},${pagingData.pageSize})">이전</a>
           </li>`;
-            } else {
-                pagingOutput += `<li class="page-item">
-            <a class="page-link" style="color: grey">이전</a>
+        } else {
+          pagingOutput += `<li class="page-item">
+            <a class="page-link" style="color: grey; cursor: default;">이전</a>
           </li>`;
 
-            }
+        }
 
-            for (let i = pagingData.start; i <= pagingData.end; i++) {
+        for (let i = pagingData.start; i <= pagingData.end; i++) {
 
-                let isActive = (i === pagingData.pageNo) ? "active" : "";
+          let isActive = (i === pagingData.pageNo) ? "active" : "";
 
-                pagingOutput += `<li class="page-item ${isActive}">
+          pagingOutput += `<li class="page-item ${isActive}">
             <a class="page-link"
             onclick="updateModal(${homeworkId},${i},${pagingData.pageSize})">${i}</a>
           </li>`;
-            }
+        }
 
-            if (pagingData.next) {
-                pagingOutput += `<li class="page-item">
+        if (pagingData.next) {
+          pagingOutput += `<li class="page-item">
             <a class="page-link page-move" onclick="updateModal(${homeworkId},${pagingData.end
-                                                                                +
-                                                                                1},${pagingData.pageSize})" >다음</a>
+          +
+          1},${pagingData.pageSize})" >다음</a>
           </li>`;
-            } else {
-                pagingOutput += `<li class="page-item">
-            <a class="page-link page-move" style="color: grey">다음</a>
+        } else {
+          pagingOutput += `<li class="page-item">
+            <a class="page-link page-move" style="color: grey; cursor: default;">다음</a>
           </li>`;
 
-            }
-            pagingOutput += `</ul></nav>`;
+        }
+        pagingOutput += `</ul></nav>`;
 
-            $("#submission").html(output);
-            $("#paginationArea").html(pagingOutput);
-            $("#myModal").modal("show");
+        $("#submission").html(output);
+        $("#notSubmission").html(outputNull);
+        $("#paginationArea").html(pagingOutput);
+        $("#myModal").modal("show");
 
-        }).catch(function (error) {
-            console.log(error);
-        });
+      }).catch(function (error) {
+        console.log(error);
+      });
 
     }
 
     //현재 진행 중인 과정이 없는 강사의 경우
     function notRegisterInProgress() {
-        let isRegister = [[${isRegister}]];
-        if (isRegister != null) {
-            // console.log("isRegister", isRegister);
-            Swal.fire({
-                          title: "강의를 등록할 수 없습니다.",
-                          text : "현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.",
-                          icon : "warning",
-                      });
-            // alert("현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.");
-        }
+      let isRegister = /*[[${isRegister}]]*/ null;
+      if (isRegister != null) {
+        // console.log("isRegister", isRegister);
+        Swal.fire({
+          title: "강의를 등록할 수 없습니다.",
+          text: "현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.",
+          icon: "warning",
+        });
+        // alert("현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.");
+      }
     }
 
     // 전 페이지 세션에 저장(session 패키지와 연동)
     function prevPage(link) {
-        //현재 페이지를 저장 + link된 url로 이동
-        let savePage = location.href;
-        localStorage.setItem("savePage", savePage);
-        console.log("저장된 savePage:", savePage);
+      //현재 페이지를 저장 + link된 url로 이동
+      let savePage = location.href;
+      localStorage.setItem("savePage", savePage);
+      console.log("저장된 savePage:", savePage);
 
-        // 추후 필요없으면 삭제(프론트 단에서 해결되면)
-        // axios.post("/session/savePage", {
-        //     savePage: savePage //서버로 data로 전달
-        // }).then(function (response) {
-        //   console.log("세션 저장 완료:",response);
-        // }).catch(function (error) {
-        //   console.log("세션 저장 실패:",error);
-        // })
+      // 추후 필요없으면 삭제(프론트 단에서 해결되면)
+      // axios.post("/session/savePage", {
+      //     savePage: savePage //서버로 data로 전달
+      // }).then(function (response) {
+      //   console.log("세션 저장 완료:",response);
+      // }).catch(function (error) {
+      //   console.log("세션 저장 실패:",error);
+      // })
 
-        location.href = link;
+      location.href = link;
     }
 
     //검색 function
     function keywordSearch() {
-        let keyword  = $("#keyword").val().trim();
-        const url    = new URL(window.location.href);
-        const params = url.searchParams;
-        params.set("keyword", keyword);
-        params.set("pageNo", "1");
-        location.href = `${url.pathname}?${params.toString()}`;
+      let keyword = $("#keyword").val().trim();
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      params.set("keyword", keyword);
+      params.set("pageNo", "1");
+      location.href = `${url.pathname}?${params.toString()}`;
     }
 
     //$function 모음
     $(function () {
 
-        const params    = new URLSearchParams(window.location.search);
-        const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
+      const params = new URLSearchParams(window.location.search);
+      const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
 
-        if (loginUserType !== "ADMINISTRATOR") {
+      if (loginUserType !== "ADMINISTRATOR") {
 
-            //학생, 강사일 경우 select 박스 보이기
-            courseSelectorForLtRemove();
+        //학생, 강사일 경우 select 박스 보이기
+        courseSelectorForLtRemove();
 
-            //강사,학생용 select 조회
-            createOptionForLT(nameForLt);
+        //강사,학생용 select 조회
+        createOptionForLT(nameForLt);
 
-            //nameForLt가 있으면 서버로 보내지 x
-            if (nameForLt) {
-                courseSelector.val(nameForLt);
-            }
-
-            // 강사 학생용 data 보내기  //프론트의 디폴트값
-            if (courseSelector.val() != null && courseSelector.val().trim() !== "") {
-                sendNameForLt(courseSelector.val());
-            }
-
-            // 현재 진행 중이 없는 강사가 등록할 때
-            notRegisterInProgress();
-
-        } else {
-            //관리자일 경우,학생+강사용 select 숨기기
-            courseSelectorForLtRemove();
-
-            //관리자용 boolean 값 보내기
-            sendBooleanForAdmin();
-
-            //관리자용 select-과정명을 조회
-            //createOptionForAdminName();
-
-            //관리자용 select 박스 적용한 pagingresponse 출력
-
+        //nameForLt가 있으면 서버로 보내지 x
+        if (nameForLt) {
+          courseSelector.val(nameForLt);
         }
 
-        adminNameSelectBox.on("change", function () {
-            sendForAdminName();
-        });
+        // 강사 학생용 data 보내기  //프론트의 디폴트값
+        if (courseSelector.val() != null && courseSelector.val().trim() !== "") {
+          sendNameForLt(courseSelector.val());
+        }
 
-        // 진행 상황 변할 때
-        $("#isInProgressForAdmin").on("change", function () {
-            progress = $(this).val();
-            sendBooleanForAdmin();
-        });
+        // 현재 진행 중이 없는 강사가 등록할 때
+        notRegisterInProgress();
 
-        // 강사,교육생 메뉴 선택될때
-        courseSelector.on("change", function () {
-            let nameForLt = $(this).val();
-            sendNameForLt(nameForLt);
-        });
+      } else {
+        //관리자일 경우,학생+강사용 select 숨기기
+        courseSelectorForLtRemove();
 
-        //order 선택될때
-        $("#order").on("change", function () {
-            getOrder($(this).val(), sortBy);
-        });
+        //관리자용 boolean 값 보내기
+        sendBooleanForAdmin();
 
-        $("#sortBy").on("change", function () {
-            getOrder(order, $(this).val());
-        });
+        //관리자용 select-과정명을 조회
+        //createOptionForAdminName();
 
-        //등록 버튼
-        $("#homeworkRegister").on("click", function (e) {
-            e.preventDefault();
+        //관리자용 select 박스 적용한 pagingresponse 출력
 
-            let courseName = courseSelector.val(); //select한 과정명 보내기
-            console.log("courseName", courseName);
+      }
 
-            location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(
-                courseName.trim());
-        });
+      adminNameSelectBox.on("change", function () {
+        sendForAdminName();
+      });
 
-        // 검색 버튼(엔터키)
-        $("#keyword").on("keypress", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                keywordSearch();//나중에 하기
+      // 진행 상황 변할 때
+      $("#isInProgressForAdmin").on("change", function () {
+        progress = $(this).val();
+        sendBooleanForAdmin();
+      });
+
+      // 강사,교육생 메뉴 선택될때
+      courseSelector.on("change", function () {
+        let nameForLt = $(this).val();
+        sendNameForLt(nameForLt);
+      });
+
+      //order 선택될때
+      $("#order").on("change", function () {
+        getOrder($(this).val(), sortBy);
+      });
+
+      $("#sortBy").on("change", function () {
+        getOrder(order, $(this).val());
+      });
+
+      //등록 버튼
+      $("#homeworkRegister").on("click", function (e) {
+        e.preventDefault();
+
+        let courseName = courseSelector.val(); //select한 과정명 보내기
+        console.log("courseName", courseName);
+
+        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(
+            courseName.trim());
+      });
+
+      // 검색 버튼(엔터키)
+      $("#keyword").on("keypress", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          keywordSearch();//나중에 하기
+        }
+      });
+
+      // 검색 버튼
+      $(".search").on("click", function () {
+        keywordSearch();
+      });
+
+      // 제출 과제 보기용 버튼
+      $(".submissionBtn").on("click", function (e) {
+        e.preventDefault();
+        //const params = new URLSearchParams(window.location.search);
+        let submissionPageNo = 1;
+        let submissionPageSize = 5;
+
+        let homeworkId = $(this).data("id");
+        console.log("homeworkId", homeworkId);
+
+        if (!homeworkId) {
+          console.log("homeworkId == null", null);
+          return;
+        }
+        updateModal(homeworkId, submissionPageNo, submissionPageSize);
+
+      });
+
+      //제출 과제 상세 페이지 접근 버튼
+      $(document).on("click", ".submissionIn", function (e) {
+        // alert("!");
+        e.preventDefault();
+
+        let submissionId = $(this).data("id");
+        console.log("submissionId", submissionId);
+        axios.get(
+            "/homework/submissionDetailAuth?submissionId=" + encodeURIComponent(submissionId),
+            {
+              submissionId: submissionId
+            }).then(function (response) {
+          console.log(response);
+          Swal.fire({
+            title: response.data.message,
+            text: "해당 제출물로 이동하시겠습니까?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "예",
+            cancelButtonText: "아니오"
+
+          }).then((result) => {
+            // alert(response.data.message);
+            if (result.isConfirmed) {
+              location.href = "/homework/submissionDetail?submissionId=" +
+                  encodeURIComponent(
+                      submissionId);
             }
-        });
-
-        // 검색 버튼
-        $(".search").on("click", function () {
-            keywordSearch();
-        });
-
-        // 제출 과제 보기용 버튼
-        $(".submissionBtn").on("click", function (e) {
-            e.preventDefault();
-            //const params = new URLSearchParams(window.location.search);
-            let submissionPageNo   = 1;
-            let submissionPageSize = 5;
-
-            let homeworkId = $(this).data("id");
-            console.log("homeworkId", homeworkId);
-
-            if (!homeworkId) {
-                console.log("homeworkId == null", null);
-                return;
+          });
+        }).catch(function (error) {
+          console.log(error);
+          //location.href = error.response.data.data;
+          let msg = error.response.data.message;
+          let errorCode = error.response.data.code;
+          // alert(msg);
+          Swal.fire({
+            title: msg,
+            text: "접근 권한이 없습니다.",
+            icon: "error",
+            showCancelButton: true,
+            confirmButtonText: "예",
+            cancelButtonText: "아니오"
+          }).then((result) => {
+            // alert(response.data.message);
+            if (result.isConfirmed) {
+              if (errorCode === 401) {
+                location.href = "/";
+              } else if (errorCode === 400) {
+                location.href = "/homework/homeworkList";
+              }
             }
-            updateModal(homeworkId, submissionPageNo, submissionPageSize);
+          });
 
         });
 
-        //제출 과제 상세 페이지 접근 버튼
-        $(document).on("click", ".submissionIn", function (e) {
-            // alert("!");
-            e.preventDefault();
-
-            let submissionId = $(this).data("id");
-            console.log("submissionId", submissionId);
-            axios.get(
-                "/homework/submissionDetailAuth?submissionId=" + encodeURIComponent(submissionId),
-                {
-                    submissionId: submissionId
-                }).then(function (response) {
-                console.log(response);
-                Swal.fire({
-                              title            : response.data.message,
-                              text             : "해당 제출물로 이동하시겠습니까?",
-                              icon             : "info",
-                              showCancelButton : true,
-                              confirmButtonText: "예",
-                              cancelButtonText : "아니오"
-
-                          }).then((result) => {
-                    // alert(response.data.message);
-                    if (result.isConfirmed) {
-                        location.href = "/homework/submissionDetail?submissionId=" +
-                                        encodeURIComponent(
-                                            submissionId);
-                    }
-                });
-            }).catch(function (error) {
-                console.log(error);
-                //location.href = error.response.data.data;
-                let msg       = error.response.data.message;
-                let errorCode = error.response.data.code;
-                // alert(msg);
-                Swal.fire({
-                              title            : msg,
-                              text             : "접근 권한이 없습니다.",
-                              icon             : "error",
-                              showCancelButton : true,
-                              confirmButtonText: "예",
-                              cancelButtonText : "아니오"
-                          }).then((result) => {
-                    // alert(response.data.message);
-                    if (result.isConfirmed) {
-                        if (errorCode === 401) {
-                            location.href = "/";
-                        } else if (errorCode === 400) {
-                            location.href = "/homework/homeworkList";
-                        }
-                    }
-                });
-
-            });
-
-        });
-
-        // $(document).ready(function () {
-        //   const params = new URLSearchParams(window.location.search);
-        //   const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
-        //   //courseSelector.val(nameForLt); // URL에서 가져온 값으로 select 박스 설정
-        //   createOptionForLT(nameForLt);
-        // });
+      });
 
     });
 

@@ -1,4 +1,5 @@
 package com.goott5.lms.homework;
+
 import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.common.mapper.UtilMapper;
@@ -30,9 +31,6 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 class HomeworkTest {
 
 
-
-
-
   @Autowired(required = true)
   HomeworkMapper homeworkMapper;
 
@@ -41,7 +39,6 @@ class HomeworkTest {
 
   @Autowired(required = true)
   ReadCountLogMapper readCountLogMapper;
-
 
 
   @Test
@@ -82,12 +79,13 @@ class HomeworkTest {
   @Test
   public void HomeworkSubmissionTest() {
 
-    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(1,PagingRequestDTO.builder().pageNo(1).pageSize(5).build());
+    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(1,
+        PagingRequestDTO.builder().pageNo(1).pageSize(5).build());
 
-    if(submissionDTOS != null){
+    if (submissionDTOS != null) {
 
-    log.info("submissionDTOS:{}",submissionDTOS);
-    } else{
+      log.info("submissionDTOS:{}", submissionDTOS);
+    } else {
       log.info("null");
     }
 
@@ -95,44 +93,44 @@ class HomeworkTest {
 
   @Test
   public void menuSelectTest() {
-    if(homeworkMapper.selectCourseMenuForTeacher("ahn1234") != null){
-      log.info("menuSelectTest:{}",homeworkMapper.selectCourseMenuForTeacher("ahn1234"));
+    if (homeworkMapper.selectCourseMenuForTeacher("ahn1234") != null) {
+      log.info("menuSelectTest:{}", homeworkMapper.selectCourseMenuForTeacher("ahn1234"));
     } else {
       log.info("null");
     }
   }
 
   @Test
-  public void selectMenuForAdmin(){
+  public void selectMenuForAdmin() {
 
 //   boolean truStr = Boolean.parseBoolean("true");
 //   boolean falStr = Boolean.parseBoolean("false");
-   //boolean truOrFalse =  Boolean.parseBoolean("");
+    //boolean truOrFalse =  Boolean.parseBoolean("");
     Boolean truStr = true;
     Boolean falStr = false;
 
-   log.info("truStr 과정명 조회:{}",homeworkMapper.selectBoxCourseNameForAdmin(truStr));
-   log.info("falStr 과정명 조회:{}",homeworkMapper.selectBoxCourseNameForAdmin(falStr));
-   log.info("falStr 과정명 조회:{}",homeworkMapper.selectBoxCourseNameForAdmin(null));
-   //log.info("truOrFalse 과정명 조회:{}",homeworkMapper.selectBoxCourseNameForAdmin(truOrFalse));
+    log.info("truStr 과정명 조회:{}", homeworkMapper.selectBoxCourseNameForAdmin(truStr));
+    log.info("falStr 과정명 조회:{}", homeworkMapper.selectBoxCourseNameForAdmin(falStr));
+    log.info("falStr 과정명 조회:{}", homeworkMapper.selectBoxCourseNameForAdmin(null));
+    //log.info("truOrFalse 과정명 조회:{}",homeworkMapper.selectBoxCourseNameForAdmin(truOrFalse));
 
   }
 
   @Test
   @Transactional
-  public void dummyTest(){
+  public void dummyTest() {
 
-    for(int i=0;i<5;i++){
+    for (int i = 0; i < 5; i++) {
       HomeworkSubmissionDTO hs = HomeworkSubmissionDTO.builder()
           .homeworkId(9)
           .title("dummy" + i)
-          .content(i+"번째 과제 제출")
+          .content(i + "번째 과제 제출")
           .learnerId(4)
           .build();
 //      homeworkMapper.insertHomeworkSubmission(hs);
 //      7, "dummy" + i, i+"번째 과제 제출",4
-      if(homeworkMapper.insertHomeworkSubmission(hs) !=1){
-        log.info("insertHomeworkSubmission:{}",hs);
+      if (homeworkMapper.insertHomeworkSubmission(hs) != 1) {
+        log.info("insertHomeworkSubmission:{}", hs);
       }
     }
 
@@ -140,45 +138,46 @@ class HomeworkTest {
   }
 
   @Test
-  public void selectDetailTest(){
+  public void selectDetailTest() {
     HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOById(1);
 
-    if(homeworkDTO != null){
-     log.info("homeworkDTO 상세 테스트:{}",homeworkDTO);
+    if (homeworkDTO != null) {
+      log.info("homeworkDTO 상세 테스트:{}", homeworkDTO);
     }
 
   }
 
   @Test
-  public void selectSubmissionWithDetailTest(){
+  public void selectSubmissionWithDetailTest() {
 
     Map<HomeworkSubmissionDTO, HomeworkEvalDTO> testMap = new HashMap<>();
 
     HomeworkSubmissionDTO submission = homeworkMapper.selectSubmissionBySubmissionId(28);
     Optional<HomeworkEvalDTO> eval = Optional.ofNullable(homeworkMapper.selectEvalById(28));
 
-    if(submission != null) {
-      testMap.put(submission,eval.orElse(null));
+    if (submission != null) {
+      testMap.put(submission, eval.orElse(null));
     }
 
-    log.info("testMap:{}",testMap);
+    log.info("testMap:{}", testMap);
 
   }
 
   @Test
   @Transactional
-  public void insertHomeworkTest(){
+  public void insertHomeworkTest() {
 
     HomeworkDTO homeworkDTO = HomeworkDTO.builder()
-            .title("queen 과제22222")
-            .startDate(LocalDateTime.now())
-            .endDate(LocalDateTime.now().plusDays(40))
-            .content("dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy")
-            .courseId(6)
-            .instructorId(6)
-            .build();
+        .title("queen 과제22222")
+        .startDate(LocalDateTime.now())
+        .endDate(LocalDateTime.now().plusDays(40))
+        .content(
+            "dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy")
+        .courseId(6)
+        .instructorId(6)
+        .build();
 
-    if(homeworkMapper.insertHomework(homeworkDTO) == 1) {
+    if (homeworkMapper.insertHomework(homeworkDTO) == 1) {
       log.info("성공");
     } else {
       log.info("실패");
@@ -201,68 +200,71 @@ class HomeworkTest {
 
   @Test
   @Transactional
-  public void testInsertFile(){
+  public void testInsertFile() {
 
     FileDTO fileDTO = FileDTO.builder()
-            .originalName("hamburger.jpg")
-            .newName("0df7d1df-99a1-415c-b771-ffec75f1f561_hamburger.jpg")
-            .path("https://s3uploads-bucketpyj.s3.ap-northeast-2.amazonaws.com/upload/0df7d1df-99a1-415c-b771-ffec75f1f561_hamburger.jpg")
-            .isImage(true)
-            .size((int) 237.8 * 1024)
-            .tableName("homework")
-            .tableId(15)
-            .build();
+        .originalName("hamburger.jpg")
+        .newName("0df7d1df-99a1-415c-b771-ffec75f1f561_hamburger.jpg")
+        .path(
+            "https://s3uploads-bucketpyj.s3.ap-northeast-2.amazonaws.com/upload/0df7d1df-99a1-415c-b771-ffec75f1f561_hamburger.jpg")
+        .isImage(true)
+        .size((int) 237.8 * 1024)
+        .tableName("homework")
+        .tableId(15)
+        .build();
 
-    if(utilMapper.insertFile(fileDTO)== 1){
-      log.info("fileDTO insert 성공:{}",fileDTO);
-    }else{
+    if (utilMapper.insertFile(fileDTO) == 1) {
+      log.info("fileDTO insert 성공:{}", fileDTO);
+    } else {
       log.info("실패했습니다.");
-    };
+    }
+    ;
   }
 
   @Test
-  public void testSelectIsHomeworkInstructor(){
+  public void testSelectIsHomeworkInstructor() {
 
     String loginId = "queen";
     int homeworkId = 27;
 
-   int result = homeworkMapper.selectIsInstructorId(loginId, homeworkId);
+    int result = homeworkMapper.selectIsInstructorId(loginId, homeworkId);
 
-   if(result == 1){
-     log.info("select 성공");
-   }
+    if (result == 1) {
+      log.info("select 성공");
+    }
 
   }
 
   @Test
   @Transactional(rollbackFor = Exception.class)
-  public void testSelectModifyHomework(){
+  public void testSelectModifyHomework() {
 
     HomeworkModifyDTO homeworkModifyDTO = HomeworkModifyDTO.builder()
         .title("하이")
         .startDate(LocalDateTime.now())
         .endDate(LocalDateTime.now().plusDays(40))
-        .content("언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니")
+        .content(
+            "언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니언니")
         .id(27)
         .build();
 
-   int result =  homeworkMapper.updateHomework(homeworkModifyDTO);
-   if(result == 1){
-     log.info("update success");
-   } else {
-     log.info("update fail");
-   }
+    int result = homeworkMapper.updateHomework(homeworkModifyDTO);
+    if (result == 1) {
+      log.info("update success");
+    } else {
+      log.info("update fail");
+    }
 
   }
 
   @Test
-  public void selectFile(){
+  public void selectFile() {
 
     FileSelectDTO fileSelectDTO = utilMapper.selectFileById(15);
 
-    if(fileSelectDTO != null){
-      log.info("selectFile:{}",fileSelectDTO);
-    }else{
+    if (fileSelectDTO != null) {
+      log.info("selectFile:{}", fileSelectDTO);
+    } else {
 
       log.info("존재하지 않음");
     }
@@ -270,9 +272,9 @@ class HomeworkTest {
 
   @Test
   @Transactional(rollbackFor = Exception.class)
-  public void testDeleteFile(){
+  public void testDeleteFile() {
     int result = utilMapper.deleteFileById(15);
-    if(result == 1){
+    if (result == 1) {
       log.info("delete success");
     } else {
       log.info("delete fail");
@@ -281,9 +283,9 @@ class HomeworkTest {
 
   @Test
   @Transactional(rollbackFor = Exception.class)
-  public void testDeleteHomework(){
+  public void testDeleteHomework() {
     int result = homeworkMapper.deleteHomeworkById(34);
-    if(result == 1){
+    if (result == 1) {
       log.info("delete success");
     } else {
       log.info("delete fail");
@@ -291,22 +293,22 @@ class HomeworkTest {
   }
 
   @Test
-  public void testDeleteHomeworkIsSubmissionExist(){
-   boolean result = homeworkMapper.selectHomeworkSubmissionIdByHomework(48);
-   if(result){
-     log.info("submission exist");
-   } else {
-     log.info("submission not exist");
-   }
+  public void testDeleteHomeworkIsSubmissionExist() {
+    boolean result = homeworkMapper.selectHomeworkSubmissionIdByHomework(48);
+    if (result) {
+      log.info("submission exist");
+    } else {
+      log.info("submission not exist");
+    }
   }
 
   @Test
   @Transactional(rollbackFor = Exception.class)
-  public void testReadCount(){
+  public void testReadCount() {
     // 사용자 A가 처음으로 상세페이지 B에 접근했을 때
-    int readCount = readCountLogMapper.checkReadCountLog("homework",34,6);
+    int readCount = readCountLogMapper.checkReadCountLog("homework", 34, 6);
 
-    log.info("readCount:{}",readCount);
+    log.info("readCount:{}", readCount);
 
     ReadCountLog readCountLog = ReadCountLog.builder()
         .userId(6)
@@ -315,22 +317,22 @@ class HomeworkTest {
         .readDate(new Date())
         .build();
 
-    log.info("readCountLog:{}",readCountLog);
+    log.info("readCountLog:{}", readCountLog);
 
     int insertReadCount = readCountLogMapper.insertReadCountLog(readCountLog);
 
-    if(insertReadCount == 1){
+    if (insertReadCount == 1) {
       log.info("readCount insert success");
-    }else{
+    } else {
       log.info("readCount insert fail");
       return;
     }
 
     int updateTableRead = homeworkMapper.updateReadCount(34);
 
-    if(updateTableRead == 1){
+    if (updateTableRead == 1) {
       log.info("readCount update success");
-    }else{
+    } else {
       log.info("readCount update fail");
     }
 
@@ -338,12 +340,12 @@ class HomeworkTest {
 
   @Test
   @Transactional(rollbackFor = Exception.class)
-  public void testUpdateHomeworkReadCount(){
+  public void testUpdateHomeworkReadCount() {
     // 사용자 A가 두번째로 상세페이지 B에 접근했을 때(24시간 이내)
     // 사용자 A가 두번째로 상세페이지 B에 접근했을 때(24시간 이후)
-    int readCount = readCountLogMapper.checkReadCountLog("homework",34,6);
+    int readCount = readCountLogMapper.checkReadCountLog("homework", 34, 6);
 
-    log.info("readCount= 1?:{}",readCount);
+    log.info("readCount= 1?:{}", readCount);
 
     ReadCountLog readCountLog = ReadCountLog.builder()
         .tableName("homework")
@@ -353,17 +355,17 @@ class HomeworkTest {
 
     int date = readCountLogMapper.checkReadCountLogByDate(readCountLog);
 
-    if(date == 1){
+    if (date == 1) {
       log.info("조회수 업데이트 x");
     } else {
       int updateReadCount = readCountLogMapper.updateReadCountLogByDate(readCountLog);
 
-      if(updateReadCount == 1){
+      if (updateReadCount == 1) {
         log.info("readCount update success");
         int result = homeworkMapper.updateReadCount(34);
-        if(result == 1){
+        if (result == 1) {
           log.info("table update success");
-        }else{
+        } else {
           log.info("table update fail");
         }
       }
@@ -389,16 +391,16 @@ class HomeworkTest {
 //  }
 
   @Test
-  public void selectHomeworkDTOBySubmissionId(){
+  public void selectHomeworkDTOBySubmissionId() {
     HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOBySubmissionId(71);
 
-    log.info("homeworkDTO={}",homeworkDTO);
+    log.info("homeworkDTO={}", homeworkDTO);
 
   }
 
   @Test
   @Transactional
-  public void insertHomeworkSubmissionTest(){
+  public void insertHomeworkSubmissionTest() {
     HomeworkSubmissionDTO hs = HomeworkSubmissionDTO.builder()
         .homeworkId(50)
         .title("test")
@@ -406,32 +408,32 @@ class HomeworkTest {
         .learnerId(36)
         .build();
 
-   int insertNum = homeworkMapper.insertHomeworkSubmission(hs);
+    int insertNum = homeworkMapper.insertHomeworkSubmission(hs);
 
-   if(insertNum == 1){
-     log.info("success");
-     log.info(hs.toString());
-   } else {
-     log.info("fail");
-   }
+    if (insertNum == 1) {
+      log.info("success");
+      log.info(hs.toString());
+    } else {
+      log.info("fail");
+    }
   }
 
   @Test
-  public void getSubmission(){
+  public void getSubmission() {
     int userId = 41;
     int homeworkId = 49;
 
-    int firstBoolean = homeworkMapper.isLearnerInCourse(userId,homeworkId);
-    int secondBoolean = homeworkMapper.existSubmission(userId,homeworkId);
+    int firstBoolean = homeworkMapper.isLearnerInCourse(userId, homeworkId);
+    int secondBoolean = homeworkMapper.existSubmission(userId, homeworkId);
 
-    if(firstBoolean == 1){
+    if (firstBoolean == 1) {
       log.info("해당 과제의 과정에 속한 학생입니다.");
-      if(secondBoolean == 1){
+      if (secondBoolean == 1) {
         log.info("해당 과제를 제출한 전적이 있으므로 등록할 수 없습니다.");
-      }else {
+      } else {
         log.info("해당 과제를 제출한 전적이 없습니다.");
       }
-    } else{
+    } else {
       log.info("해당 과제의 과정에 해당하지 않습니다.");
     }
   }
@@ -439,7 +441,7 @@ class HomeworkTest {
 
   @Test
   @Transactional
-   public void updateSubmission2(){
+  public void updateSubmission2() {
 
     String title = "test";
     String content = "test 수정222222222222";
@@ -454,18 +456,18 @@ class HomeworkTest {
     homeworkSubmissionDTO.setUpdatedAt(LocalDateTime.now());
 
     int result = homeworkMapper.updateSubmission(homeworkSubmissionDTO);
-    if(result == 1){
+    if (result == 1) {
       log.info("update success");
     } else {
       log.info("update fail");
     }
 
-   }
+  }
 
 
-   @Test
-   @Transactional
-   public void updateSubmission(){
+  @Test
+  @Transactional
+  public void updateSubmission() {
     HomeworkEvalModifyDTO homeworkEvalModifyDTO = HomeworkEvalModifyDTO.builder()
         .id(3)
         .isPass(true)
@@ -474,12 +476,32 @@ class HomeworkTest {
         .build();
 
     int updateNum = homeworkMapper.updateEval(homeworkEvalModifyDTO);
-    if(updateNum == 1){
+    if (updateNum == 1) {
       log.info("update success");
     } else {
       log.info("update fail");
     }
 
 
-   }
+  }
+
+  @Test
+  public void selectHomeworkSubmissionIdByHomework() {
+
+    PagingRequestDTO pagingRequestDTO = PagingRequestDTO.builder()
+        .pageNo(1)
+        .pageSize(5)
+        .build();
+
+    List<HomeworkSubmissionDTO> submissionDTOList = homeworkMapper.selectSubmissionById(47,
+        pagingRequestDTO);
+
+    if (submissionDTOList != null) {
+      for (HomeworkSubmissionDTO homeworkSubmissionDTO : submissionDTOList) {
+        log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
+      }
+    } else {
+      log.info("null");
+    }
+  }
 }
