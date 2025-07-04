@@ -45,12 +45,13 @@ public interface CourseBoardMaterialsMapper {
   int softDeleteById(@Param("id") int id);
 
   // 고정 기능
-  int countFixedPosts(@Param("courseId") int courseId);
+  int countFixedPosts(@Param("courseId") Long courseId);
 
   List<CourseBoardMaterialsPageDTO> selectAllFixedPosts(CourseBoardMaterialsPagingRequestDTO courseBoardMaterialsPagingRequestDTO);
 
   // 과정 ID(PK) 가져오기
   @Select("SELECT id FROM course WHERE name = #{courseName} ")
   Integer selectCourseId(String courseName);
+
 
 }

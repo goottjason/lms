@@ -224,6 +224,12 @@
     WHERE id = #{commentId}
   </update>
 
+  <update id="deleteCommentsByForumId" parameterType="int">
+    UPDATE course_forum_comment
+    SET deleted_at = NOW()
+    WHERE course_forum_id = #{forumId}
+  </update>
+
   <select id="countCourseBoardDebateLikesByForumId" resultType="int">
     SELECT COUNT(*) FROM course_forum_like WHERE course_forum_id = #{forumId}
   </select>

@@ -38,7 +38,8 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
     // '고정'으로 설정하려는 경우에만 개수 체크 로직을 수행합니다.
     if (courseBoardMaterialsDTO.getIsFixed()) {
       // 현재 고정된 글의 총 개수를 DB에서 조회합니다.
-      int fixedCount = courseBoardMaterialsMapper.countFixedPosts(courseBoardMaterialsDTO.getCourseId());
+      int fixedCount = courseBoardMaterialsMapper.countFixedPosts(
+          (long) courseBoardMaterialsDTO.getCourseId());
       // 조회된 고정글이 5개 이상이면, 등록을 막고 실패(-1)를 반환합니다.
       if (fixedCount >= 5) {
         log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
@@ -234,7 +235,8 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       // 원래 고정글이 아니었던 글을 새로 고정하려는 경우
       if (originalPost != null && !originalPost.getIsFixed()) {
         // 현재 고정된 글의 총 개수를 DB에서 조회합니다.
-        int fixedCount = courseBoardMaterialsMapper.countFixedPosts(courseBoardMaterialsDTO.getCourseId());
+        int fixedCount = courseBoardMaterialsMapper.countFixedPosts(
+            (long) courseBoardMaterialsDTO.getCourseId());
 
         // 조회된 고정글이 5개 이상이면, 수정을 막고 실패(0)를 반환합니다.
         if (fixedCount >= 5) {
@@ -270,6 +272,15 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
 
     // 마지막으로 게시글을 soft delete 처리
     courseBoardMaterialsMapper.softDeleteById(courseBoardMaterialsId);
+  }
+
+  @Override
+  public int countFixedPostsByCourseId(Long courseId) {
+    if (courseId == null) {
+      return 0; // courseId가 없으면 고정글도 0개로 간주
+    }
+    // Mapper의 countFixedPosts를 호출합니다.
+    return courseBoardMaterialsMapper.countFixedPosts(courseId);
   }
 
 }

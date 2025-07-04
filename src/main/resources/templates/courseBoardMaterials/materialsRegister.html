@@ -135,26 +135,48 @@
       const currentCourseName = /*[[${currentCourseName}]]*/ null;
       /*]]>*/
 
+      /*<![CDATA[*/
+      const fixedPostCount = /*[[${fixedPostCount}]]*/ 0;
+      /*]]>*/
+
       // --- 폼 유효성 검사 이벤트 리스너 설정 ---
       if (submitButton) {
-        submitButton.addEventListener('click', function() {
+        submitButton.addEventListener('click', function() { // async가 더 이상 필요 없습니다.
+          const isFixedCheckbox = document.getElementById('isFixed');
 
+          // "고정여부"가 체크되었고, 서버에서 받은 고정글 개수가 5개 이상인지 확인
+          if (isFixedCheckbox && isFixedCheckbox.checked && fixedPostCount >= 5) {
+            Swal.fire({
+              title: '글 작성에 실패했습니다.',
+              text: '고정글은 5개까지 등록 가능합니다.',
+              icon: 'warning'
+            });
+            return; // 등록 절차 중단
+          }
+
+          // --- 기존 유효성 검사 실행 (제목, 내용 등) ---
           let isClientValid = true;
           titleError.textContent = '';
           contentError.textContent = '';
 
-          if (!titleInput || titleInput.value.trim() === '') {
+          const titleValue = titleInput ? titleInput.value.trim() : '';
+          if (titleValue === '') {
             titleError.textContent = '제목을 입력해주세요.';
             isClientValid = false;
+          } else if (titleValue.length < 4) {
+            titleError.textContent = '제목은 4글자 이상 입력해주세요.';
+            isClientValid = false;
+          } else if (titleValue.length > 100) {
+            titleError.textContent = '제목은 100글자 이하로 입력해주세요.';
+            isClientValid = false;
           }
-          console.log(contentInput.value);
+
           if (!contentInput || contentInput.value.trim() === '') {
             contentError.textContent = '내용을 입력해주세요.';
             isClientValid = false;
-
           }
 
-          // --- 유효할 경우에만 AJAX로 제출 ---
+          // --- 최종 유효할 경우에만 AJAX로 제출 ---
           if (isClientValid) {
             const formData = new FormData(form);
 
@@ -165,7 +187,26 @@
               sendNotificationToLearnerInCourse(courseId, '공지 및 수업자료 게시판에 글이 등록 되었습니다.', false,
                   `/courseBoardMaterials/materialsDetail?id=${response.data.data.id}`);
 
-              Swal.fire({title: response.data.message}).then(()=>{location.href = '/courseBoardMaterials/materialsList'});
+              Swal.fire({title: response.data.message}).then(() => {
+                sessionStorage.setItem('isFiltering', 'true');
+
+                // Thymeleaf의 안전한 스크립트 인라인 방식으로 URL을 생성합니다.
+                const backToListUrl = /*[[@{
+                    '/courseBoardMaterials/materialsList'(
+                        pageNo=${pagingRequestDTO.pageNo},
+                        type=${pagingRequestDTO.type},
+                        keyword=${pagingRequestDTO.keyword},
+                        courseId=${pagingRequestDTO.courseId},
+                        isInProgress=${pagingRequestDTO.isInProgress},
+                        hasAttachment=${pagingRequestDTO.hasAttachment},
+                        orderBy=${pagingRequestDTO.orderBy},
+                        orderDirection=${pagingRequestDTO.orderDirection},
+                        pagingSize=${pagingRequestDTO.pagingSize}
+                    )
+                }]]*/ '/courseBoardMaterials/materialsList'; // 기본 fallback URL
+
+                location.href = backToListUrl;
+              });
             })
             .catch(error => {
               if (error.response && error.response.data && error.response.data.data) {

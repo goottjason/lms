@@ -126,15 +126,21 @@
           titleError.textContent = '';
           contentError.textContent = '';
 
-          if (!titleInput || titleInput.value.trim() === '') {
+          const titleValue = titleInput ? titleInput.value.trim() : '';
+          if (titleValue === '') {
             titleError.textContent = '제목을 입력해주세요.';
             isClientValid = false;
+          } else if (titleValue.length < 4) {
+            titleError.textContent = '제목은 4글자 이상 입력해주세요.';
+            isClientValid = false;
+          } else if (titleValue.length > 100) {
+            titleError.textContent = '제목은 100글자 이하로 입력해주세요.';
+            isClientValid = false;
           }
-          console.log(contentInput.value);
+
           if (!contentInput || contentInput.value.trim() === '') {
             contentError.textContent = '내용을 입력해주세요.';
             isClientValid = false;
-
           }
 
           // --- 유효할 경우에만 AJAX로 제출 ---

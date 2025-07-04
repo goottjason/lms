@@ -136,13 +136,19 @@ public class CourseBoardMaterialsController {
         Model model) {
 
         CourseBoardMaterialsDTO dto = new CourseBoardMaterialsDTO();
+        int fixedPostCount = 0; // 기본값을 0으로 설정
+
+
         if (courseId != null) {
             dto.setCourseId(courseId); // 목록에서 받은 courseId를 DTO에 설정
+        fixedPostCount = courseBoardMaterialsService.countFixedPostsByCourseId(Long.valueOf(courseId));
         }
+
 
         model.addAttribute("courseBoardMaterialsDTO", dto);
         model.addAttribute("currentCourseId", pagingRequestDTO.getCourseId());
         model.addAttribute("pagingRequestDTO", pagingRequestDTO);
+        model.addAttribute("fixedPostCount", fixedPostCount);
 
         return "courseBoardMaterials/materialsRegister";
     }
@@ -305,32 +311,44 @@ public class CourseBoardMaterialsController {
 
     // 수정 페이지(GET)
     @GetMapping("/materialsModify")
-    public String getMaterialsModify(@RequestParam(required = false) int id, Model model,HttpSession session) {
-
-        List<FileSelectDTO> beforeFile = utilService.selectFileList("course_notice",id);
-
-        if (beforeFile != null && beforeFile.size() > 0) {
-            model.addAttribute("beforeFile", beforeFile);
-        }
+    public String getMaterialsModify(@RequestParam("id") int id, Model model, HttpSession session,
+        @ModelAttribute CourseBoardMaterialsPagingRequestDTO pagingRequestDTO) {
 
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
         if (loginUser == null) {
-            return "redirect:/";
+            return "redirect:/"; // 로그인 안했으면 메인으로
         }
 
         CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(id);
 
+        // 게시글이 없거나, 다른 사람의 글을 수정하려고 할 경우 목록으로 리다이렉트
+        if (detail == null) {
+            log.warn("ID {}에 해당하는 상세 정보를 찾을 수 없습니다.", id);
+            return "redirect:/courseBoardMaterials/materialsList";
+        }
+
+        // --- 고정글 개수 계산 로직 ---
+        int fixedPostCount = courseBoardMaterialsService.countFixedPostsByCourseId(Long.valueOf(detail.getCourseId()));
+
+        // --- View에 전달할 데이터 준비 ---
+
+        // DTO 객체 (form의 th:object와 바인딩)
         CourseBoardMaterialsDTO dto = new CourseBoardMaterialsDTO();
         dto.setId(detail.getId());
-        dto.setCourseId(detail.getCourseId()); // courseId를 DTO에 설정
+        dto.setCourseId(detail.getCourseId());
         dto.setTitle(detail.getTitle());
         dto.setContent(detail.getContent());
         dto.setIsFixed(detail.getIsFixed());
-
-        model.addAttribute("currentCourseId", dto.getCourseId());
-
         model.addAttribute("courseBoardMaterialsDTO", dto);
-        model.addAttribute("attachments", detail.getAttachments());
+
+        // JavaScript에서 사용할 데이터
+        model.addAttribute("fixedPostCount", fixedPostCount);          // 현재 과정의 고정글 개수
+        model.addAttribute("wasOriginallyFixed", detail.getIsFixed()); // 이 글의 원래 고정 상태
+        model.addAttribute("currentCourseId", detail.getCourseId());   // 현재 과정 ID
+
+        // 기타 데이터
+        model.addAttribute("attachments", detail.getAttachments());    // 기존 첨부파일 목록
+        model.addAttribute("pagingRequestDTO", pagingRequestDTO);      // '취소' 버튼으로 목록 돌아갈 때 사용
 
         return "courseBoardMaterials/materialsModify";
     }

@@ -7,7 +7,7 @@
 <head>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    .d-none {
+    .a-none {
       display: none !important;
     }
   </style>
@@ -165,7 +165,7 @@
       </div>
       <div class="card-body py-3">
         <div class="row ml-2 mb-4" th:if="${session.loginUser != null}">
-          <form th:action="@{/courseBoardDebate/comments}" th:object="${pagingRequestDTO}" method="post" class="d-flex w-100">
+          <form th:action="@{/courseBoardDebate/comments}" th:object="${pagingRequestDTO}" method="post" class="d-flex w-100" id="comment-form">
             <input type="hidden" name="forumId" th:value="${debateDetail.id}" />
             <input type="hidden" th:field="*{courseId}" />
             <input type="hidden" th:field="*{pageNo}" />
@@ -211,7 +211,7 @@
             </div>
 
             <!-- 수정 버튼 클릭하면 이렇게.... -->
-            <div class="d-flex row d-none" th:id="|comment-edit-${comment.id}|">
+            <div class="d-flex row a-none" th:id="|comment-edit-${comment.id}|">
               <div class="col-11 d-flex">
                 <div class="mr-3">
                   <img class="img-profile rounded-circle"  th:src="${comment.profileImg}" style="width: 50px; height: 50px; object-fit: cover;">
@@ -330,6 +330,26 @@
       const modifyButton = document.getElementById('modify-btn');
       const deleteButton = document.getElementById('delete-button');
       const reportButton = document.getElementById('report-button');
+
+      const commentForm = document.getElementById('comment-form');
+      if(commentForm) {
+        commentForm.addEventListener('submit', function(event) {
+          const commentTextarea = commentForm.querySelector('textarea[name="content"]');
+
+          // 댓글 내용의 양쪽 공백을 제거했을 때 비어있는지 확인합니다.
+          if (commentTextarea.value.trim() === '') {
+            // 폼의 기본 제출 동작을 막습니다.
+            event.preventDefault();
+
+            // 사용자에게 경고창을 띄웁니다.
+            Swal.fire({
+              title: '내용을 입력해주세요.',
+              icon: 'warning'
+            });
+          }
+        });
+      }
+
 
       /**
        * 이벤트 리스너 설정
@@ -464,8 +484,8 @@
 
             // 수정 아이콘 클릭
             if (target.closest('.edit-comment-btn')) {
-              displayEl.classList.add('d-none');
-              editEl.classList.remove('d-none');
+              displayEl.classList.add('a-none');
+              editEl.classList.remove('a-none');
             }
             // 삭제 아이콘 클릭
             else if (target.closest('.delete-comment-btn')) {
@@ -493,14 +513,14 @@
               axios.put(`/courseBoardDebate/comments`, { commentId: commentId, content: newContent })
               .then(() => {
                 displayEl.querySelector('.comment-content').textContent = newContent;
-                displayEl.classList.remove('d-none');
-                editEl.classList.add('d-none');
+                displayEl.classList.remove('a-none');
+                editEl.classList.add('a-none');
               }).catch(() => Swal.fire('오류', '댓글 수정 중 오류가 발생했습니다.', 'error'));
             }
             // 취소 버튼 클릭
             else if (target.closest('.cancel-edit-btn')) {
-              displayEl.classList.remove('d-none');
-              editEl.classList.add('d-none');
+              displayEl.classList.remove('a-none');
+              editEl.classList.add('a-none');
             }
           });
         }

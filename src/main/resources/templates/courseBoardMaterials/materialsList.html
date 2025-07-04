@@ -25,15 +25,15 @@
     <div class="col d-flex justify-content-end" th:if="${loginUserType == 'ADMINISTRATOR'}">
       <form class="row col-12 mb-3">
         <div class="col-3">
-          <select id="is-in-progress" class="form-control">
-            <option value="">진행상황별</option>
-            <option value="true">진행 중</option>
-            <option value="false">종료</option>
+          <select id="is-in-progress" name="isInProgress" class="form-control">
+            <option value="">전체</option>
+            <option value="true" th:selected="${responseDTO?.pagingRequestDTO?.isInProgress == true}">진행 중</option>
+            <option value="false" th:selected="${responseDTO?.pagingRequestDTO?.isInProgress == false}">종료</option>
           </select>
         </div>
         <div class="col">
           <select id="course-select" class="form-control">
-            <option value="">과정별</option>
+            <option value="">전체</option>
           </select>
         </div>
       </form>
@@ -62,7 +62,7 @@
 
     <div class="card-body">
       <!-- 검색 / 정렬 영역 -->
-      <form class="row mb-3" action="/courseBoardMaterials/materialsList" method="get" id="searchForm">
+      <form class="row mb-3" action="/courseBoardMaterials/materialsList" method="get" id="materialsSearchForm">
         <input type="hidden" name="courseId" id="searchCourseId" th:value="${responseDTO?.pagingRequestDTO?.courseId}">
         <input type="hidden" name="isInProgress" id="searchInProgress" th:value="${responseDTO?.pagingRequestDTO?.isInProgress}">
         <div class="input-group col-6">
@@ -77,7 +77,7 @@
             <input type="text" class="form-control" placeholder="검색어를 입력하세요." name="keyword"
                    th:value="${responseDTO?.pagingRequestDTO?.keyword}">
             <div class="input-group-append">
-              <button class="btn btn-primary" type="submit">
+              <button class="btn btn-primary" type="submit" id="searchBtn">
                 <i class="fas fa-search fa-sm"></i>
               </button>
             </div>
@@ -121,7 +121,7 @@
             <td class="text-center align-middle"><i class="fas fa-thumbtack text-primary"></i></td>
             <td class="title align-middle">
               <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
-                 th:text="${#strings.abbreviate(dto.title, 30)}">고정글 제목</a>
+                 th:text="${#strings.abbreviate(dto.title, 30)}" onclick="setFlag();">고정글 제목</a>
               <span th:if="${dto.isAttached}" class="ml-2">
                 <i class="fas fa-cog text-secondary"></i>
               </span>
@@ -138,7 +138,7 @@
             <td class="title align-middle">
               <th:block th:if="${dto.deletedAt == null}">
                 <a th:href="|/courseBoardMaterials/materialsDetail?id=${dto.id}${responseDTO.pagingRequestDTO.generateLinkExceptPageNo()}&pageNo=${responseDTO.pageNo}|"
-                   th:text="${#strings.abbreviate(dto.title, 30)}">제목</a>
+                   th:text="${#strings.abbreviate(dto.title, 30)}" onclick="setFlag();">제목</a>
                 <span th:if="${dto.isAttached}" class="ml-2">
                     <i class="fas fa-cog text-secondary"></i>
                 </span>
@@ -217,48 +217,204 @@
   <script>
     const loginUserId = $("#login-user-id").val();
     const loginUserType = $("#login-user-type").val();
-    // URL 파라미터로 받은 현재 courseId (필터링 상태 유지용)
     const currentCourseId = /*[[${responseDTO.pagingRequestDTO?.courseId}]]*/ null;
 
-    // --- 페이지 로드 완료 시 초기화 함수 실행 ---
+    let baseConfig = {
+      loginUserId  : loginUserId,
+      loginUserType: loginUserType
+    };
+
+    let courseConfig = {
+      pageNo        : null,
+      pageSize      : null,
+      type          : "coName",
+      keyword       : null,
+      orderBy       : "coStartDate",
+      orderDirection: "ASC",
+      coIsInProgress: null,
+      coId          : null
+    };
+    let configCoId = null;
+
     document.addEventListener('DOMContentLoaded', function() {
-      initializePage();
-      initializeExistingFilters(); // 기존 필터링 로직 초기화
-      renderAdminCourseFilter();
-    });
+      const isFiltering = sessionStorage.getItem('isFiltering') === 'true';
+      const isEnteringDetail = sessionStorage.getItem('isEnteringDetail') === 'true';
 
-    // --- 페이지 핵심 기능 초기화 함수 ---
-    async function initializePage() {
-      // basic.html에 있는 헤더의 courseSelector를 대상으로 작업
-      const headerCourseSelector = document.getElementById('courseSelector');
-
-      // 강사 또는 교육생일 경우 (헤더에 courseSelector가 있을 때만)
-      if (headerCourseSelector) {
-        // 과정 목록 API 호출 및 드롭다운 UI 업데이트
-        const courses = await fetchCourses();
-        updateCourseSelectBox('#courseSelector', courses, currentCourseId);
-
-        // "수업공지 등록" 버튼 링크에 courseId 초기값 설정
-        updateRegisterButtonLink();
-
-        // 과정 선택 드롭다운에 '변경' 이벤트 리스너 추가
-        headerCourseSelector.addEventListener('change', function() {
-          const selectedCourseId = this.value;
-          // 검색 폼의 숨겨진 필드에 선택된 ID값 설정
-          document.getElementById('searchCourseId').value = selectedCourseId;
-          // 검색 폼 제출하여 페이지 리로드
-          document.getElementById('searchForm').submit();
-        });
+      // 필터링 중이거나 상세페이지에서 돌아온 것이 아니라면, 새로운 방문으로 간주하고 필터 초기화
+      if (!isFiltering && !isEnteringDetail) {
+        sessionStorage.removeItem('courseConfig');
       }
 
-      // "수업공지 등록" 버튼 권한에 따라 표시/숨김 처리
-      setupRegisterButton();
+      // 판별에 사용된 플래그들은 다음을 위해 항상 제거
+      sessionStorage.removeItem('isFiltering');
+      sessionStorage.removeItem('isEnteringDetail');
+
+      getStatus();
+      configCoId = currentCourseId;
+      courseConfig.coId = null;
+
+      fetchAndLoadCourseSelect();
+
+      // 이벤트 핸들러 등록
+      $(document).on("change", "#is-in-progress", handleIsInProgressChange);
+      $(document).on("change", "#course-select", handleCourseSelectChange);
+
+      // 검색 폼 제출 시 '필터링 중' 플래그 설정
+      $("#searchBtn").on("click", function(event) {
+        const keywordInput = $('#materialsSearchForm').find('input[name="keyword"]');
+
+        if (keywordInput.val().trim() === '') {
+          event.preventDefault();
+          Swal.fire({
+            title: '키워드를 입력해주세요.',
+            icon: 'warning'
+          });
+          return;
+        }
+        // 유효한 검색어일 경우에만 필터링 상태를 저장합니다.
+        sessionStorage.setItem('isFiltering', 'true');
+      });
+
+      initializePage();
+      initializeExistingFilters();
+
+      // 페이지 로드 시 '진행 중/종료' 필터 상태를 세션스토리지 값으로 설정
+      $('#is-in-progress').val(courseConfig.coIsInProgress);
+    });
+
+    // '진행 중/종료' 필터 변경 시 호출될 함수 (신규 추가)
+    function handleIsInProgressChange() {
+      sessionStorage.setItem('isFiltering', 'true');
+      // courseConfig에 현재 '진행 중/종료' 상태 저장
+      courseConfig.coIsInProgress = $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
+      // 과정 선택 상태 초기화
+      courseConfig.coId = null;
+      setStatus(); // 변경된 필터 상태를 세션스토리지에 저장
+
+      // 필터 변경 시, 과정 선택을 '전체'로 간주하고 바로 검색을 실행
+      const inProgressStatus = $("#is-in-progress").val();
+      $("#searchInProgress").val(inProgressStatus);
+      $("#searchCourseId").val(""); // 과정 선택을 '전체'로 초기화
+      $("#materialsSearchForm").submit();
     }
 
+    // '과정' 필터 변경 시 호출될 함수 (중복 제거 및 최종 수정본)
+    function handleCourseSelectChange() {
+      sessionStorage.setItem('isFiltering', 'true');
 
-    // API를 통해 해당 유저가 수강중인 과정 목록을 가져오는 함수
+      courseConfig.coId = $("#course-select").val() === "" ? null : $("#course-select").val();
+      setStatus();
+
+      const courseId = $("#course-select").val();
+      const inProgressStatus = $("#is-in-progress").val(); // '진행 중' 상태도 함께 가져옴
+
+      // 두 필터 값을 모두 숨겨진 input에 담아 폼 제출
+      $("#searchCourseId").val(courseId);
+      $("#searchInProgress").val(inProgressStatus);
+      $("#materialsSearchForm").submit();
+    }
+
+    async function fetchAndLoadCourseSelect() {
+      let coursesWithPaging = await apiGetRequestParams(
+          "/api/coursemanagement/courses",
+          {...baseConfig, ...courseConfig});
+      LoadCourseSelect(coursesWithPaging);
+    }
+
+    async function apiGetRequestParams(endpoint, params) {
+      try {
+        const response = await axios.get(endpoint, {params: params});
+        return response.data.data;
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function LoadCourseSelect(coursesWithPaging) {
+      let courses = coursesWithPaging?.records || [];
+      if (!Array.isArray(courses)) {
+        courses = [];
+      }
+      LoadCourseSelectOption("#course-select", courses);
+
+      // 관리자 화면에서 현재 선택된 과정 정보를 찾아 등록 버튼 상태 설정
+      const currentRecord = courses.find(r => r.courseWithAssignedInfo.coId == configCoId);
+      if (currentRecord) {
+        // API 응답 구조에 맞게 표준화된 객체 생성
+        const currentCourse = {
+          id: currentRecord.courseWithAssignedInfo.coId,
+          name: currentRecord.courseWithAssignedInfo.coName,
+          isInProgress: currentRecord.courseWithAssignedInfo.coIsInProgress
+        };
+        setupRegisterButton(currentCourse);
+      }
+    }
+
+    function LoadCourseSelectOption(selector, records) {
+      const $select = $(selector).empty().append("<option value=\"\">전체</option>");
+      records.forEach(record => {
+        const $option = $("<option>")
+        .val(record.courseWithAssignedInfo.coId)
+        .text(record.courseWithAssignedInfo.coName);
+        $select.append($option);
+        if (record.courseWithAssignedInfo.coId == configCoId) {
+          $option.prop("selected", true);
+        }
+      });
+
+      if (configCoId == null) {
+        $select.find("option:first").prop("selected", true);
+      }
+    }
+
+    async function initializePage() {
+      const headerCourseSelector = document.getElementById('courseSelector');
+      if (headerCourseSelector) {
+        let courses = await fetchCourses();
+        if (!courses || courses.length === 0) {
+          setupRegisterButton(null);
+          return;
+        }
+
+        courses.sort((a, b) => b.isInProgress - a.isInProgress);
+
+        const loadedCourseId = currentCourseId;
+        const defaultCourse = courses[0];
+        const loadedCourse = courses.find(c => c.id == loadedCourseId);
+
+        // 사용자가 드롭다운에서 직접 과정을 선택했는지 여부를 확인합니다.
+        const userHasChosen = sessionStorage.getItem('userMadeCourseSelection') === 'true';
+
+        // 사용자가 직접 선택한 것이 "아니고", 현재 페이지가 종료된 과정이며, 보여줄 진행중인 과정이 있다면 리디렉션합니다.
+        if (!userHasChosen && loadedCourse && loadedCourse.isInProgress === false && defaultCourse.isInProgress === true) {
+          document.getElementById('searchCourseId').value = defaultCourse.id;
+          document.getElementById('materialsSearchForm').submit();
+          return;
+        }
+
+        // 확인이 끝났으면, 다음 방문(새로고침, 주소 직접 입력 등)을 위해 깃발을 항상 제거합니다.
+        sessionStorage.removeItem('userMadeCourseSelection');
+
+        const currentCourseToDisplay = loadedCourse || defaultCourse;
+
+        setupRegisterButton(currentCourseToDisplay);
+        updateCourseSelectBox('#courseSelector', courses, currentCourseToDisplay.id);
+        updateRegisterButtonLink();
+
+        headerCourseSelector.addEventListener('change', function() {
+          // 사용자가 과정을 직접 선택하면 '깃발'을 세웁니다.
+          sessionStorage.setItem('userMadeCourseSelection', 'true');
+
+          const selectedCourseId = this.value;
+          document.getElementById('searchCourseId').value = selectedCourseId;
+          document.getElementById('searchForm').submit();
+        });
+      } else {
+        setupRegisterButton(null);
+      }
+    }
+
     async function fetchCourses() {
-      // 관리자가 아닐 때만 API 호출
       if (loginUserType === 'ADMINISTRATOR') {
         return [];
       }
@@ -266,34 +422,23 @@
         const response = await axios.get('/api/management/courses', {
           params: { loginUserId: loginUserId, loginUserType: loginUserType }
         });
-        // API 응답 구조에 따라 ?. 연산자로 안전하게 접근
         return response.data?.data?.respDTOS || [];
       } catch (error) {
         console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
-        return []; // 오류 발생 시 빈 배열 반환
+        return [];
       }
     }
 
-    // 과정 목록으로 Select Box(드롭다운) UI를 생성하는 함수
     function updateCourseSelectBox(selector, data, selectedValue) {
       const selectElement = document.querySelector(selector);
       if (!selectElement) return;
+      selectElement.innerHTML = ''; // 내용을 비웁니다.
 
-      // 기존 옵션들을 모두 비움
-      selectElement.innerHTML = '';
-
-      // 기본 옵션("전체 과정 보기" 등) 추가
-      const defaultOption = document.createElement('option');
-      defaultOption.value = ''; // 값은 비워둠
-      defaultOption.textContent = '과정 선택';
-      selectElement.appendChild(defaultOption);
-
-      // API로 받아온 과정 목록을 옵션으로 추가
+      // '과정 선택' 옵션을 생성하는 부분을 삭제하고 바로 과정 목록을 추가합니다.
       data.forEach(course => {
         const option = document.createElement('option');
         option.value = course.id;
         option.textContent = course.name;
-        // 현재 선택된 courseId와 일치하는 옵션을 'selected'로 만듦
         if (course.id == selectedValue) {
           option.selected = true;
         }
@@ -301,133 +446,52 @@
       });
     }
 
-
-    // "수업공지 등록" 버튼의 숨겨진 courseId 값을 업데이트하는 함수
     function updateRegisterButtonLink() {
       const headerCourseSelector = document.getElementById('courseSelector');
       const courseIdInputForRegister = document.getElementById('courseIdForRegister');
-
       if (headerCourseSelector && courseIdInputForRegister) {
-        // 헤더의 셀렉터에서 현재 선택된 과정 ID를 가져와 숨겨진 필드에 설정
         courseIdInputForRegister.value = headerCourseSelector.value;
       }
     }
 
-    // "수업공지 등록" 버튼을 유저 권한에 따라 표시하거나 숨기는 함수
-    function setupRegisterButton() {
+    function setupRegisterButton(currentCourse) {
       const registerButton = document.getElementById('materialsRegisterBtn');
-      if (registerButton) {
-        if (loginUserType === 'ADMINISTRATOR' || loginUserType === 'INSTRUCTOR') {
-          registerButton.style.display = 'block'; //
-        } else {
-          registerButton.style.display = 'none';
-        }
+      if (!registerButton) return;
+
+      // 기본적으로 관리자 또는 강사일 경우 버튼을 보여줄지 결정
+      let showButton = (loginUserType === 'ADMINISTRATOR' || loginUserType === 'INSTRUCTOR');
+
+      // 만약 특정 과정이 선택되었고, 그 과정이 '종료' 상태라면 버튼을 숨김
+      if (currentCourse && currentCourse.isInProgress === false) {
+        showButton = false;
       }
+
+      registerButton.style.display = showButton ? 'block' : 'none';
     }
 
-    // 기존에 있던 다른 필터(검색, 정렬 등)들의 이벤트 리스너를 설정하는 함수
     function initializeExistingFilters() {
       const searchForm = document.getElementById('searchForm');
       const hasAttachmentSelect = document.getElementById('hasAttachment');
       const orderDirectionSelect = document.getElementById('orderDirection');
       const orderBySelect = document.getElementById('orderBy');
-
-      // 즉시 변경이 필요한 필터들에 'change' 이벤트 리스너 추가
       [hasAttachmentSelect, orderDirectionSelect, orderBySelect].forEach(element => {
         if (element) {
-          element.addEventListener('change', () => searchForm.submit());
+          element.addEventListener('change', () =>{
+              sessionStorage.setItem('isFiltering', 'true');
+              searchForm.submit();
+          });
         }
       });
     }
-
-    // 관리자 필터 호출
-    function renderAdminCourseFilter(isInProgress = null) {
-      // API 호출 주소를 '/api/management/courses'로 변경
-      axios.get(`/api/management/courses`, {
-        // 이 API가 요구하는 파라미터들을 전송
-        params: {
-          loginUserId: loginUserId,       // 스크립트 상단에 이미 있는 변수
-          loginUserType: loginUserType,     // 스크립트 상단에 이미 있는 변수
-          isInProgress: isInProgress,
-          pagingSize: 1000                // 전체 과정을 다 가져오기 위해 충분히 큰 값 설정
-        }
-      })
-      .then(function (response) {
-        // 응답 데이터의 구조에 맞춰 과정 목록을 꺼냅니다.
-        // response.data -> ApiResponse
-        // response.data.data -> PageCourseRespDTO
-        // response.data.data.respDTOS -> 실제 과정 목록 (List<CourseRespDTO>)
-        const courses = response.data.data.respDTOS;
-
-        // 이 목록을 기존 함수에 그대로 전달하면 됩니다.
-        renderCourseFilterOptionsForAdmin("#course-select", courses);
-      })
-      .catch(function (error) {
-        console.error("관리자 과정 목록 API 호출 실패:", error);
-      });
-    }
-
-    // 관리자 필터 생성
-    function renderCourseFilterOptionsForAdmin(selector, data) {
-      const currentCourseId = new URLSearchParams(window.location.search).get("courseId");
-      let $courseFilter = $(selector);
-      $courseFilter.empty();
-
-      let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
-      $courseFilter.append(courseFilterPlaceholder);
-
-      // data는 이제 [{id: ..., name: ...}, ...] 형태의 객체 배열입니다.
-      $.each(data, function (index, course) {
-        // course 객체의 'id'를 option의 value로, 'name'을 표시되는 텍스트로 사용합니다.
-        let courseOption = `<option value="${course.id}">${course.name}</option>`;
-
-        // 페이지가 리로드 되어도 선택했던 과정이 계속 선택된 상태로 보이게 하는 로직
-        if (course.id == currentCourseId) {
-          courseOption = `<option value="${course.id}" selected>${course.name}</option>`;
-        }
-        $courseFilter.append(courseOption);
-      });
-    }
-
-    // 진행상황별 필터 선택시 조건에 맞는 강좌 불러오기 (관리자)
-    $("#is-in-progress").on("change", function () {
-      console.log("진행상황 필터!!!");
-      let isInProgress = $(this).val(); // 진행상황 값
-
-      if (isInProgress === "") {
-        // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
-        $courseFilter.empty(); // 진행별 드롭다운 초기화
-
-        let courseFilterPlaceholder = "<option value=\"\">전체(과정별)</option>";
-        $courseFilter.append(courseFilterPlaceholder);
-
-        // 과정별 필터에 모든 과정명 불러오기
-        renderAdminCourseFilter();
-
-        return;
-      }
-
-      renderAdminCourseFilter(isInProgress);
-    });
-
-    // 과정별 필터 값을 바꾸었을 때 리스트 불러오기 (관리자)
-    $("#course-select").on("change", function () {
-      const courseId = $(this).val();
-      // 검색 폼의 숨겨진 courseId 값을 변경하고 폼을 제출합니다.
-      $("#searchCourseId").val(courseId);
-      $("#searchForm").submit();
-    });
 
     $("#materialsRegisterBtn").on("click", function (e) {
       e.preventDefault();
-
       let selectedCourseId;
       if (loginUserType === 'ADMINISTRATOR') {
         selectedCourseId = $("#course-select").val();
       } else {
         selectedCourseId = $("#courseSelector").val();
       }
-
       if (!selectedCourseId) {
         Swal.fire({
           title: "먼저 과정을 선택해주세요.",
@@ -435,12 +499,25 @@
         });
         return;
       }
-
       $("#courseIdForRegister").val(selectedCourseId);
       $("#registerForm").submit();
     });
 
+    function getStatus() {
+      let courseStatusByUser = sessionStorage.getItem("courseConfig");
+      if (courseStatusByUser) {
+        const parsedCourseConfig = JSON.parse(sessionStorage.getItem("courseConfig"));
+        Object.assign(courseConfig, parsedCourseConfig);
+      }
+    }
 
+    function setStatus() {
+      sessionStorage.setItem("courseConfig", JSON.stringify(courseConfig));
+    }
+
+    function setFlag() {
+      sessionStorage.setItem('isEnteringDetail', 'true');
+    }
   </script>
 </th:block>
 </body>
