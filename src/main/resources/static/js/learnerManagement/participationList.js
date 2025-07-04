@@ -51,6 +51,31 @@ const learnerConfig = {
 let currentDate = new Date();
 // 첫화면: 일간뷰
 let activeTabText = 'pills-daily';
+let stompP = null;
+function connectP(){
+    let socket = new SockJS('/ws');
+    stompC = Stomp.over(socket);
+
+    stompC.connect({}, function(){
+
+        stompC.subscribe(`/topic/participation`,
+                         function(message){
+
+                             console.log(message);
+                             if(message.body == "checkInOrOut"){
+
+                                 updateTimeDisplay();
+
+                             }
+
+                         })
+
+    });
+
+}
+
+connectP();
+
 
 $(document).ready(() => {
 
@@ -98,6 +123,8 @@ $(document).ready(() => {
 });
 
 /* ========================================================================== */
+
+
 
 async function fetchAndLoadTopCourseSelector() {
     let coursesWithPaging = await apiGetRequestParams(
@@ -289,6 +316,8 @@ async function displayTableList(learnersWithPaging) {
                                       <i class="fas fa-solid fa-envelope"></i>
                                     </a>
                                 `;
+                            } else {
+                                learnerCheckInStr =`<span class="text-secondary">미입실</span>`
                             }
                         }
 
@@ -309,6 +338,8 @@ async function displayTableList(learnersWithPaging) {
                                       <i class="fas fa-solid fa-envelope"></i>
                                     </a>
                                 `;
+                            } else {
+                                learnerCheckOutStr =`<span class="text-secondary">미퇴실</span>`
                             }
                         }
                     }

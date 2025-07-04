@@ -25,7 +25,8 @@
           <h6 class="m-0 font-weight-bold text-primary">교직원 정보</h6>
         </div>
         <div class="col-auto">
-          <button id="leave-btn" class="btn btn-sm btn-info btn-icon-split">
+          <button id="leave-btn"
+                  th:if="${staffs.leaveDate == null}"class="btn btn-sm btn-info btn-icon-split">
             <span class="icon text-white-50">
               <i class="fa fa-street-view"></i>
             </span>
