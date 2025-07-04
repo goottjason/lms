@@ -319,7 +319,14 @@
              });
       });
 
-      let passwordValidate = false;
+      let passwordValidate;
+
+      $("#passwordChangeModal").on("shown.bs.modal", function () {
+        $("#currentPassword-msg").html("");
+        $("#password-msg").html("");
+        $("#password2-msg").html("");
+        passwordValidate = false;
+      });
 
       $("#password").on("blur", validatePassword);
       $("#password2").on("blur", comparePasswords);
@@ -382,6 +389,33 @@
       }
 
       $("#passwordChangeBtn").on("click", function (e) {
+
+        let currentPassword  = $("#currentPassword").val();
+        let newPassword      = $("#password").val();
+        let newPasswordAgain = $("#password2").val();
+
+        if (currentPassword.length === 0) {
+          $("#currentPassword-msg").text("현재 비밀번호를 입력해주세요.");
+          return false;
+        } else {
+          $("#currentPassword-msg").text("");
+        }
+
+        if (newPassword.length === 0) {
+          $("#password-msg").text("변경하실 비밀번호를 입력해주세요.").removeClass("text-info")
+                            .addClass("text-danger");
+          return false;
+        } else {
+          $("#password-msg").text("");
+        }
+
+        if (newPasswordAgain.length === 0) {
+          $("#password2-msg").text("비밀번호를 한번 더 입력해주세요.");
+          return false;
+        } else {
+          $("#password2-msg").text("");
+        }
+
         if (!passwordValidate) {
           console.log("비밀번호에 문제있음");
           return;

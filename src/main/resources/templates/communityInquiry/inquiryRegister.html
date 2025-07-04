@@ -16,7 +16,11 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="POST" th:action="@{/communityInquiry/inquiryRegister}">
+  <form
+    id="inquiryForm"
+    class="mb-4"
+    method="POST"
+    th:action="@{/communityInquiry/inquiryRegister}">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -40,7 +44,7 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-              <label for="inquiry">내용*</span>&nbsp;&nbsp;</label>
+              <label for="inquiry">내용<span class="text-danger">*</span>&nbsp;&nbsp;</label>
               <span id="inquiry-msg" class="text-danger small"></span>
               <textarea
                 id="inquiry"
@@ -61,8 +65,9 @@
         </span>
         <span class="text px-5">등록</span>
       </button>
-      <a id="" class="btn btn-secondary btn-icon-split"
-         th:href="|@{/communityInquiry/inquiryList}?${inquiryRequestParam.getQueryString()}">
+      <a
+        id="" class="btn btn-secondary btn-icon-split"
+        th:href="|@{/communityInquiry/inquiryList}?${inquiryRequestParam.getQueryString()}">
         <span class="icon text-white-50">
             <i class="fas fa-times"></i>
         </span>
@@ -76,7 +81,7 @@
   <script>
     $("#courseSelector").hide();
 
-    $("#signupForm").on("submit", function (e) {
+    $("#inquiryForm").on("submit", function (e) {
 
       if (!validateTitle()) {
         e.preventDefault();
@@ -108,6 +113,11 @@
     function validateInquiry() {
       let inquiry     = $("#inquiry").val();
       let $inquiryMsg = $("#inquiry-msg");
+
+      if (inquiry.length === 0) {
+        $inquiryMsg.text("내용을 입력해주세요.");
+        return false;
+      }
 
       if (inquiry.length > 1000) {
         $inquiryMsg.text("문의 내용은 1000자 아내로 입력하셔야 합니다.");

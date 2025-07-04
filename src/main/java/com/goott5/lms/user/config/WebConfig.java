@@ -51,7 +51,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/homework/deleteHomework", "/homework/evalRegister",
                     "/homework/modifyEvalPost", "/homework/deleteEval",
                     "/training/trainingRegister", "/training/trainingModify",
-                    "/training/trainingDelete", "/test/reigster", "/vacation/vacationApproval");
+                    "/training/trainingDelete", "/test/register", "/vacation/vacationApproval");
 
     registry.addInterceptor(authInterceptorForLEARNER)
             .addPathPatterns("home/learnerHome", "/participation/participationView",
@@ -64,7 +64,7 @@ public class WebConfig implements WebMvcConfigurer {
             .addPathPatterns("/learnerManagement/learnerList", "/learnerManagement/learnerDetail",
                     "/learnerManagement/employment", "/courseBoardMaterials/materialsRegister",
                     "/courseBoardMaterials/materialsModify",
-                    "/traininglog/traningList", "/training/trainingDetail",
+                    "/training/trainingList", "/training/trainingDetail",
                     "/learnerManagement/employment", "/learnerManagement/sendEmail");
 
     registry.addInterceptor(authInterceptorForLEARNERandINSTRUCTOR)
