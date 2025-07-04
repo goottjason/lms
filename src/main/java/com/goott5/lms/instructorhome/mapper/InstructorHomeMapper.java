@@ -72,4 +72,7 @@ public interface InstructorHomeMapper {
 
   @Select("select u.id, u.fullname from user u join learner_enrollment le on u.id = le.user_id and le.course_id = #{courseId} where le.completion_status != 'DROPPED' order by u.id")
   List<EnrolledLearnerVO> selectEnrolledLearners(int courseId);
+
+  @Select("select c.name from classroom c join classroom_allocation ca on c.id = ca.classroom_id and ca.course_id = #{courseId}")
+  String selectClassroom(int courseId);
 }

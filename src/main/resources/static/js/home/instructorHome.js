@@ -96,7 +96,7 @@ function renderHomeData(data){
 
     $("#course-name").text(data.course.name);
     $("#course-period").text(data.course.startDate + " ~ " + data.course.endDate);
-    $("#training-days").text(data.countOfCompletedDays + "/" + data.course.totalDays);
+    $("#training-days").text(data.countOfCompletedDays + "일 /" + data.course.totalDays + "일");
     $("#number-of-learner").text(data.course.numberOfLearner + "명");
     $("#lesson-time").text(data.course.lessonStartTime + " ~ " + data.course.lessonEndTime);
     renderProgress(data);
@@ -234,6 +234,10 @@ function renderSchedule(data){
 }
 
 function renderTrainingLog(data){
+    if(!data.course.inProgress){
+        $("#training-log").addClass("text-success").text("완료");
+    }
+
     if(data.writeTrainingLogToday){
         $("#training-log").addClass("text-success").text("완료");
     } else {
