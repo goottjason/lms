@@ -140,6 +140,11 @@ public interface TrainingMapper {
   @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId} and course_id = #{courseId})")
   boolean isReRegister(String trainingDate, int instructorId, int courseId);
 
+  // 등록하려는 날짜가 해당 과정의 start_date와 end_date 사이에 있는 지 확인
+  @Select("select exists (select 1 from course where #{trainingDate} between start_date and end_date \n"
+      + "and id = #{courseId})")
+  boolean isRegisterDate(String trainingDate, int courseId);
+
   //=================== 훈련일지 수정 ===========================
   @Update("update training_detail set actual = #{actual}, updated_at = now() where id = #{trainingId}")
   int updateTrainingDetail(int trainingId, String actual);

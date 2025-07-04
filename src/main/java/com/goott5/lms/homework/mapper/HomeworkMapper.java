@@ -96,9 +96,10 @@ public interface HomeworkMapper {
   @Select("select title from homework where id = #{id}")
   String selectTitle(int id);
 
-  //(기능 추가) 로그인한 학생의 submission에 해당 homeworkId가 존재하는지 여부
-//  @Select("select exists(select 1 from homework_submission where homework_id = #{homeworkId}) and learner_id = #{learnerId}")
-//  boolean isSubmissionLearner(int homeworkId, int learnerId);
+  //(기능 추가) submission 테이블에 homework_id와 loginUser가 있는 submissionId 반환
+  // (테스트 도중 한 homeworkId에 중복되는 learnerId의 과제를 받아놓았기에, 리스트로 받아야함.)
+  @Select("select id from homework_submission where homework_id = #{homeworkId} and learner_id = #{learnerId}")
+  List<Integer> selectSubmissionIdForLearner(int homeworkId, int learnerId);
 
 
   //--------- 상세 페이지------------------------------------------------------------------------

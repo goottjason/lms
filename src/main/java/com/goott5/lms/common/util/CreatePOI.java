@@ -92,7 +92,6 @@ public class CreatePOI {
             valueCell.setCellValue(valueList.get(i).toString());
           }
         }
-
       } else {
         //단일 row값
         Cell valueCell = row.createCell(1);

@@ -91,6 +91,9 @@ public interface HomeworkService {
 
   //--------- 과제 제출 및 평가 리스트---------------------------------------
 
+  //(기능 추가) homeworkId와 userId로 submissionId(리스트) 반환
+  int selectSubmissionIdForLearner(int homeworkId, int learnerId);
+
   //과제 제출 + 과제 평가
   Map<HomeworkSubmissionDTO, HomeworkEvalDTO> selectSubmissionEval(int submissionId);
 

@@ -362,8 +362,15 @@ class TrainingTest {
     }else{
       log.info("유효성 통과");
     }
-
-
   }
+
+  @Test
+  @Transactional
+  public void isRegisterCan(){
+    boolean isRegister = trainingMapper.isRegisterDate("2025-06-30", 63);
+    log.info("isRegister={}", isRegister);
+  }
+
+
 
 }
