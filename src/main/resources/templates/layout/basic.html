@@ -524,7 +524,7 @@
 
     });
 
-    function connect(){
+    function connectN(){
       let socket = new SockJS('/ws');
       stompC = Stomp.over(socket);
 
@@ -547,7 +547,7 @@
 
     }
 
-    connect();
+    connectN();
 
     function getNotification(){
 
