@@ -43,8 +43,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/cancelDateManagement",
                     "/operationsManagement/userRegister", "/communityInquiry/answerRegister",
                     "/communityInquiry/answerDelete", "/admin/reports",
-                    "/communityNotice/noticeRegister", "/communityNotice/noticeModify",
-                    "learnerManagement/sendEmail");
+                    "/communityNotice/noticeRegister", "/communityNotice/noticeModify");
 
     registry.addInterceptor(authInterceptorForINSTRUCTOR)
             .addPathPatterns("home/instructorHome", "/homework/homeworkRegister",
@@ -66,7 +65,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/learnerManagement/employment", "/courseBoardMaterials/materialsRegister",
                     "/courseBoardMaterials/materialsModify",
                     "/traininglog/traningList", "/training/trainingDetail",
-                    "/learnerManagement/employment");
+                    "/learnerManagement/employment", "/learnerManagement/sendEmail");
 
     registry.addInterceptor(authInterceptorForLEARNERandINSTRUCTOR)
             .addPathPatterns("/communityInquiry/inquiryRegister",

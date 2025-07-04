@@ -107,7 +107,9 @@
       <div class="row mb-2">
         <div class="col-md-12">
           <div class="form-group">
-            <label for="title">제목</label>
+            <label for="title">제목<span class="text-danger">*
+                    </span>&nbsp;&nbsp;</label>
+            <span id="title-msg" class="text-danger small"></span>
             <input type="text" id="title" class="form-control" placeholder="메일 제목을 작성하세요.">
           </div>
         </div>
@@ -115,7 +117,9 @@
       <div class="row mb-2">
         <div class="col-md-12">
           <div class="form-group">
-            <label for="contents">내용</label>
+            <label for="contents">내용<span class="text-danger">*
+            </span>&nbsp;&nbsp;</label>
+            <span id="contents-msg" class="text-danger small"></span>
             <textarea
               id="contents"
               class="form-control"
@@ -166,6 +170,7 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+    $("#courseSelector").hide();
 
     const loginUserId   = $("#login-user-id").val();
     const loginUserType = $("#login-user-type").val();
@@ -199,6 +204,7 @@
 
       function updateVisibility() {
         $("#learner-info").empty();
+        $("#check-all").prop("checked", false);
         $("#search-fullname").val("");
         const selected = $("input[name=\"selector\"]:checked").val();
 
@@ -260,6 +266,22 @@
       });
 
       $("#sendEmailModalBtn").on("click", function () {
+
+        $("#title-msg").text("");
+        $("#contents-msg").text("");
+
+        let title    = $("#title").val();
+        let contents = $("#contents").val();
+
+        if (title == "") {
+          $("#title-msg").text("제목을 입력해주세요.");
+          return;
+        }
+        if (contents == "") {
+          $("#contents-msg").text("내용을 입력해주세요.");
+          return;
+        }
+
         let selected = $("input[name=\"selector\"]:checked").val();
         if (selected !== "all") {
           let checkedBoxes = $("input.target-check:checked");
@@ -393,6 +415,7 @@
     async function loadLearnersByLeId(leId) {
 
       $("input[name='selector']").prop("checked", false);
+      $("#check-all").prop("checked", true);
 
       $("#send-target").show();
 
