@@ -46,26 +46,26 @@ function showEvalModify() {
       <p class="mt-2">기존 파일</p>`
 
   // 조회된 파일 리스트가 있을 경우
-  for (let file of evalFiles) {
-
-    if (file.isImage === false) {
-      output += `
+  if (evalFiles != null && evalFiles.length > 0) {
+    for (let file of evalFiles) {
+      if (file.isImage === false) {
+        output += `
     <div class="card mb-2 w-100" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <span class="text-truncate" style="max-width: 85%; font-size: 0.9rem;">📄 ${file.originalName}</span>
         <span style="cursor:pointer;" onclick="removeModifyBefore(this)" data-id="${file.id}">❌</span>
       </div>
     </div>`;
-    } else {
-      output += `
+      } else {
+        output += `
     <div class="card mb-2 w-100" style="max-width: 600px; width: 100%; margin-left: 12px; margin-right: 12px;">
       <div class="card-body d-flex align-items-center justify-content-between p-2">
         <img src="${file.path}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" />
         <span style="cursor:pointer;" onclick="removeModifyBefore(this)" data-id="${file.id}">❌</span>
       </div>
     </div>`;
+      }
     }
-
   }
 
   //조회된 파일 리스트 끝

@@ -26,7 +26,7 @@ public interface HomeworkService {
   PagingResponseDTO<HomeworkDTO> serviceList(HomeworkRequestDTO homeworkRequestDTO,String type);
   
   //과제 제출 반환
-  PagingResponseDTO<HomeworkSubmissionDTO> pagingSubmissionDTO(int homeworkId,PagingRequestDTO pagingRequest);
+  PagingResponseDTO<HomeworkSubmissionForListDTO> pagingSubmissionDTO(int homeworkId,PagingRequestDTO pagingRequest);
 
   //과제 제출을 위한 아이디->로그인 아이디 반환
   String selectUserIdForSubmission(int id);
@@ -44,6 +44,9 @@ public interface HomeworkService {
 
   //과제 번호에 따른 과제명 반환
   String homeworkName(int id);
+
+  //(기능 추가) 해당 homeworkId에 대한 특정 교육생의 제출물이 존재하는지 여부
+  boolean selectSubmissionLearner(int homeworkId, int learnerId);
 
   //-----------상세----------------------------
 

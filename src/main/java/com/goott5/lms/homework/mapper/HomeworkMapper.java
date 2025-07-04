@@ -77,8 +77,16 @@ public interface HomeworkMapper {
 
 
   //위 homeworkDTO에 맞는 submission 조회
-  @Select("select id, homework_id, title, content, read_count, learner_id, created_at, updated_at, deleted_at from homework_submission where homework_id = #{homeworkId} limit #{pagingRequest.skip},#{pagingRequest.pageSize}")
-  List<HomeworkSubmissionDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
+//  @Select("select id, homework_id, title, content, read_count, learner_id, created_at, updated_at, deleted_at from homework_submission where homework_id = #{homeworkId} limit #{pagingRequest.skip},#{pagingRequest.pageSize}")
+//  List<HomeworkSubmissionDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
+
+  // submission에 교육생 이름 넣어서 다시 조회(위의 쿼리문 대신)
+  @Select("select hs.id, hs.homework_id, hs.title, hs.content, hs.read_count, hs.learner_id, hs.created_at, hs.updated_at, hs.deleted_at, u.fullname\n"
+      + "from homework_submission hs\n"
+      + "inner join user u\n"
+      + "on hs.learner_id = u.id\n"
+      + "where  hs.homework_id = #{homeworkId} limit #{pagingRequest.skip},#{pagingRequest.pageSize}")
+  List<HomeworkSubmissionForListDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
 
   //submission count
   @Select("select count(*) from homework_submission where homework_id = #{homeworkId}")
@@ -87,6 +95,11 @@ public interface HomeworkMapper {
   //submission의 homeworkId에 따른 homework명 반환
   @Select("select title from homework where id = #{id}")
   String selectTitle(int id);
+
+  //(기능 추가) 로그인한 학생의 submission에 해당 homeworkId가 존재하는지 여부
+//  @Select("select exists(select 1 from homework_submission where homework_id = #{homeworkId}) and learner_id = #{learnerId}")
+//  boolean isSubmissionLearner(int homeworkId, int learnerId);
+
 
   //--------- 상세 페이지------------------------------------------------------------------------
 

@@ -2,19 +2,15 @@ package com.goott5.lms.homework.domain;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Null;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import java.time.LocalDateTime;
 import lombok.Generated;
 import software.amazon.awssdk.annotations.NotNull;
 
-@EqualsAndHashCode
-@Builder
 @Data
-public class HomeworkSubmissionDTO {
+@Builder
+public class HomeworkSubmissionForListDTO {
 
   @Generated
   private Integer id;
@@ -34,12 +30,8 @@ public class HomeworkSubmissionDTO {
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;
 
-
-//  @Builder.Default
-//  private PagingRequestDTO pagingRequest = PagingRequestDTO.builder()
-//      .pageNo(1)
-//      .pageNo(5)
-//      .build();
+  @Nullable
+  private String fullname;
 
 
 

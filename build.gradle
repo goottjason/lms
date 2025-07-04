@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.7-SNAPSHOT'
+    id 'org.springframework.boot' version '3.4.7'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.example'
+group = 'com.goott5.lms'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -58,12 +58,10 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-websocket' // WebSocket
 
-    implementation 'org.apache.poi:poi-ooxml:5.4.1' //apache poi(엑셀 파일 생성용)
-
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.1' // dto -> map 변환
 
 
-    implementation 'org.apache.poi:poi-ooxml:5.4.1' // Word, Excel, PPT 모두 지원
+    implementation 'org.apache.poi:poi-ooxml:5.4.1' // Word, Excel, PPT 모두 지원(해당 파일 출력용)
 }
 
 tasks.named('test') {

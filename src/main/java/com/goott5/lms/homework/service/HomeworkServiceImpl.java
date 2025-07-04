@@ -80,17 +80,17 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
-  public PagingResponseDTO<HomeworkSubmissionDTO> pagingSubmissionDTO(int homeworkId,
+  public PagingResponseDTO<HomeworkSubmissionForListDTO> pagingSubmissionDTO(int homeworkId,
       PagingRequestDTO pagingRequest) {
 
-    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(homeworkId,
+    List<HomeworkSubmissionForListDTO> submissionDTOS = homeworkMapper.selectSubmissionById(homeworkId,
         pagingRequest);
 
     //total 게시글 수
     int total = homeworkMapper.totalSubmission(homeworkId);
 
-    PagingResponseDTO<HomeworkSubmissionDTO> pagingSubmission = PagingResponseDTO
-        .<HomeworkSubmissionDTO>allInfo()
+    PagingResponseDTO<HomeworkSubmissionForListDTO> pagingSubmission = PagingResponseDTO
+        .<HomeworkSubmissionForListDTO>allInfo()
         .dtoList(submissionDTOS)
         .pagingRequestDTO(PagingRequestDTO.builder()
             .pageNo(pagingRequest.getPageNo())
@@ -154,6 +154,11 @@ public class HomeworkServiceImpl implements HomeworkService {
   @Override
   public String homeworkName(int id) {
     return homeworkMapper.selectTitle(id);
+  }
+
+  @Override
+  public boolean selectSubmissionLearner(int homeworkId, int learnerId) {
+    return homeworkMapper.existSubmission(learnerId, homeworkId) == 1;
   }
 
   @Override
