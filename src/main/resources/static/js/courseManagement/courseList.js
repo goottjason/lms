@@ -111,7 +111,7 @@ function displayTableBody(coursesWithPaging) {
         <td class="text-center align-middle">${course.coClassroomName}</td>
         <td class="text-center align-middle">
           <button class="btn btn-primary btn-icon-split btn-sm">
-            <span class="text"><a href="/courseSchedule?courseId=${course.coId}">조회</a></span>
+            <span class="text"><a href="/courseManagement/courseSchedule?courseId=${course.coId}">조회</a></span>
           </button>
         </td>
       </tr>`;

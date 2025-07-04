@@ -38,9 +38,18 @@ $(document).ready(function() {
 
     // 세션 정보 불러오기
     getStatus();
-
+    console.log(staffConfig);
     // 페이지 로드시, 퇴사자 포함 체크된 경우 유지
-    $('#include-leaver').attr('checked', staffConfig.includeLeaveDate);
+    if (staffConfig.onlyLeaver == null) {
+        $('input[name="staff-filter"][value=""]').prop('checked', true);
+    } else if (staffConfig.onlyLeaver == 'true') {
+        $('input[name="staff-filter"][value="true"]').prop('checked', true);
+    } else if (staffConfig.onlyLeaver == 'false') {
+        $('input[name="staff-filter"][value="false"]').prop('checked', true);
+    }
+    $('#type-select').val(staffConfig.staffType);
+    $('#position-select').val(staffConfig.staffPosition);
+
     // 페이지 로드시, 타입별 셀렉트박스 유지
     // $('#type-select').trigger('change');
 

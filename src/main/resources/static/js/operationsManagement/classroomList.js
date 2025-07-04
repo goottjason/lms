@@ -47,7 +47,84 @@ $(document).ready(() => {
 });
 
 function handleCancelBtnClick() {
-    displayTableView();
+    // displayTableView();
+    let classroomId = $(this).data('id');
+    displayTrView(classroomId);
+
+    console.log(classroomId);
+    /*let orgClassroomName = $('#name-input-'+classroomId).val();
+    let orgPriUserId = $('#pri-input-'+classroomId).data('id');
+    let orgPriUserName = $('#pri-input-'+classroomId).val();
+    let orgSecUserId = $('#sec-input-'+classroomId).data('id');
+    let orgSecUserName = $('#sec-input-'+classroomId).val();
+    console.log(classroomId, orgPriUserId, orgSecUserName);
+
+    $('#name-td-'+classroomId).html(`
+        <input type="text" class="form-control" 
+              value="${orgClassroomName}" id="name-input-${classroomId}" readonly></td>
+    `);
+    $("#pri-td-"+classroomId).html(`
+        <input type="text" class="form-control" value="${orgPriUserName}" id="pri-input-${classroomId}" data-id="${orgPriUserId}" readonly>
+    `);
+    $("#sec-td-"+classroomId).html(`
+        <input type="text" class="form-control" value="${orgSecUserName}" id="pri-input-${classroomId}" data-id="${orgSecUserId}" readonly>
+    `);*/
+    /*$(`.save-button[data-id=${classroomId}]`).hide();
+    $(`.cancel-button[data-id=${classroomId}]`).hide();
+    $(`.edit-button[data-id=${classroomId}]`).show();*/
+}
+async function displayTrView(classroomId) {
+
+    let classroomsWithPagination = await apiGetRequestAboutClassroom(
+        '/api/management/classrooms');
+    console.log("classroomsWithPagination", classroomsWithPagination);
+    let classrooms = Array.isArray(classroomsWithPagination.classroomRepsDTOS) ?
+                     classroomsWithPagination.classroomRepsDTOS : [classroomsWithPagination.classroomRepsDTOS];
+    console.log("TableView 내의 classrooms", classrooms);
+    displayOnlyTr(classrooms, classroomId);
+}
+function displayOnlyTr(classrooms, classroomId) {
+    console.log(classroomId, "아이디 가져오니");
+    $(`tr[data-id=${classroomId}]`).empty();
+    classrooms.forEach(function(classroom) {
+       if (classroom.id == classroomId) {
+           let trHtml = `
+
+                  <td class="text-center align-middle" id="name-td-${classroom.id}">
+                      <input type="text" class="form-control" 
+                      value="${classroom.name}" id="name-input-${classroom.id}" readonly></td>
+                  <td class="align-middle">
+                      ${classroom.isActive? classroom.courseName : '미배정'}</td>
+                  <td class="text-center align-middle ${classroom.isActive? 'text-danger':''}">
+                    ${classroom.isActive? '사용중':'미사용'}</td>
+                  <td class="text-center align-middle" id="pri-td-${classroom.id}">
+                      <input type="text" class="form-control" value="${classroom.priUserFullname}" id="pri-input-${classroom.id}" data-id="${classroom.priUserId}" readonly>
+                  </td>
+                  <td class="text-center align-middle" id="sec-td-${classroom.id}">
+                      <input type="text" class="form-control" value="${classroom.secUserFullname}" id="sec-input-${classroom.id}" data-id="${classroom.secUserId}" readonly>
+                  </td>
+                  <td class="text-center align-middle">
+                      <button class="btn btn-info btn-icon-split btn-sm edit-button" data-id="${classroom.id}">
+                        <span class="text">수정</span>
+                      </button>
+                      <button class="btn btn-primary btn-icon-split btn-sm save-button" style="display:none" data-id="${classroom.id}">
+                        <span class="text">저장</span>
+                      </button>
+                      ${classroom.courseName == null ? `
+                        <button class="btn btn-danger btn-icon-split btn-sm remove-button" data-id="${classroom.id}">
+                          <span class="text">삭제</span>
+                        </button>
+                        ` : ''}
+                      <button class="btn btn-warning btn-icon-split btn-sm cancel-button" style="display:none" data-id="${classroom.id}">
+                        <span class="text">취소</span>
+                      </button>
+                  </td>
+
+            `;
+           $(`tr[data-id=${classroomId}]`).html(trHtml);
+       }
+    });
+
 }
 
 async function handleAddBtnClick() {
@@ -155,7 +232,8 @@ async function handleSaveBtnClick() {
     );
     console.log(result);
     if(result == true){
-        displayTableView();
+        displayTrView(classroomId);
+        /*displayTableView();*/
     } else {
         return;
     }
@@ -321,7 +399,7 @@ function displayClassrooms(classrooms) {
     classrooms.forEach(function(classroom) {
         let rowHtml = `
         <tr data-id="${classroom.id}">
-          <td class="text-center align-middle">
+          <td class="text-center align-middle" id="name-td-${classroom.id}">
               <input type="text" class="form-control" 
               value="${classroom.name}" id="name-input-${classroom.id}" readonly></td>
           <td class="align-middle">
