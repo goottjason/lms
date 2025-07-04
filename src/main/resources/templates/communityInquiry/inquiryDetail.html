@@ -161,7 +161,8 @@
   <!-- 답변 (관리자) -->
   <div class="card shadow mb-4" th:if="${session.loginUser.type == 'ADMINISTRATOR'}">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-      <h6 class="m-0 font-weight-bold text-primary">답변</h6>
+      <h6 class="m-0 font-weight-bold text-primary">답변&nbsp;&nbsp;
+        <span id="answer-msg" class="small text-danger"></span></h6>
     </div>
     <div class="card-body py-3">
       <div class="form-group" th:if="${!inquiryDetail.isAnswered}">
@@ -345,6 +346,21 @@
 
     $("#answerRegisterBtn").click(function () {
 
+      let answer     = $("#answer").val();
+      let $answerMsg = $("#answer-msg");
+
+      if (answer.length === 0) {
+        $answerMsg.text("답변 내용을 입력해주세요.");
+        return false;
+      }
+
+      if (answer.length > 1000) {
+        $answerMsg.text("답변 내용은 1000자 아내로 입력하셔야 합니다.");
+        return false;
+      }
+      // 정상일 경우
+      $answerMsg.text("");
+
       axios.post("/communityInquiry/answerRegister", {
         id    : $("#inquiryId").val(),
         answer: $("#answer").val(),
@@ -381,6 +397,7 @@
     $(document).on("click", "#answerModifySaveBtn", function () {
 
       axios.post("/communityInquiry/answerRegister", {
+
         id    : $("#inquiryId").val(),
         answer: $("#registeredAnswer").val(),
 
@@ -403,28 +420,6 @@
 
     $(document).on("click", "#answerModifyCancelBtn", function () {
       location.reload();
-    });
-
-    $("#answerRegisterBtn").click(function () {
-
-      axios.post("/communityInquiry/answerRegister", {
-        id    : $("#inquiryId").val(),
-        answer: $("#answer").val(),
-
-      })
-           .then(function (response) {
-             if (response.data.code === 200) {
-               $("#answerRegisterSuccessModal").modal("show");
-
-               $("#answerRegisterSuccessModal").on("hidden.bs.modal", function () {
-                 location.reload();
-               });
-             }
-           })
-           .catch(function (error) {
-             console.log(error);
-
-           });
     });
 
     $("#answerDeleteBtn").click(function () {
