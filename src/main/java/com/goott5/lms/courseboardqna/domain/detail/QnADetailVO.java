@@ -19,6 +19,7 @@ import lombok.ToString;
 public class QnADetailVO {
 
   private int id;
+  private String loginId;
   private String fullName;
   private int writerId;
   private String title;

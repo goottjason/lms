@@ -390,68 +390,49 @@ function renderInquiries(data) {
   const $tbody = $("#inquiry .inquiry-table tbody");
   $tbody.empty();
 
-  // 데이터 없을 경우 안내 메시지 출력
   if (!Array.isArray(data) || data.length === 0) {
-    const $emptyRow = $("<tr>").append(
-        $("<td>")
-        .attr("colspan", 3)
-        .addClass("text-center py-4 text-muted")
-        .text("등록된 문의가 없습니다.")
+    $tbody.append(
+        $("<tr>").append(
+            $("<td>")
+            .attr("colspan", 3)
+            .addClass("text-center py-4 text-muted")
+            .text("등록된 문의가 없습니다.")
+        )
     );
-    $tbody.append($emptyRow);
     return;
   }
 
-  // 데이터 렌더링
   data.forEach(item => {
-    const $tr = $("<tr>");
+    const $tr = $("<tr>").addClass("text-center");
 
-    // 제목 및 확인 배지
-    const $titleTd = $("<td>").addClass("align-middle").text(item.title);
-    if (item.isAnswered) {
-      const confirmBadge = item.isAnsweredChecked
-          ? $("<span>").addClass(
-              "badge rounded-pill border border-success text-success bg-transparent ms-2").text(
-              "확인됨")
-          : $("<span>").addClass(
-              "badge rounded-pill border border-secondary text-secondary bg-transparent ms-2").text(
-              "미확인");
-      $titleTd.append(confirmBadge);
-    }
-    $tr.append($titleTd);
+    // 1) 제목: 링크로 감싸기
+    const $titleLink = $("<a>")
+    .attr("href", `/communityInquiry/inquiryDetail?id=${item.id}`)
+    .text(item.title);
+    const $titleTd = $("<td>")
+    .addClass("align-middle text-start") // 왼쪽 정렬
+    .append($titleLink);
 
-    // 답변여부 배지
-    const $statusTd = $("<td>").addClass("text-center align-middle");
+    // 답변 여부 배지
+    const $statusTd = $("<td>").addClass("align-middle");
     const statusBadge = item.isAnswered
-        ? $("<span>").addClass(
-            "badge rounded-pill border border-info text-info bg-transparent").text(
-            "답변완료")
-        : $("<span>").addClass(
-            "badge rounded-pill border border-warning text-warning bg-transparent").text(
-            "답변대기");
+        ? $("<span>")
+        .addClass(
+            "badge rounded-pill border border-info text-info bg-transparent")
+        .text("답변완료")
+        : $("<span>")
+        .addClass(
+            "badge rounded-pill border border-warning text-warning bg-transparent")
+        .text("답변대기");
     $statusTd.append(statusBadge);
-    $tr.append($statusTd);
 
-    // 상세보기 버튼
-    const $btnTd = $("<td>").addClass("text-center align-middle");
-    const $btn = $("<button>")
-    .addClass("btn btn-primary btn-icon-split btn-sm")
-    .attr("data-id", item.id)
-    .append($("<span>").addClass("text").text("이동"));
-    $btnTd.append($btn);
-    $tr.append($btnTd);
+    // 작성일
+    const $dateTd = $("<td>")
+    .addClass("align-middle")
+    .text(item.createdAt);
 
+    $tr.append($titleTd, $statusTd, $dateTd);
     $tbody.append($tr);
-  });
-
-  // 클릭 핸들러 등록
-  $("#inquiry .inquiry-table")
-  .off("click", "button[data-id]")
-  .on("click", "button[data-id]", function () {
-    const id = $(this).data("id");
-
-    console.log("이동할 inquiry id:", id);
-    location.href = `/communityInquiry/inquiryDetail?id=${id}`;
   });
 }
 
@@ -475,45 +456,36 @@ function renderQna(data) {
   }
 
   data.forEach(item => {
-    const $tr = $("<tr>");
+    const $tr = $("<tr>").addClass("text-center");
 
-    // 제목 컬럼
-    $tr.append(
-        $("<td>").addClass("align-middle").text(item.title)
-    );
+    // 1) 제목 (링크)
+    const $titleLink = $("<a>")
+    .attr("href", `/courseBoardQnA/detail/${item.id}`)
+    .text(item.title);
+    const $titleTd = $("<td>")
+    .addClass("align-middle text-start")
+    .append($titleLink);
 
-    // 답변여부 배지
-    const $statusTd = $("<td>").addClass("text-center align-middle");
+    // 2) 답변여부 배지
+    const $statusTd = $("<td>").addClass("align-middle");
     const statusBadge = item.isAnswer
-        ? $("<span>").addClass(
-            "badge rounded-pill border border-info text-info bg-transparent").text(
-            "답변완료")
-        : $("<span>").addClass(
-            "badge rounded-pill border border-warning text-warning bg-transparent").text(
-            "답변대기");
+        ? $("<span>")
+        .addClass(
+            "badge rounded-pill border border-info text-info bg-transparent")
+        .text("답변완료")
+        : $("<span>")
+        .addClass(
+            "badge rounded-pill border border-warning text-warning bg-transparent")
+        .text("답변대기");
     $statusTd.append(statusBadge);
-    $tr.append($statusTd);
 
-    // 상세보기 버튼
-    const $btnTd = $("<td>").addClass("text-center align-middle");
-    const $btn = $("<button>")
-    .addClass("btn btn-primary btn-icon-split btn-sm")
-    .attr("data-id", item.id)
-    .append($("<span>").addClass("text").text("이동"));
-    $btnTd.append($btn);
-    $tr.append($btnTd);
+    // 3) 작성일
+    const $dateTd = $("<td>")
+    .addClass("align-middle")
+    .text(item.createdAt);
 
+    $tr.append($titleTd, $statusTd, $dateTd);
     $tbody.append($tr);
-  });
-
-  // 클릭 이벤트
-  $("#qna .table")
-  .off("click", "button[data-id]")
-  .on("click", "button[data-id]", function () {
-    const id = $(this).data("id");
-
-    console.log("이동할 QnA id:", id);
-    window.location.href = `/courseBoardQnA/detail/${id}`;
   });
 }
 
@@ -523,7 +495,7 @@ function renderMaterials(data) {
   const $tbody = $("#materials .table tbody");
   $tbody.empty();
 
-  // 데이터 없을 경우 안내
+  // 데이터 없으면 안내
   if (!Array.isArray(data) || data.length === 0) {
     $tbody.append(
         $("<tr>").append(
@@ -537,45 +509,32 @@ function renderMaterials(data) {
   }
 
   data.forEach(item => {
-    const $tr = $("<tr>");
+    // isFixed 가 true 이면 pinned-post 클래스 추가
+    const $tr = $("<tr>")
+    .addClass("text-center")
+    .toggleClass("pinned-post", item.isFixed);
 
-    // 제목 및 고정글 뱃지 처리
-    const $titleTd = $("<td>").addClass("align-middle").text(item.title);
-    if (item.isFixed) {
-      const fixedBadge = $("<span>")
-      .addClass(
-          "badge rounded-pill border border-primary text-primary bg-transparent ms-2")
-      .text("고정글");
-      $titleTd.append(fixedBadge);
-    }
-    $tr.append($titleTd);
+    // 제목 (링크)
+    const $titleLink = $("<a>")
+    .attr("href", `/courseBoardMaterials/materialsDetail?id=${item.id}`)
+    .text(item.title);
+    const $titleTd = $("<td>")
+    .addClass("align-middle text-start")
+    .append($titleLink);
 
-    // 게시일: YYYY-MM-DD 형태로 표시
-    const dateText = item.createdAt ? item.createdAt.split("T")[0] : "";
-    const $dateTd = $("<td>").addClass("text-center align-middle").text(
-        dateText);
-    $tr.append($dateTd);
+    // 작성자
+    const $writerTd = $("<td>")
+    .addClass("align-middle")
+    .text(item.fullname || "-");
 
-    // 상세보기 버튼
-    const $btnTd = $("<td>").addClass("text-center align-middle");
-    const $btn = $("<button>")
-    .addClass("btn btn-primary btn-icon-split btn-sm")
-    .attr("data-id", item.id)
-    .append($("<span>").addClass("text").text("이동"));
-    $btnTd.append($btn);
-    $tr.append($btnTd);
+    // 작성일 (YYYY-MM-DD)
+    const dateOnly = item.createdAt.split("T")[0];
+    const $dateTd = $("<td>")
+    .addClass("align-middle")
+    .text(dateOnly);
 
+    $tr.append($titleTd, $writerTd, $dateTd);
     $tbody.append($tr);
-  });
-
-  // 버튼 클릭 이벤트 핸들러
-  $("#materials .table")
-  .off("click", "button[data-id]")
-  .on("click", "button[data-id]", function () {
-    const id = $(this).data("id");
-
-    console.log("이동할 material id:", id);
-    location.href = `/courseBoardMaterials/materialsDetail?id=${id}`;
   });
 }
 
@@ -585,12 +544,12 @@ function renderDebate(data) {
   const $tbody = $("#debate .table tbody");
   $tbody.empty();
 
-  // 데이터 없을 경우 안내 메시지
+  // 데이터 없을 경우 안내
   if (!Array.isArray(data) || data.length === 0) {
     $tbody.append(
         $("<tr>").append(
             $("<td>")
-            .attr("colspan", 3)
+            .attr("colspan", 4)
             .addClass("text-center py-4 text-muted")
             .text("등록된 토론글이 없습니다.")
         )
@@ -599,14 +558,15 @@ function renderDebate(data) {
   }
 
   data.forEach(item => {
-    const $tr = $("<tr>");
+    const $tr = $("<tr>").addClass("text-center");
 
-    // 제목 및 댓글 수 뱃지 컬럼
-    const $titleTd = $("<td>").addClass("align-middle");
+    // 1) 제목 (링크) + 댓글 수 뱃지
+    const $titleTd = $("<td>").addClass("align-middle text-start");
     $titleTd.append(
-        $("<span>").text(item.title)
+        $("<a>")
+        .attr("href", `/courseBoardDebate/debateDetail?id=${item.id}`)
+        .text(item.title)
     );
-    // 댓글 수 뱃지: 제목 옆에 자연스럽게
     $titleTd.append(
         $("<span>")
         .addClass(
@@ -616,37 +576,25 @@ function renderDebate(data) {
             document.createTextNode(item.commentCount)
         )
     );
-    $tr.append($titleTd);
 
-    // 좋아요 수 컬럼
-    const $likeTd = $("<td>").addClass("text-center align-middle");
-    $likeTd.append(
-        $("<i>").addClass("fa fa-thumbs-up text-primary me-1").attr(
-            "aria-hidden", "true"),
-        document.createTextNode(item.forumLike)
-    );
-    $tr.append($likeTd);
+    // 2) 작성자
+    const $writerTd = $("<td>")
+    .addClass("align-middle")
+    .text(item.fullname || "-");
 
-    // 상세보기 버튼 컬럼
-    const $btnTd = $("<td>").addClass("text-center align-middle");
-    const $btn = $("<button>")
-    .addClass("btn btn-primary btn-icon-split btn-sm")
-    .attr("data-id", item.id)
-    .append($("<span>").addClass("text").text("이동"));
-    $btnTd.append($btn);
-    $tr.append($btnTd);
+    // 3) 좋아요
+    const $likeTd = $("<td>")
+    .addClass("align-middle")
+    .text(item.forumLike);
 
+    // 4) 작성일 (YYYY-MM-DD)
+    const dateOnly = item.createdAt.split("T")[0];
+    const $dateTd = $("<td>")
+    .addClass("align-middle")
+    .text(dateOnly);
+
+    $tr.append($titleTd, $writerTd, $likeTd, $dateTd);
     $tbody.append($tr);
-  });
-
-  // 클릭 이벤트 핸들러 등록
-  $("#debate .table")
-  .off("click", "button[data-id]")
-  .on("click", "button[data-id]", function () {
-    const id = $(this).data("id");
-
-    console.log("이동할 debate id:", id);
-    location.href = `/courseBoardDebate/debateDetail?id=${id}`;
   });
 }
 
@@ -773,6 +721,8 @@ async function loadCourseData(courseName) {
     fetchInquiry(), fetchQnA(),
     fetchNotice(courseName), fetchForum(courseName)
   ]);
+
+  console.log(qnaRes);
   renderInquiries(inqRes.data.data);
   renderQna(qnaRes.data.data);
   renderMaterials(matRes.data.data);

@@ -10,19 +10,23 @@ const $qnaContent = $("#qna-content");
 const $qnaModifyBtn = $("#qna-modify-btn");
 const $qnaDeleteBtn = $("#qna-delete-btn");
 
-const $commentRegisterBtn = $("#comment-register-btn");
-const $commentModifyBtn = $("#comment-modify-btn");
-const $commentDeleteBtn = $("#comment-delete-btn");
+const $commentRegisterBtn = $(".js-comment-register");
+const $commentModifyBtn = $(".js-comment-modify");
+const $commentDeleteBtn = $(".js-comment-delete");
 
 const $commentTextarea = $("#qna-comment-text");
 const $qnaCommentContainer = $(".qna-comment-container");
 const $commentBody = $qnaCommentContainer.find(".card-body");
+
+let writerId;
+let userId;
 
 let userType;
 let boardNo;
 let existingComment;
 
 $(document).ready(async function () {
+  userId = $("#login-user-id").val();
 
   await getUserCourses();
   $courseSelect.prop("disabled", true);
@@ -38,11 +42,20 @@ $(document).ready(async function () {
   const detailRes = await fetchQnADetail(boardNo);
   console.log(detailRes);
 
+  writerId = detailRes.data.data.loginId;
+
+  if (userId !== writerId) {
+    $qnaModifyBtn.remove();
+    $qnaDeleteBtn.remove();
+  }
+
   userType = detailRes.data.message;
   renderQnADetailPageByUserType(userType, detailRes.data.data);
   renderQnAUpdateBtn(detailRes.data.data);
   renderDetailData(detailRes.data.data);
   renderAttachedFiles(detailRes.data.data.uploadFiles);
+
+  $(".js-comment-confirm, .js-comment-cancel").hide();
 
   connectStomp(boardNo);
 });
@@ -101,7 +114,10 @@ function renderQnAUpdateBtn(data) {
     $qnaModifyBtn.remove();
     $qnaDeleteBtn.remove();
 
-    $commentRegisterBtn.remove();
+    $(".js-comment-register").remove();
+  } else {
+    $(".js-comment-modify").remove();
+    $(".js-comment-delete").remove();
   }
 }
 
@@ -112,7 +128,7 @@ function renderDetailData(data) {
   $writer.text(data.fullName);
   $qnaRegDate.text(data.createdAt);
   $qnaCommentStatus.text(commentStatus);
-  $commentRegDate.text(data.commentCreatedAt);
+  $commentRegDate.text(commentStatus === "답변 전" ? "-" : data.commentCreatedAt);
 
   $qnaTitle.text(data.title);
   $qnaContent.text(data.content);
@@ -187,122 +203,222 @@ $qnaModifyBtn.on("click", function () {
 });
 
 //------------------------------------------------------------------------------
-// [[답변 이벤트]]
+// [[답변 등록 이벤트]]
 //------------------------------------------------------------------------------
-
-$commentRegisterBtn.on("click", function () {
-
+$(document).on("click", ".js-comment-register", function () {
   const commentText = $commentTextarea.val().trim();
-
-  // 내용이 없으면 경고
   if (!commentText) {
-    Swal.fire({
+    return Swal.fire({
       icon: "warning",
       title: "답변 내용을 입력해주세요.",
       confirmButtonText: "확인"
     });
-    return;
   }
-
-  try {
-    axios.put(`/api/qna/comment/${boardNo}`, {
-      comment: commentText
-    })
-         .then(() => {
-           return Swal.fire({
-             icon: "success",
-             title: "답변이 등록되었습니다.",
-             confirmButtonText: "확인"
-           });
-         })
-         .then(() => {
-           // 목록 옵션을 유지하며 상세 페이지 리프레시
-           const qs = window.location.search || "";
-           window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+  axios.put(`/api/qna/comment/${boardNo}`, { comment: commentText })
+       .then(() => Swal.fire({ icon: "success", title: "답변이 등록되었습니다." }))
+       .then(() => {
+         const qs = window.location.search || "";
+         location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+       })
+       .catch(err => {
+         Swal.fire({
+           icon: "error",
+           title: "등록 실패",
+           text: err.response?.data?.message || "서버 오류가 발생했습니다."
          });
-
-  } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "등록 실패",
-      text: err.response?.data?.message || "서버 오류가 발생했습니다."
-    });
-  }
-
+       });
 });
 
-$(document).on("click", "#comment-modify-btn", function () {
-
-  // 텍스트 활성화
+//------------------------------------------------------------------------------
+// [[답변 수정 진입 이벤트]]
+//------------------------------------------------------------------------------
+$(document).on("click", ".js-comment-modify", function () {
   $commentTextarea.prop("disabled", false);
-
-  $commentModifyBtn.attr("id", "confirm-modify-btn");
-  $commentModifyBtn.find(".text").text("답변 저장");
-
-  $commentDeleteBtn.attr("id", "cancel-modify-btn");
-  $commentDeleteBtn.find(".text").text("수정 취소");
-
+  // 수정/삭제 버튼 숨기고, 저장/취소 버튼 보이기
+  $(".js-comment-modify, .js-comment-delete, .js-comment-register").hide();
+  $(".js-comment-confirm, .js-comment-cancel").show();
 });
 
-$(document).on("click", "#confirm-modify-btn", function () {
-
+//------------------------------------------------------------------------------
+// [[답변 저장(수정) 이벤트]]
+//------------------------------------------------------------------------------
+$(document).on("click", ".js-comment-confirm", function () {
   const newComment = $commentTextarea.val().trim();
-
-  // 빈 문자열 검사
   if (!newComment) {
-    return Swal.fire({
-      icon: "warning",
-      title: "수정할 답변을 입력해주세요."
-    });
+    return Swal.fire({ icon: "warning", title: "수정할 답변을 입력해주세요." });
   }
-
-  // 기존 내용과 동일한지 검사
   if (newComment === existingComment) {
-    return Swal.fire({
-      icon: "info",
-      title: "달라진 내용이 없습니다.",
-      text: "기존 댓글과 다른 내용을 입력해주세요."
-    });
+    return Swal.fire({ icon: "info", title: "달라진 내용이 없습니다." });
   }
-
-  // API 호출
-  try {
-    axios.put(`/api/qna/comment2/${boardNo}`, { comment: newComment });
-    Swal.fire({
-      icon: "success",
-      title: "답변이 수정되었습니다."
-    }).then(() => {
-      // 상세 페이지 새로고침 (쿼리스트링 유지)
-      const qs = window.location.search || "";
-      window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
-    });
-  } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "수정 실패",
-      text: err.response?.data?.message || "서버 오류가 발생했습니다."
-    });
-  }
+  axios.put(`/api/qna/comment2/${boardNo}`, { comment: newComment })
+       .then(() => Swal.fire({ icon: "success", title: "답변이 수정되었습니다." }))
+       .then(() => {
+         const qs = window.location.search || "";
+         location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+       })
+       .catch(() => {
+         Swal.fire({ icon: "error", title: "수정 실패", text: "서버 오류가 발생했습니다." });
+       });
 });
 
-$(document).on("click", "#cancel-modify-btn", function () {
-
+//------------------------------------------------------------------------------
+// [[수정 취소 이벤트]]
+//------------------------------------------------------------------------------
+$(document).on("click", ".js-comment-cancel", function () {
+  // 기존 상태로 복원
   $commentTextarea.prop("disabled", true).val(existingComment);
-
-  $commentModifyBtn.attr("id", "comment-modify-btn");
-  $commentModifyBtn.find(".text").text("답변 수정");
-
-  $commentDeleteBtn.attr("id", "comment-delete-btn");
-  $commentDeleteBtn.find(".text").text("답변 삭제");
+  $(".js-comment-confirm, .js-comment-cancel").hide();
+  $(".js-comment-modify, .js-comment-delete, .js-comment-register").show();
 });
+
+//------------------------------------------------------------------------------
+// [[답변 삭제 이벤트]]
+//------------------------------------------------------------------------------
+$(document).on("click", ".js-comment-delete", function () {
+  Swal.fire({
+    title: "정말 삭제하시겠습니까?",
+    text: "삭제된 답변은 복구할 수 없습니다.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "삭제",
+    cancelButtonText: "취소"
+  }).then(result => {
+    if (!result.isConfirmed) {
+      return;
+    }
+    axios.put(`/api/qna/comment/${boardNo}/deleted`)
+         .then(() => Swal.fire({ icon: "success", title: "답변이 삭제되었습니다." }))
+         .then(() => {
+           const qs = window.location.search || "";
+           location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+         })
+         .catch(() => Swal.fire(
+             { icon: "error", title: "삭제 실패", text: "오류가 발생했습니다." }));
+  });
+});
+
+// //------------------------------------------------------------------------------
+// // [[답변 이벤트]]
+// //------------------------------------------------------------------------------
+//
+// $commentRegisterBtn.on("click", function () {
+//
+//   const commentText = $commentTextarea.val().trim();
+//
+//   // 내용이 없으면 경고
+//   if (!commentText) {
+//     Swal.fire({
+//       icon: "warning",
+//       title: "답변 내용을 입력해주세요.",
+//       confirmButtonText: "확인"
+//     });
+//     return;
+//   }
+//
+//   try {
+//     axios.put(`/api/qna/comment/${boardNo}`, {
+//       comment: commentText
+//     })
+//          .then(() => {
+//            return Swal.fire({
+//              icon: "success",
+//              title: "답변이 등록되었습니다.",
+//              confirmButtonText: "확인"
+//            });
+//          })
+//          .then(() => {
+//            // 목록 옵션을 유지하며 상세 페이지 리프레시
+//            const qs = window.location.search || "";
+//            window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+//          });
+//
+//   } catch (err) {
+//     console.error(err);
+//     Swal.fire({
+//       icon: "error",
+//       title: "등록 실패",
+//       text: err.response?.data?.message || "서버 오류가 발생했습니다."
+//     });
+//   }
+//
+// });
+//
+// $(document).on("click", "#comment-modify-btn", function () {
+//
+//   // 텍스트 활성화
+//   $commentTextarea.prop("disabled", false);
+//
+//   $commentModifyBtn.attr("id", "confirm-modify-btn");
+//   $commentModifyBtn.find(".text").text("답변 저장");
+//
+//   $commentDeleteBtn.attr("id", "cancel-modify-btn");
+//   $commentDeleteBtn.find(".text").text("수정 취소");
+//
+// });
+//
+// $(document).on("click", "#confirm-modify-btn", function () {
+//
+//   const newComment = $commentTextarea.val().trim();
+//
+//   // 빈 문자열 검사
+//   if (!newComment) {
+//     return Swal.fire({
+//       icon: "warning",
+//       title: "수정할 답변을 입력해주세요."
+//     });
+//   }
+//
+//   // 기존 내용과 동일한지 검사
+//   if (newComment === existingComment) {
+//     return Swal.fire({
+//       icon: "info",
+//       title: "달라진 내용이 없습니다.",
+//       text: "기존 댓글과 다른 내용을 입력해주세요."
+//     });
+//   }
+//
+//   // API 호출
+//   try {
+//     axios.put(`/api/qna/comment2/${boardNo}`, { comment: newComment });
+//     Swal.fire({
+//       icon: "success",
+//       title: "답변이 수정되었습니다."
+//     }).then(() => {
+//       // 상세 페이지 새로고침 (쿼리스트링 유지)
+//       const qs = window.location.search || "";
+//       window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     Swal.fire({
+//       icon: "error",
+//       title: "수정 실패",
+//       text: err.response?.data?.message || "서버 오류가 발생했습니다."
+//     });
+//   }
+// });
+//
+// $(document).on("click", "#cancel-modify-btn", function () {
+//
+//   $commentTextarea.prop("disabled", true).val(existingComment);
+//
+//   $commentModifyBtn.attr("id", "comment-modify-btn");
+//   $commentModifyBtn.find(".text").text("답변 수정");
+//
+//   $(this).attr("id", "comment-delete-btn");
+//   $(this).find(".text").text("답변 삭제");
+// });
 
 //------------------------------------------------------------------------------
 // [[글 삭제 이벤트]]
 //------------------------------------------------------------------------------
 
-$qnaDeleteBtn.on("click", function () {
+$(document).on("click", "#comment-delete-btn", function () {
+  console.log($(this).text().trim());
+
+  if ($(this).text().trim() !== "답변 삭제") {
+    return;
+  }
 
   Swal.fire({
     title: "정말 삭제하시겠습니까?",
@@ -328,34 +444,34 @@ $qnaDeleteBtn.on("click", function () {
   });
 });
 
-//------------------------------------------------------------------------------
-// [[답변 삭제 이벤트]]
-//------------------------------------------------------------------------------
-
-$commentDeleteBtn.on("click", function () {
-  Swal.fire({
-    title: "정말 삭제하시겠습니까?",
-    text: "삭제된 답변은 복구할 수 없습니다.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "삭제",
-    cancelButtonText: "취소"
-  }).then((result) => {
-    if (result.isConfirmed) {
-      axios.put(`/api/qna/comment/${boardNo}/deleted`)
-           .then(() => {
-             Swal.fire("삭제 완료", "답변이 삭제되었습니다.", "success")
-                 .then(() => {
-                   const qs = window.location.search;
-                   window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
-                 });
-           })
-           .catch(() => {
-             Swal.fire("삭제 실패", "오류가 발생했습니다.", "error");
-           });
-    }
-  });
-});
+// //------------------------------------------------------------------------------
+// // [[답변 삭제 이벤트]]
+// //------------------------------------------------------------------------------
+//
+// $commentDeleteBtn.on("click", function () {
+//   Swal.fire({
+//     title: "정말 삭제하시겠습니까?",
+//     text: "삭제된 답변은 복구할 수 없습니다.",
+//     icon: "warning",
+//     showCancelButton: true,
+//     confirmButtonText: "삭제",
+//     cancelButtonText: "취소"
+//   }).then((result) => {
+//     if (result.isConfirmed) {
+//       axios.put(`/api/qna/comment/${boardNo}/deleted`)
+//            .then(() => {
+//              Swal.fire("삭제 완료", "답변이 삭제되었습니다.", "success")
+//                  .then(() => {
+//                    const qs = window.location.search;
+//                    window.location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+//                  });
+//            })
+//            .catch(() => {
+//              Swal.fire("삭제 실패", "오류가 발생했습니다.", "error");
+//            });
+//     }
+//   });
+// });
 
 //------------------------------------------------------------------------------
 // [[이전 페이지]]

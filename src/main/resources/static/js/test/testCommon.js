@@ -157,6 +157,8 @@ function handleValidationErrors(errorData) {
   const errorMsgObj = errorData.data;
   console.log(errorMsgObj);
 
+
+
   // 공통 필드
   const fieldSelectors = {
     testTitle: ".test-title-err-msg",

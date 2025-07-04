@@ -32,7 +32,8 @@ public interface QnADetailMapper {
   void deleteQnADetail(@Param("boardNo") int boardNo);
 
   // 답변 삭제
-  @Update("UPDATE course_qna SET comment = null, is_answer = false WHERE id = #{boardNo}")
+  @Update("UPDATE course_qna SET comment = null, is_answer = false, comment_created_at = null, comment_updated_at = null"
+      + " WHERE id = #{boardNo}")
   void deleteQnAComment(@Param("boardNo") int boardNo);
 
 }

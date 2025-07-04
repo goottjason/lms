@@ -6,27 +6,26 @@
 
   <select id="selectTestLists" resultType="com.goott5.lms.test.domain.test.list.TestListVO">
     SELECT
-    t.id AS id,
-    t.title AS title,
+    t.id,
+    t.title,
     c.name AS course_name,
-    t.start_date AS start_date,
-    t.end_date AS end_date,
-    t.test_time AS test_time,
-    (
-    SELECT COUNT(*)
-    FROM test_submission ts
-    WHERE ts.test_id = t.id AND ts.submission_status = 'COMPLETED'
-    ) AS completed_count,
-    c.number_of_learner AS number_of_learner
+    t.start_date,
+    t.end_date,
+    t.test_time,
+    COUNT(DISTINCT CASE WHEN ts.submission_status = 'COMPLETED' THEN ts.id END) AS completed_count,
+    COUNT(DISTINCT e.id) AS number_of_learner
     FROM test t
-    JOIN course c ON t.course_id = c.id
+    JOIN course c
+    ON t.course_id = c.id
+    JOIN learner_enrollment e
+    ON e.course_id = c.id
     LEFT JOIN test_submission ts
-    ON ts.test_id = t.id AND ts.submission_status = 'COMPLETE'
+    ON ts.test_id = t.id
     WHERE t.deleted_at IS NULL
     <if test="courseName != null and courseName != ''">
       AND c.name = #{courseName}
     </if>
-    GROUP BY t.id, t.title, c.name, t.start_date, t.end_date, t.test_time, c.number_of_learner
+    GROUP BY t.id, t.title, c.name, t.start_date, t.end_date, t.test_time
     ORDER BY t.id DESC
     LIMIT #{requestVO.skip}, #{requestVO.pageSize}
   </select>

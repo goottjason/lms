@@ -44,10 +44,10 @@ $(document).ready(async function () {
     }
   };
 
-  const search = window.location.search;
-  if (search && search !== "?") {
-    initFromQuery();
-  }
+  // const search = window.location.search;
+  // if (search && search !== "?") {
+  //   initFromQuery();
+  // }
 
   const rest = qnaObjectToQuery(qnaRequest);
 
@@ -59,6 +59,7 @@ $(document).ready(async function () {
 
   if (userType === "ADMINISTRATOR") {
     await getAdminCourses();
+
   } else {
     await getUserCourses();
 
@@ -68,6 +69,9 @@ $(document).ready(async function () {
     qnaRes = await fetchQnA(qnaObjectToQuery(qnaRequest));
     console.log(qnaRes);
   }
+
+  initFromQuery();
+  qnaRes = await fetchQnA(qnaObjectToQuery(qnaRequest));
 
   renderQnAPageUserType(userType);
   renderQnAList(qnaRes.data.data.items);
@@ -131,6 +135,7 @@ function initFromQuery() {
 
     // 과정별 필터
     const course = qnaRequest.searchOptions.courseName;
+    console.log(course);
     $courseFilter.val(course || "");
   }
 }
@@ -145,6 +150,12 @@ function getAdminCourses(isInProgress = null) {
   fetchAdminCourses(isInProgress)
   .then((res) => {
     renderAdminCourseOptions("#course-filter", res.data.data);
+
+    const params = new URLSearchParams(window.location.search);
+    const course = params.get("searchOptions.courseName") || "";
+    $("#course-filter").val(course);
+    const prog = params.get("searchOptions.isInProgress");
+    $("#progress-filter").val(prog == null ? "" : prog);
   })
   .catch((err) => Swal.fire("오류", "제출 중 오류가 발생했습니다. 다시 시도해주세요.", "error"));
 
@@ -169,6 +180,19 @@ function getUserCourses() {
   return fetchUserCourses()
   .then((res) => {
     renderUserCourseOptions("#courseSelector", res.data.data);
+
+    const params = new URLSearchParams(window.location.search);
+    const restoreCourse = params.get("searchOptions.courseName");
+
+    if (restoreCourse) {
+      // URL 에 명시된 값이 있으면 그것으로 선택
+      $("#courseSelector").val(restoreCourse);
+      qnaRequest.searchOptions.courseName = restoreCourse;
+    } else {
+      // 없으면 기존 로직대로 기본값 세팅
+      selectedCourse = $("#courseSelector").val();
+      qnaRequest.searchOptions.courseName = selectedCourse;
+    }
   })
   .catch((err) => console.log(err));
 }

@@ -164,7 +164,7 @@
     f.title,
     u.fullname,
     f.forum_like,
-    f.hotpost_at,
+    f.created_at,
     COUNT(c.id) AS comment_count
     FROM course_forum f
     JOIN user u ON u.id = f.writer_id
