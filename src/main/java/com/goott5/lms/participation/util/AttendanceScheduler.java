@@ -1,5 +1,6 @@
 package com.goott5.lms.participation.util;
 
+import com.goott5.lms.coursemanagement.util.SchedulerStatusService;
 import com.goott5.lms.participation.mapper.ParticipationCourseMapper;
 import com.goott5.lms.participation.service.ParticipationService;
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class AttendanceScheduler {
 
   private final ParticipationService participationService;
   private final ParticipationCourseMapper participationCourseMapper;
-
+  private final SchedulerStatusService schedulerStatusService;
   /**
    * 매일 오전 00시 00분 (자정) 에 출결 관련 작업 수행
    * 1. 전날까지 미완료 기록 결석 처리 (입실했지만 퇴실 안한 기록)
@@ -61,6 +62,8 @@ public class AttendanceScheduler {
       }
 
       log.info("전체 출결 기록 생성 완료: {}개 과정, {}건의 출결 기록", courseIds.size(), totalCreated);
+
+      // schedulerStatusService.updateLastExecutionForPart();
 
     } catch (Exception e) {
       log.error("출결 스케줄러 실행 중 오류 발생: ", e);
