@@ -191,6 +191,8 @@
   });
 
   $("#findIdBtn").on("click", function () {
+    $("#fullname-msg").text("");
+    $("#email-msg").text("");
 
     let fullname = $("#fullname").val();
     let email    = $("#email").val();
@@ -198,14 +200,10 @@
     if (fullname == "") {
       $("#fullname-msg").text("이름을 입력해주세요.");
       return;
-    } else {
-      $("#fullname-msg").text("");
     }
     if (email == "") {
       $("#email-msg").text("이메일을 입력해주세요.");
       return;
-    } else {
-      $("#email-msg").text("");
     }
 
     axios.post("/user/findId", {
