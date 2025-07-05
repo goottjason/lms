@@ -1,6 +1,10 @@
 package com.goott5.lms.training.controller;
 
+import com.goott5.lms.common.domain.FileDTO;
+import com.goott5.lms.common.domain.FileSelectDTO;
+import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.CreatePOI;
+import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
 import com.goott5.lms.training.domain.ExcelRequestDTO;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
@@ -18,6 +22,9 @@ import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +68,8 @@ public class TrainingController {
   private final CreatePOI createPOI;
   private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(),
       LocalTime.of(18, 30));
+  private final S3Uploader s3Uploader;
+  private final UtilService utilService;
 
 //  private final HomeworkService homeworkService; //공통기능용
 
@@ -217,6 +228,13 @@ public class TrainingController {
         model.addAttribute("detailWithSubMap", detailWithSubMap);
       }
 
+      //서명 조회 (테스트로 여러 개 넣었을 수도 있으니 리스트로 뽑아오기)
+      List<FileSelectDTO> signatureList = utilService.selectFileList("training_log", trainingId);
+      if (signatureList != null) {
+        model.addAttribute("signatureList", signatureList);
+        log.info("signatureList: {}", signatureList);
+      }
+
 
     } catch (Exception e) {
       log.error("훈련 일지 상세 조회 실패:{}", e.getMessage());
@@ -372,7 +390,6 @@ public class TrainingController {
       return "redirect:/training/trainingList";
     }
 
-
     int userId = loginUser.getId();
 
     SelectAllWithoutActualDTO selectAllWithoutActualDTO =
@@ -402,8 +419,17 @@ public class TrainingController {
       return "redirect:/training/trainingList";
     }
 
+    // 해당 관리자 리스트(알림용)
     if (selectAllWithoutActualDTO != null) {
       model.addAttribute("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
+      SelectCourseDTO selectCourseDTO = selectAllWithoutActualDTO.getSelectCourseDTO();
+
+      if (selectCourseDTO != null) {
+        List<Integer> adminIdList =
+            trainingService.selectAdminIdList(selectCourseDTO.getId());
+        log.info("adminIdList: {}", adminIdList);
+        model.addAttribute("adminIdList", adminIdList);
+      }
     }
 
     return "training/trainingRegister";
@@ -488,14 +514,14 @@ public class TrainingController {
 
     // 필드에러 (유효성) 추가
     trainingService.addFieldErrorsModify(bindingResult, modifyFinalDTO);
-    
+
     // 필드 에러 검사
     Map<String, List<FieldError>> errorMap = new HashMap<>();
     if (bindingResult.hasErrors()) {
       for (FieldError error : bindingResult.getFieldErrors()) {
         errorMap.computeIfAbsent(error.getField(), key -> new ArrayList<>()).add(error);
       }
-      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400,"필드 에러 발생", errorMap));
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorMap));
     }
 
     int trainingId = modifyFinalDTO.getTrainingId();
@@ -535,7 +561,7 @@ public class TrainingController {
 
     //delete 권한 확인 (훈련일지 작성 강사 or 해당 과정의 관리자)
     boolean isDeleteCan = trainingService.canDeleteTraining(trainingId, courseId, userId);
-    if (!isDeleteCan) {
+    if (!isDeleteCan && !trainingService.isSuperAdmin(userId)) { //king은 항상 추가
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "삭제할 권한이 없습니다", userId));
     }
@@ -549,6 +575,34 @@ public class TrainingController {
     }
 
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "삭제 성공", trainingId));
+  }
+
+  @PostMapping("/signature")
+  @ResponseBody
+  public ResponseEntity<?> postSignature(@RequestBody Map<String, String> base64,
+      HttpSession session) {
+
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    int trainingId = 0;
+    try {
+      trainingId = Integer.parseInt(base64.get("trainingId"));
+    } catch (NumberFormatException e) {
+      log.info("int 파싱 실패: {}", e.getMessage());
+      throw new RuntimeException("int 파싱 실패", e);
+    }
+
+    // 서명 권한 확인
+    boolean canSignature = trainingService.isAdminSignature(trainingId, loginUser.getId());
+    if (!canSignature && !trainingService.isSuperAdmin(loginUser.getId())) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(403, "권한이 없습니다", loginUser));
+    }
+
+    //서명 저장 (서버 + db)
+    MyResponseWithDataPYJ myResponse = trainingService.signature(base64, loginUser);
+
+    return ResponseEntity.ok(myResponse);
+
   }
 
 

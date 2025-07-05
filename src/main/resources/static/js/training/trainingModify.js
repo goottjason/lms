@@ -1,7 +1,7 @@
 // 수정 뷰
 let actualMap = new Map();
-let urlParams = new URLSearchParams(window.location.search);
-let trainingId = urlParams.get("trainingId");
+// let urlParams = new URLSearchParams(window.location.search);
+// let trainingId = urlParams.get("trainingId");
 
 function modifyView() {
   $("#detailTitle").html("훈련 일지 수정");

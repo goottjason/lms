@@ -88,7 +88,12 @@
     <!-- 상단 버튼 -->
     <div class="d-flex justify-content-between mb-3">
       <div th:if="${loginUserType == 'ADMINISTRATOR'}">
-        <button class="btn btn-info btn-sm" id="signature" data-toggle="modal" data-target="#signatureModal">결재란</button>
+        <button th:if="${signatureList == null || signatureList.isEmpty()}" class="btn btn-info btn-sm"
+                id="signature"
+                data-toggle="modal"
+                 data-target="#signatureModal">결재란</button>
+        <img th:if="${signatureList != null && !signatureList.isEmpty()}"
+             th:src="${signatureList[0].getPath()}" style="height: 100px; width: 100px;">
       </div>
       <div>
         <button class="btn btn-outline-success btn-sm" id="excel">엑셀 다운</button>
@@ -241,6 +246,8 @@
     let finalSelectTraining = /*[[${finalSelectTraining}]]*/ null;
     let detailWithSubMap = /*[[${detailWithSubMap}]]*/ null;
     let courseId = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
+    let instructorId = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
+    let trainingId =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
 
     $(document).ready(function(){
       $('[data-toggle="tooltip"]').tooltip({
