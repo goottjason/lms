@@ -1,5 +1,6 @@
 package com.goott5.lms.training.service;
 
+import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
@@ -9,6 +10,7 @@ import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
 import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
+import com.goott5.lms.user.domain.UserVO;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,9 @@ public interface TrainingService {
 
   //훈련일지 단일 dto 불러오기 (개발 완료까지 필요 없을 시 주석 처리)
   SelectTrainingDTO selectTrainingDTO(int id);
+
+  // 해당 courseId로 관리자 아이디 가져오기(서명 등록 시 알림용, 강사도 포함됨)
+  List<Integer> selectAdminIdList(int courseId);
 
   //훈련 과목 (detail의 plan(int)(=course_schedule id)) 불러오기
   String selectSubjectName(int plan);
@@ -82,5 +87,14 @@ public interface TrainingService {
 
   //======최종 삭제 (훈련 일지 + 훈련일지 detail + (존재한다면) 파일까지)========
   void deleteTraining(int trainingId, String tableName);
+
+  // =====서명 등록 =========================
+  MyResponseWithDataPYJ signature(Map<String, String> base64, UserVO loginUser);
+
+  // 서명 시 유효성 검사
+  boolean isAdminSignature(int trainingId, int userId);
+
+  //슈퍼 관리자 확인
+  boolean isSuperAdmin(int userId);
 
 }

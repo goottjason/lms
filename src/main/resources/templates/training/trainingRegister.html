@@ -146,6 +146,11 @@
 
     let selectAllWithoutActualDTO = /*[[${selectAllWithoutActualDTO}]]*/ null;
     let selectCourseDTO = /*[[${selectAllWithoutActualDTO.selectCourseDTO}]]*/ null;
+    let loginUserId = /*[[${loginUser != null ? loginUser.id : -1}]]*/ null;
+    let adminIdList = /*[[${adminIdList}]]*/ null; //강사도 포함 가능
+    //알림용 데이터(강사 제외하기)
+    let adminArr = adminIdList.filter(adminId => adminId !== loginUserId);
+    adminArr.push(33);
 
     // 파라미터의 registerDate 가져오기
     function queryDate() {
@@ -158,6 +163,8 @@
     function sendActualData() {
       let dataArray = [];
       let postDate = $("#registerDate").val();
+
+
 
       Array.from($(".actual")).forEach(function (actual) {
         //requestBody 로 보내기
@@ -191,6 +198,8 @@
             icon: 'info',
             confirmButtonText: '예'
           }).then((result) => {
+            sendNotification(adminArr, "훈련일지가 등록되었습니다.", false,
+                                          "/training/trainingDetail?trainingId=" + responseData);
             location.href = "/training/trainingDetail?trainingId=" + responseData;
           })
         }
@@ -236,6 +245,8 @@
 
     $(function () {
       console.log("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
+      console.log("adminIdList", adminIdList);
+      console.log("adminArr", adminArr);
 
       // 파라미터의 registerDate
       queryDate();

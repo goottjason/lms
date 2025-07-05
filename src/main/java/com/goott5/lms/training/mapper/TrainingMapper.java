@@ -48,6 +48,10 @@ public interface TrainingMapper {
   @Select("select fullname from user where id = #{instructorId}")
   String selectInstructorNameById(int instructorId);
 
+  // 과정 아이디로 staff-Assignment에서 관리자 id 출력
+  @Select("select user_id from staff_assignment where course_id = #{courseId}")
+  List<Integer> selectStaffIdByCourseId(int courseId);
+
   // =============== select list ===========
 
   // 강사용 selectBox list
@@ -166,6 +170,8 @@ public interface TrainingMapper {
 
   @Delete("delete from training_log where id = #{trainingId}")
   int deleteTrainingLog(int trainingId);
+
+  //====================== 훈련일지 서명 ==============================
 
 
 }

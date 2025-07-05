@@ -1,9 +1,11 @@
 package com.goott5.lms.training.service;
 
 
+import com.goott5.lms.common.domain.FileDTO;
 import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
+import com.goott5.lms.homework.domain.MyResponseWithDataPYJ;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
@@ -17,10 +19,16 @@ import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.domain.registerdto.SelectSchSubDTO;
 import com.goott5.lms.training.mapper.TrainingMapper;
+import com.goott5.lms.user.domain.UserVO;
 import jakarta.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -82,6 +90,11 @@ public class TrainingServiceImpl implements TrainingService {
   @Override
   public SelectTrainingDTO selectTrainingDTO(int id) {
     return trainingMapper.selectTrainingLog(id);
+  }
+
+  @Override
+  public List<Integer> selectAdminIdList(int courseId) {
+    return trainingMapper.selectStaffIdByCourseId(courseId);
   }
 
   @Override
@@ -429,4 +442,87 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
   }
+
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public MyResponseWithDataPYJ signature(Map<String, String> base64, UserVO loginUser) {
+
+    log.info("base64: {}", base64);
+    String base64Str = base64.get("dataURL");
+    String pureBase64 = base64Str.split(",")[1];
+    log.info("pureBase64: {}", pureBase64);
+    log.info("trainingId: {}", base64.get("trainingId"));
+    int trainingId = Integer.parseInt(base64.get("trainingId"));
+
+    //파일 이름 생성
+    String fileName = loginUser.getLoginId() + "_" + LocalDate.now() + ".png";
+
+    // inputStream 생성
+    byte[] imageBytes = Base64.getDecoder().decode(pureBase64);
+    InputStream inputStream = new ByteArrayInputStream(imageBytes);
+
+    //dir name
+    String dir = "upload/signature";
+
+    // 서명 서버 저장
+    String path = "";
+    try {
+      path = s3Uploader.uploadFile(dir,inputStream,fileName);
+      log.info("파일 서버 저장 성공?{}",path);
+    } catch (IOException e) {
+      log.info("파일 서버 저장 실패{}",path);
+      throw new RuntimeException(e);
+    }
+
+    //서명 db 저장
+
+    int padding = 0;
+    if(pureBase64.endsWith("==")) padding = 2;
+    else if(pureBase64.endsWith("=")) padding = 1;
+
+    int size = (int) (pureBase64.length() * 3/4) - padding;
+
+    FileDTO fileDTO = FileDTO.builder()
+        .originalName(fileName)
+        .newName(path.substring(path.lastIndexOf("/") + 1))
+        .path(path)
+        .size(size)
+        .tableName("training_log")
+        .tableId(trainingId)
+        .build();
+
+    int dbFileNum = 0;
+    try {
+      dbFileNum = utilService.insertService(fileDTO);
+    } catch (Exception e) {
+      log.info("서명 db 저장 실패:{}", dbFileNum);
+      throw new RuntimeException("db 저장 실패",e);
+    }
+
+    if(dbFileNum <= 0) {
+      throw new RuntimeException("db 저장 실패");
+    }
+
+    return new MyResponseWithDataPYJ(200,"서명 저장 성공", pureBase64);
+  }
+
+  @Override
+  public boolean isAdminSignature(int trainingId,  int userId) {
+    // trainingId로 훈련일지 조회
+    SelectTrainingDTO selectTrainingDTO = trainingMapper.selectTrainingLog(trainingId);
+
+    boolean isAdminSignature = false;
+    if (selectTrainingDTO != null) {
+      isAdminSignature = trainingMapper.isAdmin(selectTrainingDTO.getCourseId(), userId);
+
+    }
+
+    return isAdminSignature;
+  }
+
+  @Override
+  public boolean isSuperAdmin(int userId) {
+    return userId == 33;
+  }
+
 }

@@ -371,6 +371,12 @@ class TrainingTest {
     log.info("isRegister={}", isRegister);
   }
 
+  @Test
+  public void test1(){
+    List<Integer> idList = trainingMapper.selectStaffIdByCourseId(37);
+    log.info("idList={}", idList);
+  }
+
 
 
 }
