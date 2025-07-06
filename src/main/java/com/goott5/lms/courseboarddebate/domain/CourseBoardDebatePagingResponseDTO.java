@@ -22,15 +22,19 @@ public class CourseBoardDebatePagingResponseDTO<T> {
 
   private List<T> dtoList;
 
+  private List<T> hotPostList;
+
   private CourseBoardDebatePagingRequestDTO pagingRequestDTO;
 
 
   @Builder(builderMethodName = "allInfo") // 빌더의 이름을 지정
   public CourseBoardDebatePagingResponseDTO(
-      CourseBoardDebatePagingRequestDTO courseBoardDebatePagingRequestDTO,List<T> dtoList, int total) {
+      CourseBoardDebatePagingRequestDTO courseBoardDebatePagingRequestDTO,List<T> dtoList, int total, List<T> hotPostList) {
     this.pagingRequestDTO = courseBoardDebatePagingRequestDTO;
     this.pageNo = courseBoardDebatePagingRequestDTO.getPageNo();
     this.pagingSize = courseBoardDebatePagingRequestDTO.getPagingSize();
+
+    this.hotPostList = hotPostList;
 
     this.total= total;
     this.dtoList = dtoList;
