@@ -76,33 +76,53 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     }
 
     // 하나의 쿼리로 정렬된 전체 목록(인기글+일반글)을 가져옴
-    List<CourseBoardDebateVO> posts = courseBoardDebateMapper.selectPosts(requestDTO);
-    int totalCount = courseBoardDebateMapper.selectPostsTotalCount(requestDTO);
+    List<CourseBoardDebateVO> hotPostsVO = courseBoardDebateMapper.selectHotPosts(requestDTO);
+    List<CourseBoardDebateVO> regularPostsVO = courseBoardDebateMapper.selectRegularPosts(requestDTO);
+    int totalCount = courseBoardDebateMapper.selectRegularPostsTotalCount(requestDTO);
 
     // VO 리스트를 화면에 보여줄 PageDTO 리스트로 변환
-    List<CourseBoardDebatePageDTO> dtoList = posts.stream().map(vo ->
-        CourseBoardDebatePageDTO.builder()
-            .id(vo.getId())
-            .title(vo.getTitle())
-            .courseName(vo.getCourseName())
-            .writerName(vo.getWriterName())
-            .readCount(vo.getReadCount())
-            .createdAt(vo.getCreatedAt())
-            .isAttached(vo.getIsAttached())
-            .commentCount(vo.getCommentCount())
-            .forumLike(vo.getForumLike())
-            .isHotPost(vo.isHotPost())
-            .approvedReportCount(vo.getApprovedReportCount())
-            .build()
+    List<CourseBoardDebatePageDTO> hotPostDtoList = hotPostsVO.stream().map(vo ->
+            CourseBoardDebatePageDTO.builder()
+                    .id(vo.getId())
+                    .title(vo.getTitle())
+                    .courseName(vo.getCourseName())
+                    .writerName(vo.getWriterName())
+                    .readCount(vo.getReadCount())
+                    .createdAt(vo.getCreatedAt())
+                    .isAttached(vo.getIsAttached())
+                    .commentCount(vo.getCommentCount())
+                    .forumLike(vo.getForumLike())
+                    .isHotPost(true) // 이 리스트는 항상 인기글
+                    .approvedReportCount(vo.getApprovedReportCount())
+                    .build()
     ).collect(Collectors.toList());
 
-    // 페이지네이션 정보와 함께 최종 결과 반환
+    // 일반글 VO -> DTO 변환
+    List<CourseBoardDebatePageDTO> dtoList = regularPostsVO.stream().map(vo ->
+            CourseBoardDebatePageDTO.builder()
+                    .id(vo.getId())
+                    .title(vo.getTitle())
+                    .courseName(vo.getCourseName())
+                    .writerName(vo.getWriterName())
+                    .readCount(vo.getReadCount())
+                    .createdAt(vo.getCreatedAt())
+                    .isAttached(vo.getIsAttached())
+                    .commentCount(vo.getCommentCount())
+                    .forumLike(vo.getForumLike())
+                    .isHotPost(false) // 이 리스트는 항상 일반글
+                    .approvedReportCount(vo.getApprovedReportCount())
+                    .build()
+    ).collect(Collectors.toList());
+
+    //페이지네이션 정보와 두 개의 분리된 리스트를 함께 최종 결과로 반환
     return CourseBoardDebatePagingResponseDTO.<CourseBoardDebatePageDTO>allInfo()
-        .courseBoardDebatePagingRequestDTO(requestDTO)
-        .dtoList(dtoList)
-        .total(totalCount)
-        .build();
+            .courseBoardDebatePagingRequestDTO(requestDTO)
+            .hotPostList(hotPostDtoList)
+            .dtoList(dtoList)
+            .total(totalCount)
+            .build();
   }
+
 
   // 상세 조회: 댓글, 좋아요 정보 추가
   @Override
@@ -262,6 +282,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
       return false;
     }
 
+    Integer courseId = postDetail.getCourseId(); // 현재 게시글의 과정 ID를 가져옴
     boolean isCurrentlyHot = postDetail.isHotPost();
 
     int likeCount = finalLikeCount;
@@ -273,17 +294,19 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     boolean shouldBeHot = (likeCount >= LIKE_THRESHOLD && commentCount >= COMMENT_THRESHOLD);
 
     if (!isCurrentlyHot && shouldBeHot) {
-      log.info("인기글 기준 충족. 승격 절차를 시작합니다.");
+      log.info("인기글 기준 충족. [과정 ID: {}] 내에서 승격 절차를 시작합니다.", courseId);
       final int HOT_POST_LIMIT = 5;
-      int currentHotPostCount = courseBoardDebateMapper.countHotPosts();
+      // 특정 '과정'의 현재 인기글 개수를 조회
+      int currentHotPostCount = courseBoardDebateMapper.countHotPostsByCourseId(courseId);
       if (currentHotPostCount < HOT_POST_LIMIT) {
         log.info("인기글 자리가 남아있어 바로 승격합니다.");
         courseBoardDebateMapper.promoteToHotPost(forumId);
         sendHotPostNotification(forumId);
         result = true;
       } else {
-        log.info("인기글이 꽉 차 있어, 기존 인기글과 점수 비교를 시작합니다.");
-        List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.findHotPosts();
+        log.info("인기글이 꽉 차 있어, [과정 ID: {}] 내 기존 인기글과 점수 비교를 시작합니다.", courseId);
+        // 특정 '과정'의 인기글 목록만 조회
+        List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.findHotPostsByCourseId(courseId);
         CourseBoardDebateVO worstHotPost = null;
         int minScore = Integer.MAX_VALUE;
 
@@ -293,7 +316,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
             minScore = score;
             worstHotPost = post;
           } else if (score == minScore) {
-            if (worstHotPost != null && post.getHotPostAt().isBefore(worstHotPost.getHotPostAt())) {
+            if (worstHotPost != null && post.getHotPostAt() != null && worstHotPost.getHotPostAt() != null && post.getHotPostAt().isBefore(worstHotPost.getHotPostAt())) {
               worstHotPost = post;
             }
           }
@@ -320,6 +343,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     else {
       log.info("상태 변경 없음. 현재 상태를 유지합니다.");
     }
+
     return result;
   }
 

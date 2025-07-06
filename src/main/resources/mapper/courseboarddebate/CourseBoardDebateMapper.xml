@@ -4,7 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.goott5.lms.courseboarddebate.mapper.CourseBoardDebateMapper">
 
-  <select id="selectPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+  <select id="selectRegularPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
     cf.*,
     c.name AS courseName,
@@ -32,6 +32,10 @@
     ON cf.id = cc.course_forum_id
     <where>
       cf.deleted_at IS NULL
+      AND cf.is_hotpost = FALSE
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
       <if test="courseId != null">
         AND cf.course_id = #{courseId}
       </if>
@@ -91,10 +95,9 @@
     LIMIT #{skip}, #{pagingSize}
   </select>
 
-  <select id="selectPostsTotalCount" resultType="int">
+  <select id="selectRegularPostsTotalCount" resultType="int">
     SELECT COUNT(*)
-    FROM
-    course_forum cf
+    FROM course_forum cf
     JOIN
     course c ON cf.course_id = c.id
     JOIN
@@ -104,6 +107,11 @@
     ON cf.id = f.table_id
     <where>
       cf.deleted_at IS NULL
+      AND cf.is_hotpost = FALSE
+
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
       <if test="courseId != null">
         AND cf.course_id = #{courseId}
       </if>
@@ -136,7 +144,54 @@
     </where>
   </select>
 
-  <select id="findHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+  <select id="selectHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
+    SELECT
+    cf.*,
+    c.name AS courseName,
+    u.fullname AS writerName,
+    CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached,
+    IFNULL(cc.comment_count, 0) AS commentCount,
+    (SELECT COUNT(*)
+    FROM course_forum_report cfr
+    WHERE cfr.course_forum_id = cf.id
+    AND cfr.report_status = 'RESOLVED') AS approvedReportCount
+    FROM course_forum cf
+    JOIN
+    course c ON cf.course_id = c.id
+    JOIN
+    `user` u ON cf.writer_id = u.id
+    LEFT JOIN
+    (SELECT DISTINCT table_id FROM file WHERE table_name = 'course_forum' AND deleted_at IS NULL) f
+    ON cf.id = f.table_id
+    LEFT JOIN
+    (SELECT course_forum_id, COUNT(id) AS comment_count
+    FROM course_forum_comment
+    WHERE deleted_at IS NULL
+    GROUP BY course_forum_id) cc
+    ON cf.id = cc.course_forum_id
+    <where>
+      cf.deleted_at IS NULL
+      AND cf.is_hotpost = TRUE
+
+      <if test="isInProgress != null">
+        AND c.is_in_progress = #{isInProgress}
+      </if>
+
+      <if test="courseId != null">
+        AND cf.course_id = #{courseId}
+      </if>
+      <if test="accessibleCourseIds != null and !accessibleCourseIds.isEmpty()">
+        AND cf.course_id IN
+        <foreach item="item" collection="accessibleCourseIds" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+    ORDER BY
+    cf.hotpost_at DESC
+  </select>
+
+  <select id="findHotPostsByCourseId" parameterType="int" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
     cf.*,
     IFNULL(cc.comment_count, 0) AS commentCount
@@ -150,6 +205,8 @@
     ON cf.id = cc.course_forum_id
     WHERE
     cf.is_hotpost = TRUE
+    AND
+    cf.course_id = #{courseId}
   </select>
 
   <insert id="insertCourseBoardDebate" useGeneratedKeys="true" keyProperty="dto.id">
@@ -281,10 +338,11 @@
     AND hotpost_at <![CDATA[ < ]]> DATE_SUB(NOW(), INTERVAL 3 DAY)
   </update>
 
-  <select id="countHotPosts" resultType="int">
+  <select id="countHotPostsByCourseId" parameterType="int" resultType="int">
     SELECT COUNT(*)
     FROM course_forum
     WHERE is_hotpost = TRUE
+    AND course_id = #{courseId}
   </select>
 
   <update id="demoteHotPost">

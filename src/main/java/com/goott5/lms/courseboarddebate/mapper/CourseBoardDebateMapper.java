@@ -18,8 +18,8 @@ public interface CourseBoardDebateMapper {
   int insertCourseBoardDebate(@Param("dto") CourseBoardDebateDTO courseBoardDebateDTO);
 
   // 일반글/인기글 분리된 목록 조회용 메소드들
-  List<CourseBoardDebateVO> selectPosts(CourseBoardDebatePagingRequestDTO requestDTO);
-  int selectPostsTotalCount(CourseBoardDebatePagingRequestDTO requestDTO);
+  List<CourseBoardDebateVO> selectRegularPosts(CourseBoardDebatePagingRequestDTO requestDTO);
+  int selectRegularPostsTotalCount(CourseBoardDebatePagingRequestDTO requestDTO);
 
   CourseBoardDebateDetailInfo selectCourseBoardDebateDetail(@Param("id") int id);
   int updateCourseBoardDebateReadCount(@Param("id") int id);
@@ -52,9 +52,11 @@ public interface CourseBoardDebateMapper {
   int countCommentsByForumId(int forumId);
   int promoteToHotPost(int forumId);
   int expireHotPosts();
-  int countHotPosts();
+  int countHotPostsByCourseId(int courseId);
 
-  List<CourseBoardDebateVO> findHotPosts();
+  List<CourseBoardDebateVO> findHotPostsByCourseId(int courseId);
+  List<CourseBoardDebateVO> selectHotPosts(CourseBoardDebatePagingRequestDTO requestDTO);
+
 
   int demoteHotPost(int forumId);
 

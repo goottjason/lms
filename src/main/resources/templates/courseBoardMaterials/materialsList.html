@@ -51,7 +51,7 @@
         <div class="col-auto">
           <form action="/courseBoardMaterials/materialsRegister" method="get" id="registerForm">
             <input type="hidden" name="courseId" id="courseIdForRegister">
-            <button type="submit" id="materialsRegisterBtn" class="btn btn-info btn-icon-split">
+            <button type="submit" id="materialsRegisterBtn" class="btn btn-info btn-icon-split" onclick="setFlag();">
               <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
               <span class="text">수업공지 등록</span>
             </button>
@@ -376,7 +376,11 @@
           return;
         }
 
-        courses.sort((a, b) => b.isInProgress - a.isInProgress);
+        courses.sort((a, b) => {
+          const progressA = a.isInProgress === true ? 1 : 0;
+          const progressB = b.isInProgress === true ? 1 : 0;
+          return progressB - progressA;
+        });
 
         const loadedCourseId = currentCourseId;
         const defaultCourse = courses[0];
@@ -404,10 +408,12 @@
         headerCourseSelector.addEventListener('change', function() {
           // 사용자가 과정을 직접 선택하면 '깃발'을 세웁니다.
           sessionStorage.setItem('userMadeCourseSelection', 'true');
+          sessionStorage.setItem('isFiltering', 'true');
 
           const selectedCourseId = this.value;
           document.getElementById('searchCourseId').value = selectedCourseId;
-          document.getElementById('searchForm').submit();
+          document.getElementById('searchInProgress').value = "";
+          document.getElementById('materialsSearchForm').submit();
         });
       } else {
         setupRegisterButton(null);
@@ -470,7 +476,7 @@
     }
 
     function initializeExistingFilters() {
-      const searchForm = document.getElementById('searchForm');
+      const searchForm = document.getElementById('materialsSearchForm');
       const hasAttachmentSelect = document.getElementById('hasAttachment');
       const orderDirectionSelect = document.getElementById('orderDirection');
       const orderBySelect = document.getElementById('orderBy');
