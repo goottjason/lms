@@ -60,6 +60,7 @@
     s.id AS id,
     h.title AS title,
     h.created_at AS start_date,
+    h.end_date AS end_date,
     CASE
     WHEN DATEDIFF(h.start_date, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(h.start_date, CURDATE()))
     WHEN DATEDIFF(h.start_date, CURDATE()) = 0 THEN 'D-Day'
@@ -83,6 +84,7 @@
     t.id AS id,
     t.title AS title,
     t.created_at AS start_date,
+    t.end_date AS end_date,
     CASE
     WHEN DATEDIFF(t.start_date, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(t.start_date, CURDATE()))
     WHEN DATEDIFF(t.start_date, CURDATE()) = 0 THEN 'D-Day'

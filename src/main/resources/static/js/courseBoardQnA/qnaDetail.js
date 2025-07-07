@@ -205,7 +205,7 @@ $qnaModifyBtn.on("click", function () {
 //------------------------------------------------------------------------------
 // [[답변 등록 이벤트]]
 //------------------------------------------------------------------------------
-$(document).on("click", ".js-comment-register", function () {
+$(document).on("click", ".js-comment-register", async function () {
   const commentText = $commentTextarea.val().trim();
   if (!commentText) {
     return Swal.fire({
@@ -214,19 +214,39 @@ $(document).on("click", ".js-comment-register", function () {
       confirmButtonText: "확인"
     });
   }
-  axios.put(`/api/qna/comment/${boardNo}`, { comment: commentText })
-       .then(() => Swal.fire({ icon: "success", title: "답변이 등록되었습니다." }))
-       .then(() => {
-         const qs = window.location.search || "";
-         location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
-       })
-       .catch(err => {
-         Swal.fire({
-           icon: "error",
-           title: "등록 실패",
-           text: err.response?.data?.message || "서버 오류가 발생했습니다."
-         });
-       });
+
+  try {
+    // 댓글 등록
+    await axios.put(`/api/qna/comment/${boardNo}`, { comment: commentText });
+
+    // 성공 알림
+    await Swal.fire({ icon: "success", title: "답변이 등록되었습니다." });
+
+    // 현재 쿼리스트링 보존
+    const qs = window.location.search || "";
+
+    console.log(writerId);
+    console.log(boardNo);
+    // 알림 전송
+    sendNotification(
+        [writerId],
+        `${$qnaTitle.val()}에 대한 답변이 등록되었습니다.`,
+        false,
+        `/courseBoardQnA/detail/${boardNo}`
+    );
+
+    // 리로케이트
+    location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
+
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "등록 실패",
+      text: err.response?.data?.message || "서버 오류가 발생했습니다."
+
+    });
+
+  }
 });
 
 //------------------------------------------------------------------------------
@@ -257,7 +277,8 @@ $(document).on("click", ".js-comment-confirm", function () {
          location.href = `/courseBoardQnA/detail/${boardNo}${qs}`;
        })
        .catch(() => {
-         Swal.fire({ icon: "error", title: "수정 실패", text: "서버 오류가 발생했습니다." });
+         Swal.fire(
+             { icon: "error", title: "수정 실패", text: "서버 오류가 발생했습니다." });
        });
 });
 
@@ -559,5 +580,5 @@ function renderUserCourseOptions(selector, data) {
   // }
 
   // $adminCourseSelect.val(selectedCourse);
-}
+};
 
