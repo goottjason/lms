@@ -53,23 +53,30 @@ public class CourseManagementServiceImpl implements CourseManagementService {
   private final CourseManagementMapper courseManagementMapper;
   private final LearnerManagementService learnerManagementService;
   private final OperationsManagementService operationsManagementService;
-  private final LearnerManagementMapper learnerManagementMapper;
 
+  /**
+   * 전체 과정 또는 단일 과정을 조회하여 페이징 정보와 함께 반환
+   * 요청받은 페이징 정보(pageNo, pageSize)가 있으면, 전체 레코드 수 먼저 조회 후, 다시 페이징조건으로 조회
+   * 각 과정에는 과목 정보도 함께 세팅
+   * @param commonReqDTO 공통 요청 정보 (로그인 유저 ID, 타입, 진행 여부, 과정 ID 등)
+   * @param pageCourseReqDTO 과정 조회 요청 정보 (페이징, 검색 조건 등)
+   * @return 페이징 정보와 과정 목록이 포함된 DTO
+   */
   @Override
   public PageCourseRespDTO<CourseRespDTO> findCoursesAllorOne(
       CommonReqDTO commonReqDTO, PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO
   ) {
-    // page정보를 임시 변수에 저장
+
+    // 전체 레코드 수 조회를 위해 페이징 정보를 잠시 제거
     Integer originalPageNo = pageCourseReqDTO.getPageNo();
     Integer originalPageSize = pageCourseReqDTO.getPageSize();
 
-    // page정보가 있으면, 임시로 null로 바꿈
+    // 조건에 맞는 전체 과정(혹은 단일 과정) 목록 조회
     if (originalPageNo != null && originalPageSize != null) {
       pageCourseReqDTO.setPageNo(null);
       pageCourseReqDTO.setPageSize(null);
     }
 
-    // 전체의 레코드 개수를 셈
     List<CourseRespDTO> allCourses
         = courseManagementMapper.selectCoursesAllorOne(
             pageCourseReqDTO,
@@ -80,7 +87,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     );
     int totalRecords = allCourses.size();
 
-    // page정보가 있으면, 임시 변수에서 기존의 page 정보를 꺼내어 페이징된 데이터만 조회
+    // 페이징 정보가 있으면, 해당 조건으로 다시 데이터 조회
     if (originalPageNo != null && originalPageSize != null) {
       pageCourseReqDTO.setPageNo(originalPageNo);
       pageCourseReqDTO.setPageSize(originalPageSize);
@@ -94,13 +101,14 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       );
     }
 
-    // 페이징된 데이터 결과가 있으면, 배열을 순회하면서 교과목 정보 set
+    // 각 과정에 과목(subjects) 정보 세팅
     if (!allCourses.isEmpty()) {
       for (CourseRespDTO course : allCourses) {
         course.setSubjects(courseManagementMapper.selectCourseSubjectById(course.getId()));
       }
     }
 
+    // 페이징 정보 및 과정 목록을 포함한 DTO 반환
     return PageCourseRespDTO.<CourseRespDTO>withPageInfo()
         .pageCourseReqDTO(pageCourseReqDTO)
         .totalRecords(totalRecords)
@@ -108,40 +116,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         .build();
   }
 
-  /*@Override
-  public CourseRespDTO findCourse(
-      Integer loginUserId,
-      String loginUserType,
-      Integer courseId
-  ) {
 
-    CourseRespDTO course =
-        courseManagementMapper.selectCourse(loginUserId, loginUserType, courseId);
-
-    if (course != null) {
-      String instructorFullname = courseManagementMapper.selectInstructorFullname(course);
-      if (instructorFullname == null) {
-        instructorFullname = "미배정";
-      }
-      course.setInstructorFullname(instructorFullname);
-      String classroomName = courseManagementMapper.selectClassroomName(course);
-      if (classroomName == null) {
-        classroomName = "미배정";
-      }
-      course.setClassroomName(classroomName);
-      course.setSubjects(courseManagementMapper.selectCourseSubjectById(courseId));
-    }
-
-    return course;
-  }*/
-
-  /**
-   * 교육생 배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param courseId
-   * @return
-   */
   @Override
   public List<UserRespDTO> findEnrolledLearnersByCourseId(
       PageUserReqDTO<UserReqDTO> pageUserReqDTO,
@@ -154,13 +129,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     return userRespDTOS;
   }
 
-  /**
-   * 교육생 미배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param includeAll
-   * @return
-   */
+
   @Override
   public List<UserRespDTO> findNotEnrolledLearnersAll(
       PageUserReqDTO<UserReqDTO> pageUserReqDTO,
@@ -173,21 +142,14 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     return userRespDTOS;
   }
 
-  /**
-   * 교육생 배정 '추가' API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param learnerId
-   * @param courseId
-   * @return
-   */
+
   @Override
   public boolean addLearnerToCourse(
       Integer loginUserId,
       String loginUserType,
       Integer learnerId,
       Integer courseId) {
+
     // 해당하는 과정의 총원을 불러옴(A)
     PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
 
@@ -504,7 +466,9 @@ public class CourseManagementServiceImpl implements CourseManagementService {
   }
 
   @Override
-  public Map<String, Integer> getIncompleteTaskCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest) {
+  public Map<String, Integer> getIncompleteTaskCount(
+      BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest) {
+
 
     Map<String, Integer> incompleteTaskCountMap = new HashMap<String, Integer>();
     // 1:1문의
@@ -517,6 +481,12 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     incompleteTaskCountMap.put(
         "forumReportCount",
         courseManagementMapper.selectIncompleteReportCount(baseReqDTO, pageCourseRequest
+        )
+    );
+    // 훈련일지 결재
+    incompleteTaskCountMap.put(
+        "trainingUnsignCount",
+        courseManagementMapper.selectIncompleteSignCount(baseReqDTO, pageCourseRequest
         )
     );
     return incompleteTaskCountMap;

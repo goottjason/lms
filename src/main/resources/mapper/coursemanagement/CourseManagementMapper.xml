@@ -75,45 +75,54 @@
     </if>
 
   </select>
-  <select id="selectNotEnrolledLearnersAll" resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
+  <select id="selectNotEnrolledLearnersAll"
+          resultType="com.goott5.lms.learnermanagement.domain.UserRespDTO">
+    <!--
+      미배정(배정 안 된 신입생, 교육진행 중이 아닌 기존 교육생(수료, 중퇴)) 학습자 목록을 조회하는 쿼리
+    -->
     SELECT u.id, u.type, u.fullname, u.mobile, le.completion_status
     FROM user u
     LEFT JOIN learner_enrollment le ON u.id = le.user_id
     WHERE type = 'LEARNER'
+    <!--
+      1. '진행중(IN_PROGRESS)' 상태인 학습자는 제외
+         (이미 교육진행중인 교육생은 미배정 학습자 목록에서 제외)
+    -->
     AND u.id NOT IN (
       SELECT u.id FROM user u
       LEFT JOIN learner_enrollment le ON u.id = le.user_id
       WHERE le.completion_status = 'IN_PROGRESS')
+    <!--
+      2. 검색어가 있을 경우, 해당 타입(컬럼)에 대해 LIKE 검색
+         - pageUserReqDTO.type : 검색할 컬럼명 (ex: fullname, mobile 등)
+         - pageUserReqDTO.keyword : 검색어
+    -->
     <if test="pageUserReqDTO.keyword != null and pageUserReqDTO.keyword != ''">
       AND ${pageUserReqDTO.type} like concat('%', #{pageUserReqDTO.keyword}, '%')
     </if>
+    <!--
+      3. includeAll 파라미터가 null일 때만,
+         learner_enrollment 정보가 전혀 없는(신입생) 사용자만 조회
+    -->
     <if test="includeAll == null">
       AND le.completion_status IS NULL
     </if>
+    <!--
+      4. 정렬 조건 (주로 컬럼명과 정렬방향을 동적으로 지정)
+         - pageUserReqDTO.orderBy : 정렬할 컬럼명
+         - pageUserReqDTO.orderDirection : ASC/DESC
+    -->
     ORDER BY ${pageUserReqDTO.orderBy} ${pageUserReqDTO.orderDirection}
+    <!--
+      5. 페이징 처리: pageSize와 pageNo가 있을 때만 LIMIT 적용
+         - pageUserReqDTO.offset : 시작 인덱스
+         - pageUserReqDTO.pageSize : 페이지 크기
+    -->
     <if test="pageUserReqDTO.pageSize != null and pageUserReqDTO.pageNo != null">
       LIMIT #{pageUserReqDTO.offset}, #{pageUserReqDTO.pageSize}
     </if>
   </select>
 
-  <!--<delete id="deleteCourse">
-    DELETE c
-      FROM course c
-    WHERE
-      #{loginUserId} IN (
-      <include refid="idsOfGeneralManager"/>
-      )
-      AND c.id = #{courseId}
-  </delete>-->
-
-
-
-
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
-<!--=============================================================================================-->
 
   <!--강의실 업데이트(is_active: 1->0)-->
   <update id="updateClassroomByAuth">
@@ -360,4 +369,22 @@
     #{coId}
   </foreach>
 </select>
+  <select id="selectIncompleteSignCount" resultType="Integer">
+    SELECT COUNT(*)
+    FROM training_log tl
+    LEFT JOIN (
+    SELECT table_id FROM file WHERE table_name = 'training_log'
+    ) AS fi ON tl.id = fi.table_id
+    LEFT JOIN staff_assignment sa ON tl.course_id = sa.course_id
+    LEFT JOIN user us ON sa.user_id = us.id
+    LEFT JOIN staff_detail sd ON us.id = sd.user_id
+    WHERE fi.table_id IS NULL
+      AND (
+      #{base.loginUserPosition} = 'GENERAL_MANAGER' and us.type = 'ADMINISTRATOR'
+      OR (
+      #{base.loginUserPosition} = 'COURSE_HEAD'
+      AND us.id = #{base.loginUserId}
+      )
+    )
+  </select>
 </mapper>

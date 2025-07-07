@@ -67,6 +67,7 @@ function displayIncompleteTask(countList) {
     $('#inquery-count').text(countList.inquiryCount);
     $('#forum-report-count').text(countList.forumReportCount);
     $('#counseling-count').text(falseCounselingCount);
+    $('#training-unsign-count').text(countList.trainingUnsignCount);
 }
 async function fetchAndDisplayCourses() {
     coursesWithPaging = await apiGetRequestParams(
@@ -418,21 +419,23 @@ function displayLearnerCard() {
                                <div class="col-md-4">
                                   <div class="learner-card card text-center shadow-sm h-100">
                                     <div class="card-body d-flex flex-column px-4 py-3">
-                                      <div class="mb-3">
+                                      <div class="mb-3 not-check-in-status" data-id="${learner.leId}">
                                         <span class="badge rounded-pill border border-warning text-warning bg-transparent px-3 py-2"
                                               style="font-size: 0.8rem;">
                                           미퇴실
                                         </span>
                                       </div>
                                       <div>
-                                        <a href="/courseManagement/courseDetail?courseId=${course.coId}"><h6 class="card-title mb-1 text-dark fw-bold"
+                                        <a href="/courseManagement/courseDetail?courseId=${course.coId}">
+                                        <h6 class="card-title mb-1 text-dark fw-bold not-check-in-coname" data-id="${learner.leId}"
                                             style="font-size: 1rem;">${course.coName}</h6></a>
-                                        <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p></a>
+                                        <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary  not-check-in-fullname" data-id="${learner.leId}"><b>${learner.learnerUser.userFullname}</b></p></a>
                                       </div>
                                       <div class="mt-auto">
                                         <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
                                           <i class="fas fa-solid fa-envelope"></i>
                                         </a>
+                                        <input type="hidden" value="${learner.learnerUser.userEmail}" class="not-check-in-email">
                                       </div>
                                     </div>
                                   </div>
@@ -551,7 +554,7 @@ function handleTargetCheckChange() {
     let isChecked = $(this).is(':checked');
     console.log('체크 상태:', isChecked, 'leId:', leId, 'emailText:', emailText);
     if (isChecked) {
-        let html= `<span class="badge rounded-pill border border-primary text-primary bg-transparent mx-1" style="font-size: 1.0rem" id="leId-${leId}">${emailText}</span>`;
+        let html= `<span class="badge rounded-pill border border-primary text-primary bg-transparent mx-1 my-1" style="font-size: 1.0rem" id="leId-${leId}">${emailText}</span>`;
         $('#recipients').append(html);
     } else {
         $(`#leId-${leId}`).remove();
