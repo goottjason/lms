@@ -218,6 +218,7 @@ function renderDeadlineCarousel(data) {
       .addClass("btn btn-sm btn-block btn-primary mt-auto")
       .attr("data-id", card.id)
       .attr("data-type", card.contentType)
+      .attr("data-enddate", card.endDate)
       .text("상세보기");
       if (isHw && card.submissionStatus !== "제출") {
         $btn.prop("disabled", true).removeClass("btn-primary").addClass(
@@ -240,11 +241,25 @@ function renderDeadlineCarousel(data) {
   .on("click", "button[data-id]", function () {
     const id = $(this).data("id");
     const type = $(this).data("type");
+
     if (type === "homework") {
       location.href = `/homework/submissionDetail?submissionId=${id}`;
-    } else {
-      location.href = `/test/learner/testDetail/${id}?userId=${userId}&currentPageNo=1&courseName=${selectedCourse}`;
+      return;
     }
+
+    // test일 때
+    let url = `/test/learner/testDetail/${id}`
+        + `?userId=${userId}`
+        + `&currentPageNo=1`
+        + `&courseName=${selectedCourse}`;
+
+    // endDate 파싱해서 지나갔으면 쿼리스트링 추가
+    const endDate = new Date($(this).data("enddate"));
+    if (endDate < new Date()) {
+      url += `&testStatus=종료`;
+    }
+
+    location.href = url;
   });
 }
 
@@ -560,7 +575,7 @@ function renderDebate(data) {
   data.forEach(item => {
     const $tr = $("<tr>").addClass("text-center");
 
-    // 1) 제목 (링크) + 댓글 수 뱃지
+    // 제목 (링크) + 댓글 수 뱃지
     const $titleTd = $("<td>").addClass("align-middle text-start");
     $titleTd.append(
         $("<a>")
@@ -577,17 +592,17 @@ function renderDebate(data) {
         )
     );
 
-    // 2) 작성자
+    // 작성자
     const $writerTd = $("<td>")
     .addClass("align-middle")
     .text(item.fullname || "-");
 
-    // 3) 좋아요
+    // 좋아요
     const $likeTd = $("<td>")
     .addClass("align-middle")
     .text(item.forumLike);
 
-    // 4) 작성일 (YYYY-MM-DD)
+    // 작성일 (YYYY-MM-DD)
     const dateOnly = item.createdAt.split("T")[0];
     const $dateTd = $("<td>")
     .addClass("align-middle")
@@ -705,6 +720,7 @@ async function loadCourseData(courseName) {
 
   // 마감 일정
   const scheduleRes = await fetchTestHwSchedule(courseName);
+  console.log(scheduleRes);
   renderDeadlineCarousel(scheduleRes.data.data);
 
   // 출석표

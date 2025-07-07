@@ -110,4 +110,9 @@ public class TestRegisterServiceImpl implements TestRegisterService {
     testScheduler.scheduleAutoGrading(testRegisterVO.getId(), testRegisterVO.getEndDate());
 
   }
+
+  @Override
+  public Integer getCourseId(String courseName) {
+    return testRegisterMapper.selectCourseId(courseName);
+  }
 }

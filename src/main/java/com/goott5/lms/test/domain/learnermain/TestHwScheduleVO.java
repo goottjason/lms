@@ -19,6 +19,7 @@ public class TestHwScheduleVO {
   private int id;
   private String title;
   private LocalDateTime startDate;
+  private LocalDateTime endDate;
   private String dDay;
   private String submissionStatus;
   private Boolean isInvalidated;

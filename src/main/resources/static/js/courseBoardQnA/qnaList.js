@@ -154,8 +154,6 @@ function getAdminCourses(isInProgress = null) {
     const params = new URLSearchParams(window.location.search);
     const course = params.get("searchOptions.courseName") || "";
     $("#course-filter").val(course);
-    const prog = params.get("searchOptions.isInProgress");
-    $("#progress-filter").val(prog == null ? "" : prog);
   })
   .catch((err) => Swal.fire("오류", "제출 중 오류가 발생했습니다. 다시 시도해주세요.", "error"));
 

@@ -97,4 +97,12 @@ public class TestRegisterController {
     return ApiResult.respondOk(200, "SUCCESS", (T) "SUCCESS");
   }
 
+  @GetMapping("/test/courseId")
+  public ResponseEntity<ApiResult<Integer>> getCourseId(
+      @RequestParam(name = "courseName", required = true) String courseName
+  ) {
+
+    return ApiResult.respondOk(200, "SUCCESS", testRegisterService.getCourseId(courseName));
+  }
+
 }

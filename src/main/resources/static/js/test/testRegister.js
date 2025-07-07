@@ -440,7 +440,7 @@ $(document).on("click", "#add-question-btn", function () {
 });
 
 // 시험 등록 버튼
-$("#test-register-btn").on("click", function () {
+$("#test-register-btn").on("click", async function () {
   let $testInfoContainer = $("#test-info-container");
 
   let questionArr = [];
@@ -533,24 +533,43 @@ $("#test-register-btn").on("click", function () {
 
   console.log(JSON.stringify(testInfo));
 
-  axios.post(`/api/tests`, testInfo,
-      { headers: { "Content-Type": "application/json" } })
-       .then(function (response) {
-         console.log(response);
-         window.location.href = "/test/testList?saved=true";
-       })
-       .catch(function (error) {
-         console.dir(error);
-         console.log((error.response.data));
-         // 에러 메시지 초기화 필요
+  try {
+    // 시험 등록
+    const postRes = await axios.post(
+        "/api/tests",
+        testInfo,
+        { headers: { "Content-Type": "application/json" } }
+    );
+    console.log(postRes);
 
-         Toast.fire({
-           icon: "error",
-           title: "시험 등록에 실패했습니다.\n입력값을 확인해주세요."
-         });
+    // courseId 가져오기
+    const getRes = await axios.get(
+        "/api/test/courseId",
+        { params: { courseName: $("#courseSelector").val() } }
+    );
+    console.log(getRes);
+    const courseId = getRes.data.data;
 
-         handleValidationErrors(error.response.data);
-       });
+    // 알림 전송
+    sendNotificationToLearnerInCourse(
+        courseId,
+        `${testInfo.testTitle}이 등록되었습니다.`,
+        false
+    );
+
+    // 등록 완료 후 리스트 페이지로 이동
+    window.location.href = "/test/testList?saved=true";
+
+  } catch (error) {
+    console.dir(error);
+    const errors = error.response?.data;
+    Toast.fire({
+      icon: "error",
+      title: "시험 등록에 실패했습니다.\n입력값을 확인해주세요."
+    });
+    handleValidationErrors(errors);
+  }
+
 });
 
 function renderCourseFilterOptionsForAdminForUser(data) {

@@ -13,4 +13,7 @@ public interface TestRegisterService {
 
   // 시험 등록
   void createTest(@Valid TestRegisterDTO testRegisterDTO, HttpSession session);
+
+  // 과정 ID 가져오기
+  Integer getCourseId(String courseName);
 }
