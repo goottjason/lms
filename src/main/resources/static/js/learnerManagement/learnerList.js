@@ -203,7 +203,7 @@ function displayCardList(learnersWithPaging) {
             if (learner.leId == null) {
                 let user   = learner.learnerUser;
                 rowHtml += `
-                    <div class="col mb-4">
+                    <div class="col mb-4" style="min-height: 500px">
                         <div class="card text-center card-null"
                         style="border-top: 5px solid #f6c23e;">
                             <img src="${user.userProfileImg != null ? user.userProfileImg: baseImg}" 
@@ -212,8 +212,8 @@ function displayCardList(learnersWithPaging) {
                             <div class="card-body">
                                 <h5 class="card-title mb-1">${user.userFullname}</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
-                                <p class="card-text">${user.userEmail}</p>
-                                <p class="card-text">해당 과정에 배정 요망</p>
+                                <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
+                                <p class="card-text" style="min-height: 48px;">해당 과정에 배정 요망</p>
                                 <p class="card-text">${
                                     learner.leCompletionStatus == null ? "미배정" :
                                     learner.leCompletionStatus === "IN_PROGRESS" ? "교육생" :
@@ -240,7 +240,7 @@ function displayCardList(learnersWithPaging) {
                           learner.leCompletionStatus === 'COMPLETED' ? 'btn-secondary' :
                           learner.leCompletionStatus === 'DROPPED' ? 'btn-danger' : '';
                 rowHtml += `
-                    <div class="col mb-4">
+                    <div class="col mb-4"">
                         <div class="card text-center ${learner.leCompletionStatus === 'DROPPED' ? 'card-dropped' : ''}"  style="border-top: 5px solid ${colorStatus};">
                             <img src="${user.userProfileImg != null ? user.userProfileImg: baseImg}" 
                                  class="rounded-circle mt-3 mx-auto d-block" 
@@ -248,8 +248,8 @@ function displayCardList(learnersWithPaging) {
                             <div class="card-body">
                                 <h5 class="card-title mb-1">${user.userFullname}</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
-                                <p class="card-text">${user.userEmail}</p>
-                                <p class="card-text">${course.coName || "-"}</p>
+                                <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
+                                <p class="card-text" style="min-height: 48px;">${course.coName || "-"}</p>
                                 <p class="card-text">${
                                     learner.leCompletionStatus == null ? "미배정" :
                                     learner.leCompletionStatus === "IN_PROGRESS" ? "교육생" :

@@ -7,6 +7,7 @@ import com.goott5.lms.learnermanagement.domain.*;
 import com.goott5.lms.learnermanagement.domain.dto.CompletionStatusUpdateRequest;
 import com.goott5.lms.learnermanagement.domain.dto.LearnerResponse;
 import com.goott5.lms.learnermanagement.domain.dto.PageLearnerRequest;
+import com.goott5.lms.learnermanagement.domain.dto.PartModifyRequest;
 import com.goott5.lms.learnermanagement.domain.integrated.HomeworkOverviewResp;
 import com.goott5.lms.learnermanagement.domain.table.EmploymentSupport;
 import com.goott5.lms.learnermanagement.domain.table.HomeworkWithSubEval;
@@ -22,9 +23,12 @@ import com.goott5.lms.learnermanagement.domain.participation.ParticipationReqDTO
 import com.goott5.lms.learnermanagement.domain.participation.ParticipationRespDTO;
 import com.goott5.lms.learnermanagement.domain.test.TestRespDTO;
 import java.util.Map;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface LearnerManagementMapper {
@@ -124,4 +128,18 @@ public interface LearnerManagementMapper {
   List<LearnerResponse> selectLearnersOnlyPartByAuth(
       @Param("base") BaseReqDTO baseReqDTO,
       @Param("page") PageLearnerRequest pageLearnerRequest);
+
+  @Select("SELECT id FROM participation_reason WHERE participation_id = #{partId}")
+  Integer selectIsParticipationReasonRow(Integer partId);
+  @Insert("INSERT INTO participation_reason (participation_id, explanation) VALUES (#{partId}, #{partExplanation});")
+  void insertParticipationReason(PartModifyRequest request);
+
+  @Update("UPDATE participation SET check_in = #{partCheckIn}, check_out=#{partCheckOut}, status = #{partStatus}, training_time = #{partTrainingTime} WHERE id = #{partId}")
+  void updateParticipationByRequest(PartModifyRequest request);
+
+  @Update("UPDATE participation_reason SET explanation = #{partExplanation} WHERE participation_id = #{partId}")
+  void updateParticipationReasonByRequest(PartModifyRequest request);
+
+  @Delete("DELETE FROM participation_reason WHERE participation_id = #{partId}")
+  void deleteParticipationReasonByRequest(PartModifyRequest request);
 }

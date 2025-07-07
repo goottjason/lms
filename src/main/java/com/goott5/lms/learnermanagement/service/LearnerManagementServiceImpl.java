@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value.Int;
 
@@ -551,10 +552,35 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
     return true;
   }
 
+  @Transactional
   @Override
   public Boolean modifyPartInfo(PartModifyRequest request) {
-    // 일단 나중에!!!
-    return null;
+
+    log.info("★★★★★{}",request);
+    log.info("{}, ", request.getPartExplanation());
+
+    // participation_reason 테이블에서 partId에 해당하는 row가 있는지 조회, 없으면 insert
+    Integer result = learnerManagementMapper.selectIsParticipationReasonRow(request.getPartId());
+
+    // row가 없는데, partExplanation도 null이면 insert할 필요없고, update 할 필요도 없음 (아무 조치 없음)
+    // row가 없는데, partExplanation이 null이 아니면 insert해야 함
+    if (result == null && request.getPartExplanation() != null) {
+      learnerManagementMapper.insertParticipationReason(request);
+    }
+
+    // row가 있는데, partExplanation이 null이 아니면 update해야함
+    if (result != null && request.getPartExplanation() != null) {
+      learnerManagementMapper.updateParticipationReasonByRequest(request);
+    }
+    // row가 있는데, partExplanation이 null이면 delete해야함
+    if (result != null && request.getPartExplanation() == null) {
+      learnerManagementMapper.deleteParticipationReasonByRequest(request);
+    }
+    // participation 업데이트, participation_reason 업데이트
+    learnerManagementMapper.updateParticipationByRequest(request);
+
+
+    return true;
   }
 
 

@@ -71,7 +71,7 @@ async function fetchAndDisplayCourses() {
     displayBubleChart();
     displayCourseTable();
     displayTrainingLogChart();
-    displayLearnerCard()
+    displayLearnerCard();
     loadPartCourseSelect();
     fetchAndDisplayIncompleteTask();
     fetchAndDisplayClassroomUsage();
@@ -142,7 +142,7 @@ function displayBubleChart() {
         fill: { opacity: 0.85 },
         /*title: { text: '', align: 'center', style: { fontSize: '16px' } },*/
         xaxis: {
-            title: { text: '과정진행률 (%)', style: { fontSize: '16px', fontWeight: 400, color: '#858796' } },
+            title: { text: '과정진행률', style: { fontSize: '16px', fontWeight: 400, color: '#858796' } },
             min: 0, max: 100, tickAmount: 10,
             labels: { style: { fontSize: '16px', fontWeight: 400, color: '#858796' } }
         },
@@ -301,36 +301,42 @@ function displayTrainingLogChart() {
 
     var chart = new ApexCharts(document.querySelector("#heatmap-chart"), options);
     chart.render();
-
+    // 제출했는지
     const cardData = courses.map((course) => ({
         coInstructorName: course.courseWithAssignedInfo.coInstructorName,
         isTodaySubmit: getIsTodaySubmit(course.courseTrainingDates),
+        isTodayClassdate: getIsTodayClassdate(course.scheduleOverview.classdateList),
         coInstructorId: course.courseWithAssignedInfo.coInstructorId,
         coName: course.courseWithAssignedInfo.coName,
         coId: course.courseWithAssignedInfo.coId
     }));
-
+    console.log("cardData", cardData);
     displayInstructorCard(cardData);
 
 }
 function displayLearnerCard() {
-    $('#learner-body').empty();
+    $('#learner-box').empty();
+
     let currentDate = new Date();
     const cards = [];
 
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) courses = [];
+
+    // 진행중이 과정이 없는 상태
     if(courses.length == 0) {
-        console.log("진행중인 과정이 없는 상태");
+        $('#learner-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
         return;
     }
 
     courses.forEach(course => {
        course.courseLearnerOverview.learnerList.forEach(learner => {
 
+           // 미배정 교육생의 경우 continue
            if (learner.learnerCourse == null) {
-               return;
+               return; // forEach 메서드에서는 continue 역할
            }
+
 
            let course = learner.learnerCourse;
 
@@ -345,52 +351,54 @@ function displayLearnerCard() {
            let learnerCheckInStr = '-';
            let learnerCheckOutStr = '-';
 
+           // 교육생의 출결기록 순회
            learner.partOverview.partList.forEach((part) => {
                const partDate = new Date(part.partParticipationDate);
+
                // 오늘 날짜와 동일한 데이터에 대한 처리
                if (partDate.getDate() == currentDate.getDate()) {
 
+                   // 미입실일 때 처리
                    if (part.partCheckIn == null) {
-                       // null이 아니면(입실함)
-                       /*null이면(미입실함),
-                        '입실마감시간-10분'부터 퇴실시작시간 직전까지 이메일알림 버튼 출력
-                        그 외의 시간은 초기 세팅대로 '-' 출력*/
+                       /* '입실마감시간-10분'부터 퇴실시작시간 직전까지 카드에 미입실, 이메일알림 버튼 출력
+                          그 외의 시간은 카드 없음 */
                        let buttonStartTime = fromTimeStrToTodayTime(
                            adjustMinutesToTimeStr(checkInEndTimeStr, -10));
                        let buttonEndTime   = fromTimeStrToTodayTime(
                            checkOutStartTimeStr);
 
+                       // 현재시간이 입실마감시간-10분 ~ 퇴실시작시간 전인 경우 카드 작성
                        if (buttonStartTime.getTime() <= currentDate.getTime() &&
                            currentDate.getTime() <= buttonEndTime.getTime()) {
-                           // 카드작성
                            let colHtmlIn = `
                                <div class="col-md-4">
-                                  <div class="learner-card card text-center shadow-sm h-100">
-                                    <div class="card-body d-flex flex-column px-4 py-3">
-                                      <div class="mb-3">
-                                        <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
-                                              style="font-size: 0.8rem;">
-                                          미입실
-                                        </span>
-                                      </div>
-                                      <div>
-                                        <h6 class="card-title mb-1 text-dark fw-bold"
-                                            style="font-size: 1rem;">${course.coName}</h6>
-                                        <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
-                                      </div>
-                                      <div class="mt-auto">
-                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
-                                          <i class="fas fa-solid fa-envelope"></i>
-                                        </a>
-                                      </div>
+                                   <div class="learner-card card text-center shadow-sm h-100">
+                                      <div class="card-body d-flex flex-column px-4 py-3">
+                                          <div class="mb-3">
+                                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                                  style="font-size: 0.8rem;">
+                                              미입실
+                                            </span>
+                                          </div>
+                                          <div>
+                                            <h6 class="card-title mb-1 text-dark fw-bold"
+                                                style="font-size: 1rem;">${course.coName}</h6>
+                                            <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
+                                          </div>
+                                          <div class="mt-auto">
+                                            <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                              <i class="fas fa-solid fa-envelope"></i>
+                                            </a>
+                                          </div>
                                     </div>
-                                  </div>
-                                </div>
+                                 </div>
+                               </div>
                            `;
                            cards.push(colHtmlIn);
                        }
                    }
 
+                   // 미퇴실일 때 처리
                    if (part.partCheckOut == null) {
                        /*null이면(미퇴실함),
                         '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
@@ -428,29 +436,47 @@ function displayLearnerCard() {
                        }
                    }
                }
-           })
-       })
+           });
+       });
     });
 
-    let cardCnt = 0;
-    let html = ``;
-    for (let i= 0; i < cards.length/3; i++) {
-        if (i == 0) {
-            html += `<div class="carousel-item active"><div class="row">`;
-        } else {
-            html += `<div class="carousel-item"><div class="row">`;
-        }
-        for(let j= 0; j < 3; j++) {
-            if (cardCnt < cards.length) { // 0 > 5
-                html += cards[cardCnt];
-                cardCnt++;
+    // 카드가 하나라도 있을 경우
+    if (cards.length > 0) {
+        let cardCnt = 0;
+        let html = `
+            <!-- 왼쪽 화살표 -->
+            <button class="btn mr-2" data-target="#learnerCarousel" data-slide="prev">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <div id="learnerCarousel" class="carousel slide w-100" style="max-width: 1000px;">
+              <div class="carousel-inner" id="learner-body">
+        `;
+        for (let i= 0; i < cards.length/3; i++) {
+            if (i == 0) {
+                html += `<div class="carousel-item active"><div class="row">`;
             } else {
-                break;
+                html += `<div class="carousel-item"><div class="row">`;
             }
+            for(let j= 0; j < 3; j++) {
+                if (cardCnt < cards.length) { // 0 > 5
+                    html += cards[cardCnt];
+                    cardCnt++;
+                } else {
+                    break;
+                }
+            }
+            html += `</div></div>`;
         }
-        html += `</div></div>`;
+        html += `
+            </div></div>
+            <!-- 오른쪽 화살표 -->
+            <button class="btn ml-2" data-target="#learnerCarousel" data-slide="next">
+              <i class="fas fa-chevron-right"></i>
+            </button>`;
+        $('#learner-box').html(html);
+    } else {
+        $('#learner-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
     }
-    $('#learner-body').html(html);
 
 }
 
@@ -478,55 +504,82 @@ function adjustMinutesToTimeStr(timeStr, minutes) {
             ${String(date.getSeconds()).padStart(2, '0')}`;
 }
 function displayInstructorCard(cardData) {
-    $('#instructor-body').empty();
-    const cards = [];
-    cardData.forEach((item) => {
-        let colHtml = `
-            <div class="col-md-4">
-              <div class="instructor-card card text-center shadow-sm h-100">
-                <div class="card-body d-flex flex-column px-4 py-3">
-                  <div class="mb-3">
-                    <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
-                          style="font-size: 0.8rem;">
-                      미등록
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1 text-dark fw-bold"
-                        style="font-size: 1rem;">${item.coName}</h6>
-                    <p class="card-text small mb-2 text-secondary"><b>${item.coInstructorName}</b></p>
-                  </div>
-                  <div class="mt-auto">
-                    <a onclick="callAlarm(${item.coInstructorId}, '${item.coInstructorName}', '${item.coName}');" role="button">
-                      <i class="fas fa-bell fa-fw"></i>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-        `;
-        cards.push(colHtml);
-    });
 
-    let cardCnt = 0;
-    let html = ``;
-    for (let i= 0; i < cards.length/3; i++) {
-        if (i == 0) {
-            html += `<div class="carousel-item active"><div class="row">`;
-        } else {
-            html += `<div class="carousel-item"><div class="row">`;
-        }
-        for(let j= 0; j < 3; j++) {
-            if (cardCnt < cards.length) { // 0 > 5
-                html += cards[cardCnt];
-                cardCnt++;
-            } else {
-                break;
+    $('#instructor-body').empty();
+
+    const cards = [];
+
+    if (cardData.length > 0) {
+        cardData.forEach((item) => {
+            // 오늘이 수업일인데 제출 안했을 때 카드 생성
+            if(item.isTodayClassdate && !item.isTodaySubmit) {
+                let colHtml = `
+                    <div class="col-md-4">
+                      <div class="instructor-card card text-center shadow-sm h-100">
+                        <div class="card-body d-flex flex-column px-4 py-3">
+                          <div class="mb-3">
+                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                  style="font-size: 0.8rem;">
+                              미등록
+                            </span>
+                          </div>
+                          <div>
+                            <h6 class="card-title mb-1 text-dark fw-bold"
+                                style="font-size: 1rem;">${item.coName}</h6>
+                            <p class="card-text small mb-2 text-secondary"><b>${item.coInstructorName}</b></p>
+                          </div>
+                          <div class="mt-auto">
+                            <a onclick="callAlarm(${item.coInstructorId}, '${item.coInstructorName}', '${item.coName}');" role="button">
+                              <i class="fas fa-bell fa-fw"></i>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                `;
+                cards.push(colHtml);
             }
+        });
+
+        // 카드가 하나라도 있을 경우
+        if (cards.length > 0) {
+            let cardCnt = 0;
+            let html = `
+                <!-- 왼쪽 화살표 -->
+                <button class="btn mr-2" data-target="#instructorCarousel" data-slide="prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div id="instructorCarousel" class="carousel slide w-100" style="max-width: 1000px;">
+                    <div class="carousel-inner" id="instructor-body">
+            `;
+            for (let i= 0; i < cards.length/3; i++) {
+                if (i == 0) {
+                    html += `<div class="carousel-item active"><div class="row">`;
+                } else {
+                    html += `<div class="carousel-item"><div class="row">`;
+                }
+                for(let j= 0; j < 3; j++) {
+                    if (cardCnt < cards.length) { // 0 > 5
+                        html += cards[cardCnt];
+                        cardCnt++;
+                    } else {
+                        break;
+                    }
+                }
+                html += `</div></div>`;
+            }
+            html += `
+                <button class="btn ml-2" data-target="#instructorCarousel" data-slide="next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>`;
+            $('#instructor-box').html(html);
+        } else {
+            $('#instructor-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
         }
-        html += `</div></div>`;
     }
-    $('#instructor-body').html(html);
+    else if (cardData.length == 0) {
+        $('#instructor-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
+    }
 }
 function callAlarm(coInstructorId, coInstructorName, coName) {
     let content = `${coInstructorName}님 ${coName} 훈련일지 작성해주세요.`;
@@ -545,14 +598,28 @@ function getIsTodaySubmit(courseTrainingDates) {
     let todayDate = new Date();
     let isValid = false;
     let todayDateStr = formatDate(todayDate);
-    courseTrainingDates.forEach((courseTrainingDate) => {
+    console.log(todayDateStr);
+    console.log(courseTrainingDates);
+    // 오늘날짜로 제출한 훈련일지가 있는지
+    courseTrainingDates.forEach(courseTrainingDate => {
         if(courseTrainingDate == todayDateStr) {
             isValid = true;
         }
-    })
+    });
     return isValid;
 }
-
+function getIsTodayClassdate(classdateList) {
+    let todayDate = new Date();
+    let isValid = false;
+    let todayDateStr = formatDate(todayDate);
+    classdateList.forEach((classdate) => {
+        if (classdate == todayDateStr) {
+            isValid = true;
+            return isValid;
+        }
+    });
+    return isValid;
+}
 // (datesYYYYMMDD, course.courseTrainingDates, datesMD)
 function generateData(datesYYYYMMDD, courseTrainingDates, datesMD) {
     var i = 0;
