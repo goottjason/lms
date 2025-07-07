@@ -53,12 +53,12 @@ let currentDate = new Date();
 let activeTabText = 'pills-daily';
 let stompP = null;
 function connectP(){
-    let socket = new SockJS('/ws');
-    stompC = Stomp.over(socket);
+    let socket = new SockJS(`${location.origin}/ws`);
+    stompP = Stomp.over(socket);
 
-    stompC.connect({}, function(){
+    stompP.connect({}, function(){
 
-        stompC.subscribe(`/topic/participation`,
+        stompP.subscribe(`/topic/participation`,
                          function(message){
 
                              console.log(message);
