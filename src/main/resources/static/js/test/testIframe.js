@@ -51,7 +51,6 @@ $(document).on("click", "#test-start-btn", function (e) {
 
   // 재응시 여부
   const isRestart = $("#test-start-btn").data("restart-test") === true;
-
   const userId = UrlUtils.getQueryParam("userId");
   const testId = $(this).data("test-id");
   const currentPageNo = $(this).data("current-page-no");
@@ -90,12 +89,40 @@ function preventEsc(e) {
 }
 
 window.addEventListener("message", (e) => {
+
+  console.log(e.data.type);
+
   // 유효하지 않은 메시지 또는 시험 시작 전/종류 후의 경우 무시
   if (!e.data || !examStarted || testFinished) {
     return;
   }
 
   switch (e.data.type) {
+
+      // 포커스 이탈로 인한 강제 종료
+    case "TEST_FOCUS_LOST":
+      if (document.fullscreenElement) {
+        (document.exitFullscreen ||
+            document.webkitExitFullscreen ||
+            document.msExitFullscreen).call(document);
+      }
+
+      iframe.style.display = "none";
+      testFinished = true;
+
+      Swal.fire({
+        icon: "error",
+        title: "시험 종료",
+        html: "포커스 이탈이 반복되어<br>시험이 종료됩니다.",
+        allowOutsideClick: false
+      }).then(() => {
+        // 비정상 종료 API 호출이 필요하면 여기에서
+        apiCall("get", "/user/logout")
+        .finally(() => {
+          window.location.href = "/";
+        });
+      });
+      break;
 
       // 첫 번째 전체화면 탈출 경고
     case "CHILD_FIRST_EXIT":
