@@ -260,7 +260,13 @@
           confirmButtonText: '예'
         }).then((result) => {
           if (result.isConfirmed) {
+            let savePage = localStorage.getItem("savePage");
+            if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+              location.href = savePage;
+            } else{
             location.href = "/homework/homeworkList";
+
+            }
           }
         })
       }
@@ -291,7 +297,12 @@
 
       $("#resetSubmission").on("click", function (e) {
         e.preventDefault();
+        let savePage = localStorage.getItem("savePage");
+        if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+          location.href = savePage;
+        }else{
         location.href = "/homework/homeworkList";
+        }
       })
 
     })

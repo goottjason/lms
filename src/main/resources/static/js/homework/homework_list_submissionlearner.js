@@ -16,7 +16,8 @@ function submissionForLearner(s) {
       icon: 'info',
       confirmButtonText: '예'
     }).then((result) => {
-      location.href = "/homework/submissionDetail?submissionId=" + responseParam;
+      prevPage("/homework/submissionDetail?submissionId=" + responseParam);
+      // location.href = "/homework/submissionDetail?submissionId=" + responseParam;
     })
   }).catch(function (error) {
     console.log("error", error);

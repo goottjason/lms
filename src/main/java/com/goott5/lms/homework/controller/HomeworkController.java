@@ -331,6 +331,7 @@ public class HomeworkController {
       resultMap = homeworkService.selectIdCourse(URLDecoder.decode(courseName), loginUser.getId(),
           loginUser.getType());
     }
+    log.info("resultMap:{}", resultMap);
 
     // 선택한 과정이 진행 중 x or 과정명이 선택한 과정 x or 해당 과정이 등록된 유저 아이디가 로그인 유저 아이디x or 유저 타입이 instructor x
     if (resultMap == null || resultMap.get("course_id") == null
@@ -370,8 +371,8 @@ public class HomeworkController {
     //title과 관련된 bindingResultFieldError 추가
     String title = homeworkDTO.getTitle();
     int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
-    if (titleLength > 100 || titleLength < 10) {
-      bindingResult.addError(new FieldError("homeworkDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    if (titleLength > 100) {
+      bindingResult.addError(new FieldError("homeworkDTO", "title", "100자 이하로 글을 입력해주세요."));
     }else if(title.trim().isEmpty()){
       bindingResult.addError(new FieldError("homeworkDTO", "title", "공백만 쓸 수는 없습니다."));
     }
@@ -542,8 +543,8 @@ public class HomeworkController {
     //title과 관련된 bindingResultFieldError 추가
     String title = homeworkModifyDTO.getTitle();
     int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
-    if (titleLength > 100 || titleLength < 10) {
-      bindingResult.addError(new FieldError("homeworkModifyDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    if (titleLength > 100) {
+      bindingResult.addError(new FieldError("homeworkModifyDTO", "title", "100자 이하로 제목을 입력해주세요."));
     }else if(title.trim().isEmpty()){
       bindingResult.addError(new FieldError("homeworkModifyDTO", "title", "공백만 쓸 수는 없습니다."));
     }
@@ -592,7 +593,7 @@ public class HomeworkController {
     int result = homeworkService.updateHomework(homeworkModifyDTO);
 
     if (result != 1) {
-      return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "전송 실패", homeworkModifyDTO));
+      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "전송 실패", homeworkModifyDTO));
     }
 
     // deleteList의 id에 해당하는 파일 dto 가져오기

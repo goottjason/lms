@@ -246,7 +246,12 @@
             cancelButtonText: '아니오'
           }).then((result) => {
             if (result.isConfirmed) {
-              location.href = "/homework/homeworkList";
+              savePage = localStorage.getItem("savePage");
+              if(savePage && savePage !== "undefined" && savePage.trim() !== "") {
+                location.href = savePage;
+              }else{
+                 location.href = "/homework/homeworkList";
+              }
             }
           })
           // alert(homeworkIdNull);
@@ -282,13 +287,7 @@
           console.log(homeworkId);
           axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
           .then(function (response) {
-            savePage = localStorage.getItem("savePage");
-            if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
-              // console.log("savePage",savePage);
-              location.href = savePage;
-            } else {
               location.href = "/homework/homeworkList";
-            }
           }).catch(function (error) {
             let msg = error.response.data.message;
             let errorCode = error.response.data.code;
@@ -301,7 +300,12 @@
             }).then((result) => {
               if (result.isConfirmed) {
                 if (errorCode === 400) {
-                  location.href = "/homework/homeworkList";
+                  savePage = localStorage.getItem("savePage");
+                  if(savePage && savePage !== "undefined" && savePage.trim() !== "") {
+                    location.href = savePage;
+                  }else{
+                    location.href = "/homework/homeworkList";
+                  }
                 }
               }
             })
@@ -317,7 +321,12 @@
 
         //목록으로
         $("#toList").click(function () {
+          let savePage = localStorage.getItem("savePage");
+          if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+            location.href =  savePage;
+          }else{
           location.href = "/homework/homeworkList";
+          }
         })
 
         // 수정
