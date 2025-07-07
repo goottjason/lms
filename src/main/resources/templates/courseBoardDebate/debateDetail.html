@@ -335,15 +335,14 @@
       if(commentForm) {
         commentForm.addEventListener('submit', function(event) {
           const commentTextarea = commentForm.querySelector('textarea[name="content"]');
+          const commentContent = commentTextarea.value.trim();
 
           // 댓글 내용의 양쪽 공백을 제거했을 때 비어있는지 확인합니다.
-          if (commentTextarea.value.trim() === '') {
-            // 폼의 기본 제출 동작을 막습니다.
-            event.preventDefault();
-
-            // 사용자에게 경고창을 띄웁니다.
+          if (commentContent.length < 2 || commentContent.length > 1000) {
+            event.preventDefault(); // 폼 제출 중단
             Swal.fire({
-              title: '내용을 입력해주세요.',
+              title: '글자 수 오류',
+              text: '댓글은 2자 이상 1000자 이하로 작성해주세요.',
               icon: 'warning'
             });
           }
@@ -510,15 +509,39 @@
             else if (target.closest('.save-comment-btn')) {
               const textarea = editEl.querySelector('textarea');
               const newContent = textarea.value;
+              const originalContent = displayEl.querySelector('.comment-content').textContent;
+              if (newContent.trim() === '') {
+                Swal.fire('알림', '댓글 내용은 비워둘 수 없습니다.', 'warning');
+                return;
+              }
+              if (newContent.trim().length < 2 || newContent.trim().length > 1000) {
+                Swal.fire({
+                  title: '글자 수 오류',
+                  text: '댓글은 2자 이상 1000자 이하로 작성해주세요.',
+                  icon: 'warning'
+                });
+                return; // 저장 로직 중단
+              }
+              if (newContent.trim() === originalContent.trim()) {
+                Swal.fire('알림', '변경 사항이 없습니다.', 'info');
+                return;
+              }
               axios.put(`/courseBoardDebate/comments`, { commentId: commentId, content: newContent })
               .then(() => {
                 displayEl.querySelector('.comment-content').textContent = newContent;
                 displayEl.classList.remove('a-none');
                 editEl.classList.add('a-none');
+                Swal.fire({
+                  title: '댓글 수정 완료',
+                  icon: 'success',
+                  timer: 1500,
+                  showConfirmButton: false
+                });
               }).catch(() => Swal.fire('오류', '댓글 수정 중 오류가 발생했습니다.', 'error'));
             }
             // 취소 버튼 클릭
             else if (target.closest('.cancel-edit-btn')) {
+              editEl.querySelector('textarea').value = displayEl.querySelector('.comment-content').textContent;
               displayEl.classList.remove('a-none');
               editEl.classList.add('a-none');
             }
