@@ -1,5 +1,6 @@
 package com.goott5.lms.participation.controller;
 
+import com.goott5.lms.participation.mapper.ParticipationMapper;
 import com.goott5.lms.participation.service.VacationService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpSession;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class VacationController {
 
   private final VacationService vacationService;
-
+  private final ParticipationMapper participationMapper;
 
 
 
@@ -142,10 +143,12 @@ public class VacationController {
         // 현재 과정: 승인 대기 + 승인된 휴가 모두
         vacationData = vacationService.getAllVacationsByCourse(courseId, page, size);
       }
+      int pendingCount = participationMapper.countPendingVacationsByCourse(courseId);
 
       return ResponseEntity.ok(Map.of(
           "success", true,
-          "data", vacationData
+          "data", vacationData,
+          "pendingCount", pendingCount
       ));
 
     } catch (Exception e) {
@@ -193,6 +196,20 @@ public class VacationController {
       ));
     }
   }
+
+  @GetMapping("/api/vacations/{courseId}/pending")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> getPendingVacations(
+      @PathVariable Integer courseId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    Page<Map<String, Object>> pendingVacations = vacationService.getPendingVacationsByCourse(courseId, page, size);
+    return ResponseEntity.ok(Map.of(
+        "success", true,
+        "data", pendingVacations
+    ));
+  }
+
 
 
 

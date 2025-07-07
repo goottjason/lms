@@ -239,7 +239,7 @@ public class VacationServiceImpl implements VacationService {
       Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "created_at"));
 
       int totalCount = participationMapper.countPendingVacationsByCourse(courseId);
-      List<Map<String, Object>> pendingVacations = participationMapper.selectPendingVacationsByCourseWithPaging(
+      List<Map<String, Object>> pendingVacations = participationMapper.selectPendingVacationsByCourse(
           courseId, pageable.getOffset(), pageable.getPageSize());
 
       log.debug("과정별 승인 대기 휴가 조회 완료 - courseId: {}, 페이지: {}, 크기: {}, 전체: {}건",

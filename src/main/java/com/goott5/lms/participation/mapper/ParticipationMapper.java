@@ -154,7 +154,7 @@ public interface ParticipationMapper {
   /**
    * 과정별 승인 대기 중인 휴가 신청 목록 조회 (페이징)
    */
-  List<Map<String, Object>> selectPendingVacationsByCourseWithPaging(
+  List<Map<String, Object>> selectPendingVacationsByCourse(
       @Param("courseId") Integer courseId,
       @Param("offset") long offset,
       @Param("limit") int limit

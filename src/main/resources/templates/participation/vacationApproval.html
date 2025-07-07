@@ -612,8 +612,10 @@
                            });
 
                            if (response.success) {
-                               updateVacationList(response.data);
-                               updatePagination(response.data);
+                               let data = response.data;
+                               data.pendingCount = response.pendingCount;
+                               updateVacationList(data);
+                               updatePagination(data);
                                updateLastUpdateTime();
                            } else {
                                showErrorMessage(response.message || '휴가 데이터 로드에 실패했습니다.');
@@ -650,7 +652,7 @@
             const pendingCount = vacations.filter(v => v.status === 'VACATION_PENDING').length;
 
             // 2. 제목/카운트 업데이트
-            updateVacationListHeader(pendingCount, data);
+            updateVacationListHeader(data, pendingCount);
 
             // 데이터가 없는 경우
             if (vacations.length === 0) {
@@ -693,21 +695,23 @@
             const $text = $('#vacationListText');
             const $count = $('#vacationListCount');
 
-            totalElements = data.totalElements || 0;
+            // 승인대기 상태만 필터링해서 카운트
+            const pendingCount = typeof data.pendingCount !== 'undefined'
+                                 ? data.pendingCount
+                                 : 0;
 
-            // 현재 과정에서 승인 대기만 카운트 (정렬 순서 반영)
             if (isCurrentCourseSelected) {
-                // 승인 대기 중인 항목만 카운트 (항상 맨 위에 표시됨)
-                const pendingCount = instructorData.currentCourse.pendingCount || 0;
                 $icon.removeClass().addClass('fas fa-clock text-warning me-2');
                 $text.text('처리 대기 중인 휴가 신청');
                 $count.removeClass().addClass('badge bg-warning ms-2').text(pendingCount);
             } else {
                 $icon.removeClass().addClass('fas fa-check-circle text-success me-2');
                 $text.text('승인된 휴가 기록');
-                $count.removeClass().addClass('badge bg-success ms-2').text(totalElements);
+                $count.removeClass().addClass('badge bg-success ms-2').text(data.totalElements || 0);
             }
         }
+
+
 
         // ========== 빈 상태 표시 ==========
         /**
@@ -974,7 +978,7 @@
 
                                        // 1초 후 데이터 새로고침 (최신 상태 반영)
                                        setTimeout(() => {
-                                           loadVacationData(currentCourseId, currentPage);
+                                           loadVacationData(currentCourseId, currentPage, currentSearchName);
                                        }, 1000);
 
                                    } else {
@@ -998,11 +1002,6 @@
 
                 }
             });
-            // 확인 대화상자
-            // if (!confirm(`${learnerName}님의 휴가를 승인하시겠습니까?`)) {
-            //     return;
-            // }
-
 
         });
 
@@ -1051,7 +1050,7 @@
                                        // 행 제거 효과
                                        $row.addClass('table-danger').fadeOut(800, function() {
                                            // 페이드아웃 완료 후 데이터 새로고침
-                                           loadVacationData(currentCourseId, currentPage);
+                                           loadVacationData(currentCourseId, currentPage, currentSearchName);
                                        });
 
                                    } else {
@@ -1076,10 +1075,6 @@
 
                 }
             });
-            // // 확인 대화상자 (강한 경고)
-            // if (!confirm(`${learnerName}님의 휴가를 거부하시겠습니까?\n\n거부된 휴가는 목록에서 완전히 삭제되며 복구할 수 없습니다.`)) {
-            //     return;
-            // }
 
 
         });
@@ -1146,7 +1141,6 @@
                 <div class="alert alert-danger alert-dismissible fade show alert-slide-down" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
 
