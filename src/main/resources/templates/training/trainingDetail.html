@@ -4,7 +4,8 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{layout/basic.html}">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script
+      src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script defer th:src="@{/js/training/trainingModify.js}"></script>
   <script defer th:src="@{/js/training/signature.js}"></script>
   <link rel="stylesheet"
@@ -41,7 +42,8 @@
   <!-- content header 시작 -->
 
   <!-- Signature Modal -->
-  <div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="signatureModalLabel" aria-hidden="true">
+  <div class="modal fade" id="signatureModal" tabindex="-1" role="dialog"
+       aria-labelledby="signatureModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header bg-dark text-white">
@@ -70,32 +72,43 @@
   <!-- Signature Modal 끝 -->
 
   <!-- 학생 이름(해당 창 hover or click시 토스트창 띄우기) -->
-<!--  <div class="toast" data-autohide="false"-->
-<!--       style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">-->
-<!--    <div class="toast-header">-->
-<!--      <strong class="mr-auto text-primary toast-strong"></strong>-->
-<!--      <small class="text-muted"></small>-->
-<!--      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>-->
-<!--    </div>-->
-<!--    <div class="toast-body">-->
-<!--      Some text inside the toast body-->
-<!--    </div>-->
-<!--  </div>-->
+  <!--  <div class="toast" data-autohide="false"-->
+  <!--       style="position: fixed; top: 100px; right: 600px; z-index: 1055; width: 300px; height: auto;">-->
+  <!--    <div class="toast-header">-->
+  <!--      <strong class="mr-auto text-primary toast-strong"></strong>-->
+  <!--      <small class="text-muted"></small>-->
+  <!--      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>-->
+  <!--    </div>-->
+  <!--    <div class="toast-body">-->
+  <!--      Some text inside the toast body-->
+  <!--    </div>-->
+  <!--  </div>-->
   <!-- toast 끝 -->
 
-  <div class="container bg-white shadow rounded p-4 mb-4">
+  <div class="container bg-white shadow rounded p-4 mb-4" >
     <h1 class="h3 mb-2 text-gray-800 text-center" id="detailTitle">훈련 일지 상세</h1>
+
     <!-- 상단 버튼 -->
-    <div class="d-flex justify-content-between mb-3">
-      <div th:if="${loginUserType == 'ADMINISTRATOR'}">
-        <button th:if="${signatureList == null || signatureList.isEmpty()}" class="btn btn-info btn-sm"
-                id="signature"
-                data-toggle="modal"
-                 data-target="#signatureModal">결재란</button>
-        <img th:if="${signatureList != null && !signatureList.isEmpty()}"
-             th:src="${signatureList[0].getPath()}" style="height: 100px; width: 100px;">
+    <div class="row mb-3">
+      <!-- 왼쪽: 서명 또는 결재 버튼 -->
+      <div class="col-auto d-flex align-items-center">
+        <div th:if="${loginUserType == 'ADMINISTRATOR' && (signatureList == null || signatureList.isEmpty())}">
+          <button class="btn btn-info btn-sm"
+                  id="signature"
+                  data-toggle="modal"
+                  data-target="#signatureModal">결재란</button>
+        </div>
+
+        <div th:if="${signatureList != null && !signatureList.isEmpty()}"
+             class="d-flex align-items-center"
+             style="border: 1px solid #000; padding: 10px; border-radius: 6px; background-color: #f9f9f9;">
+          <img th:src="${signatureList[0].getPath()}"
+               style="height: 60px; width: 60px; object-fit: contain; margin-right: 10px;">
+        </div>
       </div>
-      <div>
+
+      <!-- 오른쪽: 엑셀 버튼 -->
+      <div class="col text-right">
         <button class="btn btn-outline-success btn-sm" id="excel">엑셀 다운</button>
       </div>
     </div>
@@ -136,28 +149,33 @@
         <tbody>
         <tr>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAttendanceCount()}"
-              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getAttendanceList()}"
+              data-toggle="tooltip"
+              th:title="${finalSelectTraining.getResponseParticipationDTO().getAttendanceList()}"
               style="cursor: pointer;"
               data-name="출석">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLateCount()}"
-              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getLateList()}"
+              data-toggle="tooltip"
+              th:title="${finalSelectTraining.getResponseParticipationDTO().getLateList()}"
               style="cursor: pointer;"
               data-name="지각">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAbsenceCount()}"
-              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getAbsenceList()}"
+              data-toggle="tooltip"
+              th:title="${finalSelectTraining.getResponseParticipationDTO().getAbsenceList()}"
               style="cursor: pointer;"
-               data-name="결석">조회
+              data-name="결석">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyCount()}"
-              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyList()}"
+              data-toggle="tooltip"
+              th:title="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyList()}"
               style="cursor: pointer;"
               data-name="조퇴">조회
           </td>
           <td th:text="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingCount()}"
               th:data-id="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
-              data-toggle="tooltip" th:title="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
+              data-toggle="tooltip"
+              th:title="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
               style="cursor: pointer;"
               data-name="휴가">조회
           </td>
@@ -169,7 +187,7 @@
 
     <!-- 훈련 과목 -->
     <div class="table-responsive mb-4">
-      <span id = "fieldError" style="color: red;"></span>
+      <span id="fieldError" style="color: red;"></span>
       <table class="table table-bordered text-center">
         <thead class="thead-light">
         <tr>
@@ -249,7 +267,7 @@
     let instructorId = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
     let trainingId =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
 
-    $(document).ready(function(){
+    $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip({
         placement: 'top',
         boundary: 'window',

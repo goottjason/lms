@@ -11,6 +11,7 @@ import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.SelectTrainingForListDTO;
 import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertFinalRegisterDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
@@ -149,8 +150,8 @@ public class TrainingController {
     }
 
     //리스트의 요소를 순회하며 맵을 만들기
-    Map<String, List<SelectTrainingDTO>> resultMap = new HashMap<>();
-    List<SelectTrainingDTO> trainingDTOList = new ArrayList<>();
+    Map<String, List<SelectTrainingForListDTO>> resultMap = new HashMap<>();
+    List<SelectTrainingForListDTO> trainingDTOList = new ArrayList<>();
 
     if (loginUser != null) {
       if ("INSTRUCTOR".equals(loginUser.getType())) {
@@ -165,7 +166,7 @@ public class TrainingController {
 
       //if decodeCourseName이 ""일 경우(전체)일 때는 해당 과정명에 맞는 SelectTrainingDTO만 조회해 리스트로 만들어 맵으로 넣어주기
       if ((decodeCourseName.trim()).isEmpty()) {
-        for (SelectTrainingDTO selectTrainingDTO : trainingDTOList) {
+        for (SelectTrainingForListDTO selectTrainingDTO : trainingDTOList) {
           String courseNameById = trainingService.selectCourseNameById(
               selectTrainingDTO.getCourseId()); //공통용
           log.info("courseNameById:{}", courseNameById); //여기선 잘 받아옴

@@ -16,7 +16,7 @@ function undo() {
   }
 }
 
-function redo(){
+function redo() {
   let restored = previous.pop();
   if (restored) {
     data.push(restored);
@@ -33,7 +33,6 @@ $(function () {
     console.log("onEnd 후 data", data);
   }
 
-
   //되돌리기
   $("#undo").on("click", function () {
     undo();
@@ -46,7 +45,35 @@ $(function () {
 
   })
 
-  $("#save").on("click", function () {
+  function sendSignature(base64) {
+    axios.post("/training/signature", base64)
+    .then(function (response) {
+      console.log(response);
+      // let responseData = response.data.data;
+      let userArr = [instructorId];
+      let msg = response.data.message;
+      swal.fire({
+        title: msg,
+        icon: "success",
+        confirmButtonText: "예"
+      }).then((result) => {
+        sendNotification(userArr, "관리자의 서명이 등록되었습니다.", false,
+            "/training/trainingDetail?trainingId=" + trainingId);
+        location.href = "/training/trainingDetail?trainingId=" + trainingId;
+      })
+    }).catch(function (error) {
+      console.log(error);
+      let errorMsg = error.response.data.message;
+      swal.fire({
+        title: "서명 저장 실패",
+        text: errorMsg,
+        icon: "error",
+        confirmButtonText: "예"
+      })
+    })
+  }
+
+  function isSignatureEmpty() {
     let dataURL = signaturePad.toDataURL();
     console.log("dataURL", dataURL); //base64 인코딩한 문자열
 
@@ -55,38 +82,28 @@ $(function () {
       "trainingId": trainingId
     }
 
-    axios.post("/training/signature", base64)
-         .then(function (response) {
-           console.log(response);
-           // let responseData = response.data.data;
-           let userArr = [instructorId];
-           let msg = response.data.message;
-           swal.fire({
-               title:msg,
-               icon: "success",
-               confirmButtonText : "예"
-           }).then((result) => {
-             sendNotification(userArr, "관리자의 서명이 등록되었습니다.", false, "/training/trainingDetail?trainingId=" + trainingId);
-             location.href = "/training/trainingDetail?trainingId=" + trainingId;
-           })
-         }).catch(function (error) {
-           console.log(error);
-           let errorMsg = error.response.data.message;
-           swal.fire({
-               title:"서명 저장 실패",
-               text:errorMsg,
-               icon: "error",
-               confirmButtonText: "예"
-           })
-    })
+    if (signaturePad.isEmpty()) {
+      swal.fire({
+        title: "서명을 입력해주세요",
+        icon: "warning",
+        confirmButtonText: "예"
+      });
+      return;
 
-   // $("#signature").parent().append(` <img src="${dataURL}" id =
+    } else {
+      sendSignature(base64);
+    }
+  }
+
+
+
+  $("#save").on("click", function () {
+    // 서명이 비었는지 검사 -> 비었으면 제출 x, 아니면 제출
+    isSignatureEmpty();
+
+    // $("#signature").parent().append(` <img src="${dataURL}" id =
     // "signatureImg" style="width: 100px; height: 100px;" />`);
 
-
-
   })
-
-
 
 });

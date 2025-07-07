@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -106,7 +107,8 @@ public class HomeworkSubmissionController {
 
   @GetMapping("/submissionListForLearner")
   @ResponseBody
-  public ResponseEntity<?> homeworkSubmissionListForLearner(@RequestParam(required = false) Integer homeworkId, HttpSession session) {
+  public ResponseEntity<?> homeworkSubmissionListForLearner(
+      @RequestParam(required = false) Integer homeworkId, HttpSession session) {
 
     //로그인한 학생이 보낸 homework
     log.info("homeworkId:{}", homeworkId);
@@ -114,24 +116,32 @@ public class HomeworkSubmissionController {
     //로그인한 학생의 id
     int loginUserId = -1;
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    if(loginUser != null) loginUserId = loginUser.getId();
+    if (loginUser != null) {
+      loginUserId = loginUser.getId();
+    }
 
     // 둘을 기반으로 submissionId 조회
     int submissionId = homeworkService.selectSubmissionIdForLearner(homeworkId, loginUserId);
-    if(submissionId == -1){
-      return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400,"아직 제출한 과제가 없습니다.",null));
+    if (submissionId == -1) {
+      return ResponseEntity.badRequest()
+          .body(new MyResponseWithDataPYJ(400, "아직 제출한 과제가 없습니다.", null));
     }
 
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200,"학생의 submissionData 성공", submissionId));
+    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "학생의 submissionData 성공", submissionId));
   }
 
   //submissionDetail
   @GetMapping("/submissionDetail")
   public String homeworkSubmissionDetail(@RequestParam(required = false) Integer submissionId,
-      Model model, HttpSession session, HttpServletRequest request) {
+      Model model, HttpSession session, HttpServletRequest request,
+      RedirectAttributes redirectAttributes) {
     // 해당 submissionid의 submission객체와 그것을 fk로 갖는 eval 객체 보내기
 
-    String referer = request.getHeader("Referer");// 전 페이지
+    //  submissionId 가 null 일때
+    if (submissionId == null) {
+      redirectAttributes.addFlashAttribute("noSubmissionDetail", "해당 제출물이 존재하지 않습니다.");
+      return "redirect:/homework/alertRedirect";
+    }
 
     //submission 상세 확인 시, 아이디 검사
     String learnerIdForSubmission = homeworkService.selectUserIdForSubmission(
@@ -140,7 +150,7 @@ public class HomeworkSubmissionController {
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 
     if (loginUser == null) {
-      return "redirect:/" + (referer != null ? referer : "homework/homeworkList");
+      return "redirect:/";
     }
 
     //submission 상세 확인 시, 아이디 검사
@@ -151,71 +161,68 @@ public class HomeworkSubmissionController {
         Map<HomeworkSubmissionDTO, HomeworkEvalDTO> resultMap = homeworkService.selectSubmissionEval(
             submissionId);
 
-        if (resultMap == null) {
-          return "redirect:/" + (referer != null ? referer : "homework/homeworkList");
+        if (resultMap == null || resultMap.isEmpty()) {
+          redirectAttributes.addFlashAttribute("noSubmissionDetail", "해당 제출물이 존재하지 않습니다.");
+          return "redirect:/homework/alertRedirect";
         }
 
-        if (!resultMap.isEmpty()) {
+        for (Entry<HomeworkSubmissionDTO, HomeworkEvalDTO> entry : resultMap.entrySet()) {
+          log.info("entry.getKey().getId():{}", entry.getKey().getId());
 
-          for (Entry<HomeworkSubmissionDTO, HomeworkEvalDTO> entry : resultMap.entrySet()) {
-            log.info("entry.getKey().getId():{}", entry.getKey().getId());
+          // ReadCount 빌드(submission 조회수)
+          ReadCountLog readCountLog = ReadCountLog.builder()
+              .tableName("homework_submission")
+              .tableId(entry.getKey().getId()) //!isEmpty면 무조건 키가 있음
+              .userId(loginUser.getId())
+              .build();
 
-            // ReadCount 빌드(submission 조회수)
-            ReadCountLog readCountLog = ReadCountLog.builder()
-                .tableName("homework_submission")
-                .tableId(entry.getKey().getId()) //!isEmpty면 무조건 키가 있음
+          boolean isReadSubmission = homeworkService.updateReadCountForSubmission(readCountLog);
+
+          if (isReadSubmission) {
+            log.info("readCountLog Update For Submission 성공:{}", readCountLog);
+          } else {
+            log.info("readCountLog Update For Submission 실패");
+          }
+
+          // 조회수 처리 끝난 submission 모델 바인딩?
+          model.addAttribute("submission", entry.getKey());
+          //파일 select 해올 수 있으면 모델 바인딩
+          List<FileSelectDTO> submissionFiles = utilService.selectFileList("homework_submission",
+              submissionId);
+
+          if (submissionFiles != null && !submissionFiles.isEmpty()) {
+            model.addAttribute("submissionFiles", submissionFiles);
+            log.info("submissionFiles:{}", submissionFiles);
+          }
+
+          if (entry.getValue() != null) {
+            // readCount 빌드
+            ReadCountLog readCountLog1 = ReadCountLog.builder()
+                .tableName("homework_eval")
+                .tableId(entry.getValue().getId())
                 .userId(loginUser.getId())
                 .build();
 
-            boolean isReadSubmission = homeworkService.updateReadCountForSubmission(readCountLog);
+            boolean isReadEval = homeworkService.updateReadCountForEval(readCountLog1);
 
-            if (isReadSubmission) {
-              log.info("readCountLog Update For Submission 성공:{}", readCountLog);
+            if (isReadEval) {
+              log.info("readCountLog For Eval 성공:{}", readCountLog1);
             } else {
-              log.info("readCountLog Update For Submission 실패");
+              log.info("readCountLog For Eval Fail 실패");
             }
 
-            // 조회수 처리 끝난 submission 모델 바인딩?
-            model.addAttribute("submission", entry.getKey());
-            //파일 select 해올 수 있으면 모델 바인딩
-            List<FileSelectDTO> submissionFiles = utilService.selectFileList("homework_submission",
-                submissionId);
-
-            if (submissionFiles != null && !submissionFiles.isEmpty()) {
-              model.addAttribute("submissionFiles", submissionFiles);
-              log.info("submissionFiles:{}", submissionFiles);
+            model.addAttribute("eval", entry.getValue());
+            List<FileSelectDTO> evalFiles = utilService.selectFileList("homework_eval",
+                entry.getValue().getId());
+            if (evalFiles != null && !evalFiles.isEmpty()) {
+              model.addAttribute("evalFiles", evalFiles);
+              log.info("evalFiles:{}", evalFiles);
             }
 
-            if (entry.getValue() != null) {
-
-              // readCount 빌드
-              ReadCountLog readCountLog1 = ReadCountLog.builder()
-                  .tableName("homework_eval")
-                  .tableId(entry.getValue().getId())
-                  .userId(loginUser.getId())
-                  .build();
-
-              boolean isReadEval = homeworkService.updateReadCountForEval(readCountLog1);
-
-              if (isReadEval) {
-                log.info("readCountLog For Eval 성공:{}", readCountLog1);
-              } else {
-                log.info("readCountLog For Eval Fail 실패");
-              }
-
-              model.addAttribute("eval", entry.getValue());
-              List<FileSelectDTO> evalFiles = utilService.selectFileList("homework_eval",
-                  entry.getValue().getId());
-              if (evalFiles != null && !evalFiles.isEmpty()) {
-                model.addAttribute("evalFiles", evalFiles);
-                log.info("evalFiles:{}", evalFiles);
-              }
-
-            }
           }
-
-          model.addAttribute("loginUser", loginUser);
         }
+
+        model.addAttribute("loginUser", loginUser);
 
         log.info("키와 값이 모델 바인딩 된 resultMap:{}", resultMap);
 
@@ -227,15 +234,14 @@ public class HomeworkSubmissionController {
           courseName = homeworkService.courseNameById(homeworkDTO.getCourseId());
           model.addAttribute("courseName", courseName);
         }
-//        log.info("에러 확인"); //문제x
 
         return "homework/submissionDetail"; //추후 HomeworkSubmissionDetail로 바꿔주기
-
 
       }
     }
 
-    return "redirect:/" + (referer != null ? referer : "homework/homeworkList");
+    redirectAttributes.addFlashAttribute("noSubmissionDetail", "해당 제출물이 존재하지 않습니다.");
+    return "redirect:/homework/alertRedirect";
   }
 
   @GetMapping("/submissionDetailAuth")
@@ -332,7 +338,7 @@ public class HomeworkSubmissionController {
 
     // 알림용 파라미터 매핑
     int courseId = homeworkService.courseIdById(homeworkId);
-    int instructorId =  homeworkService.instructorIdByCourseId(courseId);
+    int instructorId = homeworkService.instructorIdByCourseId(courseId);
 //    model.addAttribute("courseId", courseId);
     model.addAttribute("instructorId", instructorId);
     model.addAttribute("learnerId", loginUser.getId());
@@ -361,8 +367,9 @@ public class HomeworkSubmissionController {
       String title = homeworkSubmissionDTO.getTitle();
       int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
       if (titleLength > 100) {
-        bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
-      } else if(title.trim().isEmpty()){
+        bindingResult.addError(
+            new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
+      } else if (title.trim().isEmpty()) {
         bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
       }
 
@@ -512,8 +519,9 @@ public class HomeworkSubmissionController {
     String title = homeworkSubmissionDTO.getTitle();
     int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
     if (titleLength > 100) {
-      bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
-    }else if(title.trim().isEmpty()){
+      bindingResult.addError(
+          new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
+    } else if (title.trim().isEmpty()) {
       bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
     }
 

@@ -19,24 +19,30 @@
 
   <!--관리자용 training_log 불러오기-->
   <select id="selectTrainingLogForAdmin" parameterType="String"
-    resultType="com.goott5.lms.training.domain.SelectTrainingDTO">
-    select tl.id,tl.course_id,tl.training_date, tl.instructor_id
+    resultType="com.goott5.lms.training.domain.SelectTrainingForListDTO">
+    select distinct tl.id, tl.course_id, tl.training_date, tl.instructor_id,
+    CASE WHEN exists (select 1 from file f2 where f2.table_id = tl.id and f2.table_name = 'training_log') then true else false end as hasFile
     from training_log tl
     inner join course c
     on tl.course_id = c.id
+    left outer join file f
+    on tl.id = f.table_id
     <where>
       <if test="courseName != null and courseName != '' ">
-        c.name = #{courseName};
+        c.name = #{courseName}
       </if>
     </where>
   </select>
 
   <!--강사용 trainingLog 불러오기-->
-  <select id="selectTrainingLogForTeacher" resultType="com.goott5.lms.training.domain.SelectTrainingDTO">
-    select tl.id,tl.course_id,tl.training_date, tl.instructor_id
+  <select id="selectTrainingLogForTeacher" resultType="com.goott5.lms.training.domain.SelectTrainingForListDTO">
+    select distinct tl.id, tl.course_id,tl.training_date, tl.instructor_id,
+    CASE WHEN exists (select 1 from file f2 where f2.table_id = tl.id and f2.table_name = 'training_log') then true else false end as hasFile
     from training_log tl
     inner join course c
     on tl.course_id = c.id
+    left outer join file f
+    on tl.id = f.table_id
     where tl.instructor_id = #{instructorId}
     <if test="courseName != null and courseName != '' ">
       and c.name = #{courseName}

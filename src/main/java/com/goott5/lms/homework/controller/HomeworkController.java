@@ -248,7 +248,7 @@ public class HomeworkController {
 
   @GetMapping("/homeworkDetail")
   public String homeworkDetail(@RequestParam(required = false) Integer homeworkId, Model model,
-      HttpSession session) {
+      HttpSession session,RedirectAttributes redirectAttributes) {
 
     UserVO user = (UserVO) session.getAttribute("loginUser");
 
@@ -257,8 +257,8 @@ public class HomeworkController {
     }
 
     if (homeworkId == null) {
-      model.addAttribute("homeworkIdNull", "해당 과제가 존재하지 않습니다.");
-      return "homework/homeworkDetail";
+      redirectAttributes.addFlashAttribute("homeworkIdNull", "해당 과제가 존재하지 않습니다.");
+      return "redirect:/homework/alertRedirect";
     }
 
     // homework 객체 전달
@@ -276,6 +276,10 @@ public class HomeworkController {
       if (instructorLoginId != null) {
         model.addAttribute("instructorLoginId", instructorLoginId);
       }
+    } else {
+      //homeworkDTO가 null(삭제되었을 때)
+      redirectAttributes.addFlashAttribute("homeworkIdNull", "해당 과제가 존재하지 않습니다.");
+      return "redirect:/homework/alertRedirect";
     }
 
     // userVO 전달
@@ -708,6 +712,11 @@ public class HomeworkController {
       log.info("게시글 삭제 성공");
       return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "게시글 삭제 성공", homeworkId));
     }
+  }
+
+  @GetMapping("/alertRedirect")
+  public String alertRedirect() {
+    return "homework/alertRedirect";
   }
 
 }

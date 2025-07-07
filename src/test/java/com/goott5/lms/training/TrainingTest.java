@@ -5,6 +5,7 @@ import com.goott5.lms.common.mapper.UtilMapper;
 import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
+import com.goott5.lms.training.domain.SelectTrainingForListDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
 import com.goott5.lms.training.domain.registerdto.SelectAllWithoutActualDTO;
@@ -57,10 +58,10 @@ class TrainingTest {
 
   @Test
   public void selectTrainingLogTest() {
-    List<SelectTrainingDTO> list = trainingMapper.selectTrainingLogForAdmin(null);
+    List<SelectTrainingForListDTO> list = trainingMapper.selectTrainingLogForAdmin(null);
 
     if (list != null) {
-      for (SelectTrainingDTO dto : list) {
+      for (SelectTrainingForListDTO dto : list) {
         log.info("dto={}", dto);
       }
     }
@@ -68,10 +69,10 @@ class TrainingTest {
 
   @Test
   public void selectTrainingLogForTeacherTest() {
-    List<SelectTrainingDTO> list = trainingMapper.selectTrainingLogForTeacher(35, "");
+    List<SelectTrainingForListDTO> list = trainingMapper.selectTrainingLogForTeacher(34, "[1회차] 자바와 스프링");
 
     if (list != null) {
-      for (SelectTrainingDTO dto : list) {
+      for (SelectTrainingForListDTO dto : list) {
         log.info("dto={}", dto);
       }
     }

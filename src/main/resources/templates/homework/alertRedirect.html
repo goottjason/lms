@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/basic.html}">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+</div>
+
+</body>
+<th:block layout:fragment="script" th:inline="javascript">
+  <script>
+    //homeworkDetail 진입 시 확인 객체
+    let homeworkIdNull = /*[[${homeworkIdNull ?: ''}]]*/ null;
+
+    //submissionDetail 진입 시 확인 객체
+    let noSubmissionDetail = /*[[${noSubmissionDetail}]]*/ null;
+
+    //로컬에 저장된 페이지(리스트에서)
+    let savePage = localStorage.getItem("savePage");
+
+    // homeworkId가 null 일때
+    function homeworkIdNullCheck() {
+      console.log("homeworkIdNull", homeworkIdNull);
+      if (homeworkIdNull != null && homeworkIdNull !== "undefined"
+          && homeworkIdNull.trim()
+          !== "") {
+        Swal.fire({
+          title: homeworkIdNull,
+          text: '과제가 존재하지 않아요',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: '예',
+          cancelButtonText: '아니오'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+              location.href = savePage;
+            } else {
+              location.href = "/homework/homeworkList";
+            }
+          }
+        })
+        // alert(homeworkIdNull);
+      }
+    }
+
+    function noSubmissionDetailCheck() {
+      console.log("noSubmissionDetail", noSubmissionDetail);
+      if(noSubmissionDetail != null && noSubmissionDetail !== "undefined" && noSubmissionDetail.trim() !== ""){
+        Swal.fire({
+          title: noSubmissionDetail,
+          text: '제출물을 다시 확인해주세요',
+          icon: 'warning',
+          confirmButtonText: '예'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+              location.href = savePage;
+            } else {
+              location.href = "/homework/homeworkList";
+            }
+          }
+        })
+      }
+    }
+
+    $(function () {
+      //과제 상세 진입 시 체크
+      homeworkIdNullCheck();
+
+      //과제 제출 상세 진입 시 체크
+      noSubmissionDetailCheck();
+    })
+
+  </script>
+</th:block>
+</html>

@@ -1,12 +1,13 @@
 
+
+// 학생이 submissionDetail에 접근할 때
 function submissionForLearner(s) {
 
   let homeworkId = $(s).data("id");
 
   // console.log("homeworkId",homeworkId);
 
-
-  axios.get("/homework/submissionListForLearner?homeworkId="+homeworkId)
+  axios.get("/homework/submissionListForLearner?homeworkId=" + homeworkId)
   .then(function (response) {
     console.log("response", response);
     // let responseMessage = response.data.message;
@@ -29,14 +30,11 @@ function submissionForLearner(s) {
       confirmButtonText: '예'
     })
   })
-
-
 }
-
 
 $(function () {
 
-  // console.log("test");
+  // 학생이 submissionDetail에 접근할 때
   $(".submissionBtnForLearner").on("click", function () {
     // alert("!");
     submissionForLearner(this);
