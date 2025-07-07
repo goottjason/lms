@@ -350,7 +350,7 @@
   </select>
 
   <!-- 과정별 승인 대기 중인 휴가 신청 목록 조회 (페이징) -->
-  <select id="selectPendingVacationsByCourseWithPaging" parameterType="map" resultType="map">
+  <select id="selectPendingVacationsByCourse" parameterType="map" resultType="map">
     SELECT
     p.id as participationId,
     DATE(p.participation_date) as vacationDate,
