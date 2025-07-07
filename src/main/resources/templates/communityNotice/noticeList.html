@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                    <select name="sortProperty" class="form-control col-4 mr-3">
+                    <select name="sortProperty" class="form-control col-4 mr-3" onchange="this.form.submit()">
                         <option
                             value="createdAt"
                             th:selected="${response.pagingRequestDTO.sortProperty == 'createdAt'}">작성일</option>
@@ -83,7 +83,7 @@
                             value="readCount"
                             th:selected="${response.pagingRequestDTO.sortProperty == 'readCount'}">조회수</option>
                     </select>
-                    <select name="sortOrder" class="form-control col-4">
+                    <select name="sortOrder" class="form-control col-4" onchange="this.form.submit()">
                         <option
                             value="DESC"
                             th:selected="${response.pagingRequestDTO.sortOrder == 'DESC'}">내림차순</option>

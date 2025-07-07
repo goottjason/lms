@@ -22,12 +22,13 @@
 
   <select id="selectNoticeList" resultType="com.goott5.lms.communitynotice.domain.NoticeDTO">
     SELECT
-    n.id, n.title, n.content, n.read_count, n.created_at, n.is_fixed,
+    n.id, n.title, n.read_count, n.created_at,
     u.fullname as writerName
     FROM
     community_notice n
     JOIN
-    user u ON n.writer = u.id WHERE
+    user u ON n.writer = u.id
+    WHERE
     n.deleted_at IS NULL
     AND n.is_fixed = 0
     <include refid="searchConditions"/>
