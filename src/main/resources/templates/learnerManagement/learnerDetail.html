@@ -10,6 +10,18 @@
     .form-group input[type="radio"][readonly] + label {
       pointer-events: none;
     }
+    #partChart {
+      width: 100%;
+      height: 100%;
+      min-height: 200px;
+      /*height: 350px; !* 원하는 높이로 설정 *!
+      min-width: 200px;
+      min-height: 200px;*/
+    }
+    /* 예: 최대 90%까지 */
+    .participation-modal-lg {
+      max-width: 90vw;
+    }
   </style>
 </head>
 <body>
@@ -83,7 +95,8 @@
                     th:text="${#strings.isEmpty(record.leCompletionStatus) ? '-' :
                     record.leCompletionStatus == 'COMPLETED' ? '수료완료' :
                     record.leCompletionStatus == 'IN_PROGRESS' ? '교육진행중' :
-                    record.leCompletionStatus == 'DROPPED' ? '미수료/중도탈퇴' :'-'}"></td>
+                    record.leCompletionStatus == 'DROPPED' ? '미수료/중도탈퇴' :'-'}"
+                    id="learner-completion-status"></td>
               </tr>
             </table>
           </div>
@@ -114,11 +127,14 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="chart-pie pt-2 pb-2 d-flex align-items-center justify-content-center">
+          <div id="partChart">
+
+          </div>
+          <!--<div class="chart-pie pt-2 pb-2 d-flex align-items-center justify-content-center">
             <div id="partChart"
                  style="width: 500px; height: 300px; padding:0; margin:0;
                         display:flex; align-items:center; justify-content:center;"></div>
-          </div>
+          </div>-->
         </div>
       </div>
     </div>
@@ -213,7 +229,7 @@
               <h6 class="m-0 font-weight-bold text-primary">취업관리</h6>
             </div>
             <div class="col-auto">
-              <button id="employ-edit-button" class="btn btn-sm btn-warning btn-icon-split">
+              <button id="employ-edit-button" class="btn btn-sm btn-info btn-icon-split">
                 <span class="icon text-white-50">
                   <i class="fa fa-wrench"></i>
                 </span>
@@ -225,6 +241,13 @@
                   <i class="fa fa-upload"></i>
                 </span>
                 <span class="text">저장</span>
+              </button>
+              <button id="employ-cancel-button" class="btn btn-sm btn-warning btn-icon-split"
+                      style="display: none;">
+                <span class="icon text-white-50">
+                  <i class="fa fa-undo"></i>
+                </span>
+                <span class="text">취소</span>
               </button>
             </div>
           </div>
@@ -272,17 +295,17 @@
                 <div class="col-4">
                   <label for="company-name" class="small">업체명</label>
                   <input type="text" id="company-name" class="form-control"
-                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyName) ? '-' : record.learnerEmploymentSupport.esCompanyName}" readonly>
+                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyName) ? '' : record.learnerEmploymentSupport.esCompanyName}" readonly>
                 </div>
                 <div class="col-4">
                   <label for="company-phone" class="small">업체전화번호</label>
                   <input type="text" id="company-phone" class="form-control"
-                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyPhone) ? '-' : record.learnerEmploymentSupport.esCompanyPhone}" readonly>
+                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyPhone) ? '' : record.learnerEmploymentSupport.esCompanyPhone}" readonly>
                 </div>
                 <div class="col-4">
                   <label for="company-address" class="small">업체주소</label>
                   <input type="text" id="company-address" class="form-control"
-                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyAddress) ? '-' : record.learnerEmploymentSupport.esCompanyAddress}" readonly>
+                         th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCompanyAddress) ? '' : record.learnerEmploymentSupport.esCompanyAddress}" readonly>
                 </div>
               </div>
             </div>
@@ -317,7 +340,8 @@
             <div class="col-md-9">
               <div class="form-group">
                 <label for="counseling-details">메모</label>
-                <input type="text" id="counseling-details" class="form-control" th:value="${record.learnerEmploymentSupport.esCounselingDetails}" readonly>
+                <input type="text" id="counseling-details" class="form-control"
+                       th:value="${#strings.isEmpty(record.learnerEmploymentSupport.esCounselingDetails) ? '' : record.learnerEmploymentSupport.esCounselingDetails}" readonly>
               </div>
             </div>
           </div>
@@ -347,7 +371,7 @@
     role="dialog"
     aria-labelledby="myModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl participation-modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h6 class="modal-title" id="myModalLabel">출결 상세</h6>

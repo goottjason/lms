@@ -105,17 +105,29 @@ function displayOnlyTr(classrooms, classroomId) {
                   </td>
                   <td class="text-center align-middle">
                       <button class="btn btn-info btn-icon-split btn-sm edit-button" data-id="${classroom.id}">
+                        <span class="icon text-white-50">
+                          <i class="fa fa-wrench"></i>
+                        </span>
                         <span class="text">수정</span>
                       </button>
                       <button class="btn btn-primary btn-icon-split btn-sm save-button" style="display:none" data-id="${classroom.id}">
+                      <span class="icon text-white-50">
+                          <i class="fa fa-upload"></i>
+                        </span>
                         <span class="text">저장</span>
                       </button>
                       ${classroom.courseName == null ? `
                         <button class="btn btn-danger btn-icon-split btn-sm remove-button" data-id="${classroom.id}">
+                        <span class="icon text-white-50">
+                          <i class="fa fa-wrench"></i>
+                        </span>
                           <span class="text">삭제</span>
                         </button>
                         ` : ''}
                       <button class="btn btn-warning btn-icon-split btn-sm cancel-button" style="display:none" data-id="${classroom.id}">
+                      <span class="icon text-white-50">
+                          <i class="fa fa-wrench"></i>
+                        </span>
                         <span class="text">취소</span>
                       </button>
                   </td>
@@ -414,17 +426,29 @@ function displayClassrooms(classrooms) {
           </td>
           <td class="text-center align-middle">
               <button class="btn btn-info btn-icon-split btn-sm edit-button" data-id="${classroom.id}">
+                <span class="icon text-white-50">
+                      <i class="fas fa-wrench"></i>
+                  </span>
                 <span class="text">수정</span>
               </button>
               <button class="btn btn-primary btn-icon-split btn-sm save-button" style="display:none" data-id="${classroom.id}">
+              <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
                 <span class="text">저장</span>
               </button>
               ${classroom.courseName == null ? `
                 <button class="btn btn-danger btn-icon-split btn-sm remove-button" data-id="${classroom.id}">
+                <span class="icon text-white-50">
+              <i class="fas fa-wrench"></i>
+          </span>
                   <span class="text">삭제</span>
                 </button>
                 ` : ''}
               <button class="btn btn-warning btn-icon-split btn-sm cancel-button" style="display:none" data-id="${classroom.id}">
+              <span class="icon text-white-50">
+              <i class="fas fa-upload"></i>
+          </span>
                 <span class="text">취소</span>
               </button>
           </td>

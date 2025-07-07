@@ -174,9 +174,9 @@ function displayCardList(staffsWithPaging) {
                   <div class="card text-center">
                     <img src="${staff.profileImg != null ? staff.profileImg : baseImg}" class="rounded-circle mt-3 mx-auto d-block" style="width: 150px; height: 150px; object-fit: cover;">
                     <div class="card-body">
-                      <h5 class="card-title mb-1">${staff.fullname} ${positionText}님</h5>
+                      <h5 class="card-title mb-1" style="min-height: 48px;">${staff.fullname} ${positionText}님</h5>
                       <p class="card-text mb-1">${staff.mobile || '-'}</p>
-                      <p class="card-text">${staff.email}</p>
+                      <p class="card-text" style="min-height: 48px;">${staff.email}</p>
                       <p class="card-text mt-4 mb-1">입사일 ${staff.hireDate}</p>
                       ${leaveDateHtml}
                       <a href="staffDetail?staffId=${staff.userId}" 
