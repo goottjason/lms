@@ -119,6 +119,7 @@ function renderHomeData(data){
 
 function renderProgress(data){
 
+    $("#progress-chart").empty();
     const progress = data.progress;
 
     const options = {
@@ -226,6 +227,7 @@ function renderSchedule(data){
     });
 
     for(let i = 0; i < 5; i++){
+        $("#schedule-box").find("div").eq(i).removeClass("text-danger")
         if($("#schedule-box").find("div").eq(i).text() == ""){
             $("#schedule-box").find("div").eq(i).addClass("text-danger").text("휴강");
         }
@@ -234,6 +236,7 @@ function renderSchedule(data){
 }
 
 function renderTrainingLog(data){
+    $("#training-log").removeClass("text-danger text-success");
     if(!data.course.inProgress){
         $("#training-log").addClass("text-success").text("완료");
     }
@@ -246,6 +249,7 @@ function renderTrainingLog(data){
 }
 
 function renderNotEvalHomework(data){
+    $("#not-eval-homework").removeClass("text-danger text-success");
     if(data.notEvalHomeworkCount > 0){
         $("#not-eval-homework").addClass("text-danger").text(data.notEvalHomeworkCount + "건");
     } else {
@@ -254,6 +258,7 @@ function renderNotEvalHomework(data){
 }
 
 function renderNotApproveVacation(data){
+    $("#not-approve-vacation").removeClass("text-danger text-success");
     if(data.notApproveVacationCount > 0){
         $("#not-approve-vacation").addClass("text-danger").text(data.notApproveVacationCount + "건");
     } else {
@@ -263,6 +268,7 @@ function renderNotApproveVacation(data){
 
 function renderTestChartForInstructor(data){
 
+    $("#test-chart").empty();
     let studentArr = [];
     let studentScoreArr = [];
     let averageSeries = [];

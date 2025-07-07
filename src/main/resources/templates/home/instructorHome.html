@@ -42,6 +42,11 @@
         background-color: #fffbe6; /* 약간 누런색 배경 */
         font-weight: bold; /* 글씨를 약간 굵게 */
       }
+
+      .hover-shadow:hover {
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        transition: box-shadow 0.3s ease;
+      }
   </style>
 
 </head>
@@ -137,7 +142,7 @@
 
             <div class="col-md-3 col-lg-6 mb-4">
               <div
-                  class="participation-box circle-box bg-danger text-white mx-auto flex-column custom-pointer-elements">
+                  class="participation-box circle-box bg-danger text-white mx-auto flex-column hover-shadow custom-pointer-elements">
                 <div class="circle-number mb-2" id="absence-learner-count">6명</div>
                 <div class="circle-label small">출석 예정<br>교육생</div>
               </div>
@@ -145,7 +150,7 @@
 
             <div class="col-md-3 col-lg-6 mb-4">
               <div
-                  class="participation-box circle-box bg-primary text-white mx-auto flex-column custom-pointer-elements">
+                  class="participation-box circle-box bg-primary text-white mx-auto flex-column hover-shadow custom-pointer-elements">
                 <div class="circle-number mb-2" id="in-study-learner-count">5명</div>
                 <div class="circle-label small">현재 출석<br>교육생</div>
               </div>
@@ -154,8 +159,7 @@
             <div class="col-md-3 col-lg-6">
               <div
                   id="not-submit-test-learner-count-box"
-                  class="circle-box bg-info text-white mx-auto flex-column
-                  custom-pointer-elements">
+                  class="circle-box bg-info text-white mx-auto flex-column hover-shadow custom-pointer-elements">
                 <div class="circle-number mb-2" id="not-submit-test-learner-count">3명</div>
                 <div class="circle-label small">시험 미응시<br>교육생</div>
               </div>
@@ -164,7 +168,7 @@
             <div class="col-md-3 col-lg-6">
               <div
                   id="not-submit-homework-learner-count-box"
-                  class="circle-box bg-warning text-white mx-auto flex-column custom-pointer-elements">
+                  class="circle-box bg-warning text-white mx-auto flex-column hover-shadow custom-pointer-elements">
                 <div class="circle-number mb-2" id="not-submit-homework-learner-count">2명</div>
                 <div class="circle-label small">과제 미제출<br>교육생</div>
               </div>
@@ -212,7 +216,7 @@
           <div class="row">
             <div class="col-md-4 col-sm-4 mb-2">
               <div id="training-log-card"
-                   class="card border-left-primary shadow py-1 custom-pointer-elements">
+                   class="card border-left-primary hover-shadow py-1 custom-pointer-elements">
                 <div class="card-body py-3 px-3">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
@@ -230,7 +234,7 @@
 
             <div class="col-md-4 col-sm-4 mb-2">
               <div id="not-eval-homework-card"
-                   class="card border-left-info shadow py-1 custom-pointer-elements">
+                   class="card border-left-info hover-shadow py-1 custom-pointer-elements">
                 <div class="card-body py-3 px-3">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
@@ -248,7 +252,7 @@
 
             <div class="col-md-4 col-sm-4 mb-2">
               <div id="not-approve-vacation-card"
-                   class="card border-left-success shadow py-1 custom-pointer-elements">
+                   class="card border-left-success hover-shadow py-1 custom-pointer-elements">
                 <div class="card-body py-3 px-3">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
