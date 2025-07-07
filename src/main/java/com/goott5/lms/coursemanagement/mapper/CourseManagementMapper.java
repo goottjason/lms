@@ -203,4 +203,10 @@ public interface CourseManagementMapper {
   List<CourseClassDate> selectClassDateByCoIds(List<Integer> coIds);
 
   List<CourseTrainingDate> selectTrainingDateByCoIds(List<Integer> coIds);
+
+
+  Integer selectIncompleteSignCount(
+      @Param("base") BaseReqDTO baseReqDTO,
+      @Param("page") PageCourseRequest pageCourseRequest);
+
 }

@@ -24,56 +24,21 @@ public interface CourseManagementService {
   );
 
 
-  /*CourseRespDTO findCourse(Integer loginUserId, String loginUserType, Integer courseId);*/
-
-  /**
-   * 교육생 배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param courseId
-   * @return
-   */
   List<UserRespDTO> findEnrolledLearnersByCourseId(
       PageUserReqDTO<UserReqDTO> pageUserReqDTO,
       Integer courseId);
 
-  /**
-   * 교육생 미배정 현황 조회 API
-   *
-   * @param pageUserReqDTO
-   * @param includeAll
-   * @return
-   */
   List<UserRespDTO> findNotEnrolledLearnersAll(
       PageUserReqDTO<UserReqDTO> pageUserReqDTO,
       Boolean includeAll);
 
-  /**
-   * 교육생 배정 '추가' API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param learnerId
-   * @param courseId
-   * @return
-   */
+
   boolean addLearnerToCourse(Integer loginUserId, String loginUserType, Integer learnerId,
       Integer courseId);
 
-  /**
-   * 교육생 배정 '삭제' API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param learnerId
-   * @param courseId
-   * @return
-   */
+
   boolean removeLearnerFromCourse(Integer loginUserId, String loginUserType, Integer learnerId,
       Integer courseId);
-
-
-  /*Boolean removeCourse(CommonReqDTO commonReqDTO);*/
 
   PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
       BaseReqDTO baseReqDTO,
