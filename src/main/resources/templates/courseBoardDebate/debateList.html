@@ -238,9 +238,23 @@
     const currentCourseId = /*[[${responseDTO.pagingRequestDTO?.courseId}]]*/ null;
 
     // 페이지의 필터 상태를 관리하는 객체
-    let courseConfig = {
-      isInProgress: null
+    let baseConfig = {
+      loginUserId  : loginUserId,
+      loginUserType: loginUserType
     };
+
+    let courseConfig = {
+      pageNo        : null,
+      pageSize      : null,
+      type          : "coName",
+      keyword       : null,
+      orderBy       : "coStartDate",
+      orderDirection: "ASC",
+      coIsInProgress: null,
+      coId          : null
+    };
+
+    let configCoId = null;
 
     // ---  페이지 로드 완료 시 실행되는 메인 로직 ---
     document.addEventListener('DOMContentLoaded', function() {
@@ -258,9 +272,20 @@
 
       // 사용자 유형에 따른 UI 초기화
       if (loginUserType === 'ADMINISTRATOR') {
-        const isInProgress =  courseConfig.isInProgress;
-        $('#is-in-progress').val(isInProgress);
-        renderAdminCourseFilter(isInProgress);
+        let inProgressToUse;
+
+        // 상세/등록 페이지에서 돌아왔고, sessionStorage에 저장된 필터 값이 있는지 확인합니다.
+        if (isEnteringDetail && courseConfig.isInProgress) {
+          inProgressToUse = courseConfig.isInProgress;
+
+          // 화면의 드롭다운도 저장된 값으로 변경하여 사용자에게 보여줍니다.
+          $('#is-in-progress').val(inProgressToUse);
+        } else {
+          // 그렇지 않다면 (페이지네이션, 첫 방문 등), 서버가 렌더링한 현재 드롭다운의 값을 사용합니다.
+          inProgressToUse = $('#is-in-progress').val();
+        }
+        // 위에서 결정된 필터 값으로 과정 목록을 불러옵니다.
+        renderAdminCourseFilter(inProgressToUse);
       }
 
       // 공통 기능 및 이벤트 핸들러 초기화
@@ -434,7 +459,7 @@
       });
     }
 
-    // --- 6. 등록 버튼 관련 함수 ---
+    // --- 등록 버튼 관련 함수 ---
     function updateRegisterButtonLink() {
       const courseIdInput = document.getElementById('courseIdForRegister');
       if (courseIdInput) {

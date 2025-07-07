@@ -141,7 +141,7 @@
 
       // --- 폼 유효성 검사 이벤트 리스너 설정 ---
       if (submitButton) {
-        submitButton.addEventListener('click', function() { // async가 더 이상 필요 없습니다.
+        submitButton.addEventListener('click', function() {
           const isFixedCheckbox = document.getElementById('isFixed');
 
           // "고정여부"가 체크되었고, 서버에서 받은 고정글 개수가 5개 이상인지 확인
@@ -203,7 +203,7 @@
                         orderDirection=${pagingRequestDTO.orderDirection},
                         pagingSize=${pagingRequestDTO.pagingSize}
                     )
-                }]]*/ '/courseBoardMaterials/materialsList'; // 기본 fallback URL
+                }]]*/ '/courseBoardMaterials/materialsList';
 
                 location.href = backToListUrl;
               });
