@@ -92,6 +92,7 @@ $statusFilter.on("change", function () {
   if (isInProgress === "") {
     // "전체(진행별)"을 클릭했을 경우 => 전체 리스트 가져오기
     $adminCourseSelect.empty().append("<option value=\"\">전체(과정별)</option>");
+    selectedCourse = "";
 
     // 과정별 필터에 모든 과정명 불러오기
     getAdminCourses();

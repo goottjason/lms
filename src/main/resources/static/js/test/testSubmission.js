@@ -6,6 +6,7 @@ let exitAttemptCount = 0; // 전체화면 이탈 횟수
 let focusLostNotified = false; // 포커스 이탈 알림 여부
 let testFinished = false; // 시험 종료 여부
 let abnormalFinished = false; // 비정상 제출 여부
+let focusLostCount = 0;   // 포커스 이탈 횟수
 
 let testId;
 let userId;
@@ -22,7 +23,7 @@ const $questionListBox = $(".question-list-box");
 //------------------------------------------------------------------------------
 
 window.addEventListener("message", e => {
-  if (!e.data || e.data.type !== "PARENT_FULLSCREEN_CHANGE") {
+  if (!e.data || e.data.type !== "PARENT_FULLSCREEN_CHANGE" || testFinished) {
     return;
   }
 
@@ -57,6 +58,43 @@ window.addEventListener("message", e => {
 
     // 복귀 시 초기화
     focusLostNotified = false;
+  }
+});
+
+window.addEventListener("blur", () => {
+  if (testFinished) {
+    return;
+  }   // 시험이 끝났으면 무시
+
+  focusLostCount++;
+
+  if (focusLostCount === 1) {
+    // ─── 1회차: 모달 + 메시지 ─────────────────────
+    Swal.fire({
+      icon: "warning",
+      title: "포커스 이탈 감지",
+      text: "시험 응시 중 창을 벗어났습니다. 계속 시험에 집중해주세요.",
+      allowOutsideClick: false,
+      confirmButtonText: "확인"
+    });
+
+  } else {
+
+    collectAndSubmitAbnormal()
+    .then((res) => {
+
+      const abnormalMsg = res.data.data;
+
+      if (abnormalMsg === "COUNT1") {
+
+        // 첫 비정상 종료의 경우
+        window.parent.postMessage({ type: "TEST_FOCUS_LOST" }, "*");
+      } else if (abnormalMsg === "INVALIDATED") {
+
+        // 두 번째 비정상 종료의 경우 => 시험 무효
+        window.parent.postMessage({ type: "CHILD_INVALIDATED" }, "*");
+      }
+    });
   }
 });
 
@@ -295,6 +333,8 @@ $(document).on("click", "#test-submit-btn", function () {
 
   const answerObj = buildUserAnswer();
 
+  testFinished = true;
+
   const hasEmpty = answerObj.selectAnswers.some(ans => ans === "");
   if (hasEmpty) {
     Swal.fire({
@@ -356,6 +396,9 @@ function submitAnswers(userTestAnswer) {
   $("#test-submit-btn").prop("disabled", true);
   const testId = userTestAnswer.testId;
   console.log(testId);
+
+  testFinished = true;
+  focusLostCount = 0;
 
   apiCall("put", `/api/my/tests/${testId}/submission`,
       userTestAnswer, {}, { "Content-Type": "application/json" })
@@ -429,9 +472,11 @@ function finishTestWithScore(userScore, testId) {
       })
       .then(() => {
 
+        window.parent.postMessage({ type: "TEST_FINISHED" }, "*");
+
         // 해제 완료 후 iframe 숨기고 리다이렉트
-        $("#examFrame", window.parent.document).hide().attr("src", "");
-        window.parent.location.href = `/test/learner/testDetail/${testId}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${courseName}`;
+        // $("#examFrame", window.parent.document).hide().attr("src", "");
+        // window.parent.location.href = `/test/learner/testDetail/${testId}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${courseName}`;
       });
 }
 

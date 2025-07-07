@@ -152,7 +152,7 @@ $(document).on("click", ".question-type", function (e) {
     let multipleAnswerContainer = `
           <label class="form-label">객관식 보기 및 정답 선택</label>
           <span><small class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
-          <span class="question-options-err-msg"></span>
+          <small class="question-options-err-msg text-danger"></small>
           
           <div class="option-list">
             <div class="row align-items-center mb-2 option-row">
@@ -222,7 +222,7 @@ $(document).on("click", ".question-type", function (e) {
     let shortAnswerContainer = `
         <label class="form-label">정답</label>
           <span><small class="text-muted"> (정답은 하나의 단어 또는 단답형 문장으로만 입력하세요.)</small></span>  
-          <span class="short-answer-err-msg"></span>
+          <small class="short-answer-err-msg text-danger"></small>
             <input            
                 type="text"
                 class="form-control short-answer"
@@ -355,7 +355,7 @@ $(document).on("click", "#add-question-btn", function () {
         <div class="row mb-3">
           <div class="col-md-10">
             <label class="form-label">문항 설명</label>
-            <span class="question-title-err-msg"></span>
+            <small class="question-title-err-msg text-danger"></small>
             <input
                 type="text"
                 class="form-control question-title"
@@ -364,7 +364,7 @@ $(document).on("click", "#add-question-btn", function () {
           </div>
           <div class="col-md-2">
             <label class="form-label">배점</label>
-            <span class="question-score-err-msg"></span>
+            <small class="question-score-err-msg text-danger"></small>
             <input
                 type="number"
                 class="form-control question-score"
@@ -376,7 +376,7 @@ $(document).on("click", "#add-question-btn", function () {
         <div class="mb-3 question-answer-section">
           <label class="form-label">객관식 보기 및 정답 선택</label>
           <span><small class="text-muted"> (정답에 해당하는 보기 오른쪽 원형 버튼을 선택하세요.)</small></span>
-          <span class="question-options-err-msg"></span>
+          <small class="question-options-err-msg text-danger"></small>
 
           <div class="option-list">
             <div class="row align-items-center mb-2 option-row">

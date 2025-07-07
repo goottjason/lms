@@ -155,11 +155,8 @@ function renderTestStartBtn(submissionStatus) {
 
 function handleValidationErrors(errorData) {
   const errorMsgObj = errorData.data;
-  console.log(errorMsgObj);
 
-
-
-  // 공통 필드
+  // 1) 모든 공통 필드 에러 메시지 초기화
   const fieldSelectors = {
     testTitle: ".test-title-err-msg",
     startDate: ".test-start-date-err-msg",
@@ -167,92 +164,76 @@ function handleValidationErrors(errorData) {
     testTime: ".test-time-err-msg",
     totalScore: ".total-score-err-msg"
   };
+  Object.values(fieldSelectors).forEach(sel => $(sel).text(""));
 
-  // 공통 필드 메시지 초기화
-  for (const selector of Object.values(fieldSelectors)) {
-    $(selector).text("");
-  }
+  // 2) 모든 문항 카드의 에러 메시지 초기화
+  $(".question-card").each((_, card) => {
+    const $c = $(card);
+    $c.find(".question-title-err-msg").text("");
+    $c.find(".question-score-err-msg").text("");
+    $c.find(".question-options-err-msg").text("");
+    $c.find(".short-answer-err-msg").text("");
+  });
 
-  // 공통 필드 오류 출력 (prefix 매칭)
+  // 3) 공통 필드 오류 뿌리기 (prefix 매칭)
   Object.entries(errorMsgObj).forEach(([key, msg]) => {
     for (const [fieldPrefix, selector] of Object.entries(fieldSelectors)) {
       if (key.startsWith(fieldPrefix)) {
         $(selector).text(msg);
-        break; // 첫 매칭 후 중단
+        break;
       }
     }
   });
 
-  // 문항 관련 오류 처리
+  // 4) 문항 관련 오류 파싱 (기존 로직)
   const questionErrMsgObjArr = [];
-
   Object.entries(errorMsgObj).forEach(([key, msg]) => {
     const match = key.match(
-        /^questions\[(\d+)\](?:\.options\[(\d+)]\.(\w+)|\.(\w+))$/);
+        /^questions\[(\d+)\](?:\.options\[(\d+)]\.(\w+)|\.(\w+))$/
+    );
     if (!match) {
       return;
     }
 
-    const questionIndex = Number(match[1]);
-    if (!questionErrMsgObjArr[questionIndex]) {
-      questionErrMsgObjArr[questionIndex] = { options: [] };
+    const qIdx = +match[1];
+    if (!questionErrMsgObjArr[qIdx]) {
+      questionErrMsgObjArr[qIdx] = { options: [] };
     }
 
-    if (match[2] !== undefined) {
-      const optionIndex = Number(match[2]);
-      const optionField = match[3];
-      if (!questionErrMsgObjArr[questionIndex].options[optionIndex]) {
-        questionErrMsgObjArr[questionIndex].options[optionIndex] = {};
-      }
-      questionErrMsgObjArr[questionIndex].options[optionIndex][optionField] = msg;
-    } else {
+    // 옵션 에러
+    if (match[2] != null) {
+      const optIdx = +match[2], field = match[3];
+      questionErrMsgObjArr[qIdx].options[optIdx] = {
+        ...questionErrMsgObjArr[qIdx].options[optIdx],
+        [field]: msg
+      };
+    }
+    // 문항 단위 에러
+    else {
       const field = match[4];
-      questionErrMsgObjArr[questionIndex][field] = msg;
+      questionErrMsgObjArr[qIdx][field] = msg;
     }
   });
 
-  // 문항별 DOM 에러 표시
-  questionErrMsgObjArr.forEach((questionErrMsgObj, i) => {
-    const $questionCard = $(".question-card").eq(i);
-    if (!$questionCard.length) {
+  // 5) 문항별 DOM에 에러 표시 (기존 로직)
+  questionErrMsgObjArr.forEach((errObj, i) => {
+    const $card = $(".question-card").eq(i);
+    if (!$card.length) {
       return;
     }
 
-    // 문항 메시지들 초기화
-    $questionCard.find(".question-title-err-msg").text("");
-    $questionCard.find(".question-score-err-msg").text("");
-    $questionCard.find(".question-options-err-msg").text("");
-    $questionCard.find(".short-answer-err-msg").text("");
-
-    if (questionErrMsgObj.questionTitle) {
-      $questionCard.find(".question-title-err-msg").text(
-          questionErrMsgObj.questionTitle);
+    if (errObj.questionTitle) {
+      $card.find(".question-title-err-msg").text(errObj.questionTitle);
     }
-
-    if (questionErrMsgObj.questionScore) {
-      $questionCard.find(".question-score-err-msg").text(
-          questionErrMsgObj.questionScore);
+    if (errObj.questionScore) {
+      $card.find(".question-score-err-msg").text(errObj.questionScore);
     }
-
-    console.log(questionErrMsgObj);
-    if (questionErrMsgObj.options.length > 0 ||
-        questionErrMsgObj.multipleAnswerValid) {
-
-      if (questionErrMsgObj.multipleAnswerValid) {
-        $questionCard.find(".question-options-err-msg")
-                     .text(questionErrMsgObj.multipleAnswerValid);
-
-      } else {
-        $questionCard.find(".question-options-err-msg").text(
-            "선택지를 빠짐없이 입력해 주세요.");
-      }
+    if (errObj.options.length || errObj.multipleAnswerValid) {
+      $card.find(".question-options-err-msg")
+           .text(errObj.multipleAnswerValid || "선택지를 빠짐없이 입력해 주세요.");
     }
-
-    if ((questionErrMsgObj.options.length === 0 &&
-            questionErrMsgObj.multipleAnswerValid)
-        || questionErrMsgObj.shortAnswerValid) {
-      $questionCard.find(".short-answer-err-msg").text(
-          questionErrMsgObj.shortAnswerValid || "");
+    if (errObj.shortAnswerValid) {
+      $card.find(".short-answer-err-msg").text(errObj.shortAnswerValid);
     }
   });
 }

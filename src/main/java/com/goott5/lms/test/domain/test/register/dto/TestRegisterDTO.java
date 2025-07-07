@@ -5,6 +5,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +42,8 @@ public class TestRegisterDTO {
   @Max(value = 100, message = "시험 시간은 최대 100분까지 가능합니다.")
   private int testTime;
 
-  @Min(value = 1, message = "총 배점은 최소 1점")
+  @Min(value = 100, message = "총 배점은 반드시 100점이어야 합니다.")
+  @Max(value = 100, message = "총 배점은 반드시 100점이어야 합니다.")
   private int totalScore;
 
   @Valid
