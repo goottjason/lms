@@ -336,6 +336,7 @@
       axios.delete(url)
       .then(function (response) {
         savePage = localStorage.getItem("savePage");
+        savePage = localStorage.getItem("savePage");
         if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
           // console.log("savePage",savePage);
           location.href = savePage;
@@ -521,7 +522,12 @@
 
       // 목록으로
       $("#toList").click(function () {
-        location.href = "/homework/homeworkList";
+        savePage = localStorage.getItem("savePage");
+        if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+          location.href = savePage;
+        }else{
+          location.href = "/homework/homeworkList";
+        }
       })
 
       // // 삭제 모달창 뜨기

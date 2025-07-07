@@ -265,6 +265,7 @@
   <!-- content body 끝 -->
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
+
   <script>
 
     let pagingRequestDTO = [[${pagingRequestDTO}]];
@@ -295,6 +296,7 @@
         $("#courseSelector").show(); // 권한 사용자에게만 보여줌
       }
     }
+
 
     //+) 현재 진행 중인 nameForLt가 아니면 등록 버튼 막기
 
@@ -531,19 +533,7 @@
 
     }
 
-    //현재 진행 중인 과정이 없는 강사의 경우
-    function notRegisterInProgress() {
-      let isRegister = /*[[${isRegister}]]*/ null;
-      if (isRegister != null) {
-        // console.log("isRegister", isRegister);
-        Swal.fire({
-          title: "강의를 등록할 수 없습니다.",
-          text: "현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.",
-          icon: "warning",
-        });
-        // alert("현재 진행 중인 강의 중에서 당신에게 배정된게 없습니다.");
-      }
-    }
+
 
     // 전 페이지 세션에 저장(session 패키지와 연동)
     function prevPage(link) {
@@ -574,11 +564,10 @@
       location.href = `${url.pathname}?${params.toString()}`;
     }
 
-    //$function 모음
-    $(function () {
+    //페이지 로드
+    function initializePage(nameForLt) {
 
-      const params = new URLSearchParams(window.location.search);
-      const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
+      console.log("initializePage: 실행");
 
       if (loginUserType !== "ADMINISTRATOR") {
 
@@ -598,9 +587,6 @@
           sendNameForLt(courseSelector.val());
         }
 
-        // 현재 진행 중이 없는 강사가 등록할 때
-        notRegisterInProgress();
-
       } else {
         //관리자일 경우,학생+강사용 select 숨기기
         courseSelectorForLtRemove();
@@ -614,6 +600,47 @@
         //관리자용 select 박스 적용한 pagingresponse 출력
 
       }
+    }
+
+
+    //$function 모음
+    $(function () {
+      console.log("savePage",localStorage.getItem("savePage"));
+      console.log("location.href",location.href);
+      console.log("courseSelector 선택값:",courseSelector.val());
+      const params = new URLSearchParams(window.location.search);
+      const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
+
+      //현재 진행 중인 과정이 없는 강사의 경우
+      // 현재 진행 중인 강의 여부(강사가 등록 시, 현재 진행 중인 강의가 아니면 막기)
+
+      let isRegister = /*[[${isRegister}]]*/ null;
+
+      $(document).ready(function(){
+
+        if (isRegister != null && isRegister === false) {
+          sessionStorage.setItem("isRegister","false"); //문자열로 저장
+        }
+
+        if(sessionStorage.getItem("isRegister") === "false") {
+          Swal.fire({
+                      title: "강의를 등록할 수 없습니다.",
+                      text: "현재 진행 중인 과정이 아닙니다.",
+                      icon : "warning",
+                      confirmButtonText: "예"
+                    }).then((result) => {
+            if(result.isConfirmed){
+              sessionStorage.removeItem("isRegister");
+              initializePage(nameForLt)
+            }
+          });
+          return;
+        }
+      initializePage(nameForLt);
+
+      })
+
+
 
       adminNameSelectBox.on("change", function () {
         sendForAdminName();
@@ -644,6 +671,8 @@
       $("#homeworkRegister").on("click", function (e) {
         e.preventDefault();
 
+
+
         let courseName = courseSelector.val(); //select한 과정명 보내기
         console.log("courseName", courseName);
 
@@ -664,7 +693,7 @@
         keywordSearch();
       });
 
-      // 제출 과제 보기용 버튼
+      // 제출 과제 보기용 버튼 (강사, 관리자)
       $(".submissionBtn").on("click", function (e) {
         e.preventDefault();
         //const params = new URLSearchParams(window.location.search);
@@ -706,9 +735,12 @@
           }).then((result) => {
             // alert(response.data.message);
             if (result.isConfirmed) {
-              location.href = "/homework/submissionDetail?submissionId=" +
-                  encodeURIComponent(
-                      submissionId);
+              prevPage("/homework/submissionDetail?submissionId=" +
+                       encodeURIComponent(
+                           submissionId));
+              // location.href = "/homework/submissionDetail?submissionId=" +
+              //     encodeURIComponent(
+              //         submissionId);
             }
           });
         }).catch(function (error) {
@@ -734,11 +766,8 @@
               }
             }
           });
-
         });
-
       });
-
     });
 
   </script>

@@ -360,8 +360,8 @@ public class HomeworkSubmissionController {
       //title과 관련된 bindingResultFieldError 추가
       String title = homeworkSubmissionDTO.getTitle();
       int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
-      if (titleLength > 100 || titleLength < 10) {
-        bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+      if (titleLength > 100) {
+        bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
       } else if(title.trim().isEmpty()){
         bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
       }
@@ -511,8 +511,8 @@ public class HomeworkSubmissionController {
     //title과 관련된 bindingResultFieldError 추가
     String title = homeworkSubmissionDTO.getTitle();
     int titleLength = title.getBytes(StandardCharsets.UTF_8).length;
-    if (titleLength > 100 || titleLength < 10) {
-      bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "10자에서 100자까지 글을 입력해주세요."));
+    if (titleLength > 100) {
+      bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "100자 이하로 제목을 입력해주세요."));
     }else if(title.trim().isEmpty()){
       bindingResult.addError(new FieldError("homeworkSubmissionDTO", "title", "공백만 쓸 수는 없습니다."));
     }

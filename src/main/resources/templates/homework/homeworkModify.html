@@ -348,30 +348,32 @@
         }).catch(function (error) {
           console.log("API 요청 실패", error);
           errorMap = error.response.data.data;
-          console.log("errorMap", errorMap);
+          if(errorMap) {
+            console.log("errorMap", errorMap);
 
-          if (errorMap.title) {
-            $("#titleError").html(errorMap.title);
-          } else {
-            $("#titleError").html("");
-          }
+            if (errorMap.title) {
+              $("#titleError").html(errorMap.title);
+            } else {
+              $("#titleError").html("");
+            }
 
-          if (errorMap.startDate) {
-            $("#startDateError").html(errorMap.startDate);
-          } else {
-            $("#startDateError").html("");
-          }
+            if (errorMap.startDate) {
+              $("#startDateError").html(errorMap.startDate);
+            } else {
+              $("#startDateError").html("");
+            }
 
-          if (errorMap.endDate) {
-            $("#endDateError").html(errorMap.endDate);
-          } else {
-            $("#endDateError").html("");
-          }
+            if (errorMap.endDate) {
+              $("#endDateError").html(errorMap.endDate);
+            } else {
+              $("#endDateError").html("");
+            }
 
-          if (errorMap.content) {
-            $("#contentError").html(errorMap.content);
-          } else {
-            $("#contentError").html("");
+            if (errorMap.content) {
+              $("#contentError").html(errorMap.content);
+            } else {
+              $("#contentError").html("");
+            }
           }
 
 
