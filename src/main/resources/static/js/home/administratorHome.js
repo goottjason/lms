@@ -35,6 +35,11 @@ $(document).ready(function() {
     $(document).on('click', '#trigger-scheduler', handleTriggerSchedulerClick);
     $(document).on('click', '#trigger-scheduler-for-part', handleTriggerSchedulerForPartClick);
     $(document).on("change", "#part-course-select", handlePartCourseSelectChange);
+    $(document).on("click", "#part-email-button", handlePartEmailButtonClick);
+
+    $(document).on("change", "#check-all", handleCheckAllChange);
+    $(document).on('change', '.target-check', handleTargetCheckChange);
+    $(document).on('click', '#sendEmailModalBtn', handleSendEmailModalBtnClick);
 });
 async function fetchAndDisplayIncompleteTask() {
     let countList = await apiGetRequestParams(
@@ -204,8 +209,8 @@ function displayCourseTable() {
     courses.forEach(course => {
         let html = `
             <tr class="text-center">
-              <td class="align-middle">${course.courseWithAssignedInfo.coName}</td>
-              <td class="align-middle">${course.courseWithAssignedInfo.coInstructorName}</td>
+              <td class="align-middle"><a href="/courseManagement/courseDetail?courseId=${course.courseWithAssignedInfo.coId}">${course.courseWithAssignedInfo.coName}</a></td>
+              <td class="align-middle"><a href="/operationsManagement/staffDetail?staffId=${course.courseWithAssignedInfo.coInstructorId}">${course.courseWithAssignedInfo.coInstructorName}</a></td>
               <td class="align-middle">${course.courseWithAssignedInfo.coStartDate} ~ ${course.courseWithAssignedInfo.coEndDate}</td>
               <td class="align-middle">
                 <div class="progress-wrapper" style="position: relative;">
@@ -374,24 +379,25 @@ function displayLearnerCard() {
                                <div class="col-md-4">
                                    <div class="learner-card card text-center shadow-sm h-100">
                                       <div class="card-body d-flex flex-column px-4 py-3">
-                                          <div class="mb-3">
-                                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                          <div class="mb-3 not-check-in-status" data-id="${learner.leId}">
+                                            <span class="badge rounded-pill border border-danger text-danger bg-transparent px-3 py-2"
                                                   style="font-size: 0.8rem;">
                                               미입실
                                             </span>
                                           </div>
                                           <div>
-                                            <h6 class="card-title mb-1 text-dark fw-bold"
-                                                style="font-size: 1rem;">${course.coName}</h6>
-                                            <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
+                                            <a href="/courseManagement/courseDetail?courseId=${course.coId}"><h6 class="card-title mb-1 text-dark fw-bold not-check-in-coname" data-id="${learner.leId}"
+                                                style="font-size: 1rem;">${course.coName}</h6></a>
+                                            <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary not-check-in-fullname" data-id="${learner.leId}"><b>${learner.learnerUser.userFullname}</b></p></a>
                                           </div>
                                           <div class="mt-auto">
                                             <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
                                               <i class="fas fa-solid fa-envelope"></i>
                                             </a>
+                                            <input type="hidden" value="${learner.learnerUser.userEmail}" class="not-check-in-email">
                                           </div>
                                     </div>
-                                 </div>
+                                   </div>
                                </div>
                            `;
                            cards.push(colHtmlIn);
@@ -413,15 +419,15 @@ function displayLearnerCard() {
                                   <div class="learner-card card text-center shadow-sm h-100">
                                     <div class="card-body d-flex flex-column px-4 py-3">
                                       <div class="mb-3">
-                                        <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                                        <span class="badge rounded-pill border border-warning text-warning bg-transparent px-3 py-2"
                                               style="font-size: 0.8rem;">
                                           미퇴실
                                         </span>
                                       </div>
                                       <div>
-                                        <h6 class="card-title mb-1 text-dark fw-bold"
-                                            style="font-size: 1rem;">${course.coName}</h6>
-                                        <p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p>
+                                        <a href="/courseManagement/courseDetail?courseId=${course.coId}"><h6 class="card-title mb-1 text-dark fw-bold"
+                                            style="font-size: 1rem;">${course.coName}</h6></a>
+                                        <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary"><b>${learner.learnerUser.userFullname}</b></p></a>
                                       </div>
                                       <div class="mt-auto">
                                         <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
@@ -478,8 +484,155 @@ function displayLearnerCard() {
         $('#learner-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
     }
 
+    $('#learner-card-count').text(`(${cards.length}명)`);
+
+}
+function handlePartEmailButtonClick() {
+    $('#recipients').empty();
+    $('#title').val("Goott5 입/퇴실 안내");
+    $("#contents").val("안녕하세요. 금일 출석/퇴실체크를 하지 않으셔서 연락 남깁니다.");
+
+    $('#part-card-list').empty();
+
+    let learnerList = [];
+    $('.learner-card').each(function() {
+
+        // this는 현재 .learner-card DOM 요소
+        let $card = $(this);
+
+        // leId 추출 (data-id 속성 활용)
+        let leId = $card.find('.not-check-in-status').data('id');
+
+        // userFullname 추출 (태그 내용)
+        let userFullname = $card.find('.not-check-in-fullname').text().trim();
+
+        // coName 추출 (태그 내용)
+        let coName = $card.find('.not-check-in-coname').text().trim();
+
+        // userEmail 추출 (input hidden value)
+        let userEmail = $card.find('.not-check-in-email').val();
+
+        // 객체로 저장
+        learnerList.push({
+                             leId: leId,
+                             userFullname: userFullname,
+                             coName: coName,
+                             userEmail: userEmail
+                         });
+        let trHtml = `
+            <tr>
+                <td class="align-middle text-center">
+                  <div class="d-flex justify-content-center align-items-center">
+                    <input class="target-check form-check-input" type="checkbox" data-id="${leId}">
+                  </div>
+                </td>
+                <td class="text-center align-middle">${userFullname}</td>
+                <td class="title align-middle">${coName}</td>
+                <td class="text-center align-middle checked-email" data-id="${leId}">${userEmail}</td>
+            </tr>
+        `;
+        $('#part-card-list').append(trHtml);
+    });
+
+    $('#check-all').prop("checked", true).trigger('change');
+
+    console.log(learnerList);
+
+
+}
+function handleCheckAllChange() {
+    const isChecked = $(this).prop("checked");
+    $("tbody input[type=\"checkbox\"]").prop("checked", isChecked).trigger('change');
+}
+function handleTargetCheckChange() {
+
+    let leId = $(this).data('id');
+    let emailText = $('.checked-email[data-id="' + leId + '"]').text().trim();
+    let isChecked = $(this).is(':checked');
+    console.log('체크 상태:', isChecked, 'leId:', leId, 'emailText:', emailText);
+    if (isChecked) {
+        let html= `<span class="badge rounded-pill border border-primary text-primary bg-transparent mx-1" style="font-size: 1.0rem" id="leId-${leId}">${emailText}</span>`;
+        $('#recipients').append(html);
+    } else {
+        $(`#leId-${leId}`).remove();
+    }
+
+}
+function handleSendEmailModalBtnClick() {
+    let title    = $("#title").val().trim();
+    let contents = $("#contents").val().trim();
+    if (title == "") {
+        $("#title-msg").text("제목을 입력해주세요.");
+        return;
+    }
+    if (contents == "") {
+        $("#contents-msg").text("내용을 입력해주세요.");
+        return;
+    }
+
+    let sendEmailList = [];
+    $('.target-check:checked').each(function() {
+        let leId = $(this).data('id');
+        let emailText = $('.checked-email[data-id="' + leId + '"]').text().trim();
+        sendEmailList.push(emailText);
+    });
+    console.log(title, contents, sendEmailList);
+
+    $("#sendEmailModal").modal({
+                                   backdrop: "static",
+                                   keyboard: false
+                               });
+
+    $(".progress-modal-body").html("대상자에게 이메일을 발송 하시겠습니까?");
+    $(".progress-modal-footer").html(`
+          <button id="sendEmailBtn" class="btn btn-primary" type="button">발송</button>
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+        `);
+
+    $(".modal").on("click", "#sendEmailBtn", function () {
+        sendEmail(title, contents, sendEmailList);
+    });
 }
 
+async function sendEmail(title, contents, emailList) {
+
+    $(".progress-modal-body").html(`
+        <div class="text-center">
+          <p class="mb-2">이메일 발송 중입니다. 잠시만 기다려주세요.</p>
+          <div class="progress" style="height: 20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                 role="progressbar" style="width: 100%;">
+              진행 중...
+            </div>
+          </div>
+        </div>
+      `);
+    $(".progress-modal-footer").html("");
+
+    axios.post("/learnerManagement/sendEmail", {
+        title    : title,
+        contents : contents,
+        emailList: emailList,
+
+    })
+         .then(function (response) {
+             if (response.data.code === 200) {
+                 $(".progress-modal-body").html("이메일 발송이 완료되었습니다.");
+                 $(".progress-modal-footer").html(`
+                  <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+                `);
+                 $("#title").val("");
+                 $("#contents").val("");
+             }
+         })
+         .catch(function (error) {
+             console.log(error);
+             $(".progress-modal-body").html(`<p class="text-danger">이메일 발송 중 오류가 발생했습니다.</p>`);
+             $(".progress-modal-footer").html(`
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+              `);
+         });
+}
 function fromTimeStrToTodayTime(timeStr) {
     // map(Number) : 문자 -> 숫자
     let [h, m, s] = timeStr.split(':').map(Number);
@@ -518,15 +671,15 @@ function displayInstructorCard(cardData) {
                       <div class="instructor-card card text-center shadow-sm h-100">
                         <div class="card-body d-flex flex-column px-4 py-3">
                           <div class="mb-3">
-                            <span class="badge bg-soft-pink text-white px-3 py-2 rounded-pill"
+                            <span class="badge rounded-pill border border-danger text-danger bg-transparent px-3 py-2"
                                   style="font-size: 0.8rem;">
                               미등록
                             </span>
                           </div>
                           <div>
-                            <h6 class="card-title mb-1 text-dark fw-bold"
-                                style="font-size: 1rem;">${item.coName}</h6>
-                            <p class="card-text small mb-2 text-secondary"><b>${item.coInstructorName}</b></p>
+                            <a href="/courseManagement/courseDetail?courseId=${item.coId}"><h6 class="card-title mb-1 text-dark fw-bold"
+                                style="font-size: 1rem;">${item.coName}</h6></a>
+                            <a href="/operationsManagement/staffDetail?staffId=${item.coInstructorId}"><p class="card-text small mb-2 text-secondary"><b>${item.coInstructorName}</b></p></a>
                           </div>
                           <div class="mt-auto">
                             <a onclick="callAlarm(${item.coInstructorId}, '${item.coInstructorName}', '${item.coName}');" role="button">

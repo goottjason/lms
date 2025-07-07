@@ -1,44 +1,46 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
   <style>
       .circle-box {
-          width: 106px;
-          height: 106px;
-          border-radius: 50%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.4rem;
+        width: 106px;
+        height: 106px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
       }
 
       .circle-number {
-          font-weight: bold;
-          font-size: 1.8rem;
-          line-height: 1.2;
+        font-weight: bold;
+        font-size: 1.8rem;
+        line-height: 1.2;
       }
 
       .circle-label {
-          font-size: 0.8rem;
+        font-size: 0.8rem;
       }
 
       .btn-outline-secondary i {
-          font-size: 1.25rem;
+        font-size: 1.25rem;
       }
 
       .instructor-card {
         min-height: 180px;
       }
+
       .learner-card {
         min-height: 180px;
       }
 
       .card-body {
-          min-height: 150px;
+        min-height: 150px;
       }
 
       .chart-tooltip {
@@ -46,14 +48,20 @@
         background: white;
         border: 1px solid #ddd;
         border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
+
       .bg-soft-pink {
         background-color: #F96C07 !important; /* #FF6347 */
       }
+
       .hover-shadow:hover {
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         transition: box-shadow 0.3s ease;
+      }
+
+      .part-email-modal-lg {
+        max-width: 75vw;
       }
   </style>
 
@@ -62,13 +70,13 @@
 <div layout:fragment="content">
   <input type="hidden" th:value="${session.loginUser.id}" id="login-user-id">
   <input type="hidden" th:value="${session.loginUser.type}" id="login-user-type">
-  <!-- content header 시작 -->
+    <!-- content header 시작 -->
   <div class="row align-items-center">
     <h1 class="h3 col-3 mx-3 mb-3 text-gray-800">HOME</h1>
   </div>
-  <!-- content header 끝 -->
+    <!-- content header 끝 -->
 
-  <!-- content body 시작 -->
+    <!-- content body 시작 -->
   <div class="row">
     <div class="col-xl-6">
       <!-- 진행 중인 과정현황(버블차트) -->
@@ -77,7 +85,7 @@
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">진행 중인 과정현황</h6>
         </div>
-      <!-- 차트 영역 -->
+          <!-- 차트 영역 -->
         <div class="chart-container card">
           <div id="bubble-chart" class="card-body"></div>
         </div>
@@ -154,7 +162,7 @@
                 </a>
               </div>
               <div class="col-3">
-                <a href="/learnerManagement/employment">
+                <a href="">
                   <div class="circle-box bg-secondary text-white mx-auto mb-3 flex-column hover-shadow">
                     <div class="circle-number" id="">0</div>
                     <div class="circle-label small">미정</div>
@@ -167,16 +175,21 @@
       <!-- 당일 미입실/미퇴실 교육생 -->
       <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h6 class="m-0 font-weight-bold text-primary">당일 미입실/미퇴실 교육생&nbsp;&nbsp;&nbsp;
-            <button class="btn btn-warning btn-icon-split btn-sm" id="part-email">
+          <h6 class="m-0 font-weight-bold text-primary">당일 미입실/미퇴실 교육생&nbsp;<span
+              id="learner-card-count"></span>&nbsp;&nbsp;
+            <button
+                class="btn btn-warning btn-icon-split btn-sm" id="part-email-button"
+                data-toggle="modal"
+                data-target="#partEmailModal">
               <span class="icon text-white-50"><i class="fa fa-envelope"></i></span>
-              <span class="text">일괄 이메일전송(예정)</span>
+              <span class="text">일괄이메일전송</span>
             </button>
           </h6>
           <span class="text-xs">입퇴실마감시간 10분 전부터 표시됩니다.</span>
         </div>
-        <div class="card-body d-flex align-items-center justify-content-center"
-             style="min-height: 220px" id="learner-box">
+        <div
+            class="card-body d-flex align-items-center justify-content-center"
+            style="min-height: 220px" id="learner-box">
         </div>
       </div>
       <!-- 당일 훈련일지 미등록 강사 (수정중) -->
@@ -185,8 +198,9 @@
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">당일 훈련일지 미등록 강사</h6>
         </div>
-        <div class="card-body d-flex align-items-center justify-content-center"
-             style="min-height: 220px" id="instructor-box">
+        <div
+            class="card-body d-flex align-items-center justify-content-center"
+            style="min-height: 220px" id="instructor-box">
         </div>
       </div>
       <!-- 훈련일지 등록현황 -->
@@ -241,8 +255,12 @@
                 <td class="text-center align-middle">출결 업데이트</td>
                 <td class="text-center align-middle" id="last-execution-time-for-part"></td>
                 <td class="text-center align-middle">
-                  <button class="btn btn-primary btn-icon-split btn-sm"
-                          id="trigger-scheduler-for-part">
+                  <button
+                      class="btn btn-primary btn-icon-split btn-sm"
+                      id="trigger-scheduler-for-part">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-upload"></i>
+                    </span>
                     <span class="text">수동 업데이트</span>
                   </button>
                 </td>
@@ -252,6 +270,9 @@
                 <td class="text-center align-middle" id="last-execution-time"></td>
                 <td class="text-center align-middle">
                   <button class="btn btn-primary btn-icon-split btn-sm" id="trigger-scheduler">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-upload"></i>
+                    </span>
                     <span class="text">수동 업데이트</span>
                   </button>
                 </td>
@@ -264,17 +285,151 @@
 
     </div>
   </div>
-  <!-- content body 끝 -->
+    <!-- content body 끝 -->
+
+    <!-- 이메일 모달 -->
+  <div
+      class="modal fade"
+      id="partEmailModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myModalLabel"
+      aria-hidden="true">
+    <div class="modal-dialog modal-xl part-email-modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="myModalLabel">이메일</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="send-target" class="card shadow mb-4">
+            <div class="card-header py-3">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h6 class="m-0 font-weight-bold text-primary">발송 대상 선택</h6>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr class="text-center">
+                    <th scope="col" class="align-middle text-center" style="width: 10%;">
+                      <div class="d-flex justify-content-center align-items-center">
+                        <input id="check-all" class="form-check-input" type="checkbox">
+                      </div>
+                    </th>
+                    <th scope="col" class="align-middle" style="width: 20%;">이름</th>
+                    <th scope="col" class="align-middle" style="width: 30%;">과정명</th>
+                    <th scope="col" class="align-middle" style="width: 40%;">이메일주소</th>
+                  </tr>
+                  </thead>
+                  <tbody id="part-card-list">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="m-0 font-weight-bold text-primary">이메일 작성</h6>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>받는사람<span class="text-danger">*
+                        </span>&nbsp;&nbsp;</label>
+                <div id="recipients" style="min-height: 48px"></div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="title">제목<span class="text-danger">*
+                        </span>&nbsp;&nbsp;</label>
+                <span id="title-msg" class="text-danger small"></span>
+                <input type="text" id="title" class="form-control" placeholder="메일 제목을 작성하세요.">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="contents">내용<span class="text-danger">*
+                </span>&nbsp;&nbsp;</label>
+                <span id="contents-msg" class="text-danger small"></span>
+                <textarea
+                    id="contents"
+                    class="form-control"
+                    placeholder="메일 내용을 작성하세요."
+                    style="height: 140px; white-space: pre-wrap;" wrap="hard"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+            <!-- 버튼 -->
+            <div class="col-12 d-flex justify-content-end mt-3 mb-4">
+              <button
+                  id="sendEmailModalBtn" class="btn btn-primary btn-icon-split mr-2">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                <span class="text px-3">이메일 발송</span>
+              </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- 모달 끝 -->
+
+    <!-- 이메일발송 Modal-->
+  <div
+      class="modal fade"
+      id="sendEmailModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">이메일 발송</h5>
+        </div>
+        <div class="modal-body progress-modal-body"></div>
+        <div class="modal-footer progress-modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <th:block layout:fragment="script">
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script>
-      $('#instructorCarousel').carousel({
-          interval: false, // 자동 전환 비활성화
-          ride: false,     // 수동 조작 이후 자동 슬라이드 방지
-          pause: true,     // hover 시 멈춤 (optional)
-          wrap: true       // 끝에서 처음으로 넘어갈지 여부 (optional)
-      });
+      $("#instructorCarousel").carousel({
+                                            interval: false, // 자동 전환 비활성화
+                                            ride    : false,     // 수동 조작 이후 자동 슬라이드 방지
+                                            pause   : true,     // hover 시 멈춤 (optional)
+                                            wrap    : true       // 끝에서 처음으로 넘어갈지 여부 (optional)
+                                        });
   </script>
   <script th:src="@{/js/home/administratorHome.js}" type="text/javascript"></script>
 

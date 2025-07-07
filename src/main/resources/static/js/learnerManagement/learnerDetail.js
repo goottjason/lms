@@ -513,9 +513,9 @@ function isValidForPartModify(fields) {
   if(fields['입실시간'] == null && fields['퇴실시간'] != null) {
     return '입실시간 기입 없이 퇴실시간 기입은 불가능합니다.'
   }
-  if(fields['휴가사유'] != null && fields['휴가사유'].length > 0 && fields['출결상태'] != 'VACATION') {
+  /*if(fields['휴가사유'] != null && fields['휴가사유'].length > 0 && fields['출결상태'] != 'VACATION') {
     return '휴가사유는 출결사유가 휴가일 때 기입 가능합니다.'
-  }
+  }*/
   if(fields['휴가사유'] == null && fields['출결상태'] == 'VACATION') {
     return '휴가일 경우, 휴가사유를 기입해주세요.'
   }
