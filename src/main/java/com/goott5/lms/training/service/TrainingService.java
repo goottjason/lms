@@ -5,6 +5,7 @@ import com.goott5.lms.training.domain.RequestParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.SelectTrainingForListDTO;
 import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.RegisterTrainingParamDTO;
@@ -34,10 +35,10 @@ public interface TrainingService {
   List<String> selectCourseMenuForTeacher(int userId);
 
   //관리자용 trainingLog 불러오기
-  List<SelectTrainingDTO> selectTrainingLog(String courseName);
+  List<SelectTrainingForListDTO> selectTrainingLog(String courseName);
 
   // 강사용 trainingLog 불러오기
-  List<SelectTrainingDTO> selectTrainingLogForTeacher(int instructorId, String courseName);
+  List<SelectTrainingForListDTO> selectTrainingLogForTeacher(int instructorId, String courseName);
 
   //훈련일지 단일 dto 불러오기 (개발 완료까지 필요 없을 시 주석 처리)
   SelectTrainingDTO selectTrainingDTO(int id);

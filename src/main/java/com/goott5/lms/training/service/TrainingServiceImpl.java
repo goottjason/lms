@@ -11,6 +11,7 @@ import com.goott5.lms.training.domain.ResponseParticipationDTO;
 import com.goott5.lms.training.domain.SelectAllTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDTO;
 import com.goott5.lms.training.domain.SelectTrainingDetailDTO;
+import com.goott5.lms.training.domain.SelectTrainingForListDTO;
 import com.goott5.lms.training.domain.modifydto.ModifyFinalDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
@@ -78,12 +79,12 @@ public class TrainingServiceImpl implements TrainingService {
   }
 
   @Override
-  public List<SelectTrainingDTO> selectTrainingLog(String courseName) {
+  public List<SelectTrainingForListDTO> selectTrainingLog(String courseName) {
     return trainingMapper.selectTrainingLogForAdmin(courseName);
   }
 
   @Override
-  public List<SelectTrainingDTO> selectTrainingLogForTeacher(int instructorId, String courseName) {
+  public List<SelectTrainingForListDTO> selectTrainingLogForTeacher(int instructorId, String courseName) {
     return trainingMapper.selectTrainingLogForTeacher(instructorId, courseName);
   }
 

@@ -220,7 +220,6 @@
       // 세션에 저장된 페이지를 담을 변수
       let savePage = "";
       let homeworkId = /*[[${homework.id ?: ''}]]*/ null;
-      let homeworkIdNull = /*[[${homeworkIdNull ?: ''}]]*/ null;
       let courseName = /*[[${courseName ?: ''}]]*/ null;
 
       function showCourseSelector() {
@@ -233,31 +232,6 @@
         $("#courseSelector").val(courseName);
       }
 
-      // homeworkId가 null일때
-      function homeworkIdNullCheck() {
-        if (homeworkIdNull != null && homeworkIdNull !== "undefined" && homeworkIdNull.trim()
-            !== "") {
-          Swal.fire({
-            title: homeworkIdNull,
-            text: '과제가 존재하지 않아요',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '예',
-            cancelButtonText: '아니오'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              savePage = localStorage.getItem("savePage");
-              if(savePage && savePage !== "undefined" && savePage.trim() !== "") {
-                location.href = savePage;
-              }else{
-                 location.href = "/homework/homeworkList";
-              }
-            }
-          })
-          // alert(homeworkIdNull);
-        }
-      }
-
       // 등록 버튼
       function registerBtn() {
         location.href = "/homework/submissionRegister?homeworkId=" + homeworkId;
@@ -267,9 +241,6 @@
 
         //과정명 나오게
         showCourseSelector();
-
-        //과제 아이디 체크
-        homeworkIdNullCheck();
 
         // 삭제 모달창 뜨기
         $("#deleteHomework").on("click", function () {
@@ -287,7 +258,7 @@
           console.log(homeworkId);
           axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
           .then(function (response) {
-              location.href = "/homework/homeworkList";
+            location.href = "/homework/homeworkList";
           }).catch(function (error) {
             let msg = error.response.data.message;
             let errorCode = error.response.data.code;
@@ -301,9 +272,9 @@
               if (result.isConfirmed) {
                 if (errorCode === 400) {
                   savePage = localStorage.getItem("savePage");
-                  if(savePage && savePage !== "undefined" && savePage.trim() !== "") {
+                  if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
                     location.href = savePage;
-                  }else{
+                  } else {
                     location.href = "/homework/homeworkList";
                   }
                 }
@@ -323,9 +294,9 @@
         $("#toList").click(function () {
           let savePage = localStorage.getItem("savePage");
           if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
-            location.href =  savePage;
-          }else{
-          location.href = "/homework/homeworkList";
+            location.href = savePage;
+          } else {
+            location.href = "/homework/homeworkList";
           }
         })
 

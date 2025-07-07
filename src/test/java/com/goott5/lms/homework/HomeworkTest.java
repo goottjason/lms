@@ -76,20 +76,24 @@ class HomeworkTest {
   }
 
 
-//  @Test
-//  public void HomeworkSubmissionTest() {
-//
-//    List<HomeworkSubmissionDTO> submissionDTOS = homeworkMapper.selectSubmissionById(1,
-//        PagingRequestDTO.builder().pageNo(1).pageSize(5).build());
-//
-//    if (submissionDTOS != null) {
-//
-//      log.info("submissionDTOS:{}", submissionDTOS);
-//    } else {
-//      log.info("null");
-//    }
-//
-//  }
+  @Test
+  public void insertDummyHomework() {
+    List<HomeworkDTO> homeworkDTOList = new ArrayList<>();
+    //퀸 이름으로 55개 넣기
+    for (int i = 0; i < 55; i++) {
+      HomeworkDTO homeworkDTO = HomeworkDTO.builder()
+          .courseId(37)
+          .instructorId(34)
+          .title(i + "번째" + " dummy")
+          .startDate(LocalDateTime.now().plusDays(1))
+          .endDate(LocalDateTime.now().plusDays(10))
+          .content("dummydummydummy" + i)
+          .build();
+      homeworkMapper.insertHomework(homeworkDTO);
+      homeworkDTOList.add(homeworkDTO);
+    }
+    log.info("homeworkDTOList:{}",homeworkDTOList);
+  }
 
   @Test
   public void menuSelectTest() {
@@ -117,15 +121,14 @@ class HomeworkTest {
   }
 
   @Test
-  @Transactional
   public void dummyTest() {
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 2; i++) {
       HomeworkSubmissionDTO hs = HomeworkSubmissionDTO.builder()
-          .homeworkId(9)
-          .title("dummy" + i)
-          .content(i + "번째 과제 제출")
-          .learnerId(4)
+          .homeworkId(151)
+          .title("dummy" + 50 + i)
+          .content(50 + i + "번째 과제 제출")
+          .learnerId(41)
           .build();
 //      homeworkMapper.insertHomeworkSubmission(hs);
 //      7, "dummy" + i, i+"번째 과제 제출",4
@@ -133,7 +136,6 @@ class HomeworkTest {
         log.info("insertHomeworkSubmission:{}", hs);
       }
     }
-
 
   }
 
@@ -485,30 +487,25 @@ class HomeworkTest {
 
   }
 
-//  @Test
-//  public void selectHomeworkSubmissionIdByHomework() {
-//
-//    PagingRequestDTO pagingRequestDTO = PagingRequestDTO.builder()
-//        .pageNo(1)
-//        .pageSize(5)
-//        .build();
-//
-//    List<HomeworkSubmissionDTO> submissionDTOList = homeworkMapper.selectSubmissionById(47,
-//        pagingRequestDTO);
-//
-//    if (submissionDTOList != null) {
-//      for (HomeworkSubmissionDTO homeworkSubmissionDTO : submissionDTOList) {
-//        log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
-//      }
-//    } else {
-//      log.info("null");
-//    }
-//  }
 
   @Test
-  public void selectSubmissionIdForLearner(){
-    List<Integer> submissionIdList = homeworkMapper.selectSubmissionIdForLearner(50,36);
+  public void selectSubmissionIdForLearner() {
+    List<Integer> submissionIdList = homeworkMapper.selectSubmissionIdForLearner(50, 36);
 
-    log.info("submissionIdList:{}",submissionIdList);
+    log.info("submissionIdList:{}", submissionIdList);
+  }
+
+  @Test
+  public void selectSubmissionForList(){
+    PagingRequestDTO pagingRequestDTO = PagingRequestDTO.builder()
+        .pageNo(1)
+        .pageSize(5)
+        .build();
+    List<HomeworkSubmissionForListDTO> submissionList = homeworkMapper.selectSubmissionById(151,pagingRequestDTO);
+
+    if(submissionList != null){
+      log.info("submissionList:{}",submissionList);
+    }
+
   }
 }

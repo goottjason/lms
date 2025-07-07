@@ -1,6 +1,7 @@
 package com.goott5.lms.training.mapper;
 
 import com.goott5.lms.training.domain.RequestParticipationDTO;
+import com.goott5.lms.training.domain.SelectTrainingForListDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDTO;
 import com.goott5.lms.training.domain.registerdto.InsertTrainingDetailDTO;
 import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
@@ -68,10 +69,10 @@ public interface TrainingMapper {
   List<String> selectBoxCourseNameForAdmin(Boolean isInProgress);
 
   // 관리자용 select training_log list
-  List<SelectTrainingDTO> selectTrainingLogForAdmin(String courseName);
+  List<SelectTrainingForListDTO> selectTrainingLogForAdmin(String courseName);
 
   //강사용 select training_log list
-  List<SelectTrainingDTO> selectTrainingLogForTeacher(int instructorId, String courseName);
+  List<SelectTrainingForListDTO> selectTrainingLogForTeacher(int instructorId, String courseName);
 
   //======== 훈련일지 상세 ==========================================
 

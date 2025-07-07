@@ -33,6 +33,9 @@ public class HomeworkSubmissionForListDTO {
   @Nullable
   private String fullname;
 
+  @Nullable
+  private Integer hsId; //사실상 (submission)id와 동일 (he.hs_id 이므로) //null 이거나 id와 같거나
+
 
 
 }

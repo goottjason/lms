@@ -84,7 +84,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       PagingRequestDTO pagingRequest) {
 
     List<HomeworkSubmissionForListDTO> submissionDTOS = homeworkMapper.selectSubmissionById(homeworkId,
-        pagingRequest);
+        pagingRequest); //기능 추가: dto에 필드 추가해 불러오기(250707)
 
     //total 게시글 수
     int total = homeworkMapper.totalSubmission(homeworkId);

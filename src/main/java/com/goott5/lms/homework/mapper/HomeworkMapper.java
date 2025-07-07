@@ -81,12 +81,23 @@ public interface HomeworkMapper {
 //  List<HomeworkSubmissionDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
 
   // submission에 교육생 이름 넣어서 다시 조회(위의 쿼리문 대신)
-  @Select("select hs.id, hs.homework_id, hs.title, hs.content, hs.read_count, hs.learner_id, hs.created_at, hs.updated_at, hs.deleted_at, u.fullname\n"
-      + "from homework_submission hs\n"
-      + "inner join user u\n"
+//  @Select("select hs.id, hs.homework_id, hs.title, hs.content, hs.read_count, hs.learner_id, hs.created_at, hs.updated_at, hs.deleted_at, u.fullname\n"
+//      + "from homework_submission hs\n"
+//      + "inner join user u\n"
+//      + "on hs.learner_id = u.id\n"
+//      + "where  hs.homework_id = #{homeworkId} limit #{pagingRequest.skip},#{pagingRequest.pageSize}")
+//  List<HomeworkSubmissionForListDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
+
+  // submission에 교육생 이름 넣어서 다시 조회(위의 쿼리문 대신)
+  @Select("select hs.id, hs.homework_id, hs.title, hs.content, hs.read_count, hs.learner_id, hs.created_at, hs.updated_at, hs.deleted_at, u.fullname, he.hs_id\n"
+      + "from homework_submission hs \n"
+      + "inner join user u \n"
       + "on hs.learner_id = u.id\n"
+      + "left outer join homework_eval he\n"
+      + "on hs.id = he.hs_id\n"
       + "where  hs.homework_id = #{homeworkId} limit #{pagingRequest.skip},#{pagingRequest.pageSize}")
   List<HomeworkSubmissionForListDTO> selectSubmissionById(int homeworkId, PagingRequestDTO pagingRequest);
+
 
   //submission count
   @Select("select count(*) from homework_submission where homework_id = #{homeworkId}")
