@@ -132,8 +132,6 @@ public interface HomeworkMapper {
   @Select("select is_in_progress from course where name = #{name}")
   Boolean selectIsInProgress(String name);
 
-
-
   //강사의 과제 등록을 위한 instructorId와 courseId select
   @Select("select  sa.course_id, sa.user_id\n"
       + "from staff_assignment sa\n"
@@ -210,6 +208,12 @@ public interface HomeworkMapper {
   @Select("select id, title, start_date, end_date, content, course_id, read_count, instructor_id , created_at, updated_at, deleted_at "
       + "from homework where id = (select homework_id from homework_submission where id = #{submissionId})")
   HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId);
+
+  // (기능 추가) 해당 homework_submission의 homeworkId가 속한 course_id가 현재 진행 중인지 확인
+  @Select("select is_in_progress from course where id = (select h.course_id \n"
+      + "from homework h \n"
+      + "where h.id = #{homeworkId})")
+  Boolean isInProgressByHomeworkId(int homeworkId);
 
   //--------테스트용 + insertSubmission------------------------------------------------------------------------
 

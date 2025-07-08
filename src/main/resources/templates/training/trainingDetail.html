@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{layout/basic.html}">
+<html
+    lang="ko"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorate="~{layout/basic.html}">
 <head>
   <script
       src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <script defer th:src="@{/js/training/trainingModify.js}"></script>
   <script defer th:src="@{/js/training/signature.js}"></script>
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+  <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
   <style>
     #courseSelector {
@@ -42,8 +44,9 @@
   <!-- content header 시작 -->
 
   <!-- Signature Modal -->
-  <div class="modal fade" id="signatureModal" tabindex="-1" role="dialog"
-       aria-labelledby="signatureModalLabel" aria-hidden="true">
+  <div
+      class="modal fade" id="signatureModal" tabindex="-1" role="dialog"
+      aria-labelledby="signatureModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header bg-dark text-white">
@@ -85,26 +88,36 @@
   <!--  </div>-->
   <!-- toast 끝 -->
 
-  <div class="container bg-white shadow rounded p-4 mb-4" >
+  <div class="container bg-white shadow rounded p-4 mb-4">
     <h1 class="h3 mb-2 text-gray-800 text-center" id="detailTitle">훈련 일지 상세</h1>
 
-    <!-- 상단 버튼 -->
+      <!-- 상단 버튼 -->
     <div class="row mb-3">
       <!-- 왼쪽: 서명 또는 결재 버튼 -->
       <div class="col-auto d-flex align-items-center">
         <div th:if="${loginUserType == 'ADMINISTRATOR' && (signatureList == null || signatureList.isEmpty())}">
-          <button class="btn btn-info btn-sm"
-                  id="signature"
-                  data-toggle="modal"
-                  data-target="#signatureModal">결재란</button>
+          <button
+              class="btn btn-info btn-sm"
+              id="signature"
+              data-toggle="modal"
+              data-target="#signatureModal">결재란</button>
         </div>
 
-        <div th:if="${signatureList != null && !signatureList.isEmpty()}"
-             class="d-flex align-items-center"
-             style="border: 1px solid #000; padding: 10px; border-radius: 6px; background-color: #f9f9f9;">
-          <img th:src="${signatureList[0].getPath()}"
-               style="height: 60px; width: 60px; object-fit: contain; margin-right: 10px;">
-        </div>
+       <table
+           class="table table-bordered mt-3" style="max-width: 300px; border-radius: 6px;"
+           th:if="${signatureList != null && !signatureList.isEmpty()}">
+  <tbody>
+    <tr>
+      <th scope="row" class="text-center align-middle bg-light" style="width: 80px;">결재란</th>
+      <td class="p-2">
+        <img
+            th:src="${signatureList[0].getPath()}"
+            class="img-fluid rounded border"
+            style="height: 60px; width: 60px; object-fit: contain;">
+      </td>
+    </tr>
+  </tbody>
+</table>
       </div>
 
       <!-- 오른쪽: 엑셀 버튼 -->
@@ -113,28 +126,32 @@
       </div>
     </div>
 
-    <!-- 과정 정보 -->
+      <!-- 과정 정보 -->
     <div class="form-row mb-3" th:if="${finalSelectTraining != null}">
       <div class="form-group col-md-6">
         <label><strong>과정명</strong></label>
-        <input type="text" class="form-control" readonly
-               th:value="${finalSelectTraining.getName()}">
+        <input
+            type="text" class="form-control" readonly
+            th:value="${finalSelectTraining.getName()}">
       </div>
       <div class="form-group col-md-4">
         <label><strong>훈련 일자</strong></label>
-        <input type="text" class="form-control" readonly
-               th:value="${finalSelectTraining.getTrainingDate()}">
+        <input
+            type="text" class="form-control" readonly
+            th:value="${finalSelectTraining.getTrainingDate()}">
       </div>
       <div class="form-group col-md-2">
         <label><strong>총 수강생 수</strong></label>
-        <input type="text" class="form-control" readonly
-               th:value="${finalSelectTraining.getNumberOfLearner()}">
+        <input
+            type="text" class="form-control" readonly
+            th:value="${finalSelectTraining.getNumberOfLearner()}">
       </div>
     </div>
 
-    <!-- 출석 정보 -->
-    <div class="table-responsive mb-4"
-         th:if="${finalSelectTraining != null && finalSelectTraining.getResponseParticipationDTO() != null}">
+      <!-- 출석 정보 -->
+    <div
+        class="table-responsive mb-4"
+        th:if="${finalSelectTraining != null && finalSelectTraining.getResponseParticipationDTO() != null}">
 
       <table class="table table-bordered text-center">
         <thead class="thead-light">
@@ -148,31 +165,36 @@
         </thead>
         <tbody>
         <tr>
-          <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAttendanceCount()}"
+          <td
+              th:text="${finalSelectTraining.getResponseParticipationDTO().getAttendanceCount()}"
               data-toggle="tooltip"
               th:title="${finalSelectTraining.getResponseParticipationDTO().getAttendanceList()}"
               style="cursor: pointer;"
               data-name="출석">조회
           </td>
-          <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLateCount()}"
+          <td
+              th:text="${finalSelectTraining.getResponseParticipationDTO().getLateCount()}"
               data-toggle="tooltip"
               th:title="${finalSelectTraining.getResponseParticipationDTO().getLateList()}"
               style="cursor: pointer;"
               data-name="지각">조회
           </td>
-          <td th:text="${finalSelectTraining.getResponseParticipationDTO().getAbsenceCount()}"
+          <td
+              th:text="${finalSelectTraining.getResponseParticipationDTO().getAbsenceCount()}"
               data-toggle="tooltip"
               th:title="${finalSelectTraining.getResponseParticipationDTO().getAbsenceList()}"
               style="cursor: pointer;"
               data-name="결석">조회
           </td>
-          <td th:text="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyCount()}"
+          <td
+              th:text="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyCount()}"
               data-toggle="tooltip"
               th:title="${finalSelectTraining.getResponseParticipationDTO().getLeaveEarLyList()}"
               style="cursor: pointer;"
               data-name="조퇴">조회
           </td>
-          <td th:text="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingCount()}"
+          <td
+              th:text="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingCount()}"
               th:data-id="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
               data-toggle="tooltip"
               th:title="${finalSelectTraining.getResponseParticipationDTO().getVacationPaddingList()}"
@@ -185,7 +207,7 @@
     </div>
 
 
-    <!-- 훈련 과목 -->
+      <!-- 훈련 과목 -->
     <div class="table-responsive mb-4">
       <span id="fieldError" style="color: red;"></span>
       <table class="table table-bordered text-center">
@@ -204,7 +226,8 @@
           <tr th:each="detail : ${detailWithSubMap.entrySet()}">
             <td th:text="${detail.getKey().period}">1</td>
             <td th:text="${detail.getValue()}">조회</td>
-            <td th:text="${detail.getKey().actual}" class="detail-actual"
+            <td
+                th:text="${detail.getKey().actual}" class="detail-actual"
                 th:data-id="${detail.getKey().getId()}">조회
             </td>
           </tr>
@@ -216,7 +239,7 @@
       </table>
     </div>
 
-    <!-- 하단 버튼 -->
+      <!-- 하단 버튼 -->
     <div class="text-right" id="modifyDeleteDiv">
       <button class="btn btn-primary" id="modifyBtn" th:if="${loginUserType == 'INSTRUCTOR'}">
         <span class="icon text-white-50">
@@ -235,8 +258,9 @@
   </div>
 
   <!-- 삭제 확인 모달 -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog"
-       aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div
+      class="modal fade" id="deleteModal" tabindex="-1" role="dialog"
+      aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content text-center">
         <div class="modal-header">
@@ -262,67 +286,67 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
     let finalSelectTraining = /*[[${finalSelectTraining}]]*/ null;
-    let detailWithSubMap = /*[[${detailWithSubMap}]]*/ null;
-    let courseId = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
-    let instructorId = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
-    let trainingId =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
+    let detailWithSubMap    = /*[[${detailWithSubMap}]]*/ null;
+    let courseId            = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
+    let instructorId        = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
+    let trainingId          =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
 
     $(document).ready(function () {
-      $('[data-toggle="tooltip"]').tooltip({
-        placement: 'top',
-        boundary: 'window',
-        trigger: 'hover',
-        html: true,
-        container: 'body'
-      });
+        $("[data-toggle=\"tooltip\"]").tooltip({
+                                                   placement: "top",
+                                                   boundary : "window",
+                                                   trigger  : "hover",
+                                                   html     : true,
+                                                   container: "body"
+                                               });
     });
 
     $(function () {
-      console.log("finalSelectTraining", finalSelectTraining);
-      console.log("detailWithSubMap", detailWithSubMap);
+        console.log("finalSelectTraining", finalSelectTraining);
+        console.log("detailWithSubMap", detailWithSubMap);
 
-      // 엑셀 다운로드 버튼 클릭
-      $("#excel").on("click", function (e) {
-        // alert("excel");
-        e.preventDefault();
+        // 엑셀 다운로드 버튼 클릭
+        $("#excel").on("click", function (e) {
+            // alert("excel");
+            e.preventDefault();
 
-        let data = {
-          finalSelectTraining: finalSelectTraining,
-          detailWithSubMap: detailWithSubMap
-        }
+            let data = {
+                finalSelectTraining: finalSelectTraining,
+                detailWithSubMap   : detailWithSubMap
+            };
 
-        console.log("data", data);
+            console.log("data", data);
 
-        axios.post("/training/excel", data).then(function (response) {
-          console.log("response", response);
-          // console.log(response.headers['content-type']);
-          let responseCode = response.data.code;
-          let responseMessage = response.data.message;
-          if (responseCode === 200) {
-            Swal.fire({
-              title: responseMessage,
-              text: 'c:/downloads를 확인해주세요.',
-              icon: 'info',
-              confirmButtonText: '예'
-            })
-          }
-        }).catch(function (error) {
-          console.log("error", error);
-          let errorCode = error.data.code;
-          let errorMessage = error.data.message;
-          // let errorData = error.data.data;
-          if (errorCode === 500) {
-            Swal.fire({
-              title: errorMessage,
-              text: '다시 확인해주세요',
-              icon: 'error',
-              confirmButtonText: '예'
-            })
-          }
-        })
-      });
+            axios.post("/training/excel", data).then(function (response) {
+                console.log("response", response);
+                // console.log(response.headers['content-type']);
+                let responseCode    = response.data.code;
+                let responseMessage = response.data.message;
+                if (responseCode === 200) {
+                    Swal.fire({
+                                  title            : responseMessage,
+                                  text             : "c:/downloads를 확인해주세요.",
+                                  icon             : "info",
+                                  confirmButtonText: "예"
+                              });
+                }
+            }).catch(function (error) {
+                console.log("error", error);
+                let errorCode    = error.data.code;
+                let errorMessage = error.data.message;
+                // let errorData = error.data.data;
+                if (errorCode === 500) {
+                    Swal.fire({
+                                  title            : errorMessage,
+                                  text             : "다시 확인해주세요",
+                                  icon             : "error",
+                                  confirmButtonText: "예"
+                              });
+                }
+            });
+        });
 
-    })
+    });
 
   </script>
 </th:block>

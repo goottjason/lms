@@ -441,6 +441,11 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public Boolean isInProgressByHomeworkId(int homeworkId) {
+    return homeworkMapper.isInProgressByHomeworkId(homeworkId);
+  }
+
+  @Override
   public int insertEval(HomeworkEvalDTO homeworkEvalDTO) {
       int idForHomework = -1;
       if (homeworkMapper.insertEval(homeworkEvalDTO) == 1) {
