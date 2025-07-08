@@ -508,4 +508,14 @@ class HomeworkTest {
     }
 
   }
+
+
+  @Test
+  public void isInProgressByHomeworkId(){
+    Boolean result = homeworkMapper.isInProgressByHomeworkId(50);
+
+    log.info("isInProgressBySubmissionId:{}", result);
+
+  }
+
 }

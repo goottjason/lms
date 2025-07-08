@@ -121,6 +121,9 @@ public interface HomeworkService {
   //homeworkSubmission delete
   boolean deleteSubmissionById(int id);
 
+  //(기능 추가) 해당 homework_submission의 homeworkId가 속한 course_id가 현재 진행 중인지 확인
+  Boolean isInProgressByHomeworkId(int homeworkId);
+
   //---------과제 평가 등록----------------------------
 
   //homeworkEval insert

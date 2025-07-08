@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -388,6 +389,13 @@ public class TrainingController {
     // 공휴일,휴강 제외
     if (trainingService.isHoliday(decodeRegisterDate)) {
       redirectAttributes.addFlashAttribute("noGet", "공휴일은 등록할 수 없습니다.");
+      return "redirect:/training/trainingList";
+    }
+
+    // 주말 제외
+    DayOfWeek dayOfWeek = thisRegisterDate.getDayOfWeek();
+    if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+      redirectAttributes.addFlashAttribute("noGet", "주말은 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
 

@@ -308,6 +308,10 @@ public class HomeworkController {
       log.info("조회수 업데이트에 성공했습니다.");
     }
 
+    // 지난 과정에 등록하려면 막기
+    boolean isSubmissionProgress = homeworkService.isInProgressByHomeworkId(homeworkId);
+    model.addAttribute("isSubmissionProgress", isSubmissionProgress);
+
     return "homework/homeworkDetail";
   }
 
