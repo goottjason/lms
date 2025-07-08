@@ -16,6 +16,7 @@ import lombok.ToString;
 @Builder
 public class AttendanceStatusVO {
 
+  private LocalDateTime participationDate;
   private String status;
   private LocalDateTime checkIn;
   private LocalDateTime checkOut;

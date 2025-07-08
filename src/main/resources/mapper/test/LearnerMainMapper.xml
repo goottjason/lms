@@ -104,24 +104,47 @@
   <select id="selectAttendanceStatus"
     resultType="com.goott5.lms.test.domain.learnermain.AttendanceStatusVO">
     SELECT
-    d.dt AS participation_date,
+    DATE_ADD(
+    CASE
+    WHEN WEEKDAY(#{today})
+    &lt;
+    5
+    THEN DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY)
+    ELSE
+    DATE_ADD(
+    DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY),
+    INTERVAL 7 DAY
+    )
+    END,
+    INTERVAL seq.n DAY
+    ) AS participation_date,
     COALESCE(p.status, '미등록') AS status,
     p.check_in,
     p.check_out
-    FROM (
-    SELECT DATE_ADD(
-    DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY),
-    INTERVAL seq.n DAY
-    ) AS dt
-    FROM (
+    FROM
+    (
     SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2
     UNION ALL SELECT 3 UNION ALL SELECT 4
     ) AS seq
-    ) AS d
     LEFT JOIN participation p
     ON p.learner_enrollment_id = #{learnerEnrollmentId}
-    AND DATE(p.participation_date) = d.dt
-    ORDER BY d.dt
+    AND DATE(p.participation_date) =
+    DATE_ADD(
+    CASE
+    WHEN WEEKDAY(#{today})
+    &lt;
+    5
+    THEN DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY)
+    ELSE
+    DATE_ADD(
+    DATE_SUB(#{today}, INTERVAL WEEKDAY(#{today}) DAY),
+    INTERVAL 7 DAY
+    )
+    END,
+    INTERVAL seq.n DAY
+    )
+    ORDER BY participation_date;
+
   </select>
 
   <select id="selectInquiryBoard" resultType="com.goott5.lms.test.domain.learnermain.InquiryVO">
