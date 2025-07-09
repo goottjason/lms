@@ -361,5 +361,16 @@ public class VacationServiceImpl implements VacationService {
     }
   }
 
+  @Override
+  public int getLearnerIdByParticipationId(Integer participationId) {
+
+    return participationMapper.selectLearnerIdByParticipationId(participationId);
+  }
+
+  @Override
+  public LocalDate getVacationDateByParticipationId(Integer participationId) {
+    return participationMapper.selectVacationDateByParticipationId(participationId);
+  }
+
 
 }

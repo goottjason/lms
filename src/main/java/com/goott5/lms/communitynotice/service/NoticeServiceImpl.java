@@ -7,6 +7,7 @@ import com.goott5.lms.common.mapper.ReadCountLogMapper;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.common.util.S3Uploader;
 import com.goott5.lms.communitynotice.domain.NoticeDTO;
+import com.goott5.lms.communitynotice.domain.NoticeIdDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingRequestDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingResponseDTO;
 import com.goott5.lms.communitynotice.mapper.NoticeMapper;
@@ -37,15 +38,20 @@ public class NoticeServiceImpl implements NoticeService {
 
   @Transactional
   @Override
-  public int registerNotice(NoticeDTO noticeDTO, List<MultipartFile> files) throws IOException {
+  public NoticeIdDTO registerNotice(NoticeDTO noticeDTO, List<MultipartFile> files) throws IOException {
     if (noticeDTO.getIsFixed() != null && noticeDTO.getIsFixed()) {
       if (noticeMapper.countPinnedNotices() >= 5) {
-        return -1;
+        return NoticeIdDTO.builder()
+            .result(-1)
+            .build();
       }
     }
     noticeMapper.insertNotice(noticeDTO);
     uploadAndSaveFiles(files, noticeDTO.getId());
-    return 1;
+    return NoticeIdDTO.builder()
+        .id(noticeDTO.getId())
+        .result(1)
+        .build();
   }
 
   @Override

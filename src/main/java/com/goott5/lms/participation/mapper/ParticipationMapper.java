@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 출결(Participation) 관련 DB 매퍼
@@ -234,4 +235,9 @@ public interface ParticipationMapper {
   );
 
 
+  @Select("select le.user_id from participation p join learner_enrollment le on p.learner_enrollment_id = le.id where p.id = #{participationId}")
+  int selectLearnerIdByParticipationId(Integer participationId);
+
+  @Select("select participation_date from participation where id = #{participationId}")
+  LocalDate selectVacationDateByParticipationId(Integer participationId);
 }

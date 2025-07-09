@@ -60,4 +60,7 @@ public interface VacationService {
   Page<Map<String, Object>> searchAllVacationsByCourse(Integer courseId, int page, int size, String searchName);
 
 
+  int getLearnerIdByParticipationId(Integer participationId);
+
+  LocalDate getVacationDateByParticipationId(Integer participationId);
 }

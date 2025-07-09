@@ -70,9 +70,12 @@ public class VacationController {
   public ResponseEntity<Map<String, Object>> approveVacation(@PathVariable Integer participationId) {
     try {
       boolean result = vacationService.approveVacation(participationId);
+      int learnerId = vacationService.getLearnerIdByParticipationId(participationId);
+      LocalDate vacationDate = vacationService.getVacationDateByParticipationId(participationId);
+
 
       if (result) {
-        return ResponseEntity.ok(Map.of("success", true, "message", "휴가 승인 완료"));
+        return ResponseEntity.ok(Map.of("success", true, "message", "휴가 승인 완료", "learnerId", learnerId, "vacationDate", vacationDate));
       } else {
         return ResponseEntity.badRequest().body(Map.of("success", false, "message", "휴가 승인 실패"));
       }
@@ -89,10 +92,12 @@ public class VacationController {
   @ResponseBody
   public ResponseEntity<Map<String, Object>> rejectVacation(@PathVariable Integer participationId) {
     try {
+      int learnerId = vacationService.getLearnerIdByParticipationId(participationId);
+      LocalDate vacationDate = vacationService.getVacationDateByParticipationId(participationId);
       boolean result = vacationService.rejectVacation(participationId);
 
       if (result) {
-        return ResponseEntity.ok(Map.of("success", true, "message", "휴가 거부 완료"));
+        return ResponseEntity.ok(Map.of("success", true, "message", "휴가 거부 완료", "learnerId", learnerId, "vacationDate", vacationDate));
       } else {
         return ResponseEntity.badRequest().body(Map.of("success", false, "message", "휴가 거부 실패"));
       }

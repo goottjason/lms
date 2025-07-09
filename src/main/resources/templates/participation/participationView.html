@@ -685,12 +685,13 @@
 
 
             <!--수업일인 경우: 입퇴실 버튼들, 항상 렌더링하되 조건부 표시 -->
-<div class="attendance-buttons"
-     th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
-    <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
+<div class="attendance-buttons">
+    <button id="checkInBtn" class="btn-attendance btn-checkin" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'"
+            onclick="handleCheckIn()">
         <i class="fas fa-sign-in-alt"></i> 입실
     </button>
-    <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
+    <button id="checkOutBtn" class="btn-attendance btn-checkout" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'"
+            onclick="handleCheckOut()">
         <i class="fas fa-sign-out-alt"></i> 퇴실
     </button>
     <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
@@ -1342,9 +1343,12 @@
             if (buttonContainer) {
                 // 수업일인 경우에만 표시
                 if (isClassDay) { // 전역 변수로 isClassDay 값 참조
-                    buttonContainer.classList.remove('hidden');
+                    checkInBtn.classList.remove('hidden'); // 수업일이면 보이게함
+                    checkOutBtn.classList.remove('hidden');
+
                 }else {
-                    buttonContainer.classList.add('hidden'); // 수업일이 아니면 숨김
+                    checkInBtn.classList.add('hidden'); // 수업일이 아니면 숨김
+                    checkOutBtn.classList.add('hidden');
                 }
             }
 

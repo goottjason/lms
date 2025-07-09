@@ -3,6 +3,7 @@ package com.goott5.lms.communitynotice.controller;
 import com.goott5.lms.common.domain.FileSelectDTO;
 import com.goott5.lms.common.service.UtilService;
 import com.goott5.lms.communitynotice.domain.NoticeDTO;
+import com.goott5.lms.communitynotice.domain.NoticeIdDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingRequestDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingResponseDTO;
 import com.goott5.lms.communitynotice.service.NoticeService;
@@ -110,7 +111,8 @@ public class NoticeController {
 
     try {
       noticeDTO.setWriterId(loginUser.getId());
-      int result = noticeService.registerNotice(noticeDTO, files);
+      NoticeIdDTO noticeIdDTO = noticeService.registerNotice(noticeDTO, files);
+      int result = noticeIdDTO.getResult();
 
       if (result == -1) {
         response.put("message", "고정글은 최대 5개까지만 가능합니다.");
@@ -121,6 +123,7 @@ public class NoticeController {
       }
 
       response.put("message", "공지사항이 성공적으로 등록되었습니다.");
+      response.put("noticeId", noticeIdDTO.getId());
       return new ResponseEntity<>(response, HttpStatus.OK);
 
     } catch (IOException e) {
