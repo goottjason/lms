@@ -112,6 +112,15 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public int selectUserPkForSubmission(int submissionId) {
+    Integer userPk = homeworkMapper.selectUserPkForSubmission(submissionId);
+    if (userPk != null) {
+      return userPk;
+    }
+    return -1;
+  }
+
+  @Override
   public PagingResponseDTO<HomeworkDTO> ServiceAdminList(HomeworkRequestDTO homeworkRequestDTO) {
 
     List<HomeworkDTO> homeworkDTOList = homeworkMapper.searchBySelectForAdmin(homeworkRequestDTO);
@@ -231,6 +240,11 @@ public class HomeworkServiceImpl implements HomeworkService {
     int result = homeworkMapper.selectIsInstructorId(loginId, homeworkId);
 
     return result;
+  }
+
+  @Override
+  public int selectIsInstructorIdByPk(int userId, int homeworkId) {
+    return homeworkMapper.selectIsInstructorIdByPk(userId, homeworkId);
   }
 
   @Override

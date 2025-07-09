@@ -158,6 +158,17 @@ public interface HomeworkMapper {
       + ")")
   int selectIsInstructorId(String loginId, int homeworkId);
 
+  //(기능 추가)해당 과제의 작성자 id가 로그인한 강사 id와 일치하는지 확인.
+  @Select("SELECT EXISTS (\n"
+      + "  SELECT 1\n"
+      + "  FROM homework \n"
+      + "  WHERE instructor_id IN (\n"
+      + "    SELECT id FROM user WHERE id = #{userId}\n"
+      + "  )\n"
+      + "  AND id = #{homeworkId}\n"
+      + ")")
+  int selectIsInstructorIdByPk(int userId, int homeworkId);
+
 
 
   // 과제 업데이트(homeworkModifyDTO)
@@ -192,6 +203,10 @@ public interface HomeworkMapper {
   @Select("select login_id from user \n"
       + "where id = (select learner_id from homework_submission where id = #{id})")
   String selectUserIdForSubmission(int id);
+
+  @Select("select id from user \n"
+      + "where id = (select learner_id from homework_submission where id = #{submissionId})")
+  Integer selectUserPkForSubmission(int submissionId);
 
   //submission 정보 조회(submission data)
   @Select("select id, homework_id, title, content, " +

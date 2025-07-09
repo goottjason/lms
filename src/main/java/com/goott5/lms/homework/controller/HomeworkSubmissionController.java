@@ -146,6 +146,7 @@ public class HomeworkSubmissionController {
     //submission 상세 확인 시, 아이디 검사
     String learnerIdForSubmission = homeworkService.selectUserIdForSubmission(
         submissionId); //이걸로 하지않고 로그인 아이디로 바로 검사 가능
+    int userPkForSubmission = homeworkService.selectUserPkForSubmission(submissionId);
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 
@@ -154,7 +155,7 @@ public class HomeworkSubmissionController {
     }
 
     //submission 상세 확인 시, 아이디 검사
-    if (learnerIdForSubmission != null) {
+    if (learnerIdForSubmission != null || userPkForSubmission != -1) {
       if (loginUser.getLoginId().equals(learnerIdForSubmission) || loginUser.getType()
           .equals("ADMINISTRATOR") || loginUser.getType().equals("INSTRUCTOR")) {
 
@@ -263,11 +264,13 @@ public class HomeworkSubmissionController {
     log.info("loginUser:{}", loginUser);
 
     String learnerIdForSubmission = homeworkService.selectUserIdForSubmission(submissionId);
+    int userPkForSubmission = homeworkService.selectUserPkForSubmission(submissionId);
 
     Map<HomeworkSubmissionDTO, HomeworkEvalDTO> checkMap = homeworkService.selectSubmissionEval(
         submissionId);
 
     if (checkMap == null) {
+      log.info("checkMap:{}", checkMap);
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(400, "반환된 map이 null", null));
     }
@@ -284,7 +287,8 @@ public class HomeworkSubmissionController {
       }
     }
 
-    if (learnerIdForSubmission != null) {
+    //로그인 아이디 || 유저 아이디(pk) 유효성 검사
+    if (learnerIdForSubmission != null || userPkForSubmission != -1) {
       if (loginUser.getLoginId().equals(learnerIdForSubmission) || loginUser.getType()
           .equals("ADMINISTRATOR") || (loginUser.getType().equals("INSTRUCTOR")
           && isYourInstructor == 1)) {
@@ -294,6 +298,7 @@ public class HomeworkSubmissionController {
       }
     }
 
+    log.info("checkMap:{}", checkMap);
     return ResponseEntity.badRequest()
         .body(new MyResponseWithDataPYJ(404, "해당 과제물에 접근할 수 없습니다.", "/homeworkList"));
   }
