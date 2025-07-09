@@ -365,7 +365,7 @@
 
       })
       .catch(error => {
-        console.error("관리자 과정 목록 API 호출 실패:", error);
+        // console.error("관리자 과정 목록 API 호출 실패:", error);
       });
     }
 
@@ -439,7 +439,7 @@
         });
         return response.data?.data?.respDTOS || [];
       } catch (error) {
-        console.error('과정 목록 가져오는 중 오류 발생:', error);
+        // console.error('과정 목록 가져오는 중 오류 발생:', error);
         return [];
       }
     }

@@ -10,6 +10,9 @@
     .a-none {
       display: none !important;
     }
+    .comment-hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -117,13 +120,17 @@
     <!-- 첨부 파일 -->
     <div class="card-footer">
       <p class="mt-2">첨부파일</p>
-      <div class="row">
+      <div class="row" id="file-list-container">
         <th:block th:if="${fileDTOList != null}">
           <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
               <div class="col-md-3 pl-2">
                 <th:block th:if="${fileDTO.getIsImage()}">
-                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                  <img th:src="${fileDTO.path}"
+                       class="img-fluid rounded-start image-preview-trigger"
+                       style="width: 200px; height: 70px; object-fit: contain; cursor: pointer;"
+                       th:data-original-src="${fileDTO.path}"
+                       th:data-original-name="${fileDTO.originalName}">
                 </th:block>
 
                 <th:block th:unless="${fileDTO.getIsImage()}">
@@ -184,12 +191,12 @@
         <div id="comment-list">
           <div th:if="${#lists.isEmpty(debateDetail.comments)}"><p class="text-muted pl-2">작성된 댓글이 없습니다.</p></div>
 
-          <div th:each="comment : ${debateDetail.comments}" th:id="|comment-wrapper-${comment.id}|" class="mb-3 pl-2 border-bottom pb-3">
+          <div th:each="comment, iterStat : ${debateDetail.comments}" th:id="|comment-wrapper-${comment.id}|" class="mb-3 pl-2 border-bottom pb-3" th:classappend="${iterStat.index >= 10} ? 'comment-hidden' : ''">
 
             <div class="d-flex row" th:id="|comment-display-${comment.id}|">
               <div class="col-11 d-flex">
                 <div class="mr-3">
-                  <img class="img-profile rounded-circle"  th:src="${comment.profileImg}" style="width: 50px; height: 50px; object-fit: cover;">                </div>
+                  <img alt="" class="img-profile rounded-circle"  th:src="${comment.profileImg}" style="width: 50px; height: 50px; object-fit: cover;"></div>
                 <div class="w-100">
                   <div class="text-gray-900">
                     <span class="font-weight-bold" th:text="${comment.commenterName}"></span>
@@ -232,6 +239,9 @@
               </div>
             </div>
           </div>
+        </div>
+        <div id="load-more-container" th:if="${#lists.size(debateDetail.comments) > 10}" class="text-center mt-4">
+          <button id="load-more-btn" class="btn btn-outline-secondary">댓글 더보기</button>
         </div>
       </div>
     </div>
@@ -332,6 +342,49 @@
       const reportButton = document.getElementById('report-button');
 
       const commentForm = document.getElementById('comment-form');
+      const loadMoreBtn = document.getElementById('load-more-btn');
+      const fileListContainer = document.getElementById('file-list-container');
+
+      // 이미지 미리보기
+      if (fileListContainer) {
+        fileListContainer.addEventListener('click', function(e) {
+          // 클릭된 요소가 미리보기 이미지인지 확인
+          if (e.target.classList.contains('image-preview-trigger')) {
+            const imageSrc = e.target.dataset.originalSrc;
+            const imageName = e.target.dataset.originalName;
+
+            Swal.fire({
+              title: imageName,
+              imageUrl: imageSrc,
+              imageAlt: imageName,
+              width: 'auto', // 이미지 크기에 맞게 너비 자동 조절
+              confirmButtonText: '닫기'
+            });
+          }
+        });
+      }
+
+      //댓글 더보기 기능
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+          // 'comment-hidden' 클래스를 가진 숨겨진 댓글들을 찾습니다.
+          const hiddenComments = document.querySelectorAll('.comment-hidden');
+
+          // 그 중 앞에서부터 10개만 가져옵니다.
+          const nextComments = Array.from(hiddenComments).slice(0, 10);
+
+          // 10개의 댓글에서 'comment-hidden' 클래스를 제거하여 화면에 보여줍니다.
+          nextComments.forEach(commentEl => {
+            commentEl.classList.remove('comment-hidden');
+          });
+
+          // 만약 더 이상 숨겨진 댓글이 없다면 '더보기' 버튼을 포함한 컨테이너를 숨깁니다.
+          if (document.querySelectorAll('.comment-hidden').length === 0) {
+            document.getElementById('load-more-container').style.display = 'none';
+          }
+        });
+      }
+
       if(commentForm) {
         commentForm.addEventListener('submit', function(event) {
           const commentTextarea = commentForm.querySelector('textarea[name="content"]');
@@ -401,7 +454,9 @@
         try {
           const response = await axios.get('/api/management/courses', { params: { loginUserId, loginUserType } });
           return response.data?.data?.respDTOS || [];
-        } catch (error) { console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return []; }
+        } catch (error) {
+          // console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return [];
+        }
       }
 
       function updateCourseSelectBox(selector, data, selectedValue) {

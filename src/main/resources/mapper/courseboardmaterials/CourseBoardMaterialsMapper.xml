@@ -62,7 +62,7 @@
 
   <select id="selectListWithSearch" resultType="com.goott5.lms.courseboardmaterials.domain.CourseBoardMaterialsVO">
     SELECT
-    cn.*,
+    cn.id, cn.course_id, cn.writer_id, cn.title, cn.content, cn.is_fixed, cn.read_count, cn.created_at, cn.updated_at, cn.deleted_at,
     c.name AS courseName,
     u.fullname AS writerName,
     CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached

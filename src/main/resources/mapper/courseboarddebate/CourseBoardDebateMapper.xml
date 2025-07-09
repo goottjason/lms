@@ -6,7 +6,7 @@
 
   <select id="selectRegularPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
-    cf.*,
+    cf.id, cf.course_id, cf.writer_id, cf.title, cf.content, cf.read_count, cf.forum_like, cf.is_hotpost, cf.hotpost_at, cf.created_at, cf.updated_at, cf.deleted_at,
     c.name AS courseName,
     u.fullname AS writerName,
     CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached,
@@ -146,7 +146,7 @@
 
   <select id="selectHotPosts" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
-    cf.*,
+    cf.id, cf.course_id, cf.writer_id, cf.title, cf.content, cf.read_count, cf.forum_like, cf.is_hotpost, cf.hotpost_at, cf.created_at, cf.updated_at, cf.deleted_at,
     c.name AS courseName,
     u.fullname AS writerName,
     CASE WHEN f.table_id IS NOT NULL THEN TRUE ELSE FALSE END AS isAttached,
@@ -193,7 +193,7 @@
 
   <select id="findHotPostsByCourseId" parameterType="int" resultType="com.goott5.lms.courseboarddebate.domain.CourseBoardDebateVO">
     SELECT
-    cf.*,
+    cf.id, cf.course_id, cf.writer_id, cf.title, cf.content, cf.read_count, cf.forum_like, cf.is_hotpost, cf.hotpost_at, cf.created_at, cf.updated_at, cf.deleted_at,
     IFNULL(cc.comment_count, 0) AS commentCount
     FROM
     course_forum cf

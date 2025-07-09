@@ -113,6 +113,8 @@
 
     const wasOriginallyFixed = /*[[${wasOriginallyFixed}]]*/ false;
     const fixedPostCount = /*[[${fixedPostCount}]]*/ 0;
+    const MAX_FILE_SIZE = 1024 * 1024 * 10;
+
 
 
     // --- 페이지 로드 완료 시 초기화 함수 실행 ---
@@ -125,6 +127,20 @@
       $('form').on('submit', function(e) {
         // 기본 폼 전송(새로고침)을 막습니다.
         e.preventDefault();
+
+        const fileInput = document.getElementById('files');
+        const files = fileInput.files;
+        for (let i = 0; i < files.length; i++) {
+          if (files[i].size > MAX_FILE_SIZE) {
+            Swal.fire({
+              title: '파일 용량이 초과되었습니다.',
+              text: '첨부파일은 개당 10MB를 넘을 수 없습니다.',
+              icon: 'warning'
+            });
+            return; // 용량 초과 시 제출 중단
+          }
+        }
+
 
         const isFixedCheckbox = document.getElementById('isFixed');
         // "고정"이 체크되었고, 원래는 고정글이 아니었으며, 이미 고정글이 5개 이상이면
@@ -154,7 +170,7 @@
           }
         }).then(function(response) {
           // 서버로부터 받은 응답(response)을 확인합니다.
-          console.log(response.data);
+          // console.log(response.data);
 
           // 서버 응답 코드(code)가 200 (성공)일 경우
           if (response.data.code === 200) {
@@ -170,7 +186,7 @@
           }
         }).catch(function(error) {
           // 통신 중 에러가 발생했을 경우
-          console.error(error);
+          // console.error(error);
           Swal.fire({
             title: '수정 중 오류가 발생했습니다.',
             icon: "error"
@@ -230,7 +246,7 @@
         });
         return response.data?.data?.respDTOS || [];
       } catch (error) {
-        console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
+        // console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error);
         return [];
       }
     }

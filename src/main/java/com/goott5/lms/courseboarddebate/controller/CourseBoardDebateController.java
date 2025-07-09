@@ -67,11 +67,11 @@ public class CourseBoardDebateController {
       @ModelAttribute("requestDTO") CourseBoardDebatePagingRequestDTO courseBoardDebatePagingRequestDTO, Model model , HttpSession session,
       @RequestParam(required = false) String courseName) {
 
-    log.info("페이지네이션No: {}", courseBoardDebatePagingRequestDTO.getPageNo());
+//    log.info("페이지네이션No: {}", courseBoardDebatePagingRequestDTO.getPageNo());
 
     if(courseName != null){
       courseBoardDebatePagingRequestDTO.setCourseName(courseName);
-      log.info("courseName:{}", courseName);
+//      log.info("courseName:{}", courseName);
     }
 
     // 로그인 사용자 타입 가져오기 (NullPointerException 방지)
@@ -101,13 +101,13 @@ public class CourseBoardDebateController {
       if (courses != null && !courses.getRespDTOS().isEmpty()) {
         Integer defaultCourseId = courses.getRespDTOS().get(0).getId();
         courseBoardDebatePagingRequestDTO.setCourseId(defaultCourseId);
-        log.info("사용자 기본 과정 ID를 설정합니다: {}", defaultCourseId);
+//        log.info("사용자 기본 과정 ID를 설정합니다: {}", defaultCourseId);
       }
     }
 
     CourseBoardDebatePagingResponseDTO<CourseBoardDebatePageDTO> responseDTO = courseBoardDebateService.getCourseBoardDebateList(courseBoardDebatePagingRequestDTO,session);
 
-    log.info("responseDTO={}", responseDTO.getDtoList());
+//    log.info("responseDTO={}", responseDTO.getDtoList());
 
     if (courseBoardDebatePagingRequestDTO.getKeyword() == null || courseBoardDebatePagingRequestDTO.getKeyword().isEmpty()) {
       session.setAttribute("keyword", courseBoardDebatePagingRequestDTO.getKeyword());
@@ -117,8 +117,8 @@ public class CourseBoardDebateController {
 
     model.addAttribute("pagingRequestDTO", courseBoardDebatePagingRequestDTO);
 
-    log.info("pageNo={}", courseBoardDebatePagingRequestDTO.getPageNo());
-    log.info("pagingSize={}", courseBoardDebatePagingRequestDTO.getPagingSize());
+//    log.info("pageNo={}", courseBoardDebatePagingRequestDTO.getPageNo());
+//    log.info("pagingSize={}", courseBoardDebatePagingRequestDTO.getPagingSize());
 
 
 
@@ -128,7 +128,7 @@ public class CourseBoardDebateController {
 
 
     model.addAttribute("loginUserType", loginUserType); // 변수명을 loginUserType 으로 통일
-    log.info("loginUserType={}", loginUserType);
+//    log.info("loginUserType={}", loginUserType);
 
 
     return "courseBoardDebate/debateList";
@@ -154,12 +154,12 @@ public class CourseBoardDebateController {
       return "courseBoardMaterials/materialsList";
     }
 
-    log.info("상세 페이지 요청 ID : {}", id);
+//    log.info("상세 페이지 요청 ID : {}", id);
 
     CourseBoardDebateDetailInfo debateDetail = courseBoardDebateService.getCourseBoardDebateDetail(id, loginUser);
 
     if (debateDetail == null) {
-      log.warn("ID {} 에 해당하는 상세 정보를 찾을 수 없습니다.", id);
+//      log.warn("ID {} 에 해당하는 상세 정보를 찾을 수 없습니다.", id);
       return "redirect:/courseBoardDebate/debateList?" + pagingRequestDTO.getLink();
     }
 
@@ -175,7 +175,7 @@ public class CourseBoardDebateController {
     // 파일 조회 처리
     List<FileSelectDTO> fileDTOList = utilMapper.selectFileFrom("course_forum", id);
     if (fileDTOList != null) {
-      log.info("fileDTOList : {}", fileDTOList);
+//      log.info("fileDTOList : {}", fileDTOList);
       model.addAttribute("fileDTOList", fileDTOList);
     }
 
@@ -189,12 +189,12 @@ public class CourseBoardDebateController {
     boolean result = courseBoardDebateService.updateCourseBoardDebateReadCount(readCountLog);
 
     if (!result) {
-      log.info("조회수 증가 처리 중 오류 또는 이미 오늘 조회한 사용자.");
+//      log.info("조회수 증가 처리 중 오류 또는 이미 오늘 조회한 사용자.");
     } else {
-      log.info("조회수가 성공적으로 업데이트 되었습니다.");
+//      log.info("조회수가 성공적으로 업데이트 되었습니다.");
     }
-
-    log.info("상세 정보 불러오기 성공 : {}", debateDetail);
+//
+//    log.info("상세 정보 불러오기 성공 : {}", debateDetail);
 
     return "courseBoardDebate/debateDetail";
   }
@@ -220,7 +220,7 @@ public class CourseBoardDebateController {
   public ResponseEntity<MyResponseWithDataDebate> insertMaterials(@Valid @ModelAttribute CourseBoardDebateDTO courseBoardDebateDTO
       , BindingResult bindingResult, @RequestParam(required = false) List<MultipartFile> files, HttpSession session)
       throws IOException {
-    log.info("등록된 DTO={}", courseBoardDebateDTO);
+//    log.info("등록된 DTO={}", courseBoardDebateDTO);
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
@@ -253,20 +253,20 @@ public class CourseBoardDebateController {
 
 
     if (courseBoardMaterialsFile != -1) {
-      log.info("등록 성공!!!={}", courseBoardDebateDTO);
+//      log.info("등록 성공!!!={}", courseBoardDebateDTO);
     } else {
-      log.info("등록실패!!");
+//      log.info("등록실패!!");
     }
-
-    log.info("files={}", files);
+//
+//    log.info("files={}", files);
 
     if (files != null && !files.isEmpty()) {
 
-      log.info("파일 확인 ={}", files);
+//      log.info("파일 확인 ={}", files);
 
       for (MultipartFile file : files) {
         if (file.isEmpty()){
-          log.info("파일 없다. ={}",file.isEmpty());
+//          log.info("파일 없다. ={}",file.isEmpty());
           continue;
         }
 
@@ -274,7 +274,7 @@ public class CourseBoardDebateController {
         String insertPath = s3Uploader.uploadFile("upload/course_forum",file.getInputStream(),
             file.getOriginalFilename());
 
-        log.info("파일 저장 성공!!");
+//        log.info("파일 저장 성공!!");
 
         // 받은 파일 dto에 세팅
         // db 에서 해당 테이블의 게시글 id 다시 받아오기
@@ -290,13 +290,12 @@ public class CourseBoardDebateController {
         // 첨부 파일 db에 저장
         int fileInsert = utilService.insertService(fileDTO);
         if (fileInsert == 1) {
-          log.info("파일 db에 저장 성공:{}", fileDTO);
+//          log.info("파일 db에 저장 성공:{}", fileDTO);
         }
-        ;
       }
 
     } else {
-      log.info("파일 전달 안됨.");
+//      log.info("파일 전달 안됨.");
       return ResponseEntity.ok(
           new MyResponseWithDataDebate(200, "글 작성이 완료되었습니다.", courseBoardDebateDTO));
 
@@ -347,16 +346,16 @@ public class CourseBoardDebateController {
       @RequestParam(value = "files", required = false) List<MultipartFile> files, // 새로 첨부된 파일
       @RequestParam(required = false) List<Integer> deleteFiles) throws IOException {
 
-    log.info("전송 받은 DTO = {}", courseBoardDebateDTO);
+//    log.info("전송 받은 DTO = {}", courseBoardDebateDTO);
 
-    log.info("DTO에 바인딩된 게시글 ID: {}", courseBoardDebateDTO.getId());
+//    log.info("DTO에 바인딩된 게시글 ID: {}", courseBoardDebateDTO.getId());
 
     if (files != null) {
-      log.info("전송 받은 files: {}", files);
+//      log.info("전송 받은 files: {}", files);
     }
-
+//
     if (deleteFiles != null) {
-      log.info("전송 받은 deleteFiles: {}", deleteFiles);
+//      log.info("전송 받은 deleteFiles: {}", deleteFiles);
     }
 
     if (bindingResult.hasErrors()) {
@@ -367,9 +366,9 @@ public class CourseBoardDebateController {
       }
       return ResponseEntity.badRequest().body(new MyResponseWithDataDebate(400,"에러 발생!!", errorMap));
     }
-    log.info("전송 성공 DTO ={}", courseBoardDebateDTO);
-    log.info("전송 성공 files ={}", files);
-    log.info("전송 성공 deleteFiles ={}", deleteFiles);
+//    log.info("전송 성공 DTO ={}", courseBoardDebateDTO);
+//    log.info("전송 성공 files ={}", files);
+//    log.info("전송 성공 deleteFiles ={}", deleteFiles);
 
     // 게시글 수정
     int result = courseBoardDebateService.updateCourseBoardDebate(courseBoardDebateDTO);
@@ -389,15 +388,15 @@ public class CourseBoardDebateController {
           deleteFileList.add(fileSelectDTO);
         }
 
-        log.info("삭제할 deleteFiles ={}", deleteFileList);
+//        log.info("삭제할 deleteFiles ={}", deleteFileList);
 
         for (FileSelectDTO selectDTO : deleteFileList) {
-          log.info("selectDTO.getPath:{}", selectDTO.getPath());
+//          log.info("selectDTO.getPath:{}", selectDTO.getPath());
           s3Uploader.deleteFile("upload/course_forum/" + selectDTO.getNewName());
-          log.info("파일 서버 삭제 성공?"); // 성공 못함
+//          log.info("파일 서버 삭제 성공?"); // 성공 못함
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
-            log.info("파일 db 삭제 성공"); // 성공
+//            log.info("파일 db 삭제 성공"); // 성공
           }
         }
       }
@@ -406,10 +405,10 @@ public class CourseBoardDebateController {
     // 수정시 생성된 파일
     if (files != null && !files.isEmpty()) {
 
-      log.info(">>>>> 파일 처리 블록에 진입했습니다. 감지된 파일 개수: {}개 <<<<<", files.size());
+//      log.info(">>>>> 파일 처리 블록에 진입했습니다. 감지된 파일 개수: {}개 <<<<<", files.size());
 
       if (courseBoardDebateDTO.getId() == 0) {
-        log.error("게시글 ID가 없어 파일을 저장할 수 없습니다. DTO: {}", courseBoardDebateDTO);
+//        log.error("게시글 ID가 없어 파일을 저장할 수 없습니다. DTO: {}", courseBoardDebateDTO);
         return ResponseEntity.internalServerError()
             .body(new MyResponseWithDataDebate(500, "오류로 인해 파일 저장에 실패했습니다.", null));
       }
@@ -421,7 +420,7 @@ public class CourseBoardDebateController {
         // 첨부 파일 서버에 저장 + 경로 저장
         String insertPath = s3Uploader.uploadFile("upload/course_forum", file.getInputStream(),
             file.getOriginalFilename());
-        log.info("파일 서버 저장 성공");
+//        log.info("파일 서버 저장 성공");
 
         // 받은 파일 dto에 세팅
         FileDTO fileDTO = FileDTO.builder()
@@ -436,15 +435,15 @@ public class CourseBoardDebateController {
         // 첨부 파일 db에 저장
         int fileInsert = utilService.insertService(fileDTO);
         if (fileInsert == 1) {
-          log.info("파일 db에 저장 성공: {}", fileDTO);
+//          log.info("파일 db에 저장 성공: {}", fileDTO);
         } else {
-          log.warn("<<<<< 파일 DB 저장 실패! service의 반환값: {}, 저장하려던 정보: {} >>>>>", fileInsert, fileDTO);
+//          log.warn("<<<<< 파일 DB 저장 실패! service의 반환값: {}, 저장하려던 정보: {} >>>>>", fileInsert, fileDTO);
         }
       }
 
     } else {
       // 만약 파일을 받지 못했다면 이 로그가 찍힐 것입니다.
-      log.warn(">>>>> 전송된 파일이 없어 파일 처리 블록을 건너뜁니다. 'files' 파라미터가 비어있습니다. <<<<<");
+//      log.warn(">>>>> 전송된 파일이 없어 파일 처리 블록을 건너뜁니다. 'files' 파라미터가 비어있습니다. <<<<<");
     }
 
     return ResponseEntity.ok(new MyResponseWithDataDebate(200, "수정 완료", courseBoardDebateDTO));
@@ -462,7 +461,7 @@ public class CourseBoardDebateController {
       return ResponseEntity.ok(new MyResponseWithDataDebate(200,"게시글이 삭제되었습니다.",debateId));
 
     } catch (Exception e) {
-      log.error("게시글 삭제 중 오류 발생: id={}", debateId, e);
+//      log.error("게시글 삭제 중 오류 발생: id={}", debateId, e);
       // 실패 시 서버 에러 응답
       return ResponseEntity.internalServerError().body(new MyResponseWithDataDebate(500,"삭제 중 오류가 발생했습니다.",debateId));
     }

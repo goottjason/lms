@@ -273,12 +273,12 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
 
   @Override
   public boolean updateHotPostStatus(int forumId, int finalLikeCount, int finalCommentCount) {
-    log.info(">>>>>> 인기글 상태 업데이트 시작 (게시글 ID: {}) <<<<<<", forumId);
+//    log.info(">>>>>> 인기글 상태 업데이트 시작 (게시글 ID: {}) <<<<<<", forumId);
 
     boolean result = false;
     CourseBoardDebateDetailInfo postDetail = courseBoardDebateMapper.selectCourseBoardDebateDetail(forumId);
     if (postDetail == null) {
-      log.warn("게시글이 존재하지 않아 업데이트를 중단합니다.");
+//      log.warn("게시글이 존재하지 않아 업데이트를 중단합니다.");
       return false;
     }
 
@@ -294,17 +294,17 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
     boolean shouldBeHot = (likeCount >= LIKE_THRESHOLD && commentCount >= COMMENT_THRESHOLD);
 
     if (!isCurrentlyHot && shouldBeHot) {
-      log.info("인기글 기준 충족. [과정 ID: {}] 내에서 승격 절차를 시작합니다.", courseId);
+//      log.info("인기글 기준 충족. [과정 ID: {}] 내에서 승격 절차를 시작합니다.", courseId);
       final int HOT_POST_LIMIT = 5;
       // 특정 '과정'의 현재 인기글 개수를 조회
       int currentHotPostCount = courseBoardDebateMapper.countHotPostsByCourseId(courseId);
       if (currentHotPostCount < HOT_POST_LIMIT) {
-        log.info("인기글 자리가 남아있어 바로 승격합니다.");
+//        log.info("인기글 자리가 남아있어 바로 승격합니다.");
         courseBoardDebateMapper.promoteToHotPost(forumId);
         sendHotPostNotification(forumId);
         result = true;
       } else {
-        log.info("인기글이 꽉 차 있어, [과정 ID: {}] 내 기존 인기글과 점수 비교를 시작합니다.", courseId);
+//        log.info("인기글이 꽉 차 있어, [과정 ID: {}] 내 기존 인기글과 점수 비교를 시작합니다.", courseId);
         // 특정 '과정'의 인기글 목록만 조회
         List<CourseBoardDebateVO> hotPosts = courseBoardDebateMapper.findHotPostsByCourseId(courseId);
         CourseBoardDebateVO worstHotPost = null;
@@ -325,23 +325,23 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
         if (worstHotPost != null) {
           int candidateScore = likeCount + commentCount;
           if (candidateScore > minScore) {
-            log.info("승격 후보의 점수가 더 높아 교체를 진행합니다. ({} -> {})", worstHotPost.getId(), forumId);
+//            log.info("승격 후보의 점수가 더 높아 교체를 진행합니다. ({} -> {})", worstHotPost.getId(), forumId);
             courseBoardDebateMapper.demoteHotPost(worstHotPost.getId());
             courseBoardDebateMapper.promoteToHotPost(forumId);
             sendHotPostNotification(forumId);
             result = true;
           } else {
-            log.info("승격 후보의 점수가 기존 인기글보다 낮거나 같아 승격하지 않습니다.");
+//            log.info("승격 후보의 점수가 기존 인기글보다 낮거나 같아 승격하지 않습니다.");
           }
         }
       }
     }
     else if (isCurrentlyHot && !shouldBeHot) {
-      log.info("인기글 기준 미달. 인기글 상태를 해제합니다.");
+//      log.info("인기글 기준 미달. 인기글 상태를 해제합니다.");
       courseBoardDebateMapper.demoteHotPost(forumId);
     }
     else {
-      log.info("상태 변경 없음. 현재 상태를 유지합니다.");
+//      log.info("상태 변경 없음. 현재 상태를 유지합니다.");
     }
 
     return result;
@@ -367,7 +367,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
           .targetURI(targetURI)
           .build();
       // 실제 알림 전송 로직을 호출합니다.
-      log.info("인기글 알림 전송: userId={}, content={}, targetURI={}", authorId, content, targetURI);
+//      log.info("인기글 알림 전송: userId={}, content={}, targetURI={}", authorId, content, targetURI);
 
       if(notificationMapper.insertNotification(notificationSaveDTO) > 0){
           for(Integer userId : notificationSaveDTO.getUserIds()) {
@@ -379,7 +379,7 @@ public class CourseBoardDebateServiceImpl implements CourseBoardDebateService {
       };
 
     } catch (Exception e) {
-      log.error("인기글 승격 알림 전송 중 오류 발생", e);
+//      log.error("인기글 승격 알림 전송 중 오류 발생", e);
     }
   }
   @Override
