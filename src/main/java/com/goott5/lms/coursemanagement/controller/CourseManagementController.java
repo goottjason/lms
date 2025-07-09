@@ -77,9 +77,7 @@ public class CourseManagementController {
   @GetMapping("/courseManagement/courseDetail")
   public String courseDetail(
       @RequestParam(value = "courseId", defaultValue = "-1") Integer coId,
-      Model model,
-      HttpSession session,
-      HttpServletRequest request
+      Model model, HttpSession session, HttpServletRequest request
   ) {
 
     // 로그인유저 정보
@@ -143,7 +141,7 @@ public class CourseManagementController {
   // ========== API
 
   /**
-   * 전체 과정 또는 단일 과정을 조회하여 반환
+   * ■ 전체 과정 또는 단일 과정을 조회하여 반환 (ver. 1.0) ■
    * 공통 요청 정보와 과정 조회 요청 정보를 받아, 조건에 맞는 과정 목록(혹은 단일 과정)을 조회
    * 결과는 ApiResponse로 감싼 후 ResponseEntity로 반환
    * @param commonReqDTO 공통 요청 정보 (예: 로그인 유저 정보, 권한 등)
@@ -156,7 +154,6 @@ public class CourseManagementController {
       @ModelAttribute CommonReqDTO commonReqDTO,
       @ModelAttribute PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO
   ) {
-
     // 요청 조건에 따라 전체 과정 또는 단일 과정을 조회
     PageCourseRespDTO<CourseRespDTO> courses =
         courseManagementService.findCoursesAllorOne(commonReqDTO, pageCourseReqDTO);
@@ -166,10 +163,41 @@ public class CourseManagementController {
   }
 
   /**
-   * 과정에 배정된 교육생 목록을 조회
-   * @param pageUserReqDTO 페이징 및 검색 조건을 담은 요청 DTO
-   * @param courseId 교육생 목록을 조회할 과정 ID
-   * @return 배정된 교육생 정보 리스트
+   * ■ 전체 과정 또는 단일 과정을 조회하여 반환 (ver. 2.0) ■
+   * 공통 요청 정보와 과정 조회 요청 정보를 받아, 조건에 맞는 과정 목록(혹은 단일 과정)을 조회
+   * 결과는 ApiResponse로 감싼 후 ResponseEntity로 반환
+   * @param baseReqDTO 기본 요청 정보 DTO (로그인 유저 ID 등)
+   * @param pageCourseRequest 강좌 페이징 및 검색 조건 DTO
+   * @param request HTTP 서블릿 요청 객체
+   * @return ApiResponse 객체에 페이징된 강좌 목록을 담아 반환
+   */
+  @GetMapping("/api/coursemanagement/courses")
+  @ResponseBody
+  public ResponseEntity<ApiResponse<PageCourseResponse<CourseOverviewResp>>>
+  getCoursesByAuth(
+      @ModelAttribute BaseReqDTO baseReqDTO,
+      @ModelAttribute PageCourseRequest pageCourseRequest,
+      HttpServletRequest request
+  ) {
+
+    // 로그인 유저의 포지션(역할/직책 등)을 조회하여 baseReqDTO에 세팅
+    String loginUserPosition =
+        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
+    baseReqDTO.setLoginUserPosition(loginUserPosition);
+
+    // 권한(포지션)과 페이징 조건에 맞는 강좌 목록을 서비스에서 조회
+    PageCourseResponse<CourseOverviewResp> coursesWithPagination =
+        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
+
+    // 정상적으로 조회된 경우 200 코드와 함께 응답을 반환
+    return ApiResponse.okResponse(200, "success", coursesWithPagination);
+  }
+
+  /**
+   * ■ 과정에 배정된 교육생 목록을 조회 ■
+   * @param pageUserReqDTO 페이징정보
+   * @param courseId
+   * @return List<UserRespDTO>
    */
   @GetMapping("/api/learners/enrolled")
   @ResponseBody
@@ -182,12 +210,12 @@ public class CourseManagementController {
   }
 
   /**
-   * 과정에 등록되지 않은 교육생 목록을 조회
-   * @param pageUserReqDTO 페이징 및 검색 조건을 담은 요청 DTO
+   * ■ 과정에 등록되지 않은 교육생 목록을 조회 ■
+   * @param pageUserReqDTO 페이징정보
    * @param includeAll 전체 조회 여부
    *                   ( null: 수강기록이 없는 신입생만 조회,
    *                     true: 교육진행중인 교육생을 제외한 수료자/중퇴자 포함 )
-   * @return 미등록 교육생 정보 리스트
+   * @return List<UserRespDTO>
    */
   @GetMapping("/api/learners/not-enrolled")
   @ResponseBody
@@ -200,9 +228,10 @@ public class CourseManagementController {
   }
 
   /**
-   * 교육생을 과정에 배정 (insert)
-   * @param payload 등록에 필요한 정보를 담은 요청 본문 (loginUserId, loginUserType, learnerId, courseId)
-   * @return 등록 성공/실패 여부를 담은 ApiResponse의 ResponseEntity
+   * ■ 교육생을 과정에 배정 (insert) ■
+   *
+   * @param payload learnerId, courseId
+   * @return ResponseEntity<ApiResponse<Void>>
    */
   @PostMapping("/api/learner-enrollments")
   @ResponseBody
@@ -210,61 +239,63 @@ public class CourseManagementController {
       @RequestBody Map<String, Object> payload
   ) {
 
-    // 요청 정보로 교육생 등록 시도
+    /**
+     * 1. 해당 과정의 numberOfLearner 수 조회
+     * 2. 해당 과정에 배정된 교육생 수 조회
+     * 3. numberOfLearner 미만인 경우, 수강테이블/취업관리테이블에 데이터 추가
+     */
     boolean isSuccess =
         courseManagementService.addLearnerToCourse(
-            (Integer) payload.get("loginUserId"),
-            (String) payload.get("loginUserType"),
             (Integer) payload.get("learnerId"),
             (Integer) payload.get("courseId")
         );
 
-    // 등록 성공 여부에 따라 응답 반환
     if (isSuccess) {
+      // 추가 성공 시 200 코드, 성공 메시지 반환
       return ApiResponse.okResponse(200, "등록 성공", null);
     } else {
+      // 추가 성공 시 409 코드, 성공 메시지 반환
       return ApiResponse.failResponse(
           409, "등록된 인원을 초과할 수 없습니다.", null, HttpStatus.CONFLICT
       );
     }
   }
 
-
   /**
-   * 과정에서 교육생을 삭제(배정 삭제)
-   * @param loginUserId 요청자(로그인 유저)의 ID
-   * @param loginUserType 요청자(로그인 유저)의 타입
-   * @param learnerId 배정 삭제할 교육생의 ID
-   * @param courseId 배정 삭제할 과정의 ID
-   * @return 삭제 성공/실패 여부를 담은 ApiResponse의 ResponseEntity
+   * ■ 과정에서 교육생 배정을 삭제 ■
+   *
+   * @param learnerId
+   * @param courseId
+   * @return ResponseEntity<ApiResponse<Void>>
    */
   @DeleteMapping("/api/learner-enrollments")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeLearnerFromCourse(
-      @RequestParam("loginUserId") Integer loginUserId,
-      @RequestParam("loginUserType") String loginUserType,
       @RequestParam("learnerId") Integer learnerId,
       @RequestParam("courseId") Integer courseId
   ) {
-
-    // 요청 정보로 교육생 배정 삭제 시도
+    // learner_enrollment테이블에서 learnerId, courseId에 해당하는 데이터 삭제
     boolean isSuccess = courseManagementService.removeLearnerFromCourse(
-        loginUserId, loginUserType, learnerId, courseId);
+        learnerId, courseId);
 
-    // 삭제 성공 여부에 따라 응답 반환
     if (isSuccess) {
-      return ApiResponse.okResponse(200, "삭제 성공", null);
+      // 삭제 성공 시 200 코드, 성공 메시지 반환
+      return ApiResponse.okResponse(
+          200, "삭제 성공", null);
     } else {
-      return ApiResponse.failResponse(409, "삭제 실패", null, HttpStatus.CONFLICT);
+      // 삭제 실패 시 409 코드, 실패 메시지 반환
+      return ApiResponse.failResponse(
+          409, "삭제 실패", null, HttpStatus.CONFLICT);
     }
   }
 
 
   /**
-   * 로그인 유저의 포지션 정보를 반영하여 미처리건의 개수를 조회
-   * @param baseReqDTO 로그인 유저 정보 및 기타 기본 요청 정보를 담은 DTO
-   * @param pageCourseRequest 과정 및 페이징 관련 요청 정보를 담은 DTO
-   * @return 미완료 과제 개수(Map<String, Integer>)를 담은 ApiResponse의 ResponseEntity
+   * ■ 미처리건의 개수를 조회 (1:1문의, 신고, 훈련일지결재) ■
+   *
+   * @param baseReqDTO id, type, position
+   * @param pageCourseRequest 페이징정보, coId, coIsInProgress
+   * @return ResponseEntity<ApiResponse<Map<String, Integer>>>
    */
   @GetMapping("/api/coursemanagement/incompletetaskcount")
   @ResponseBody
@@ -272,67 +303,60 @@ public class CourseManagementController {
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageCourseRequest pageCourseRequest
   ) {
-    // 로그인 유저의 포지션 정보 조회 및 세팅
+    // 로그인유저의 포지션을 조회하여 baseReqDTO에 세팅
     String loginUserPosition =
         learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
     baseReqDTO.setLoginUserPosition(loginUserPosition);
 
-    // 미처리건의 개수를 조회
+    /**
+     * 1. 1:1문의 (is_posted(true), is_answered(false)인 게시글 카운트)
+     * 2. 신고 (report_status('PENDING')인 신고건 카운트)
+     * 3. 훈련일지결재
+     *    : file테이블의 table_id(NULL)
+     *      loginUserPosition이 GENERAL_MANAGER인 경우, us.type이 ADMINISTRATOR인 row만 조회
+     *      loginUserPosition이 COURSE_HEAD인 경우, us.id가 loginUserId인 row만 조회
+     */
     Map<String, Integer> incompleteTaskCount =
         courseManagementService.getIncompleteTaskCount(
             baseReqDTO, pageCourseRequest);
-    // 조회 결과(Map<String, Integer>)를 ApiResponse로 감싸서 반환
+
+    // 조회 성공시 200 코드, 성공 메시지, Map<String, Integer> 데이터 반환
     return ApiResponse.okResponse(200, "success", incompleteTaskCount);
   }
 
-  @GetMapping("/api/coursemanagement/courses")
-  @ResponseBody
-  public ResponseEntity<ApiResponse<PageCourseResponse<CourseOverviewResp>>>
-  getCoursesByAuth(
-      @ModelAttribute BaseReqDTO baseReqDTO,
-      @ModelAttribute PageCourseRequest pageCourseRequest,
-      HttpServletRequest request
-  ) {
-    String referer = request.getHeader("Referer");
-    log.info("■■■■■ referer: {}", referer);
-    // 로그인유저 포지션 요청 후 SET
-    String loginUserPosition =
-        learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
-    baseReqDTO.setLoginUserPosition(loginUserPosition);
-
-    log.info("pageCourseRequest: {}", pageCourseRequest);
-    PageCourseResponse<CourseOverviewResp> coursesWithPagination =
-        courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
-    log.info("coursesWithPagination: {}", coursesWithPagination);
-    return ApiResponse.okResponse(200, "success", coursesWithPagination);
-  }
-
-
-
-
+  /**
+   * ■ 과정을 삭제 ■
+   *
+   * @param baseReqDTO id, type, position
+   * @param pageCourseRequest 페이징정보, coId, coIsInProgress
+   * @return ResponseEntity<ApiResponse<Void>>
+   */
   @DeleteMapping("/api/coursemanagement/courses")
   @ResponseBody
   public ResponseEntity<ApiResponse<Void>> removeCoursesByAuth(
       @ModelAttribute BaseReqDTO baseReqDTO,
       @ModelAttribute PageCourseRequest pageCourseRequest
   ) {
-    // 로그인유저 포지션 요청 후 SET
+    // 로그인유저의 포지션을 조회하여 baseReqDTO에 세팅
     String loginUserPosition =
         learnerManagementService.getLoginUserPositionByUserId(baseReqDTO.getLoginUserId());
     baseReqDTO.setLoginUserPosition(loginUserPosition);
 
+    /**
+     * 1. 과정(coId)을 배정한 강의실을 비어있음으로 업데이트 (type이 ADMINISTRATOR일 때만 업데이트 허용)
+     * 2. 과정(coId)을 삭제(hard) (type이 ADMINISTRATOR일 때만 삭제 허용)
+     */
     Boolean isSuccess = courseManagementService.removeCoursesByAuth(baseReqDTO, pageCourseRequest);
+
     if (isSuccess) {
+      // 삭제 성공 시 200 코드, 성공 메시지 반환
       return ApiResponse.okResponse(
           200, "삭제 성공", null);
     } else {
+      // 삭제 실패 시 409 코드, 실패 메시지 반환
       return ApiResponse.failResponse(
-          409,
-          "잘못된 요청입니다. 다시 시도해주세요.",
-          null, HttpStatus.CONFLICT);
+          409, "잘못된 요청", null, HttpStatus.CONFLICT);
     }
-
   }
-
 
 }

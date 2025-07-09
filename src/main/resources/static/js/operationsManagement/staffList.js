@@ -5,7 +5,6 @@ let baseConfig = {
     loginUserId: loginUserId,
     loginUserType: loginUserType
 }
-
 let staffConfig = {
     pageNo: 1,
     pageSize: 8,
@@ -20,12 +19,10 @@ let staffConfig = {
     onlyLeaver: false,
 }
 
-
-
 $(document).ready(function() {
 
+    // 세션 관리
     window.addEventListener("beforeunload", function (e) {
-
         // 외부로 이동 시 config 데이터 삭제
         if (!sessionStorage.getItem("isEnteringDetail")) {
             sessionStorage.removeItem("staffConfig");
@@ -35,11 +32,13 @@ $(document).ready(function() {
             sessionStorage.removeItem("isEnteringDetail");
         }
     });
-
     // 세션 정보 불러오기
     getStatus();
-    console.log(staffConfig);
-    // 페이지 로드시, 퇴사자 포함 체크된 경우 유지
+
+    // 상단셀렉트박스 삭제 (only ADMINISTRATOR)
+    $("#courseSelector").hide();
+
+    // 페이지 로드시, 퇴사자 포함 체크된 경우 라디오버튼 유지
     if (staffConfig.onlyLeaver == null) {
         $('input[name="staff-filter"][value=""]').prop('checked', true);
     } else if (staffConfig.onlyLeaver == 'true') {
@@ -47,17 +46,15 @@ $(document).ready(function() {
     } else if (staffConfig.onlyLeaver == 'false') {
         $('input[name="staff-filter"][value="false"]').prop('checked', true);
     }
+    // 페이지 로드시, 셀렉트박스 및 검색창 유지
     $('#type-select').val(staffConfig.staffType);
     $('#position-select').val(staffConfig.staffPosition);
+    $('#search-input').val(staffConfig.keyword);
 
-    // 페이지 로드시, 타입별 셀렉트박스 유지
-    // $('#type-select').trigger('change');
-
-    // 상단셀렉트박스 가림
-    $("#courseSelector").hide();
-    // 리스트 로드
+    // 교직원 리스트 로드
     fetchAndDisplayStaffs();
 
+    // 이벤트 핸들러
     $(document).on("change", "input[name='staff-filter']", handleStaffFilterChange);
     $(document).on("change", "#type-select", handleTypeSelectChange);
     $(document).on("change", "#position-select", handlePositionSelectChange);
@@ -69,18 +66,29 @@ $(document).ready(function() {
         }
     });
     $(document).on("click", ".page-link", handlePageButtonClick);
-
-
-
-
-
 });
+
+function getStatus() {
+    let staffStatusByUser = sessionStorage.getItem("staffConfig");
+    if (staffStatusByUser) {
+        const parsedStaffConfig = JSON.parse(
+            sessionStorage.getItem("staffConfig"));
+        Object.assign(staffConfig, parsedStaffConfig);
+    }
+}
+function setStatus() {
+    sessionStorage.setItem(
+        "staffConfig", JSON.stringify(staffConfig));
+}
+function setFlag() {
+    sessionStorage.setItem(
+        'isEnteringDetail', 'true');
+}
 
 async function fetchAndDisplayStaffs() {
     let staffsWithPaging = await apiGetRequestParams(
         '/api/operationsmanagement/staffs',
         {...baseConfig, ...staffConfig});
-    console.log(staffsWithPaging);
     displayView(staffsWithPaging);
 }
 async function apiGetRequestParams(endpoint, params) {
@@ -226,8 +234,6 @@ function displayPagination(data, $selector) {
     $selector.html(output);
 }
 
-
-
 function handleStaffFilterChange() {
     var selectedValue = $('input[name="staff-filter"]:checked').val();
 
@@ -284,7 +290,6 @@ function handlePositionSelectChange() {
 
     fetchAndDisplayStaffs();
 }
-
 function handleSearchButtonClick() {
 
     // 페이징 초기화 및 검색한 키워드로 검색
@@ -308,25 +313,4 @@ function handlePageButtonClick() {
 
     setStatus();
     fetchAndDisplayStaffs();
-}
-
-function getStatus() {
-
-    let staffStatusByUser = sessionStorage.getItem("staffConfig");
-
-    if (staffStatusByUser) {
-        const parsedStaffConfig = JSON.parse(
-            sessionStorage.getItem("staffConfig"));
-        Object.assign(staffConfig, parsedStaffConfig);
-    }
-}
-
-function setStatus() {
-    sessionStorage.setItem(
-        "staffConfig", JSON.stringify(staffConfig));
-}
-
-function setFlag() {
-    sessionStorage.setItem(
-        'isEnteringDetail', 'true');
 }

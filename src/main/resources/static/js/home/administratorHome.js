@@ -190,8 +190,8 @@ function displayBubleChart() {
         },
         plotOptions: {
             bubble: {
-                minBubbleRadius: 50,
-                maxBubbleRadius: 500
+                minBubbleRadius: 15,
+                maxBubbleRadius: 70
             }
         }
     };
@@ -752,10 +752,8 @@ function callAlarm(coInstructorId, coInstructorName, coName) {
 
 function getIsTodaySubmit(courseTrainingDates) {
     let todayDate = new Date();
-    let isValid = false;
     let todayDateStr = formatDate(todayDate);
-    console.log(todayDateStr);
-    console.log(courseTrainingDates);
+    let isValid = false;
     // 오늘날짜로 제출한 훈련일지가 있는지
     courseTrainingDates.forEach(courseTrainingDate => {
         if(courseTrainingDate == todayDateStr) {
@@ -766,12 +764,12 @@ function getIsTodaySubmit(courseTrainingDates) {
 }
 function getIsTodayClassdate(classdateList) {
     let todayDate = new Date();
-    let isValid = false;
     let todayDateStr = formatDate(todayDate);
+    let isValid = false;
+    console.log(classdateList);
     classdateList.forEach((classdate) => {
         if (classdate == todayDateStr) {
             isValid = true;
-            return isValid;
         }
     });
     return isValid;

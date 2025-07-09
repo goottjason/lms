@@ -85,7 +85,9 @@ async function removeCourse() {
 async function apiDeleteRequestParams(endpoint, params) {
     try {
         // 삭제 성공시
-        await axios.delete(endpoint, {params: params});
+        const response = await axios.delete(endpoint, {params: params});
+        // { "code": 200, "message": "삭제 성공", "data": null}
+        console.log(response.data.data);
         await sweetAlertDeleteSuccess();
         window.location.href = `/courseManagement/courseList`;
     } catch (error) {

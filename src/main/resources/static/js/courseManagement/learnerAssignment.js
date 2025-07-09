@@ -235,8 +235,6 @@ async function handleAddEnrollment() {
   let data = await apiPostRequest(
     '/api/learner-enrollments',
     {
-      loginUserId: Number(loginUserId),
-      loginUserType: loginUserType,
       learnerId: Number(learnerId),
       courseId: Number(courseId) });
 
@@ -254,10 +252,7 @@ async function handleRemoveEnrollment() {
 
   let data = await apiDeleteRequest(
     '/api/learner-enrollments',
-    {
-      loginUserId: Number(loginUserId),
-      loginUserType: loginUserType,
-      learnerId: Number(learnerId), courseId: Number(courseId) });
+    { learnerId: Number(learnerId), courseId: Number(courseId) });
 
   let {enrolledLearners, notEnrolledLearners} = await getLearnersByEnrollment();
   displayTables(enrolledLearners, notEnrolledLearners);
