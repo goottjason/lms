@@ -226,9 +226,9 @@ function modifyEvalPost() {
         title: '평가를 수정할 수 없습니다',
         text: errorMsg,
         icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: '예',
-        cancelButtonText: '아니오'
+        // showCancelButton: true,
+        confirmButtonText: '예'
+        // cancelButtonText: '아니오'
       }).then((result) => {
         if (result.isConfirmed) {
           savePage = localStorage.getItem("savePage");
@@ -246,8 +246,8 @@ function modifyEvalPost() {
         title: '평가를 수정할 수 없습니다',
         text: errorMsg,
         icon: 'warning',
-        confirmButtonText: '예',
-        cancelButtonText: '아니오'
+        confirmButtonText: '예'
+        // cancelButtonText: '아니오'
       }).then((result) => {
         if (result.isConfirmed) {
           location.href = "homework/submissionDetail?submissionId="
@@ -276,9 +276,9 @@ function deleteEvalPost() {
       title: '평가를 수정할 수 없습니다',
       text: errorMsg,
       icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: '예',
-      cancelButtonText: '아니오'
+      // showCancelButton: true,
+      confirmButtonText: '예'
+      // cancelButtonText: '아니오'
     }).then((result) => {
       if (result.isConfirmed) {
         if (errorCode === 401) {

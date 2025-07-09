@@ -82,8 +82,8 @@ class HomeworkTest {
     //퀸 이름으로 55개 넣기
     for (int i = 0; i < 55; i++) {
       HomeworkDTO homeworkDTO = HomeworkDTO.builder()
-          .courseId(37)
-          .instructorId(34)
+          .courseId(46)
+          .instructorId(48)
           .title(i + "번째" + " dummy")
           .startDate(LocalDateTime.now().plusDays(1))
           .endDate(LocalDateTime.now().plusDays(10))
@@ -123,12 +123,12 @@ class HomeworkTest {
   @Test
   public void dummyTest() {
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 51; i++) {
       HomeworkSubmissionDTO hs = HomeworkSubmissionDTO.builder()
-          .homeworkId(151)
-          .title("dummy" + 50 + i)
-          .content(50 + i + "번째 과제 제출")
-          .learnerId(41)
+          .homeworkId(263)
+          .title("dummy" + i)
+          .content(i + "번째 과제 제출")
+          .learnerId(59)
           .build();
 //      homeworkMapper.insertHomeworkSubmission(hs);
 //      7, "dummy" + i, i+"번째 과제 제출",4
@@ -141,7 +141,7 @@ class HomeworkTest {
 
   @Test
   public void selectDetailTest() {
-    HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOById(1);
+    HomeworkDTO homeworkDTO = homeworkMapper.selectHomeworkDTOById(263);
 
     if (homeworkDTO != null) {
       log.info("homeworkDTO 상세 테스트:{}", homeworkDTO);
@@ -257,6 +257,12 @@ class HomeworkTest {
       log.info("update fail");
     }
 
+  }
+
+  @Test
+  public void testSelectHomeworkForInstructor(){
+    int result = homeworkMapper.selectIsInstructorIdByPk(34,47);
+    log.info("result:{}",result);
   }
 
   @Test
@@ -516,6 +522,13 @@ class HomeworkTest {
 
     log.info("isInProgressBySubmissionId:{}", result);
 
+  }
+
+  @Test
+  public void selectHomeworkSubmissionIdByHomework(){
+    Integer result = homeworkMapper.selectUserPkForSubmission(354);
+
+    log.info("selectHomeworkSubmissionIdByHomework:{}", result);
   }
 
 }

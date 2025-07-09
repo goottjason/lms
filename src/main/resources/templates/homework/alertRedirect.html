@@ -24,6 +24,29 @@
     //로컬에 저장된 페이지(리스트에서)
     let savePage = localStorage.getItem("savePage");
 
+    //현재 진행 중인 과정이 없는 강사의 경우
+    // 현재 진행 중인 강의 여부(강사가 등록 시, 현재 진행 중인 강의가 아니면 막기)
+    let isRegister = /*[[${isRegister}]]*/ null;
+
+    function isRegisterCheck() {
+      if(isRegister != null && isRegister !== "undefined" && isRegister === false ){
+          Swal.fire({
+            title: "강의를 등록할 수 없습니다.",
+            text: "현재 진행 중인 과정이 아닙니다.",
+            icon: "warning",
+            confirmButtonText: "예"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
+                location.href = savePage;
+              }else{
+                location.href = "/homework/homeworkList";
+              }
+            }
+          });
+      }
+    }
+
     // homeworkId가 null 일때
     function homeworkIdNullCheck() {
       console.log("homeworkIdNull", homeworkIdNull);
@@ -34,9 +57,7 @@
           title: homeworkIdNull,
           text: '과제가 존재하지 않아요',
           icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: '예',
-          cancelButtonText: '아니오'
+          confirmButtonText: '예'
         }).then((result) => {
           if (result.isConfirmed) {
             if (savePage && savePage !== "undefined" && savePage.trim() !== "") {
@@ -76,6 +97,9 @@
 
       //과제 제출 상세 진입 시 체크
       noSubmissionDetailCheck();
+
+      //(과제 등록 시)현재 진행 중인 과정인지 체크
+      isRegisterCheck();
     })
 
   </script>

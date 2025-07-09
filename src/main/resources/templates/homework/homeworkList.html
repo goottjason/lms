@@ -609,31 +609,8 @@
       const params = new URLSearchParams(window.location.search);
       const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
 
-      //현재 진행 중인 과정이 없는 강사의 경우
-      // 현재 진행 중인 강의 여부(강사가 등록 시, 현재 진행 중인 강의가 아니면 막기)
-
-      let isRegister = /*[[${isRegister}]]*/ null;
-
       $(document).ready(function () {
 
-        if (isRegister != null && isRegister === false) {
-          sessionStorage.setItem("isRegister", "false"); //문자열로 저장
-        }
-
-        if (sessionStorage.getItem("isRegister") === "false") {
-          Swal.fire({
-            title: "강의를 등록할 수 없습니다.",
-            text: "현재 진행 중인 과정이 아닙니다.",
-            icon: "warning",
-            confirmButtonText: "예"
-          }).then((result) => {
-            if (result.isConfirmed) {
-              sessionStorage.removeItem("isRegister");
-              initializePage(nameForLt)
-            }
-          });
-          return;
-        }
         initializePage(nameForLt);
 
       })
@@ -669,9 +646,11 @@
 
         let courseName = courseSelector.val(); //select한 과정명 보내기
         console.log("courseName", courseName);
+        prevPage("/homework/homeworkRegister?courseName=" + encodeURIComponent(
+            courseName.trim()));
 
-        location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(
-            courseName.trim());
+        // location.href = "/homework/homeworkRegister?courseName=" + encodeURIComponent(
+        //     courseName.trim());
       });
 
       // 검색 버튼(엔터키)

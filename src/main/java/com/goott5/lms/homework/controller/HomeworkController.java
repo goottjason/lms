@@ -347,7 +347,7 @@ public class HomeworkController {
       isRegister = false;
       redirectAttributes.addFlashAttribute("isRegister", isRegister);
 
-      return "redirect:/homework/homeworkList";
+      return "redirect:/homework/alertRedirect";
     }
 
     model.addAttribute("courseName", courseName);
@@ -502,10 +502,15 @@ public class HomeworkController {
 
     // 해당 과제의 기존 homeworkDTO 불러오기
     //해당 과제의 작성자 id가 로그인한 강사 id와 일치하는지 확인.
-    int selectIsInstructor = homeworkService.selectIsInstructorId(loginUser.getLoginId(),
-        homeworkId); //그냥 login한 아이디가 아닌, id를 바로 가져오는 것을 권장...
+    int selectIsInstructor = 0;
+    if(loginUser.getLoginId() != null){
+      selectIsInstructor = homeworkService.selectIsInstructorId(loginUser.getLoginId(),
+          homeworkId); //그냥 login한 아이디가 아닌, id를 바로 가져오는 것을 권장...
+    }
+    // (유효성 추가(loginUser.getLoginId가 널일 경우))
+    int selectIsInstructorByPk = homeworkService.selectIsInstructorIdByPk(loginUser.getId(),homeworkId);
 
-    if (selectIsInstructor == 0) {
+    if (selectIsInstructor == 0 || selectIsInstructorByPk == 0) {
       // 해당 과제의 작성자가 아닌 다른 강사일 경우
       return "redirect:/homework/homeworkList";
     }

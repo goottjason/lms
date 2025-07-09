@@ -31,6 +31,9 @@ public interface HomeworkService {
   //과제 제출을 위한 아이디->로그인 아이디 반환
   String selectUserIdForSubmission(int id);
 
+  //(id-pk 검사 추가-로그인 아이디가 없을 시)
+  int selectUserPkForSubmission(int submissionId);
+
   //관리자용 과제 반환
   PagingResponseDTO<HomeworkDTO> ServiceAdminList(HomeworkRequestDTO homeworkRequestDTO);
 
@@ -72,6 +75,9 @@ public interface HomeworkService {
 
   // 해당 과제의 작성자가 로그인한 아이디의 강사와 일치하는지 확인
   int selectIsInstructorId(String loginId, int homeworkId);
+
+  //(기능 추가) loginId가 없을때 userId로 검사
+  int selectIsInstructorIdByPk(int userId, int homeworkId);
 
   // 수정
   int updateHomework(HomeworkModifyDTO homeworkModifyDTO);

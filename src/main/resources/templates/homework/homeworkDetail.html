@@ -150,36 +150,7 @@
     </div>
     <!-- 본문 끝 -->
 
-    <!-- 버튼 -->
-    <div class="col-12 d-flex justify-content-end mb-4">
-      <button id="modify" class="btn btn-info btn-icon-split mr-2"
-              th:if="${loginUser.getType() == 'INSTRUCTOR'}">
-      <span class="icon text-white-50">
-        <i class="fa fa-wrench"></i>
-      </span>
-        <span class="text px-3">과제수정</span>
-      </button>
-      <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
-              th:if="${loginUser.getType() == 'INSTRUCTOR'}">
-      <span class="icon text-white-50">
-        <i class="fa fa-times"></i>
-      </span>
-        <span class="text px-3">과제삭제</span>
-      </button>
-      <button id="" class="btn btn-primary btn-icon-split mr-2"
-              th:if="${loginUser.getType() == 'LEARNER' && isSubmissionProgress}" >
-      <span class="icon text-white-50">
-        <i class="fas fa-upload"></i>
-      </span>
-        <span class="text px-3" id="registerBtn">과제 제출 등록</span>
-      </button>
-      <button id="toList" class="btn btn-secondary btn-icon-split">
-      <span class="icon text-white-50">
-          <i class="fas fa-list"></i>
-      </span>
-        <span class="text px-4">목록</span>
-      </button>
-    </div>
+
 
     <!-- The Modal -->
     <div class="modal delete" id="myModal">
@@ -208,6 +179,37 @@
 
     <!-- content body 끝 -->
   </div>
+  <!-- 버튼 -->
+  <div class="col-12 d-flex justify-content-end mb-4">
+    <button id="modify" class="btn btn-info btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+      <span class="icon text-white-50">
+        <i class="fa fa-wrench"></i>
+      </span>
+      <span class="text px-3">과제수정</span>
+    </button>
+    <button id="deleteHomework" class="btn btn-danger btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'INSTRUCTOR'}">
+      <span class="icon text-white-50">
+        <i class="fa fa-times"></i>
+      </span>
+      <span class="text px-3">과제삭제</span>
+    </button>
+    <button id="" class="btn btn-primary btn-icon-split mr-2"
+            th:if="${loginUser.getType() == 'LEARNER' && isSubmissionProgress}" >
+      <span class="icon text-white-50">
+        <i class="fas fa-upload"></i>
+      </span>
+      <span class="text px-3" id="registerBtn">과제 제출 등록</span>
+    </button>
+    <button id="toList" class="btn btn-secondary btn-icon-split">
+      <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+      <span class="text px-4">목록</span>
+    </button>
+  </div>
+</div>
   <th:block layout:fragment="script" th:inline="javascript">
     <script
         src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
