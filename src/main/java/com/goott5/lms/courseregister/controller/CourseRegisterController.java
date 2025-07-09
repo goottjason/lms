@@ -63,7 +63,7 @@ public class CourseRegisterController {
   @ResponseBody
   public String saveCourse(@RequestBody CourseSaveDTO courseSaveDTO) {
 
-    log.info("courseSaveDTO = {}", courseSaveDTO);
+//    log.info("courseSaveDTO = {}", courseSaveDTO);
     boolean isSuccess = courseRegisterService.saveCourse(courseSaveDTO);
 
     return isSuccess ? "success" : "fail";
@@ -73,7 +73,7 @@ public class CourseRegisterController {
   @ResponseBody
   public String checkNameDuplicate(String name) {
 
-    log.info("name = {}", name);
+//    log.info("name = {}", name);
     boolean isDuplicate = courseRegisterService.checkNameDuplicate(name);
     if(isDuplicate) {
       return "duplicateName";

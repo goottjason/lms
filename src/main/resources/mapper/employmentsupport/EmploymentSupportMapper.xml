@@ -36,7 +36,7 @@
 
   <select id="selectEmploymentList" resultType="com.goott5.lms.employmentsupport.domain.CustomEmploymentVO">
 
-    select es.id, c.is_in_progress, c.name, instructor.fullname as instructor_fullname, learner.fullname as learner_fullname, es.employment_status
+    select es.id, c.is_in_progress, es.is_counseling_received, c.name, instructor.fullname as instructor_fullname, learner.fullname as learner_fullname, es.employment_status
     from course c join staff_assignment sa on sa.course_id = c.id
     join user instructor on instructor.id = sa.user_id and instructor.type = 'INSTRUCTOR'
     join learner_enrollment le on le.course_id = c.id

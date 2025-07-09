@@ -40,7 +40,7 @@ public class CourseModifyController {
   @ResponseBody
   public String modifyCourse(@RequestBody CourseModifyDTO courseModifyDTO, RedirectAttributes redirectAttributes) {
 
-    log.info("Modify Course {}", courseModifyDTO);
+//    log.info("Modify Course {}", courseModifyDTO);
     boolean isSuccess = courseModifyService.modifyCourse(courseModifyDTO);
     return isSuccess ? "success" : "fail";
   }

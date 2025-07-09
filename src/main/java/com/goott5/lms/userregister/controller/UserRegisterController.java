@@ -29,7 +29,7 @@ public class UserRegisterController {
   @ResponseBody
   public String checkEmail(String inputEmail) {
 
-    log.info("inputEmail:{}", inputEmail);
+//    log.info("inputEmail:{}", inputEmail);
     boolean isDuplicate = userRegisterService.checkEmail(inputEmail);
 
     if(isDuplicate) {

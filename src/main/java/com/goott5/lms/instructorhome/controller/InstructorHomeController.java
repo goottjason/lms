@@ -46,7 +46,7 @@ public class InstructorHomeController {
   @ResponseBody
   public List<CourseVO> getCourseLists(HttpSession session) {
 
-    log.info("loginUser : {}", session.getAttribute("loginUser"));
+//    log.info("loginUser : {}", session.getAttribute("loginUser"));
     return instructorHomeService.getCourseLists((UserVO) session.getAttribute("loginUser"));
   }
 

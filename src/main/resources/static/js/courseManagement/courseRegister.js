@@ -43,7 +43,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
                    output += `<option value="">강사선택</option>`;
@@ -73,7 +73,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
                    output += `<option value="">관리자선택</option>`;
@@ -103,7 +103,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
                    output += `<option value="">강의실선택</option>`;
@@ -134,7 +134,7 @@ $(document).ready(function () {
                success : function (data) { // 통신이 성공하면 수행할 함수
 
                    holidayArr = data;
-                   console.log(holidayArr);
+                   // console.log(holidayArr);
 
                },
                error   : function () {
@@ -374,7 +374,7 @@ function calEndDate() {
     }
     let endDateStr = changeDateToString(endDate);
     $("#end-date-input").val(endDateStr);
-    console.log(scheduleArr);
+    // console.log(scheduleArr);
 }
 
 function showWhenLunch() {
@@ -465,7 +465,7 @@ async function fetchAndDisplayView() {
 async function fetchAndInsertDetail() {
 
     let courseId = $(this).data("id");
-    console.log(courseId);
+    // console.log(courseId);
     let coursesWithPagination = await apiGetRequest(
         "/api/management/courses",
         {
@@ -474,7 +474,7 @@ async function fetchAndInsertDetail() {
             courseId     : courseId
         });
     let course                = coursesWithPagination?.respDTOS || [];
-    console.log(course);
+    // console.log(course);
     insertContentBySelect(course[0]);
 }
 
@@ -483,10 +483,10 @@ async function apiGetRequest(endpoint, additionalParams = {}) {
         const response = await axios.get(endpoint, {
             params: {...config, ...additionalParams}
         });
-        console.log(response.data);
+        // console.log(response.data);
         return response.data.data;
     } catch (error) {
-        console.error(`${endpoint} 요청 오류:`, error);
+        // console.error(`${endpoint} 요청 오류:`, error);
         return [];
     }
 }
@@ -645,7 +645,7 @@ function registerCourse(e) {
                    async   : false, // 비동기옵션 off
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
-                       console.log(data);
+                       // console.log(data);
                        let result = (data == "success" ? true : false);
                        location.href = `/courseRegister/saveSuccess?isSuccess=${result}`;
                    },
@@ -822,7 +822,7 @@ function checkValid() {
     }
 
 
-    console.log(result);
+    // console.log(result);
     return result;
 }
 

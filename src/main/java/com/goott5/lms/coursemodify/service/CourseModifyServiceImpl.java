@@ -86,7 +86,7 @@ public class CourseModifyServiceImpl implements CourseModifyService {
         result = false;
       };
     }
-    log.info("courseSaveDTO : {}", courseModifyDTO);
+//    log.info("courseSaveDTO : {}", courseModifyDTO);
 
     // 시간표 Insert
     int remainTime = courseModifyDTO.getTotalHours();

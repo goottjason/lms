@@ -149,7 +149,8 @@
                 <label for="instructor">강사명<span class="text-danger">*</span></label>
                 <select id="instructor" class="form-control">
                   <option value="">강사선택</option>
-                  <option th:value="${course.instructorId}"
+                  <option th:if="${course.instructorId != 0}"
+                          th:value="${course.instructorId}"
                           th:text="${course.fulltimeInstructorFullname}"
                           th:selected="true"></option>
                 </select>
@@ -160,7 +161,8 @@
                 <label for="administrator">관리자<span class="text-danger">*</span></label>
                 <select id="administrator" class="form-control">
                   <option value="">관리자선택</option>
-                  <option th:value="${course.administratorId}"
+                  <option th:if="${course.administratorId != 0}"
+                          th:value="${course.administratorId}"
                           th:text="${course.courseHeadFullname}"
                           th:selected="true"></option>
                 </select>

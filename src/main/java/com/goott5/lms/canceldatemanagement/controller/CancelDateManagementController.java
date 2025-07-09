@@ -36,7 +36,7 @@ public class CancelDateManagementController {
   @ResponseBody
   public void saveHolidays(@RequestBody List<HolidayDTO> holidayDTOS) {
 
-    log.info("holidayDTOS: {}", holidayDTOS);
+//    log.info("holidayDTOS: {}", holidayDTOS);
 
     cancelDateManagementService.saveHolidays(holidayDTOS);
 
@@ -46,7 +46,7 @@ public class CancelDateManagementController {
   @ResponseBody
   public List<CourseVO> getCoursesByInProgress(Integer inProgressType) {
 
-    log.info("isInProgress: {}", inProgressType);
+//    log.info("isInProgress: {}", inProgressType);
 
     return cancelDateManagementService.getCoursesByInProgress(inProgressType);
 
@@ -57,7 +57,7 @@ public class CancelDateManagementController {
   @ResponseBody
   public PagingResponseDTO<CancelDateVO> getCancelDates(PagingRequestDTO pagingRequestDTO) {
 
-    log.info("pagingRequestDTO: {}", pagingRequestDTO);
+//    log.info("pagingRequestDTO: {}", pagingRequestDTO);
 
     return cancelDateManagementService.getCancelDates(pagingRequestDTO);
 
@@ -66,7 +66,7 @@ public class CancelDateManagementController {
   @PostMapping("/removeCancelDate")
   @ResponseBody
   public String removeCancelDate(@RequestBody Integer id) {
-    log.info("id: {}", id);
+//    log.info("id: {}", id);
 
     cancelDateManagementService.removeCancelDate(id);
     return "success";
@@ -76,7 +76,7 @@ public class CancelDateManagementController {
   @ResponseBody
   public String saveCancelDates(@RequestBody List<CancelDateDTO> cancelDateDTOS) {
 
-    log.info("cancelDateDTOS: {}", cancelDateDTOS);
+//    log.info("cancelDateDTOS: {}", cancelDateDTOS);
     cancelDateManagementService.saveCancelDates(cancelDateDTOS);
 
     return "success";

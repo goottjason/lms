@@ -23,7 +23,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
 
@@ -52,7 +52,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
 
@@ -83,7 +83,7 @@ $(document).ready(function () {
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
 
@@ -113,7 +113,7 @@ $(document).ready(function () {
                success : function (data) { // 통신이 성공하면 수행할 함수
 
                    holidayArr = data;
-                   console.log(holidayArr);
+                   // console.log(holidayArr);
 
                },
                error   : function () {
@@ -356,7 +356,7 @@ function calEndDate() {
     }
     let endDateStr = changeDateToString(endDate);
     $("#end-date-input").val(endDateStr);
-    console.log(scheduleArr);
+    // console.log(scheduleArr);
 }
 
 function showWhenLunch() {
@@ -462,7 +462,7 @@ function modifyCourse(e) {
 
     if (checkValid()) {
 
-        console.log("check");
+        // console.log("check");
 
         $.ajax({
                    url: "/courseManagement/courseModify/modifyCourse", // 데이터가 송수신될 서버의
@@ -476,7 +476,7 @@ function modifyCourse(e) {
                    async   : false, // 비동기옵션 off
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
-                       console.log(data);
+                       // console.log(data);
                        let result = (data == "success" ? true : false);
 
                        location.href = `/courseManagement/courseModify/modifySuccess?isSuccess=${result}&courseId=${courseId}`;
@@ -642,7 +642,7 @@ function checkValid() {
         result = false;
     }
 
-    console.log(result);
+    // console.log(result);
     return result;
 }
 
