@@ -1,6 +1,7 @@
 package com.goott5.lms.communitynotice.service;
 
 import com.goott5.lms.communitynotice.domain.NoticeDTO;
+import com.goott5.lms.communitynotice.domain.NoticeIdDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingRequestDTO;
 import com.goott5.lms.communitynotice.domain.NoticePagingResponseDTO;
 import com.goott5.lms.user.domain.UserVO; // UserVO import
@@ -11,7 +12,7 @@ import java.util.List;
 
 public interface NoticeService {
 
-  int registerNotice(NoticeDTO noticeDTO, List<MultipartFile> files) throws IOException;
+  NoticeIdDTO registerNotice(NoticeDTO noticeDTO, List<MultipartFile> files) throws IOException;
 
   NoticePagingResponseDTO<NoticeDTO> getNoticeList(NoticePagingRequestDTO pagingRequestDTO);
 

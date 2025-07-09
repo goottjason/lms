@@ -208,6 +208,12 @@
 
             axios.post("/communityNotice/noticeRegister", formData)
                  .then(response => {
+
+                     if($("#isFixed").prop("checked")){
+                         sendNotificationToAll(`(필독) 공지사항이 등록되었습니다. ${$("#title").val()}`, false,
+                                               `/communityNotice/noticeDetail/${response.data.noticeId}`)
+
+                     }
                      Swal.fire({icon: "success", title: response.data.message})
                          .then(() => {
                              location.href = "/communityNotice/noticeList";

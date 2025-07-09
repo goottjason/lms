@@ -267,6 +267,12 @@
             axios.post("/communityNotice/noticeModify", formData)
                  .then(response => {
                      // 성공 시 SweetAlert2 알림창 표시
+                     if($("#isFixed").prop("checked")){
+                         sendNotificationToAll(`(필독) 공지사항이 등록되었습니다. ${$("#title").val()}`, false,
+                                               `/communityNotice/noticeDetail/${document.querySelector("input[name='id']").value}`)
+                     }
+
+
                      Swal.fire({icon: "success", title: response.data.message})
                          .then(() => {
                              // 확인 버튼 클릭 시, 페이징 정보가 포함된 URL로 상세 페이지 이동

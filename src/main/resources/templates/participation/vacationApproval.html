@@ -965,8 +965,12 @@
                                success: function(response) {
                                    console.log('휴가 승인 응답:', response);
 
+
                                    if (response.success) {
                                      //  showSuccessMessage(`${learnerName}님의 휴가 승인이 완료되었습니다.`);
+                                       sendNotification([response.learnerId],
+                                                        `${response.vacationDate} 휴가 승인이 완료되었습니다.`,
+                                                        false, "/participation/participationView");
 
                                        Swal.fire({
                                                      title: "승인되었습니다.",
@@ -1041,6 +1045,11 @@
                                    console.log('휴가 거부 응답:', response);
 
                                    if (response.success) {
+
+                                       sendNotification([response.learnerId],
+                                                        `${response.vacationDate} 휴가 신청이 거부되었습니다.`,
+                                                        true, "/participation/participationView");
+
                                        // showSuccessMessage(`${learnerName}님의 휴가 거부가 완료되었습니다.`);
                                        Swal.fire({
                                                      title: "승인거부되었습니다.",
