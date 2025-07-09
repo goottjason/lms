@@ -61,7 +61,6 @@ function connectP(){
         stompP.subscribe(`/topic/participation`,
                          function(message){
 
-                             console.log(message);
                              if(message.body == "checkInOrOut"){
 
                                  updateTimeDisplay();
@@ -246,14 +245,12 @@ function handlePageButtonClick() {
 }
 
 async function fetchAndDisplayLearners() {
-    console.log("learnerConfig: ", learnerConfig);
     let learnersWithPaging = await apiGetRequestParams(
         "/api/learnermanagement/learnersonlypart",
         {...baseConfig, ...learnerConfig});
     displayView(learnersWithPaging);
 }
 function displayView(learnersWithPaging) {
-    console.log(learnersWithPaging);
     //updateStatusBar(learnersWithPaging);
     displayTableList(learnersWithPaging);
     displayPagination(learnersWithPaging);
@@ -267,7 +264,6 @@ async function displayTableList(learnersWithPaging) {
 
     // 일간뷰
     if (activeTabText == 'pills-daily') {
-        console.log(learners);
 
         let rowHtml = ``;
 
@@ -392,7 +388,6 @@ async function displayTableList(learnersWithPaging) {
     // 주간뷰
     else {
         // 주간으로 탭 이동시 curruntDate는 그 주 월요일로 변경됨
-        console.log(learners);
         let rowHtml = ``;
 
         if (learners.length == 0) {
@@ -585,14 +580,12 @@ function fromTimeStrToTodayTime(timeStr) {
 
 function handleWeeklyStatusBtnClick() {
     let partId = $(this).data('id');
-    console.log("버튼클릭: ", partId);
 
     getReasonAndDisplay(partId);
 }
 async function getReasonAndDisplay(partId) {
     let partInfo = await apiGetRequestByPartId(
         `/api/management/participation/${partId}`);
-    console.log(partInfo);
 
     let rawHtml = `
       <tr>

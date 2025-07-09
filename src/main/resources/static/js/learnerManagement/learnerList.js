@@ -188,7 +188,6 @@ async function fetchAndDisplayLearners() {
     let learnersWithPaging = await apiGetRequestParams(
         "/api/learnermanagement/learners",
         {...baseConfig, ...learnerConfig});
-    console.log("learnersWithPaging: ", learnersWithPaging);
     displayView(learnersWithPaging);
 }
 function displayView(learnersWithPaging) {

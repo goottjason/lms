@@ -38,11 +38,9 @@ $(document).ready(function () {
 /* ================================================================================ */
 
 async function fetchAndLoadTopCourseSelector() {
-    // console.log(baseConfig, courseConfig);
     let coursesWithPaging= await apiGetRequestParams(
         '/api/coursemanagement/courses',
         {...baseConfig, ...courseConfig});
-    // console.log(coursesWithPaging);
     LoadTopCourseSelector(coursesWithPaging);
 }
 async function apiGetRequestParams(endpoint, params) {
@@ -87,11 +85,9 @@ async function apiDeleteRequestParams(endpoint, params) {
         // 삭제 성공시
         const response = await axios.delete(endpoint, {params: params});
         // { "code": 200, "message": "삭제 성공", "data": null}
-        console.log(response.data.data);
         await sweetAlertDeleteSuccess();
         window.location.href = `/courseManagement/courseList`;
     } catch (error) {
-        console.log(error);
         // 삭제 실패시
         Swal.fire({
                       icon  : "error",
@@ -121,7 +117,6 @@ function handleModifyButtonClick(e) {
     let coStartDate = $(this).data('startdate');
     let coStartDateObj = toYMD(new Date(coStartDate));
     let todayObj = toYMD(new Date());
-    console.log(coStartDateObj, todayObj);
     if (coStartDateObj > todayObj) {
         window.location.href = $('#modify-link').attr('href');
     } else {
@@ -138,7 +133,6 @@ function handleRemoveButtonClick() {
     let coStartDate = $(this).data('startdate');
     let coStartDateObj = toYMD(new Date(coStartDate));
     let todayObj = toYMD(new Date());
-    console.log(coStartDateObj, todayObj);
     if (coStartDateObj > todayObj) {
         Swal.fire({
                       title             : "정말 삭제하시겠습니까?",

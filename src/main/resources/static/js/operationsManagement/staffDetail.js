@@ -29,7 +29,6 @@ $(document).ready(function() {
     $('#leave-btn').on('click', handleLeaveBtnClick);
     $(document).on('click', '.page-link', handlePageBtnClick);
     $(document).on('click', '#leave-save-btn', handleLeaveSaveBtnClick);
-    console.log(baseConfig);
 
 });
 function handlePageBtnClick() {
@@ -51,7 +50,6 @@ function handleLeaveSaveBtnClick() {
         if (result.isConfirmed) {
             if (leaveDate == '') {
                 leaveDate = 'NULL';
-                console.log(leaveDate);
             }
             updateLeaveDateByStaffId(leaveDate);
         }
@@ -93,10 +91,8 @@ function handleLeaveBtnClick() {
 async function getHistories() {
     let historyWithPagination = await apiGetRequestAboutStaff(
         '/api/management/staffhistories');
-    console.log(historyWithPagination);
     let histories = historyWithPagination?.staffHistories || [];
     if (!Array.isArray(histories)) histories = [];
-    console.log(histories);
     displayTables(histories);
     displayPagination(historyWithPagination);
 }
@@ -157,11 +153,9 @@ function displayPagination(data) {
 
 async function apiGetRequestAboutStaff(endpoint, additionalParams = {}) {
     try {
-        console.log(historyPageConfig.staffId)
         const response = await axios.get(endpoint, {
             params: { ...baseConfig, ...historyPageConfig }
         });
-        console.log(response.data);
         return response.data.data;
     } catch (error) {
         console.error(`${endpoint} 요청 오류:`, error);
@@ -183,7 +177,6 @@ async function apiPatchRequestAboutStaff(endpoint, leaveDate) {
                 }
             }
         );
-        console.log(response.data);
         Swal.fire({
                       icon: "success",
                       title: "저장완료!",

@@ -33,8 +33,6 @@ public class PageStaffHistoryRespDTO<StaffHistoryResp> {
       PageStaffHistoryReqDTO pageStaffHistoryReqDTO,
       List<StaffHistoryReq> staffHistories) {
 
-    log.info("사이즈????: {}", staffHistories.toString());
-    log.info("staffHistories 사이즈: {}", staffHistories.size());
     this.totalRecords = staffHistories.size();
 
     this.pageNo = pageStaffHistoryReqDTO.getPageNo();
@@ -59,13 +57,5 @@ public class PageStaffHistoryRespDTO<StaffHistoryResp> {
 
     int endIndex = Math.min(pageStaffHistoryReqDTO.getOffset() + pageSize, totalRecords);
     this.staffHistories = (List<StaffHistoryResp>) staffHistories.subList(pageStaffHistoryReqDTO.getOffset(), endIndex);
-    log.info("lastPage:" + lastPage);
-    log.info("totalRecords:" + totalRecords);
-    log.info("blockStartPage:" + blockStartPage);
-    log.info("blockEndPage:" + blockEndPage);
-    log.info("lastPage:" + lastPage);
-    log.info("totalRecords:" + totalRecords);
-    log.info("staffHistories:" + staffHistories);
-    log.info("endIndex:" + endIndex);
   }
 }

@@ -64,7 +64,6 @@ public class StaffRespDTO {
     String[] numberOfLearnerList = courseNumberOfLearnerList.split(",");
     String[] startDateList = courseStartDateList.split(",");
     String[] endDateList = courseEndDateList.split(",");
-    log.info(Arrays.toString(ids));
     for(int i = 0; i < ids.length; i++) {
       StaffHistoryReq staffHistoryReq = new StaffHistoryReq();
 

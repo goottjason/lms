@@ -97,13 +97,10 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
     if (!allLearners.isEmpty()) {
 
       for (LearnerRespDTO learner : allLearners) {
-        log.info("★★★Learner: " + learner);
         // test 테이블에서 id만 가져오고, 그 id로 LEFT JOIN submission 해서
         // leId로 시험, 과제 조회 가능
         Integer learnerId = learner.getUserId();
         Integer enrolledCourseId = learner.getCourseId();
-        log.info("enrolledCourseId: " + enrolledCourseId);
-        log.info("learnerId: " + learnerId);
 
         List<TestRespDTO> testRespDTOS = learnerManagementMapper.selectTestsByIds(
           loginUserId,
@@ -135,7 +132,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
           participationCountMap.put(status, participationCountMap.getOrDefault(status, 0) + 1);
         }
 
-        log.info("participationCountMap: " + participationCountMap);
 
         int attendance = participationCountMap.getOrDefault("ATTENDANCE", 0);
         int absence = participationCountMap.getOrDefault("ABSENCE", 0);
@@ -161,7 +157,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
       }
     }
-    log.info("total records: " + totalRecords);
 
     return PageLearnerRespDTO.<LearnerRespDTO>withPageInfo()
       .pageLearnerReqDTO(pageLearnerReqDTO)
@@ -256,8 +251,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
       pageLearnerRequest.setPageNo(null);
       pageLearnerRequest.setPageSize(null);
     }
-    log.info("◆baseReqDTO: " + baseReqDTO);
-    log.info("◆pageLearnerRequest: " + pageLearnerRequest);
     List<LearnerResponse> learners = learnerManagementMapper.selectLearnersByAuth(
         baseReqDTO, pageLearnerRequest);
     Integer totalRecords = learners.size();
@@ -420,8 +413,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
       pageLearnerRequest.setPageNo(null);
       pageLearnerRequest.setPageSize(null);
     }
-    log.info("◆baseReqDTO: " + baseReqDTO);
-    log.info("◆pageLearnerRequest: " + pageLearnerRequest);
     List<LearnerResponse> learners = learnerManagementMapper.selectLearnersOnlyPartByAuth(
         baseReqDTO, pageLearnerRequest);
     Integer totalRecords = learners.size();
@@ -547,7 +538,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
               .build();
       Boolean result = learnerManagementMapper.updateCompletionStatus(
           completionStatusUpdateRequest);
-      log.info("updateCompletionStatusByCoId: " + record.getLeId() + " " + completionStatus);
     }
     return true;
   }
@@ -556,8 +546,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
   @Override
   public Boolean modifyPartInfo(PartModifyRequest request) {
 
-    log.info("★★★★★{}",request);
-    log.info("{}, ", request.getPartExplanation());
 
     // participation_reason 테이블에서 partId에 해당하는 row가 있는지 조회, 없으면 insert
     Integer result = learnerManagementMapper.selectIsParticipationReasonRow(request.getPartId());
@@ -606,7 +594,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
                 .count()
         ));
 
-    log.info("statusCount: " + statusCount);
 
     int attendance = statusCount.getOrDefault("ATTENDANCE", 0);
     int absence = statusCount.getOrDefault("ABSENCE", 0);
@@ -641,7 +628,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
     List<HomeworkWithSubEval> details =
         learnerManagementMapper.selectHomeworkByCourseIdAndUserId(leCourseId, leUserId);
-    log.info("details: " + details);
     // 과제 평균패스율
     Integer denominator = 0;
     Integer numerator = 0;
@@ -661,7 +647,6 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
         homeworkPassRate = Math.round((numerator/denominator) * 100 * 100.0) / 100.0;
       }
     }
-    log.info("homeworkPassRate: " + homeworkPassRate);
     // isCompletionAboutHomework (1번이상 패스가 있는지 체크하여 true)
 
     return HomeworkOverviewResp.<HomeworkWithSubEval>builder()

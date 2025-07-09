@@ -125,7 +125,6 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
     List<UserRespDTO> userRespDTOS =
         courseManagementMapper.selectEnrolledLearnersByCourseId(pageUserReqDTO, courseId);
-    log.info(userRespDTOS.toString());
     return userRespDTOS;
   }
 
@@ -217,7 +216,6 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     List<Integer> coIds = courses.stream().map(
         CourseWithAssignedInfo::getCoId).collect(Collectors.toList());
 
-    log.info(coIds.toString());
 
     Map<Integer, List<CourseSubject>> subjectMap;
     Map<Integer, List<CourseClassDate>> classDateMap;
@@ -231,8 +229,6 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       referer = request.getHeader("referer");
       requestURI = request.getRequestURI();
     }
-    log.info("■■■referer: {}", referer);
-    log.info("■■■requestURI: {}", requestURI);
 
     final boolean isCourseListPage = (referer != null && requestURI != null)
         && referer.contains("courseList") && !requestURI.contains("courseDetail");
@@ -516,26 +512,21 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       // 오늘을 포함하여 이미 종료된 과정 조회
       if(today.isAfter(course.getCourseWithAssignedInfo().getCoEndDate())) {
         if (course.getCourseWithAssignedInfo().getCoIsInProgress()) {
-          log.info("오늘을 포함하여 이미 종료된 과정: {} (종료일: {})",
-              course.getCourseWithAssignedInfo().getCoName(),
-              course.getCourseWithAssignedInfo().getCoEndDate());
+
 
           CourseWithAssignedInfo info = course.getCourseWithAssignedInfo();
           // 오늘 종료된 과정은 종료처리 (혹시라도 종료되지 못한 과정 또한 종료처리)
 
           // 과정 상태 업데이트
           Boolean result1 = modifyCourseIsInProgressByCoId(info.getCoId());
-          log.info("과정상태 업데이트 완료");
 
           // 강의실 비활성화
           Boolean result2 = operationsManagementService.modifyClassroomIsActiveBycoClassroomId(
               info.getCoClassroomId());
-          log.info("강의실 비활성화 완료");
 
           // 교육생 수료처리
           Boolean result3 = learnerManagementService.modifyCompletionStatusByCoId(
               baseReqDTO, info.getCoId());
-          log.info("교육생 수료 또는 중도탈퇴 처리 완료");
         }
       }
     });

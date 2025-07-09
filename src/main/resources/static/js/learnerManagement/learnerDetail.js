@@ -68,11 +68,9 @@ $(document).ready(function() {
 /* ================================================================================ */
 
 async function fetchAndDisplayPartView() {
-  console.log("learnerConfig: ", learnerConfig);
   learnersWithPaging = await apiGetRequestParams(
       "/api/learnermanagement/learners",
       {...baseConfig, ...learnerConfig});
-  console.log(learnersWithPaging);
   if (learnersWithPaging.records[0].leCompletionStatus != 'DROPPED'
       && learnersWithPaging.records[0].leCompletionStatus != 'COMPLETED'
       && loginUserType == "ADMINISTRATOR") {
@@ -99,7 +97,6 @@ function displayPartChart() {
     partList = partOverview.partList;
   }
 
-  console.log(partOverview);
 
   // statusCount가 없으면 함수 종료
   if (!partOverview.statusCount) {
@@ -248,13 +245,11 @@ function renderPartTableAndPagination() {
 
   // 페이징 데이터 생성
   const pagingData = getPagingData(partList, currentPage, pageSize);
-  console.log("pagingData: ", pagingData);
 
   // 현재 페이지에 해당하는 데이터만 추출
   const start = (pagingData.pageNo - 1) * pageSize;
   const end = start + pageSize;
   const pageItems = partList.slice(start, end);
-  console.log("pageItems: ", pageItems);
 
   // 테이블 렌더링
   displayTableBody(pageItems);
@@ -339,7 +334,6 @@ function displayTableBody(items) {
       </tr>
     `;
   });
-  console.log(rowHtml);
   $("#tbody-part").append(rowHtml);
 }
 function displayPagination(data, $selector) {
@@ -477,10 +471,8 @@ async function handlePartSaveButtonClick() {
     '휴가사유': explanationVal,
     '인정시간': trainingTimeVal
   }
-  console.log(fields);
 
   let result = isValidForPartModify(fields);
-  console.log(result);
   if (result != "success") {
     await Swal.fire({
                       icon: "error",
@@ -499,7 +491,6 @@ async function handlePartSaveButtonClick() {
     partExplanation: explanationVal,
     partTrainingTime: trainingTimeVal
   };
-  console.log(partRequest);
   savePartInfoByPartId($(this).data('id'), partRequest);
 
   // 요청한 value 그대로 text로 출력
@@ -526,7 +517,6 @@ async function savePartInfoByPartId(partId, partRequest) {
   let result = await apiPatchRequestBody(
       `/api/learnermanagement/learners/participations/${partId}`,
       {...baseConfig, ...partRequest});
-  console.log(result);
   // 요청 후에 동작은 없음
   if (result) {
     await Swal.fire({
@@ -556,7 +546,6 @@ async function displayTrView(partId) {
 }
 
 function displayOnlyTr(partList, partId) {
-  console.log(partId, "아이디 가져오니");
   $(`tr[data-id=${partId}]`).empty();
   partList.forEach(function (item) {
     if (item.partId == partId) {
@@ -680,7 +669,6 @@ async function handleEmploySaveButtonClick() {
 async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
   try {
     const response = await axios.post(endpoint, payload);
-    console.log(response)
     await Swal.fire({
       icon: "success",
       title: "저장되었습니다!",
@@ -690,7 +678,6 @@ async function apiPostRequest(endpoint, payload = {}, additionalParams = {}) {
     location.reload();
     return response.data;
   } catch (error) {
-    console.log(error);
     Swal.fire({
       icon: "error",
       title: "수정불가능!",
