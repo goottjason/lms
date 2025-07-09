@@ -112,4 +112,12 @@ public class CancelDateManagementController {
 
   }
 
+  @GetMapping("/saveHolidaySuccess")
+  public String saveHolidaySuccess(RedirectAttributes redirectAttributes) {
+
+    redirectAttributes.addFlashAttribute("isSaveHolidaySuccess", true);
+    return  "redirect:/courseManagement/cancelDateManagement";
+
+  }
+
 }

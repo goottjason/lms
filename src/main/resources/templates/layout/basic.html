@@ -527,6 +527,7 @@
     function connectN(){
       let socket = new SockJS('/ws');
       stompC = Stomp.over(socket);
+      stompC.debug = () => {};
 
       stompC.connect({}, function(){
 

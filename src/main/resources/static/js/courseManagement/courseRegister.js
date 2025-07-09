@@ -801,10 +801,26 @@ function checkValid() {
         isValidSubjectHours = true;
     }
 
-    if (isDuplicate || isBlank || !isValidOrder || !isValidSubjectHours) {
-        showErr("#add-subject-row-btn", "잘못된 입력입니다.");
+    // if (isDuplicate || isBlank || !isValidOrder || !isValidSubjectHours) {
+    //     $("#subject-error").text("잘못된 입력입니다.");
+    //     result = false;
+    // }
+
+    if(!isValidSubjectHours){
+        $("#subject-error").text("총 훈련시간과 교과목별 훈련시간의 합이 동일해야 합니다.");
         result = false;
     }
+
+    if(!isValidOrder){
+        $("#subject-error").text("교과목 순서가 올바르지 않습니다.");
+        result = false;
+    }
+
+    if(isBlank || isDuplicate){
+        $("#subject-error").text("잘못된 입력입니다.");
+        result = false;
+    }
+
 
     console.log(result);
     return result;
