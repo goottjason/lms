@@ -50,41 +50,16 @@ function handleCancelBtnClick() {
     // displayTableView();
     let classroomId = $(this).data('id');
     displayTrView(classroomId);
-
-    console.log(classroomId);
-    /*let orgClassroomName = $('#name-input-'+classroomId).val();
-    let orgPriUserId = $('#pri-input-'+classroomId).data('id');
-    let orgPriUserName = $('#pri-input-'+classroomId).val();
-    let orgSecUserId = $('#sec-input-'+classroomId).data('id');
-    let orgSecUserName = $('#sec-input-'+classroomId).val();
-    console.log(classroomId, orgPriUserId, orgSecUserName);
-
-    $('#name-td-'+classroomId).html(`
-        <input type="text" class="form-control" 
-              value="${orgClassroomName}" id="name-input-${classroomId}" readonly></td>
-    `);
-    $("#pri-td-"+classroomId).html(`
-        <input type="text" class="form-control" value="${orgPriUserName}" id="pri-input-${classroomId}" data-id="${orgPriUserId}" readonly>
-    `);
-    $("#sec-td-"+classroomId).html(`
-        <input type="text" class="form-control" value="${orgSecUserName}" id="pri-input-${classroomId}" data-id="${orgSecUserId}" readonly>
-    `);*/
-    /*$(`.save-button[data-id=${classroomId}]`).hide();
-    $(`.cancel-button[data-id=${classroomId}]`).hide();
-    $(`.edit-button[data-id=${classroomId}]`).show();*/
 }
 async function displayTrView(classroomId) {
 
     let classroomsWithPagination = await apiGetRequestAboutClassroom(
         '/api/management/classrooms');
-    console.log("classroomsWithPagination", classroomsWithPagination);
     let classrooms = Array.isArray(classroomsWithPagination.classroomRepsDTOS) ?
                      classroomsWithPagination.classroomRepsDTOS : [classroomsWithPagination.classroomRepsDTOS];
-    console.log("TableView 내의 classrooms", classrooms);
     displayOnlyTr(classrooms, classroomId);
 }
 function displayOnlyTr(classrooms, classroomId) {
-    console.log(classroomId, "아이디 가져오니");
     $(`tr[data-id=${classroomId}]`).empty();
     classrooms.forEach(function(classroom) {
        if (classroom.id == classroomId) {
@@ -159,7 +134,6 @@ async function handleAddBtnClick() {
             secondaryAdminId: newSecUserId
         }
     );
-    console.log(result);
     if(result == true){
         displayTableView();
     } else {
@@ -171,7 +145,6 @@ function handleEditBtnClick() {
     let classroomId = $(this).data('id');
     let orgPriUserId = $('#pri-input-'+classroomId).data('id');
     let orgSecUserId = $('#sec-input-'+classroomId).data('id');
-    console.log(classroomId);
     // 강의실명 readonly 해제
     $("#name-input-"+classroomId).removeAttr('readonly');
     // 정, 부 셀렉트박스
@@ -233,7 +206,6 @@ async function handleSaveBtnClick() {
                   });
         return;
     }
-    console.log(classroomId, newClassroomName, newPriUserId, newSecUserId);
     let result = await apiPatchRequestAboutClassroom(
         '/api/management/classroom', {
             id: classroomId,
@@ -242,7 +214,6 @@ async function handleSaveBtnClick() {
             secondaryAdminId: newSecUserId
         }
     );
-    console.log(result);
     if(result == true){
         displayTrView(classroomId);
         /*displayTableView();*/
@@ -256,7 +227,6 @@ async function apiPatchRequestAboutClassroom(endpoint, additionalParams) {
         const response = await axios.patch(endpoint, {
             baseReqDTO: baseConfig,
             classroomReqDTO: additionalParams });
-        console.log(response.data);
         Swal.fire({
                       icon: "success",
                       title: "수정완료!",
@@ -281,7 +251,6 @@ async function apiPostRequestAboutClassroom(endpoint, additionalParams) {
         const response = await axios.post(endpoint, {
             baseReqDTO: baseConfig,
             classroomReqDTO: additionalParams });
-        console.log(response.data);
         Swal.fire({
                       icon: "success",
                       title: "추가완료!",
@@ -315,7 +284,6 @@ async function apiDeleteRequestAboutClassroom(endpoint, additionalParams) {
                       text: "성공적으로 삭제되었습니다.",
                       footer: ''
                   });
-        console.log(response.data);
         return true;
     } catch (error) {
         Swal.fire({
@@ -334,7 +302,6 @@ async function initState() {
     let staffsWithPaging = await apiGetRequestParams(
         '/api/operationsmanagement/staffs',
         {...baseConfig, ...staffConfig});
-    console.log(staffsWithPaging);
 
     staffs = staffsWithPaging?.records || [];
     if (!Array.isArray(staffs)) {
@@ -358,10 +325,8 @@ async function displayTableView() {
 
     let classroomsWithPagination = await apiGetRequestAboutClassroom(
         '/api/management/classrooms');
-    console.log("classroomsWithPagination", classroomsWithPagination);
     let classrooms = Array.isArray(classroomsWithPagination.classroomRepsDTOS) ?
                    classroomsWithPagination.classroomRepsDTOS : [classroomsWithPagination.classroomRepsDTOS];
-    console.log("TableView 내의 classrooms", classrooms);
     displayClassrooms(classrooms);
     displayPagination(classroomsWithPagination);
 }
@@ -406,7 +371,6 @@ function displayClassrooms(classrooms) {
             "<tr class='text-center'><td colspan='6'>데이터가 없습니다.</td></tr>");
         return;
     }
-    console.log("classrooms", classrooms);
     $('#table-body').empty();
     classrooms.forEach(function(classroom) {
         let rowHtml = `
@@ -477,7 +441,6 @@ async function apiGetRequestAboutClassroom(endpoint, additionalParams = {}) {
         const response = await axios.get(endpoint, {
             params: { ...baseConfig, ...classroomPageConfig }
         });
-        console.log(response.data);
         return response.data.data;
     } catch (error) {
         console.error(`${endpoint} 요청 오류:`, error);

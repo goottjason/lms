@@ -65,7 +65,6 @@ public class LearnerManagementController {
         learnerManagementService.findLearnersAll(
             pageLearnerReqDTO, loginUserId, loginUserType, leId, isInProgress, courseId);
 
-    log.info("learners: " + learners);
 
     return learners;
   }
@@ -77,7 +76,6 @@ public class LearnerManagementController {
   ) {
     PageLearnerRespDTO<LearnerRespDTO> learners =
         learnerManagementService.getLearnersAllorOne(baseReqDTO, pageLernerReqDTO);
-    log.info("■■■learners: " + learners);
     return null;
   }
 
@@ -99,11 +97,9 @@ public class LearnerManagementController {
       @RequestParam("loginUserType") String loginUserType,
       @RequestParam("leId") Integer leId
   ) {
-    log.info("pageParticipationReqDTO: " + pageParticipationReqDTO);
     PageParticipationRespDTO<ParticipationRespDTO> participationsWithPagination =
         learnerManagementService.findParticipations(pageParticipationReqDTO, loginUserId,
             loginUserType, leId);
-    log.info("★participationsWithPagination: " + participationsWithPagination);
     return participationsWithPagination;
   }
 
@@ -162,7 +158,6 @@ public class LearnerManagementController {
       @PathVariable Integer pid
   ) {
     ParticipationWithReason partInfo = learnerManagementService.getPartInfoByPid(pid);
-    log.info("partInfo: " + partInfo);
     return ApiResponse.okResponse(200, "success", partInfo);
   }
 

@@ -60,7 +60,6 @@ async function initCourseSelect() {
     const startDate = new Date(course.startDate);
     startDate.setHours(0, 0, 0, 0); // 시간 제거
     // start_date가 오늘보다 하루 더 늦은 날짜(내일 이후)인지 확인
-    console.log(startDate, today);
     return startDate > today;
   });
   if (filteredCourses.length < 1) {
@@ -146,7 +145,6 @@ function displayTables(enrolledLearners, notEnrolledLearners) {
   if(enrolledLearners.length == 0) {
     $("#enrolled-list").html("<tr class='text-center'><td colspan='7'>데이터가 없습니다.</td></tr>");
   }
-  console.log("배정후",enrolledLearners)
   enrolledLearners.forEach(function(learner) {
     let rowHtml = `
         <tr>
@@ -268,7 +266,6 @@ async function handleSearchChange() {
 async function handleIncludeAllCheckbox() {
 
   includeAll = $('#include-all').is(':checked') ? '1' : null;
-  console.log(includeAll);
   let { enrolledLearners, notEnrolledLearners} = await getLearnersByEnrollment();
   displayTables(enrolledLearners, notEnrolledLearners);
 }

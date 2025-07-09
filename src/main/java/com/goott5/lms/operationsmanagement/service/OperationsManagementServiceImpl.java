@@ -151,6 +151,7 @@ public class OperationsManagementServiceImpl implements OperationsManagementServ
 
     int result = 0;
 
+    // 관리자(총괄관리자, 학과장만 퇴사일자를 업데이트 할 수 있음)
     if (loginUserType != null && "ADMINISTRATOR".equals(loginUserType)) {
       result = operationsManagementMapper.updateLeaveDate(
           staffId, leaveDate

@@ -79,7 +79,6 @@ async function apiGetRequestParams(endpoint, params) {
   }
 }
 function displayView(coursesWithPaging) {
-  console.log(coursesWithPaging);
   displayTableBody(coursesWithPaging);
   displayPagination(coursesWithPaging, $("#course-pagination"));
 }
