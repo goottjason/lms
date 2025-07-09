@@ -22,7 +22,8 @@
   <!-- content header 끝 -->
 
   <!-- content body 시작 -->
-  <form class="mb-4" method="POST" action="/homework/homeworkRegister" id="formSubmit" enctype="multipart/form-data" >
+  <form class="mb-4" method="POST" action="/homework/homeworkRegister" id="formSubmit"
+        enctype="multipart/form-data">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
         <div class="row align-items-center">
@@ -37,7 +38,8 @@
             <div class="form-group">
               <label for="title">제목</label>
               <span id="titleError" style="color: red"></span>
-              <input type="text" id="title" th:name="title" class="form-control" placeholder="과제 제목을 작성하세요.">
+              <input type="text" id="title" th:name="title" class="form-control"
+                     placeholder="과제 제목을 작성하세요.">
             </div>
           </div>
         </div>
@@ -62,8 +64,8 @@
         <div class="row mb-2">
           <div class="col-md-12">
             <div class="form-group">
-                <label for="content">내용</label>
-            <span id="contentError" style="color: red"></span>
+              <label for="content">내용</label>
+              <span id="contentError" style="color: red"></span>
               <textarea
                   id="content"
                   class="form-control"
@@ -78,8 +80,8 @@
           <div class="col-md-12">
             <div class="mb-2">첨부파일</div>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="file"  multiple>
-              <label class="custom-file-label" for="file" >파일을 선택하세요.</label>
+              <input type="file" class="custom-file-input" id="file" multiple>
+              <label class="custom-file-label" for="file">파일을 선택하세요.</label>
             </div>
           </div>
         </div>
@@ -98,8 +100,7 @@
     </div>
 
 
-
-      <!-- 버튼 -->
+    <!-- 버튼 -->
     <div class="col-12 d-flex justify-content-end mt-3">
       <button id="submit" class="btn btn-primary btn-icon-split mr-2" type="submit">
           <span class="icon text-white-50">
@@ -121,6 +122,9 @@
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
+
+    //savePage
+    let savePage = "";
 
     // 상단 과정명
     let courseName = /*[[${courseName}]]*/ null;
@@ -147,36 +151,36 @@
     //파일 사이즈
     const MAX_FILE_SIZE = 1024 * 1024 * 8;
 
-    console.log("courseId",courseId);
-    console.log("userId",userId);
+    console.log("courseId", courseId);
+    console.log("userId", userId);
 
     // 파일 담을 배열
     let fileList = [];
 
     //파일 넣는 function
-    function pushFileList(){
+    function pushFileList() {
       let files = document.getElementById("file").files;
 
-      for(let file of files){
+      for (let file of files) {
         let ext = file.name.split(".").pop().toLowerCase();
-        if(file){
+        if (file) {
           //파일일 경우
-          if(file.size > MAX_FILE_SIZE){
+          if (file.size > MAX_FILE_SIZE) {
             // alert("파일 사이즈가 초과하였습니다.")
             Swal.fire({
               title: '파일 사이즈를 초과하였습니다.',
               icon: 'error',
               confirmButtonText: '예'
             })
-          }else if(ext.trim() === "exe"){
+          } else if (ext.trim() === "exe") {
             Swal.fire({
               title: '실행 파일은 업로드할 수 없습니다.',
               icon: 'error',
               confirmButtonText: '예'
             })
-          }else{
+          } else {
             fileList.push(file);
-            console.log("file push",file);
+            console.log("file push", file);
           }
         }
       }
@@ -229,7 +233,7 @@
       console.log("fileList", fileList);
     }
 
-   //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
+    //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
     function removeFile(index) {
       fileList.splice(index, 1);
       previewFile(fileList);
@@ -239,62 +243,63 @@
     // 알림 function (해당 과정의 학생들에게)
 
     // $function 모음
-    $(function(){
+    $(function () {
 
       //상단 과정명 출력
       showCourseSelector();
 
       // file input될 때 마다 file 담기
-      $("#file").on("change",function () {
+      $("#file").on("change", function () {
         pushFileList();
         previewFile(fileList);
       })
 
       // 폼 전송
-      $("#submit").on("click",function (e) {
+      $("#submit").on("click", function (e) {
         e.preventDefault();
         let form = document.getElementById("formSubmit");
         let formData = new FormData(form);
-        formData.append("courseId",courseId);
-        formData.append("instructorId",userId);
+        formData.append("courseId", courseId);
+        formData.append("instructorId", userId);
 
         fileList.forEach(function (file) {
-          formData.append("files",file);
+          formData.append("files", file);
         })
 
         axios.post("/homework/homeworkRegister",
             formData
-        ).then(function(response){
+        ).then(function (response) {
           console.log(response)
           console.log(response.data)
           let targetNum = response.data.data;
-          sendNotificationToAllInCourse(courseId, "과제가 등록 되었습니다", false, "/homework/homeworkDetail?homeworkId="+ targetNum);
-          location.href = "/homework/homeworkDetail?homeworkId="+ targetNum;
+          sendNotificationToAllInCourse(courseId, "과제가 등록 되었습니다", false,
+              "/homework/homeworkDetail?homeworkId=" + targetNum);
+          location.href = "/homework/homeworkDetail?homeworkId=" + targetNum;
         }).catch(function (error) {
-          console.log("error",error);
-          if(error.response.data.data != null){
+          console.log("error", error);
+          if (error.response.data.data != null) {
             errorMap = error.response.data.data;
-            if(errorMap.title){
+            if (errorMap.title) {
               $("#titleError").html(errorMap.title);
             } else {
               $("#titleError").html("");
             }
 
-            if(errorMap.startDate){
+            if (errorMap.startDate) {
               $("#startDateError").html(errorMap.startDate);
-            }else {
+            } else {
               $("#startDateError").html("");
             }
 
-            if(errorMap.endDate){
+            if (errorMap.endDate) {
               $("#endDateError").html(errorMap.endDate);
-            }else {
+            } else {
               $("#endDateError").html("");
             }
 
-            if(errorMap.content){
+            if (errorMap.content) {
               $("#contentError").html(errorMap.content);
-            }else {
+            } else {
               $("#contentError").html("");
             }
           }
@@ -303,13 +308,15 @@
       })
 
       // 취소 버튼 클릭 시
-      $("#resetHomework").on("click",function (e) {
+      $("#resetHomework").on("click", function (e) {
         e.preventDefault();
-        location.href = "/homework/homeworkList";
+        savePage = localStorage.getItem("savePage");
+        if (savePage && savePage !== 'undefined' && savePage.trim() !== "") {
+          location.href = savePage;
+        } else {
+          location.href = "/homework/homeworkList";
+        }
       })
-
-
-
 
     })
 

@@ -5,6 +5,9 @@
     xmlns:th="http://www.thymeleaf.org"
     layout:decorate="~{layout/basic.html}">
 <head>
+  <script
+      src="https://code.jquery.com/jquery-3.7.0.min.js"
+      crossorigin="anonymous"></script>
   <style>
     #courseSelector {
       pointer-events: none;
@@ -211,10 +214,6 @@
   </div>
 </div>
   <th:block layout:fragment="script" th:inline="javascript">
-    <script
-        src="https://code.jquery.com/jquery-3.7.0.slim.min.js"
-        integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE="
-        crossorigin="anonymous"></script>
     <script>
 
       // $("#courseSelector").val(hom)
@@ -245,8 +244,9 @@
         showCourseSelector();
 
         // 삭제 모달창 뜨기
-        $("#deleteHomework").on("click", function () {
+        $(document).on("click","#deleteHomework", function () {
           // alert("!");
+          console.log("모달 존재 여부",$(".delete").length);
           $(".delete").modal("show");
         })
 
