@@ -75,7 +75,7 @@ public class CourseRegisterServiceImpl implements CourseRegisterService {
         result = false;
       };
     }
-    log.info("courseSaveDTO : {}", courseSaveDTO);
+//    log.info("courseSaveDTO : {}", courseSaveDTO);
 
     // 시간표 Insert
     int remainTime = courseSaveDTO.getTotalHours();

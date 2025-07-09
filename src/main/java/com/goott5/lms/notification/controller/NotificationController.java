@@ -32,7 +32,7 @@ public class NotificationController {
   @PostMapping("/send")
   public void sendNotification(@RequestBody NotificationSaveDTO notification) {
 
-    log.info("Sending notification: {}", notification);
+//    log.info("Sending notification: {}", notification);
 
     boolean isSuccess = notificationService.saveNotification(notification);
 

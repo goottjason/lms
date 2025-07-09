@@ -87,7 +87,7 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
 
     int total = cancelDateManagementMapper.selectCountOfCancelDate(pagingRequestDTO);
 
-    log.info("cancelDateVOS:{}", cancelDateVOS);
+//    log.info("cancelDateVOS:{}", cancelDateVOS);
     return PagingResponseDTO.<CancelDateVO>allInfo()
             .pagingRequestDTO(pagingRequestDTO)
             .voList(cancelDateVOS)
@@ -132,12 +132,12 @@ public class CancelDateManagementServiceImpl implements CancelDateManagementServ
     // 해당 날짜에 이미 개별 휴강일이 있던 강의들 조회
 
     for (CancelDateDTO cancelDateDTO : cancelDateDTOS) {
-      int checkii = cancelDateManagementMapper.insertCancelDate(cancelDateDTO);
-      log.info("checkdd:{}", checkii);
+      cancelDateManagementMapper.insertCancelDate(cancelDateDTO);
+
       if (cancelDateDTO.isAll()) { // 해당 날짜에 진행중인 과정 모두 시간표 업데이트
 
-        int checkdd = cancelDateManagementMapper.deleteAllCancelDateByDateExceptIsAllTrue(cancelDateDTO.getCancelDate());
-        log.info("checkdd:{}", checkdd);
+        cancelDateManagementMapper.deleteAllCancelDateByDateExceptIsAllTrue(cancelDateDTO.getCancelDate());
+
 
         List<CourseVO> courseVOS = cancelDateManagementMapper.selectCoursesInProgressByDate(
                 cancelDateDTO.getCancelDate());

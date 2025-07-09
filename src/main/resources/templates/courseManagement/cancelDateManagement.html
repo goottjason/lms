@@ -269,8 +269,7 @@
                          async   : false, // 비동기옵션 off
                          success : function (data) { // 통신이 성공하면 수행할 함수
 
-                           console.log(courseIdForNotification, dateOfDeletedCancelDate,
-                                       reasonOfDeletedCancelDate);
+                           // console.log(courseIdForNotification, dateOfDeletedCancelDate, reasonOfDeletedCancelDate);
 
                            if(courseIdForNotification == 0){
                              sendNotificationToAll(`${dateOfDeletedCancelDate} 에 예정된 ${reasonOfDeletedCancelDate} 사유의 휴강이 취소되었으니 확인하시고 정상 출석 바랍니다.`, false);
@@ -513,7 +512,7 @@
           let nextYearHoliday = [];
 
           requestUrl += "&solYear=" + nowDate.getFullYear();
-          console.log(requestUrl);
+          // console.log(requestUrl);
 
           $.ajax({
                      url     : requestUrl, // 데이터가 송수신될 서버의 주소
@@ -525,7 +524,7 @@
                      async   : false, // 비동기옵션 off
                      success : function (data) { // 통신이 성공하면 수행할 함수
 
-                         console.log(data);
+                         // console.log(data);
                          $(data.response.body.items.item).each(function (index, item) {
                              let dateStr = item.locdate.toString().slice(0, 4) + "-" +
                                            item.locdate.toString().slice(4, 6) + "-" +
@@ -563,7 +562,7 @@
                      async   : false, // 비동기옵션 off
                      success : function (data) { // 통신이 성공하면 수행할 함수
 
-                         console.log(data);
+                         // console.log(data);
                          $(data.response.body.items.item).each(function (index, item) {
                              let dateStr = item.locdate.toString().slice(0, 4) + "-" +
                                            item.locdate.toString().slice(4, 6) + "-" +
@@ -590,7 +589,7 @@
 
           let holidays     = nowYearHoliday.concat(nextYearHoliday);
           let holidaysJson = JSON.stringify(holidays);
-          console.log(holidaysJson);
+          // console.log(holidaysJson);
 
           $.ajax({
                      url : "/courseManagement/cancelDateManagement/saveHoliday", // 데이터가 송수신될 서버의 주소
@@ -647,7 +646,7 @@
                      // Content-Type헤더가 application/x-www-form-urlencoded; charset=UTF-8로 자동 설정되는 것을 방지
                      async   : false, // 비동기옵션 off
                      success : function (data) { // 통신이 성공하면 수행할 함수
-                         console.log(data);
+                         // console.log(data);
                          makeAndShowList(data);
                          makeAndShowPagingArea(data);
                      },

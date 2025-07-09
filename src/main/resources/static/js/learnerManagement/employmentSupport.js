@@ -53,7 +53,7 @@ $(function(){
 
     $("#search-btn").click(function(){
         pageNo = 1;
-        console.log($("#search-input").val().length);
+        // console.log($("#search-input").val().length);
         if($("#search-input").val().length > 0){
             isWithSearch = true;
         } else {
@@ -89,7 +89,7 @@ $(function(){
                    async   : false, // 비동기옵션 off
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
-                       console.log(data);
+                       // console.log(data);
 
                        $(".employment-status").each(function(index, item){
                            if($(item).val() == data.employmentStatus){
@@ -247,7 +247,7 @@ function getEmploymentList(){
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
 
                    let output = ``;
                    $(data.voList).each(function(index, item){
@@ -257,6 +257,7 @@ function getEmploymentList(){
                                     <td class="title align-middle">${item.name}</td>
                                     <td class="text-center align-middle">${item.instructorFullName}</td>
                                     <td class="text-center align-middle">${item.learnerFullName}</td>
+                                    <td class="text-center align-middle ${item.counselingReceived ? 'text-success' : 'text-danger'}">${item.counselingReceived ? '상담완료' : '미상담'}</td>
                                     <td class="text-center align-middle">`;
 
                        if(item.employmentStatus == "UNEMPLOYED"){

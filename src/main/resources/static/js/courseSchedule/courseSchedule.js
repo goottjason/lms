@@ -103,7 +103,7 @@ $(function(){
                            // tmpCourse = data; // 교육생, 강사 코스선택 바인드
                        }
                        // data가 널일시(배정 한번도 없는 관리자)체크
-                       console.log(data);
+                       // console.log(data);
 
                    },
                    error   : function () {
@@ -331,8 +331,8 @@ function getCoursesByInProgressType(){
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log("확인");
-                   console.log(data);
+                   // console.log("확인");
+                   // console.log(data);
                    let output = `<option value="-1">과정별</option>`;
                    $(data).each(function(index, item){
                        output += `<option value="${item.id}" data-course='${JSON.stringify(item)}'>${item.name}</option>`
@@ -379,7 +379,7 @@ function selectFirstCourse(){
 
 
                    // data가 널일시(배정 한번도 없는 관리자)체크
-                   console.log(data.id == 0);
+                   // console.log(data.id == 0);
 
                },
                error   : function () {

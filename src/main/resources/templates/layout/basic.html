@@ -534,7 +534,7 @@
         stompC.subscribe(`/topic/notification/${loginUserIdForSub}`,
         function(message){
 
-          console.log(message);
+          // console.log(message);
           if(message.body == "notified"){
 
             getNotification();
@@ -560,7 +560,7 @@
                // contentType: "application/json; charset=utf-8",
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
-                 console.log(data);
+                 // console.log(data);
                  notificationData = data;
 
                  let notificationCount = 0;

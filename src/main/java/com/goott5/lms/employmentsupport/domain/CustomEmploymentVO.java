@@ -13,6 +13,7 @@ public class CustomEmploymentVO {
 
   private int id;
   private int isInProgress;
+  private boolean isCounselingReceived;
   private String name;
   private String instructorFullName;
   private String learnerFullName;
