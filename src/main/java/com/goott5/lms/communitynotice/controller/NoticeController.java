@@ -131,10 +131,11 @@ public class NoticeController {
   }
 
   @GetMapping("/noticeModify/{id}")
-  public String noticeModifyForm(@PathVariable int id, Model model, HttpSession session, RedirectAttributes rttr) {
+  public String noticeModifyForm(@PathVariable int id,
+      @ModelAttribute("pagingRequestDTO") NoticePagingRequestDTO pagingRequestDTO,
+      Model model, HttpSession session) {
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (!noticeService.isAdmin(loginUser)) {
-      rttr.addFlashAttribute("errorMessage", "권한이 없습니다.");
       return "redirect:/communityNotice/noticeList";
     }
     NoticeDTO notice = noticeService.getNotice(id);
@@ -142,6 +143,7 @@ public class NoticeController {
     model.addAttribute("notice", notice);
     model.addAttribute("files", files);
     model.addAttribute("pinnedCount", noticeService.getPinnedCount());
+    // pagingRequestDTO는 @ModelAttribute에 의해 자동으로 Model에 추가됩니다.
     return "communityNotice/noticeModify";
   }
 
