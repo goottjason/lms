@@ -202,6 +202,25 @@
     }
   </script>
 
+  <script th:if="${isSaveHolidaySuccess}" th:inline="javascript">
+    let isSaveHolidaySuccess = [[${isSaveHolidaySuccess}]];
+    if (isSaveHolidaySuccess) {
+      Swal.fire({
+                  icon: "success",
+                  title: "저장되었습니다!",
+                  showConfirmButton: false,
+                  timer: 1500
+                });
+    } else {
+      Swal.fire({
+                  icon: "warning",
+                  title: "저장 실패!",
+                  showConfirmButton: false,
+                  timer: 1500
+                });
+    }
+  </script>
+
 
   <script>
       // javascript 개발은 여기에...
@@ -583,8 +602,7 @@
                      async   : false, // 비동기옵션 off
                      success : function () { // 통신이 성공하면 수행할 함수
 
-                         alert("저장완료");
-                         location.reload(true);
+                        location.href = "/courseManagement/cancelDateManagement/saveHolidaySuccess";
                      },
                      error   : function () {
                          alert("저장 실패!!!!");
