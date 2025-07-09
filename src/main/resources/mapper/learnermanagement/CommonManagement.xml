@@ -64,6 +64,19 @@
     <if test="page.leId != null">
       AND leId = #{page.leId}
     </if>
+    <!-- 라디오필터(null이면 전체) -->
+    <if test="page.radioFilter != null and page.radioFilter == 'onlyNotEnrolled'">
+      AND leCompletionStatus IS NULL
+    </if>
+    <if test="page.radioFilter != null and page.radioFilter == 'onlyDropped'">
+      AND leCompletionStatus = 'DROPPED'
+    </if>
+    <if test="page.radioFilter != null and page.radioFilter == 'onlyCompleted'">
+      AND leCompletionStatus = 'COMPLETED'
+    </if>
+    <if test="page.radioFilter != null and page.radioFilter == 'onlyInProgress'">
+      AND leCompletionStatus = 'IN_PROGRESS'
+    </if>
   </sql>
 
   <sql id="filteringForCourse">

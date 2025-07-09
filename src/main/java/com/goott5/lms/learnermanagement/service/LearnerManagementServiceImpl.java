@@ -616,7 +616,7 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
 
     double totalScore = attendance + vacation + (late * 0.5) + (leaveEarly * 0.5);
     int totalCount = attendance + absence + vacation + late + leaveEarly;
-    Double attendanceRate = 100.0;
+    Double attendanceRate = 0.0;
     if (totalCount > 0) {
       attendanceRate = Math.round((totalScore / totalCount) * 100 * 100.0) / 100.0;
     }

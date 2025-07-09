@@ -300,7 +300,7 @@ async function displayTableList(learnersWithPaging) {
 
                         if (part.partCheckIn != null) {
                             // null이 아니면(입실함)
-                            learnerCheckInStr = part.partCheckIn;
+                            learnerCheckInStr = part.partCheckIn.split('T')[1];
 
                         } else if (part.partCheckIn == null) {
                             /*null이면(미입실함),
@@ -323,7 +323,7 @@ async function displayTableList(learnersWithPaging) {
 
                         if (part.partCheckOut != null) {
                             // null이 아니면(퇴실함)
-                            learnerCheckOutStr = part.partCheckOut;
+                            learnerCheckOutStr = part.partCheckOut.split('T')[1];
                         } else if (part.partCheckOut == null) {
                             /*null이면(미퇴실함),
                              '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력

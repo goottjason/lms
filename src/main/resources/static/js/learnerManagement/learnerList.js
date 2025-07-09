@@ -5,7 +5,20 @@ let baseConfig = {
     loginUserId  : loginUserId,
     loginUserType: loginUserType
 };
-
+let learnerConfig = {
+    pageNo        : 1,
+    pageSize      : 8,
+    type          : "userFullname",
+    keyword       : null,
+    orderBy       : "userFullname",
+    orderDirection: "ASC",
+    // 필터링
+    coIsInProgress: null,
+    leCourseId    : null,
+    leId          : null,
+    // 라디오필터 (all: 전체, onlyNotEnrolled, onleDropped, onlyInProgress)
+    radioFilter   : "onlyInProgress",
+};
 // 상단셀렉트박스용
 let courseTopConfig = {
     pageNo        : null,
@@ -18,7 +31,6 @@ let courseTopConfig = {
     coIsInProgress: null,
     coId          : null
 };
-
 // 중간셀렉트박스용
 let courseConfig = {
     pageNo        : null,
@@ -32,25 +44,10 @@ let courseConfig = {
     coId          : null
 };
 
-const learnerConfig = {
-    pageNo        : 1,
-    pageSize      : 8,
-    type          : "userFullname",
-    keyword       : null,
-    orderBy       : "userFullname",
-    orderDirection: "ASC",
-    // 필터링
-    coIsInProgress: null,
-    leCourseId    : null,
-    leId          : null
-};
-
-/* ================================================================================ */
-
 $(document).ready(() => {
 
+    // 세션 관리
     window.addEventListener("beforeunload", function (e) {
-
         // 외부로 이동 시 config 데이터 삭제
         if (!sessionStorage.getItem("isEnteringDetail")) {
             sessionStorage.removeItem("courseTopConfig");
@@ -62,34 +59,41 @@ $(document).ready(() => {
             sessionStorage.removeItem("isEnteringDetail");
         }
     });
-
     // 세션 정보 불러오기
     getStatus();
+
+    // 페이지 로드시, 라디오버튼, 셀렉트박스 및 검색창 유지
+    $('#courseSelector').val(courseTopConfig.coId);
+    let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
+    $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
+    $('#is-in-progress').val(courseConfig.coIsInProgress);
+    $('#course-select').val(courseConfig.coId);
+    $('#search-input').val(learnerConfig.keyword);
 
     // 강사 -> 상단셀렉트박스O, 중간셀렉트박스X (교육생 -> 접근 불가)
     if (loginUserType == "INSTRUCTOR") {
         // 상단셀렉트박스 로드
         fetchAndLoadTopCourseSelector();
-        // 리스트 로드
+        // 교육생 리스트 로드
         fetchAndDisplayLearners();
-        $(document)
-        .on("change", "#courseSelector", handleCourseTopSelectorChange);
+        // 이벤트 핸들러 (only INSTRUCTOR)
+        $(document).on("change", "#courseSelector", handleCourseTopSelectorChange);
     }
     // 관리자 -> 상단셀렉트박스X, 중간셀렉트박스O
     else {
-        // 상단셀렉트박스 가림
+        // 상단셀렉트박스 삭제
         $("#courseSelector").hide();
         // 중간셀렉트박스 로드
         fetchAndLoadCourseSelect();
-        // 리스트 로드
+        // 교육생 리스트 로드
         fetchAndDisplayLearners();
-
-        $(document)
-        .on("change", "#is-in-progress", handleIsInProgressSelectChange);
+        // 이벤트 핸들러 (only ADMINISTRATOR)
+        $(document).on("change", "#is-in-progress", handleIsInProgressSelectChange);
         $(document).on("change", "#course-select", handleCourseSelectChange);
     }
 
-    // 공통 핸들러
+    // 이벤트 핸들러 (공통)
+    $(document).on("change", "input[name='learner-filter']", handleLearnerFilterChange);
     $(document).on("click", "#search-button", handleSearchButtonClick);
     $(document).on("keydown", "#search-input", function (e) {
         if (e.key == "Enter") {
@@ -100,7 +104,44 @@ $(document).ready(() => {
     $(document).on("click", ".page-link", handlePageButtonClick);
 });
 
-/* ================================================================================ */
+function getStatus() {
+
+    let courseTopStatusByUser = sessionStorage.getItem("courseTopConfig");
+
+    if (courseTopStatusByUser) {
+        const parsedCourseTopConfig = JSON.parse(
+            sessionStorage.getItem("courseTopConfig"));
+        Object.assign(courseTopConfig, parsedCourseTopConfig);
+    }
+
+    let courseStatusByUser = sessionStorage.getItem("courseConfig");
+
+    if (courseStatusByUser) {
+        const parsedCourseConfig = JSON.parse(
+            sessionStorage.getItem("courseConfig"));
+        Object.assign(courseConfig, parsedCourseConfig);
+    }
+
+    let learnerStatusByUser = sessionStorage.getItem("learnerConfig");
+
+    if (learnerStatusByUser) {
+        const parsedLearnerConfig = JSON.parse(
+            sessionStorage.getItem("learnerConfig"));
+        Object.assign(learnerConfig, parsedLearnerConfig);
+    }
+}
+function setStatus() {
+    sessionStorage.setItem(
+        "courseTopConfig", JSON.stringify(courseTopConfig));
+    sessionStorage.setItem(
+        "courseConfig", JSON.stringify(courseConfig));
+    sessionStorage.setItem(
+        "learnerConfig", JSON.stringify(learnerConfig));
+}
+function setFlag() {
+    sessionStorage.setItem(
+        'isEnteringDetail', 'true');
+}
 
 async function fetchAndLoadTopCourseSelector() {
     let coursesWithPaging = await apiGetRequestParams(
@@ -108,7 +149,6 @@ async function fetchAndLoadTopCourseSelector() {
         {...baseConfig, ...courseTopConfig});
     LoadTopCourseSelector(coursesWithPaging);
 }
-
 async function apiGetRequestParams(endpoint, params) {
     try {
         const response = await axios.get(endpoint, {params: params});
@@ -117,7 +157,6 @@ async function apiGetRequestParams(endpoint, params) {
         return [];
     }
 }
-
 function LoadTopCourseSelector(coursesWithPaging) {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) {
@@ -129,7 +168,6 @@ function LoadTopCourseSelector(coursesWithPaging) {
     }
     LoadTopCourseSelectorOption("#courseSelector", courses);
 }
-
 function LoadTopCourseSelectorOption(selector, records) {
     const $select = $(selector).empty();
     records.forEach(record => {
@@ -146,33 +184,40 @@ function LoadTopCourseSelectorOption(selector, records) {
         $select.find(`option[value="${learnerConfig.leCourseId}"]`).prop("selected", true);
     }
 }
-
 async function fetchAndDisplayLearners() {
-    console.log("learnerConfig: ", learnerConfig);
     let learnersWithPaging = await apiGetRequestParams(
         "/api/learnermanagement/learners",
         {...baseConfig, ...learnerConfig});
+    console.log("learnersWithPaging: ", learnersWithPaging);
     displayView(learnersWithPaging);
 }
-
 function displayView(learnersWithPaging) {
-    console.log(learnersWithPaging);
     updateStatusBar(learnersWithPaging);
     displayCardList(learnersWithPaging);
     displayPagination(learnersWithPaging, $("#learner-pagination"));
 }
-
 function updateStatusBar(learnersWithPagination) {
+    let radioFilterStatus = ' (전체)';
+
+    if (learnerConfig.radioFilter == 'onlyInProgress') {
+        radioFilterStatus = ' (교육진행생만)';
+    } else if (learnerConfig.radioFilter == 'onlyNotEnrolled') {
+        radioFilterStatus = ' (미배정만)';
+    } else if (learnerConfig.radioFilter == 'onlyCompleted') {
+        radioFilterStatus = ' (수료생만)';
+    } else if (learnerConfig.radioFilter == 'onlyDropped') {
+        radioFilterStatus = ' (중퇴생만)';
+    }
     if (learnerConfig.keyword == null || learnerConfig.keyword == "") {
         if (learnerConfig.coIsInProgress == null) {
-            $("#course-name-date").text(`전체 교육생`);
+            $("#course-name-date").text(`진행중 및 종료된 교육생${radioFilterStatus}`);
         } else if (learnerConfig.coIsInProgress == "1") {
-            $("#course-name-date").text(`현재 과정 진행중인 교육생`);
+            $("#course-name-date").text(`진행중인 과정의 교육생${radioFilterStatus}`);
         } else if (learnerConfig.coIsInProgress == "0") {
-            $("#course-name-date").text(`종료된 과정의 교육생`);
+            $("#course-name-date").text(`종료된 과정의 교육생${radioFilterStatus}`);
         }
         if (learnerConfig.leCourseId != null) {
-            $("#course-name-date").text(`선택한 과정의 교육생`);
+            $("#course-name-date").text(`선택한 과정의 교육생${radioFilterStatus}`);
         }
     } else {
         $("#course-name-date").text(`'${learnerConfig.keyword}' 검색결과`);
@@ -181,7 +226,6 @@ function updateStatusBar(learnersWithPagination) {
     .text(`총 인원: ${learnersWithPagination.totalRecords}명`);
 
 }
-
 function displayCardList(learnersWithPaging) {
     $("#card-list").empty();
 
@@ -268,7 +312,6 @@ function displayCardList(learnersWithPaging) {
     }
 
 }
-
 function displayPagination(data, $selector) {
 
     // 기록이 없을 때, 페이지네이션도 표시되지 않음
@@ -305,14 +348,12 @@ function displayPagination(data, $selector) {
 
     $selector.html(output);
 }
-
 async function fetchAndLoadCourseSelect() {
     let coursesWithPaging = await apiGetRequestParams(
         "/api/coursemanagement/courses",
         {...baseConfig, ...courseConfig});
     LoadCourseSelect(coursesWithPaging);
 }
-
 function LoadCourseSelect(coursesWithPaging) {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) {
@@ -320,7 +361,6 @@ function LoadCourseSelect(coursesWithPaging) {
     }
     LoadCourseSelectOption("#course-select", courses);
 }
-
 function LoadCourseSelectOption(selector, records) {
     const $select = $(selector).empty().append("<option value=\"\">전체</option>");
     ;
@@ -339,8 +379,15 @@ function LoadCourseSelectOption(selector, records) {
     }
 }
 
-/* ================================================================================ */
+function handleLearnerFilterChange() {
+    var selectedValue = $('input[name="learner-filter"]:checked').val();
+    learnerConfig.radioFilter = selectedValue == '' ? null : selectedValue;
+    learnerConfig.pageNo     = 1;
+    learnerConfig.pageSize   = 8;
+    setStatus();
 
+    fetchAndDisplayLearners();
+}
 function handleCourseTopSelectorChange() {
     // 기존 검색과 페이징 초기화
     learnerConfig.keyword = null;
@@ -352,7 +399,6 @@ function handleCourseTopSelectorChange() {
     setStatus();
     fetchAndDisplayLearners();
 }
-
 function handleIsInProgressSelectChange() {
     // 기존 검색과 페이징 초기화
     learnerConfig.keyword = null;
@@ -372,7 +418,6 @@ function handleIsInProgressSelectChange() {
     setStatus();
     fetchAndDisplayLearners();
 }
-
 function handleCourseSelectChange() {
     // 기존 검색과 페이징 초기화
     learnerConfig.keyword = null;
@@ -387,7 +432,6 @@ function handleCourseSelectChange() {
     setStatus();
     fetchAndDisplayLearners();
 }
-
 function handleSearchButtonClick() {
 
     // 페이징 초기화 및 검색한 키워드로 검색
@@ -407,7 +451,6 @@ function handleSearchButtonClick() {
     setStatus();
     fetchAndDisplayLearners();
 }
-
 function handlePageButtonClick() {
     learnerConfig.pageNo = $(this).data("page");
 
@@ -415,43 +458,3 @@ function handlePageButtonClick() {
     fetchAndDisplayLearners();
 }
 
-function getStatus() {
-
-    let courseTopStatusByUser = sessionStorage.getItem("courseTopConfig");
-
-    if (courseTopStatusByUser) {
-        const parsedCourseTopConfig = JSON.parse(
-            sessionStorage.getItem("courseTopConfig"));
-        Object.assign(courseTopConfig, parsedCourseTopConfig);
-    }
-
-    let courseStatusByUser = sessionStorage.getItem("courseConfig");
-
-    if (courseStatusByUser) {
-        const parsedCourseConfig = JSON.parse(
-            sessionStorage.getItem("courseConfig"));
-        Object.assign(courseConfig, parsedCourseConfig);
-    }
-
-    let learnerStatusByUser = sessionStorage.getItem("learnerConfig");
-
-    if (learnerStatusByUser) {
-        const parsedLearnerConfig = JSON.parse(
-            sessionStorage.getItem("learnerConfig"));
-        Object.assign(learnerConfig, parsedLearnerConfig);
-    }
-}
-
-function setStatus() {
-    sessionStorage.setItem(
-        "courseTopConfig", JSON.stringify(courseTopConfig));
-    sessionStorage.setItem(
-        "courseConfig", JSON.stringify(courseConfig));
-    sessionStorage.setItem(
-        "learnerConfig", JSON.stringify(learnerConfig));
-}
-
-function setFlag() {
-    sessionStorage.setItem(
-        'isEnteringDetail', 'true');
-}

@@ -33,12 +33,11 @@ public interface CourseManagementService {
       Boolean includeAll);
 
 
-  boolean addLearnerToCourse(Integer loginUserId, String loginUserType, Integer learnerId,
+  boolean addLearnerToCourse(Integer learnerId,
       Integer courseId);
 
 
-  boolean removeLearnerFromCourse(Integer loginUserId, String loginUserType, Integer learnerId,
-      Integer courseId);
+  boolean removeLearnerFromCourse(Integer learnerId, Integer courseId);
 
   PageCourseResponse<CourseOverviewResp> getCoursesByAuth(
       BaseReqDTO baseReqDTO,

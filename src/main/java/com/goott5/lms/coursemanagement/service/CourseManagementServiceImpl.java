@@ -145,59 +145,57 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
   @Override
   public boolean addLearnerToCourse(
-      Integer loginUserId,
-      String loginUserType,
       Integer learnerId,
       Integer courseId) {
 
-    // 해당하는 과정의 총원을 불러옴(A)
-    PageCourseReqDTO<CourseReqDTO> pageCourseReqDTO = new PageCourseReqDTO<CourseReqDTO>();
+    // 1. 해당하는 과정의 numberOfLearner를 불러옴
+    Integer numberOfLearner =
+        courseManagementMapper.selectNumberOfLearnerByCoId(courseId);
 
-    List<CourseRespDTO> courses = courseManagementMapper.selectCoursesAllorOne(
-        pageCourseReqDTO, loginUserId, loginUserType, null, courseId);
+    // 2. 해당하는 과정에 배정된 교육생의 수를 불러옴
+    Integer enrolledLearnerCount =
+        courseManagementMapper.selectErolledLearnerCount(courseId);
 
-    // 해당하는 과정에 수강중인 교육생의 수를 불러옴(B)
-    Integer enrolledLernerCount = courseManagementMapper.selectErolledLernerCount(courseId);
     int result = 0;
-    // A>B 일때만 추가가능
-    if (courses.get(0).getNumberOfLearner() > enrolledLernerCount) {
-      result = courseManagementMapper.insertLearnerToCourse(learnerId, courseId);
+    if (numberOfLearner > enrolledLearnerCount) {
+
+      // 3. numberOfLearner > enrolledLearnerCount 일때만 데이터 추가
+      result = courseManagementMapper.insertLearnerToCourse(
+          learnerId, courseId);
+
+      // 4. 추가된 데이터의 leId를 조회하여 취업관리 테이블에 데이터 추가
       Integer leId = courseManagementMapper.selectLearnerEnrollmentByIds(learnerId, courseId);
       int subResult = courseManagementMapper.insertEmploymentSupport(leId);
+
+      // 수강테이블, 취업관리테이블 모두 추가 성공시에 true 반환
       return result > 0 && subResult > 0;
     }
-
     return false;
   }
 
-  /**
-   * 교육생 배정 '삭제' API
-   *
-   * @param loginUserId
-   * @param loginUserType
-   * @param learnerId
-   * @param courseId
-   * @return
-   */
   @Override
   public boolean removeLearnerFromCourse(
-      Integer loginUserId,
-      String loginUserType,
       Integer learnerId,
       Integer courseId
   ) {
 
+    /**
+     * 수강테이블에서 learnerId, courseId에 해당하는 데이터 삭제
+     * (취업관리테이블에 있는 데이터는 ON_DELETE_CASCADE임)
+     */
     int result = courseManagementMapper.deleteLearnerFromCourse(learnerId, courseId);
+
     return result > 0;
   }
+
+  @Transactional
   @Override
   public Boolean removeCoursesByAuth(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest) {
 
-    // learner_enrollment, staff_assignment, course_allocation는 CASCADE 삭제
 
-    // classroom의 is_active 값 0으로 업데이트
+    // 1. 과정의 강의실 비어있음으로 업데이트
     courseManagementMapper.updateClassroomByAuth(baseReqDTO, pageCourseRequest);
-
+    // 2.
     return courseManagementMapper.deleteCourseByAuth(baseReqDTO, pageCourseRequest);
   }
 
@@ -471,6 +469,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
 
     Map<String, Integer> incompleteTaskCountMap = new HashMap<String, Integer>();
+
     // 1:1문의
     incompleteTaskCountMap.put(
         "inquiryCount",

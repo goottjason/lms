@@ -146,7 +146,7 @@ public interface CourseManagementMapper {
   @Select({
       "SELECT COUNT(*) FROM learner_enrollment WHERE course_id = #{courseId}"
   })
-  Integer selectErolledLernerCount(Integer courseId);
+  Integer selectErolledLearnerCount(Integer courseId);
 
 
   void updateClassroomByAuth(
@@ -188,6 +188,7 @@ public interface CourseManagementMapper {
 
   @Select("SELECT count(*) FROM community_inquiry ci WHERE ci.is_answered = false and ci.is_posted = true")
   Integer selectIncompleteInquiryCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
+
   @Select("SELECT count(*) FROM course_forum_report cfr WHERE cfr.report_status = 'PENDING'")
   Integer selectIncompleteReportCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
   Integer selectIncompleteEmployCount(BaseReqDTO baseReqDTO, PageCourseRequest pageCourseRequest);
@@ -208,5 +209,11 @@ public interface CourseManagementMapper {
   Integer selectIncompleteSignCount(
       @Param("base") BaseReqDTO baseReqDTO,
       @Param("page") PageCourseRequest pageCourseRequest);
+
+  @Select({
+      "SELECT number_of_learner FROM course WHERE id = #{courseId}"
+  })
+  Integer selectNumberOfLearnerByCoId(Integer courseId);
+
 
 }

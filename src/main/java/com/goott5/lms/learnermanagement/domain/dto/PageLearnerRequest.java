@@ -36,4 +36,6 @@ public class PageLearnerRequest {
   private Integer leCourseId;
   private Integer leId;
 
+  private String radioFilter;
+
 }

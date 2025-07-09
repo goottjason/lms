@@ -124,7 +124,7 @@
   </select>
 
 
-  <!--강의실 업데이트(is_active: 1->0)-->
+  <!-- 강의실 비어있음으로 업데이트 (is_active: 1->0) -->
   <update id="updateClassroomByAuth">
     UPDATE classroom
     SET is_active = 0
