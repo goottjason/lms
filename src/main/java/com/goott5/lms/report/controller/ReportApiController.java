@@ -24,7 +24,7 @@ public class ReportApiController {
    */
   @PutMapping("/reports/{reportId}")
   public ResponseEntity<Void> processReport(@PathVariable Long reportId, @RequestBody Map<String, String> payload) {
-    log.info(">>>>>> 신고 처리 요청 수신: reportId={}, payload={} <<<<<<", reportId, payload);
+//    log.info(">>>>>> 신고 처리 요청 수신: reportId={}, payload={} <<<<<<", reportId, payload);
     String newStatus = payload.get("status");
 
     // 유효하지 않은 status 값이 들어오면 에러 반환
@@ -43,7 +43,7 @@ public class ReportApiController {
    */
   @DeleteMapping("/forums/{forumId}")
   public ResponseEntity<Void> deleteForumPost(@PathVariable int forumId) {
-    log.info(">>>>>> 게시글 즉시 삭제 요청 수신: forumId={} <<<<<<", forumId);
+//    log.info(">>>>>> 게시글 즉시 삭제 요청 수신: forumId={} <<<<<<", forumId);
 
     // 기존 토론 게시판 서비스의 삭제 메소드 호출
     courseBoardDebateService.deleteCourseBoardDebate(forumId);

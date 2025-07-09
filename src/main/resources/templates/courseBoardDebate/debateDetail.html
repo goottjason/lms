@@ -517,7 +517,7 @@
               axios.post(`/courseBoardDebate/report`, formData)
               .then(() => Swal.fire('접수 완료', '신고가 정상적으로 접수되었습니다.', 'success'))
               .catch(() => Swal.fire('오류', '신고 처리 중 오류가 발생했습니다.', 'error'));
-              sendNotificationToAdmin('신고가 접수 되었습니다.',true,'/admin/reports');
+              sendNotificationToAdmin('신고가 접수 되었습니다.',true,'/operationsManagement/reports');
             }
           });
         }
