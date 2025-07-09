@@ -42,7 +42,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
           (long) courseBoardMaterialsDTO.getCourseId());
       // 조회된 고정글이 5개 이상이면, 등록을 막고 실패(-1)를 반환합니다.
       if (fixedCount >= 5) {
-        log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
+//        log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
         return -1; // -1을 반환하여 등록 실패를 알림
       }
     }
@@ -59,7 +59,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       courseBoardMaterialsDTO.setCourseId(courseId);
     }
 
-    log.info("courseBoardMaterialsDTO:{}", courseBoardMaterialsDTO);
+//    log.info("courseBoardMaterialsDTO:{}", courseBoardMaterialsDTO);
 
 
     courseBoardMaterialsMapper.insertCourseBoardMaterials(courseBoardMaterialsDTO);
@@ -197,7 +197,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       if(insertNum == 1){
         int updateNum = courseBoardMaterialsMapper.updateReadCount(tableId);
         if(updateNum == 1){
-          log.info("처음 사용자: 조회수 insert && update 성공");
+//          log.info("처음 사용자: 조회수 insert && update 성공");
           return true;
         }
       }
@@ -206,7 +206,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
       int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
       if(dateNum == 1){
         // 하루 이내 방문
-        log.info("이후 사용자: 조회수 증가 x");
+//        log.info("이후 사용자: 조회수 증가 x");
         return true;
       }else{
         // 하루 이후 방문
@@ -214,7 +214,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
         if(updateReadDate == 1){
           int updateReadCount = courseBoardMaterialsMapper.updateReadCount(tableId);
           if(updateReadCount == 1){
-            log.info("이후 사용자: 조회수 증가 o");
+//            log.info("이후 사용자: 조회수 증가 o");
             return true;
           }
         }
@@ -240,7 +240,7 @@ public class CourseBoardMaterialsServiceImpl implements CourseBoardMaterialsServ
 
         // 조회된 고정글이 5개 이상이면, 수정을 막고 실패(0)를 반환합니다.
         if (fixedCount >= 5) {
-          log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
+//          log.warn("고정글은 5개를 초과할 수 없습니다. (현재 {}개)", fixedCount);
           return 0; // 0을 반환하여 업데이트 실패를 알림
         }
       }

@@ -91,13 +91,17 @@
     <!-- 첨부 파일 -->
     <div class="card-footer">
       <p class="mt-2">첨부파일</p>
-      <div class="row">
+      <div class="row" id="file-list-container">
         <th:block th:if="${fileDTOList != null}">
           <div class="col-4 card mb-2" th:each="fileDTO : ${fileDTOList}">
             <div class="row g-0 m-0">
               <div class="col-md-3 pl-2">
                 <th:block th:if="${fileDTO.getIsImage()}">
-                    <img th:src="${fileDTO.path}" class="img-fluid rounded-start" style="width: 200px; height: 70px; object-fit: contain;">
+                  <img th:src="${fileDTO.path}"
+                       class="img-fluid rounded-start image-preview-trigger"
+                       style="width: 200px; height: 70px; object-fit: contain; cursor: pointer;"
+                       th:data-original-src="${fileDTO.path}"
+                       th:data-original-name="${fileDTO.originalName}">
                 </th:block>
 
                 <th:block th:unless="${fileDTO.getIsImage()}">
@@ -157,7 +161,7 @@
       <span class="icon text-white-50">
           <i class="fas fa-list"></i>
       </span>
-        <span class="text px-4">목록</span>
+        <span class="text px-3">목록</span>
       </button>
     </a>
   </div>
@@ -190,9 +194,9 @@
       // --- 변수 초기화 ---
       const loginUserId = document.getElementById('login-user-id')?.value;
       const loginUserType = document.getElementById('login-user-type')?.value;
+      const fileListContainer = document.getElementById('file-list-container');
 
       /*<![CDATA[*/
-      // Thymeleaf로부터 안전하게 데이터를 가져옵니다.
       const currentCourseId = /*[[${currentCourseId}]]*/ null;
       /*]]>*/
 
@@ -202,6 +206,24 @@
       const confirmDeleteButton = document.getElementById('confirm-delete-btn');
 
       // --- 이벤트 리스너 설정 ---
+
+      if (fileListContainer) {
+        fileListContainer.addEventListener('click', function(e) {
+          // 클릭된 요소가 미리보기 이미지인지 확인
+          if (e.target.classList.contains('image-preview-trigger')) {
+            const imageSrc = e.target.dataset.originalSrc;
+            const imageName = e.target.dataset.originalName;
+
+            Swal.fire({
+              title: imageName,
+              imageUrl: imageSrc,
+              imageAlt: imageName,
+              width: 'auto', // 이미지 크기에 맞게 너비 자동 조절
+              confirmButtonText: '닫기'
+            });
+          }
+        });
+      }
 
       // 수정 버튼 이벤트
       if (modifyButton) {
@@ -228,10 +250,10 @@
           // '삭제' 버튼에 저장된 data-id 속성에서 게시글 ID를 가져옵니다.
           // const materialId = [[${detail.id}]];
           const deleteButton = document.getElementById('delete-button');
-          console.log("1. '삭제' 버튼 요소:", deleteButton);
+          // console.log("1. '삭제' 버튼 요소:", deleteButton);
 
           const materialId = deleteButton.dataset.id;
-          console.log("2. 가져온 게시글 ID:", materialId);
+          // console.log("2. 가져온 게시글 ID:", materialId);
 
           if (!materialId) {
             Swal.fire({
@@ -252,7 +274,7 @@
               title: '삭제 처리 중 오류가 발생했습니다.',
               icon: "error"
             });
-            console.error(error);
+            // console.error(error);
           });
         });
       }
@@ -272,7 +294,9 @@
         try {
           const response = await axios.get('/api/management/courses', { params: { loginUserId, loginUserType } });
           return response.data?.data?.respDTOS || [];
-        } catch (error) { console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return []; }
+        } catch (error) {
+          // console.error('과정 목록을 가져오는 중 오류가 발생했습니다:', error); return [];
+        }
       }
 
       function updateCourseSelectBox(selector, data, selectedValue) {

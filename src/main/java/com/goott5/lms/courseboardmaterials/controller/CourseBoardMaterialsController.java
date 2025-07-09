@@ -65,7 +65,7 @@ public class CourseBoardMaterialsController {
 
         if(courseName != null){
             courseBoardMaterialsPagingRequestDTO.setCourseName(courseName);
-            log.info("courseName:{}", courseName);
+//            log.info("courseName:{}", courseName);
         }
 
         // 로그인 사용자 타입 가져오기 (NullPointerException 방지)
@@ -95,13 +95,13 @@ public class CourseBoardMaterialsController {
             if (courses != null && !courses.getRespDTOS().isEmpty()) {
                 Integer defaultCourseId = courses.getRespDTOS().get(0).getId();
                 courseBoardMaterialsPagingRequestDTO.setCourseId(defaultCourseId);
-                log.info("사용자 기본 과정 ID를 설정합니다: {}", defaultCourseId);
+//                log.info("사용자 기본 과정 ID를 설정합니다: {}", defaultCourseId);
             }
         }
 
       CourseBoardMaterialsPagingResponseDTO<CourseBoardMaterialsPageDTO> responseDTO = courseBoardMaterialsService.getListWithSearch(courseBoardMaterialsPagingRequestDTO);
 
-        log.info("responseDTO={}", responseDTO.getDtoList());
+//        log.info("responseDTO={}", responseDTO.getDtoList());
 
         if (courseBoardMaterialsPagingRequestDTO.getKeyword() == null || courseBoardMaterialsPagingRequestDTO.getKeyword().isEmpty()) {
             session.setAttribute("keyword", courseBoardMaterialsPagingRequestDTO.getKeyword());
@@ -111,8 +111,8 @@ public class CourseBoardMaterialsController {
 
         model.addAttribute("pagingRequestDTO", courseBoardMaterialsPagingRequestDTO);
 
-        log.info("pageNo={}", courseBoardMaterialsPagingRequestDTO.getPageNo());
-        log.info("pagingSize={}", courseBoardMaterialsPagingRequestDTO.getPagingSize());
+//        log.info("pageNo={}", courseBoardMaterialsPagingRequestDTO.getPageNo());
+//        log.info("pagingSize={}", courseBoardMaterialsPagingRequestDTO.getPagingSize());
 
 
 
@@ -122,7 +122,7 @@ public class CourseBoardMaterialsController {
 
 
         model.addAttribute("loginUserType", loginUserType); // 변수명을 loginUserType 으로 통일
-        log.info("loginUserType={}", loginUserType);
+//        log.info("loginUserType={}", loginUserType);
 
 
         return "courseBoardMaterials/materialsList";
@@ -158,7 +158,7 @@ public class CourseBoardMaterialsController {
     public ResponseEntity<MyResponseWithData> insertMaterials(@Valid @ModelAttribute CourseBoardMaterialsDTO courseBoardMaterialsDTO
     , BindingResult bindingResult, @RequestParam(required = false) List<MultipartFile> files, HttpSession session)
         throws IOException {
-        log.info("등록된 DTO={}", courseBoardMaterialsDTO);
+//        log.info("등록된 DTO={}", courseBoardMaterialsDTO);
 
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
         if (loginUser == null) {
@@ -192,20 +192,20 @@ public class CourseBoardMaterialsController {
 
 
         if (courseBoardMaterialsFile != -1) {
-            log.info("등록 성공!!!={}", courseBoardMaterialsDTO);
+//            log.info("등록 성공!!!={}", courseBoardMaterialsDTO);
         } else {
-            log.info("등록실패!!");
+//            log.info("등록실패!!");
         }
 
-        log.info("files={}", files);
+//        log.info("files={}", files);
 
         if (files != null && !files.isEmpty()) {
 
-            log.info("파일 확인 ={}", files);
+//            log.info("파일 확인 ={}", files);
 
             for (MultipartFile file : files) {
                 if (file.isEmpty()){
-                    log.info("파일 없다. ={}",file.isEmpty());
+//                    log.info("파일 없다. ={}",file.isEmpty());
                     continue;
                 }
 
@@ -213,7 +213,7 @@ public class CourseBoardMaterialsController {
                 String insertPath = s3Uploader.uploadFile("upload/course_notice",file.getInputStream(),
                     file.getOriginalFilename());
 
-                log.info("파일 저장 성공!!");
+//                log.info("파일 저장 성공!!");
 
                 // 받은 파일 dto에 세팅
                 // db 에서 해당 테이블의 게시글 id 다시 받아오기
@@ -229,13 +229,12 @@ public class CourseBoardMaterialsController {
                 // 첨부 파일 db에 저장
                 int fileInsert = utilService.insertService(fileDTO);
                 if (fileInsert == 1) {
-                    log.info("파일 db에 저장 성공:{}", fileDTO);
+//                    log.info("파일 db에 저장 성공:{}", fileDTO);
                 }
-                ;
             }
 
         } else {
-            log.info("파일 전달 안됨.");
+//            log.info("파일 전달 안됨.");
             return ResponseEntity.ok(
                 new MyResponseWithData(200, "글 작성이 완료되었습니다.", courseBoardMaterialsDTO));
 
@@ -264,13 +263,13 @@ public class CourseBoardMaterialsController {
             return "courseBoardMaterials/materialsList";
         }
 
-        log.info("상세 페이지 요청 ID : {}", id);
+//        log.info("상세 페이지 요청 ID : {}", id);
 
         CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(id);
 
         // 조회된 데이터가 없는 경우 목록으로 리다이렉트
         if (detail == null) {
-            log.warn("ID {} 에 해당하는 상세 정보를 찾을 수 없습니다.", id);
+//            log.warn("ID {} 에 해당하는 상세 정보를 찾을 수 없습니다.", id);
             return "redirect:/courseBoardMaterials/materialsList?" + pagingRequestDTO.getLink();
         }
 
@@ -285,7 +284,7 @@ public class CourseBoardMaterialsController {
         // 파일 조회 처리
         List<FileSelectDTO> fileDTOList = utilMapper.selectFileFrom("course_notice",id);
         if (fileDTOList != null) {
-            log.info("fileDTOList : {}", fileDTOList);
+//            log.info("fileDTOList : {}", fileDTOList);
             model.addAttribute("fileDTOList", fileDTOList);
         }
 
@@ -299,12 +298,12 @@ public class CourseBoardMaterialsController {
         boolean result = courseBoardMaterialsService.updateReadCount(readCountLog);
 
         if (!result) {
-            log.info("조회수 증가 처리 중 오류 또는 이미 오늘 조회한 사용자.");
+//            log.info("조회수 증가 처리 중 오류 또는 이미 오늘 조회한 사용자.");
         } else {
-            log.info("조회수가 성공적으로 업데이트 되었습니다.");
+//            log.info("조회수가 성공적으로 업데이트 되었습니다.");
         }
-
-        log.info("상세 정보 불러오기 성공 : {}", detail);
+//
+//        log.info("상세 정보 불러오기 성공 : {}", detail);
 
         return "courseBoardMaterials/materialsDetail";
     }
@@ -323,7 +322,7 @@ public class CourseBoardMaterialsController {
 
         // 게시글이 없거나, 다른 사람의 글을 수정하려고 할 경우 목록으로 리다이렉트
         if (detail == null) {
-            log.warn("ID {}에 해당하는 상세 정보를 찾을 수 없습니다.", id);
+//            log.warn("ID {}에 해당하는 상세 정보를 찾을 수 없습니다.", id);
             return "redirect:/courseBoardMaterials/materialsList";
         }
 
@@ -361,16 +360,16 @@ public class CourseBoardMaterialsController {
         @RequestParam(value = "files", required = false) List<MultipartFile> files, // 새로 첨부된 파일
         @RequestParam(required = false) List<Integer> deleteFiles) throws IOException {
 
-        log.info("전송 받은 DTO = {}", courseBoardMaterialsDTO);
+//        log.info("전송 받은 DTO = {}", courseBoardMaterialsDTO);
 
-        log.info("DTO에 바인딩된 게시글 ID: {}", courseBoardMaterialsDTO.getId());
+//        log.info("DTO에 바인딩된 게시글 ID: {}", courseBoardMaterialsDTO.getId());
 
         if (files != null) {
-            log.info("전송 받은 files: {}", files);
+//            log.info("전송 받은 files: {}", files);
         }
-
+//
         if (deleteFiles != null) {
-            log.info("전송 받은 deleteFiles: {}", deleteFiles);
+//            log.info("전송 받은 deleteFiles: {}", deleteFiles);
         }
 
         if (bindingResult.hasErrors()) {
@@ -381,9 +380,9 @@ public class CourseBoardMaterialsController {
             }
             return ResponseEntity.badRequest().body(new MyResponseWithData(400,"에러 발생!!", errorMap));
         }
-        log.info("전송 성공 DTO ={}", courseBoardMaterialsDTO);
-        log.info("전송 성공 files ={}", files);
-        log.info("전송 성공 deleteFiles ={}", deleteFiles);
+//        log.info("전송 성공 DTO ={}", courseBoardMaterialsDTO);
+//        log.info("전송 성공 files ={}", files);
+//        log.info("전송 성공 deleteFiles ={}", deleteFiles);
 
         // 게시글 수정
         int result = courseBoardMaterialsService.updateCourseBoardMaterials(courseBoardMaterialsDTO);
@@ -403,15 +402,15 @@ public class CourseBoardMaterialsController {
                     deleteFileList.add(fileSelectDTO);
                 }
 
-                log.info("삭제할 deleteFiles ={}", deleteFileList);
+//                log.info("삭제할 deleteFiles ={}", deleteFileList);
 
                 for (FileSelectDTO selectDTO : deleteFileList) {
-                    log.info("selectDTO.getPath:{}", selectDTO.getPath());
+//                    log.info("selectDTO.getPath:{}", selectDTO.getPath());
                     s3Uploader.deleteFile("upload/course_notice/" + selectDTO.getNewName());
-                    log.info("파일 서버 삭제 성공?"); // 성공 못함
+//                    log.info("파일 서버 삭제 성공?"); // 성공 못함
 
                     if (utilService.deleteFileById(selectDTO.getId()) == 1) {
-                        log.info("파일 db 삭제 성공"); // 성공
+//                        log.info("파일 db 삭제 성공"); // 성공
                     }
                 }
             }
@@ -420,10 +419,10 @@ public class CourseBoardMaterialsController {
         // 수정시 생성된 파일
         if (files != null && !files.isEmpty()) {
 
-            log.info(">>>>> 파일 처리 블록에 진입했습니다. 감지된 파일 개수: {}개 <<<<<", files.size());
+//            log.info(">>>>> 파일 처리 블록에 진입했습니다. 감지된 파일 개수: {}개 <<<<<", files.size());
 
             if (courseBoardMaterialsDTO.getId() == 0) {
-                log.error("게시글 ID가 없어 파일을 저장할 수 없습니다. DTO: {}", courseBoardMaterialsDTO);
+//                log.error("게시글 ID가 없어 파일을 저장할 수 없습니다. DTO: {}", courseBoardMaterialsDTO);
                 return ResponseEntity.internalServerError()
                     .body(new MyResponseWithData(500, "오류로 인해 파일 저장에 실패했습니다.", null));
             }
@@ -435,7 +434,7 @@ public class CourseBoardMaterialsController {
                     // 첨부 파일 서버에 저장 + 경로 저장
                     String insertPath = s3Uploader.uploadFile("upload/course_notice", file.getInputStream(),
                         file.getOriginalFilename());
-                    log.info("파일 서버 저장 성공");
+//                    log.info("파일 서버 저장 성공");
 
                     // 받은 파일 dto에 세팅
                     FileDTO fileDTO = FileDTO.builder()
@@ -450,15 +449,15 @@ public class CourseBoardMaterialsController {
                     // 첨부 파일 db에 저장
                     int fileInsert = utilService.insertService(fileDTO);
                     if (fileInsert == 1) {
-                        log.info("파일 db에 저장 성공: {}", fileDTO);
+//                        log.info("파일 db에 저장 성공: {}", fileDTO);
                     } else {
-                        log.warn("<<<<< 파일 DB 저장 실패! service의 반환값: {}, 저장하려던 정보: {} >>>>>", fileInsert, fileDTO);
+//                        log.warn("<<<<< 파일 DB 저장 실패! service의 반환값: {}, 저장하려던 정보: {} >>>>>", fileInsert, fileDTO);
                     }
                 }
 
         } else {
             // 만약 파일을 받지 못했다면 이 로그가 찍힐 것입니다.
-            log.warn(">>>>> 전송된 파일이 없어 파일 처리 블록을 건너뜁니다. 'files' 파라미터가 비어있습니다. <<<<<");
+//            log.warn(">>>>> 전송된 파일이 없어 파일 처리 블록을 건너뜁니다. 'files' 파라미터가 비어있습니다. <<<<<");
         }
 
         return ResponseEntity.ok(new MyResponseWithData(200, "수정 완료", courseBoardMaterialsDTO));
@@ -475,7 +474,7 @@ public class CourseBoardMaterialsController {
             return ResponseEntity.ok(new MyResponseWithData(200,"게시글이 삭제되었습니다.",materialId));
 
         } catch (Exception e) {
-            log.error("게시글 삭제 중 오류 발생: id={}", materialId, e);
+//            log.error("게시글 삭제 중 오류 발생: id={}", materialId, e);
             // 실패 시 서버 에러 응답
             return ResponseEntity.internalServerError().body(new MyResponseWithData(500,"삭제 중 오류가 발생했습니다.",materialId));
         }
