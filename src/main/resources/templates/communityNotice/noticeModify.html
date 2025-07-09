@@ -155,7 +155,13 @@
                 <span class="icon text-white-50"><i class="fas fa-check"></i></span><span class="text px-5">수정</span>
             </button>
             <a
-                th:href="@{/communityNotice/noticeDetail/{id}(id=*{id})}"
+                th:href="@{/communityNotice/noticeDetail/{id}(id=*{id},
+                           pageNo=${pagingRequestDTO.pageNo},
+                           pagingSize=${pagingRequestDTO.pagingSize},
+                           searchType=${pagingRequestDTO.searchType},
+                           keyword=${pagingRequestDTO.keyword},
+                           sortProperty=${pagingRequestDTO.sortProperty},
+                           sortOrder=${pagingRequestDTO.sortOrder})}"
                 class="btn btn-secondary btn-icon-split">
                 <span class="icon text-white-50"><i class="fas fa-times"></i></span><span class="text px-5">취소</span>
             </a>
@@ -221,45 +227,59 @@
 
         const submitButton = document.getElementById("submit-btn");
         submitButton.addEventListener("click", function () {
+            // 이전 에러 메시지 초기화
             document.getElementById("titleError").textContent   = "";
             document.getElementById("contentError").textContent = "";
             document.getElementById("isFixedError").textContent = "";
 
+            // DTO의 파라미터를 JavaScript 변수로 저장
+            const params = {
+                pageNo: /*[[${pagingRequestDTO.pageNo}]]*/ 1,
+                pagingSize: /*[[${pagingRequestDTO.pagingSize}]]*/ 10,
+                searchType: /*[[${pagingRequestDTO.searchType}]]*/ '',
+                keyword: /*[[${pagingRequestDTO.keyword}]]*/ '',
+                sortProperty: /*[[${pagingRequestDTO.sortProperty}]]*/ 'createdAt',
+                sortOrder: /*[[${pagingRequestDTO.sortOrder}]]*/ 'DESC'
+            };
+
+            // URL 쿼리 스트링으로 변환 (값이 있는 파라미터만 포함)
+            const queryString = Object.keys(params)
+                                      .filter(key => params[key] !== null && params[key] !== '')
+                                      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                                      .join('&');
+
+            // 서버로 보낼 FormData 생성
             const formData = new FormData();
-            formData.append("id", document.querySelector("input[name=\"id\"]").value);
+            formData.append("id", document.querySelector("input[name='id']").value);
             formData.append("title", document.getElementById("title").value);
             formData.append("content", document.getElementById("contentArea").value);
             formData.append("isFixed", document.getElementById("isFixed").checked);
 
-            document.querySelectorAll("input[name=\"deleteFiles\"]:checked").forEach(cb => {
+            document.querySelectorAll("input[name='deleteFiles']:checked").forEach(cb => {
                 formData.append("deleteFiles", cb.value);
             });
+
             newFiles.forEach(file => {
                 formData.append("addFiles", file);
             });
 
+            // Axios를 사용하여 서버에 비동기 POST 요청
             axios.post("/communityNotice/noticeModify", formData)
                  .then(response => {
+                     // 성공 시 SweetAlert2 알림창 표시
                      Swal.fire({icon: "success", title: response.data.message})
                          .then(() => {
-                             location.href = `/communityNotice/noticeDetail/${response.data.noticeId}`;
+                             // 확인 버튼 클릭 시, 페이징 정보가 포함된 URL로 상세 페이지 이동
+                             location.href = `/communityNotice/noticeDetail/${response.data.noticeId}?${queryString}`;
                          });
                  })
                  .catch(error => {
+                     // 실패 시 에러 처리
                      if (error.response && error.response.data && error.response.data.errors) {
                          const errors = error.response.data.errors;
-                         if (errors.title) {
-                             document.getElementById(
-                                 "titleError").textContent = errors.title;
-                         }
-                         if (errors.content) {
-                             document.getElementById(
-                                 "contentError").textContent = errors.content;
-                         }
-                         if (errors.isFixed) {
-                             document.getElementById(
-                                 "isFixedError").textContent = errors.isFixed;
-                         }
+                         if (errors.title) { document.getElementById("titleError").textContent = errors.title; }
+                         if (errors.content) { document.getElementById("contentError").textContent = errors.content; }
+                         if (errors.isFixed) { document.getElementById("isFixedError").textContent = errors.isFixed; }
                      } else {
                          Swal.fire({icon: 'error', title: '수정 중 오류가 발생했습니다.'});
                      }
