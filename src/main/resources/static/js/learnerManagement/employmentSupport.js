@@ -76,24 +76,43 @@ $(function(){
        }
     });
 
-    $("body").on("click", ".employment-modal-btn", function(){
+    $(document).on("click", ".employment-modal-btn", function(){
+
+        // $("#employmentModal").find("input").prop("readonly", true);
+        // $("#save-employment-btn").hide();
+        // $("#modify-employment-btn").show();
+        //
+        // $("#save-employment-btn").attr("data-id", "");
+        // $("#company-name").val("");
+        // $("#company-phone").val("");
+        // $("#company-address").val("");
+        // $("#counseling-details").val("");
+        //
+        // $(".employment-status").prop("checked", false);
+        // $(".is-counseling-received").prop("checked", false);
 
         $.ajax({
                    url: "/learnerManagement/employment/getEmploymentById",
                    type    : "GET",
                    dataType: "json", // 수신받을 데이터의 타입 (MIME TYPE)
                    data       : {
-                       id: $(this).data("id")
+                       id: this.getAttribute("data-id")
                    },
                    // contentType: "application/json; charset=utf-8",
                    async   : false, // 비동기옵션 off
                    success : function (data) { // 통신이 성공하면 수행할 함수
 
                        // console.log(data);
+                       $("#employmentModal").find("input").prop("readonly", false);
+
+                       $(".employment-status").prop("checked", false);
+                       $(".is-counseling-received").prop("checked", false);
+
+
 
                        $(".employment-status").each(function(index, item){
                            if($(item).val() == data.employmentStatus){
-                               $(item).attr("checked", true);
+                               $(item).prop("checked", true);
                            }
                        });
 
@@ -103,7 +122,7 @@ $(function(){
 
                        $(".is-counseling-received").each(function(index, item){
                            if($(item).val() == data.isCounselingReceived){
-                               $(item).attr("checked", true);
+                               $(item).prop("checked", true);
                            }
                        });
                        $("#counseling-details").val(data.counselingDetails);
@@ -111,10 +130,11 @@ $(function(){
 
                        $("#employmentModal").find("input").prop("readonly", true);
 
-                       $("#save-employment-btn").hide();
+                       $(".save-employment-btn").hide();
                        $("#modify-employment-btn").show();
 
-                       $("#save-employment-btn").attr("data-id", data.id);
+                       // $(".save-employment-btn").attr("data-id", "");
+                       $(".save-employment-btn").attr("data-id", data.id);
 
 
                    },
@@ -127,26 +147,30 @@ $(function(){
 
     });
 
-    $("body").on("click", "#modify-employment-btn", function(){
+    $(document).on("click", "#modify-employment-btn", function(){
 
         $("#employmentModal").find("input").prop("readonly", false);
         $("#modify-employment-btn").hide();
-        $("#save-employment-btn").show();
+        $(".save-employment-btn").show();
 
 
     });
 
-    $("body").on("click", "#save-employment-btn", function(){
+    $(document).on("click", ".save-employment-btn", function(){
 
         let employmentStatus = $(".employment-status:checked").val();
         let isCounselingReceived = $(".is-counseling-received:checked").val();
+        // console.log("id : ", this.getAttribute("data-id"));
+        // console.log("isCounselingReceived : ", isCounselingReceived);
+        // console.log("employmentStatus : ", employmentStatus);
+
 
         $.ajax({
                    url: "/learnerManagement/employment/modifyEmployment",
                    type    : "POST",
                    dataType: "text", // 수신받을 데이터의 타입 (MIME TYPE)
                    data       : JSON.stringify({
-                       id: $(this).data("id"),
+                       id: this.getAttribute("data-id"),
                        isCounselingReceived: isCounselingReceived,
                        counselingDetails: $("#counseling-details").val(),
                        employmentStatus: employmentStatus,
@@ -175,7 +199,7 @@ $(function(){
                        }
 
                        $("#employmentModal").find("input").prop("readonly", true);
-                       $("#save-employment-btn").hide();
+                       $(".save-employment-btn").hide();
                        $("#modify-employment-btn").show();
 
                        getEmploymentList();
