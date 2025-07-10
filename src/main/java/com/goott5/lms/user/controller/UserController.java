@@ -203,6 +203,29 @@ public class UserController {
     }
   }
 
+  @PostMapping("/sendAuthCodeForChangeEmail")
+  public ResponseEntity<ApiResponse<String>> sendAuthCodeForChangeEmail(
+          @RequestBody Map<String, String> data, HttpSession session) {
+
+    String email = data.get("email");
+    UserVO userVO = userService.findUserByEmail(email);
+
+    if (userVO != null) {
+      return ApiResponse.respondFail(409, "없는 이메일", "이미 사용 중인 이메일이라 변경이 불가합니다.",
+              HttpStatus.CONFLICT);
+    } else {
+      String authCode = null;
+      try {
+        authCode = userService.sendAuthCodeForSignup(email);
+        session.setAttribute("authCode", authCode);
+        return ApiResponse.respondOk(200, "이메일 발송완료", "");
+      } catch (MessagingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+  }
+
   @PostMapping("/certificateAuthCode")
   public ResponseEntity<ApiResponse<String>> certificateAuthCode(
           @RequestBody Map<String, String> data, HttpSession session) {
@@ -282,6 +305,23 @@ public class UserController {
 
   }
 
+  @PostMapping("/checkCurrentPassword")
+  public ResponseEntity<ApiResponse<String>> checkCurrentPassword(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+
+    String currentPassword = data.get("password");
+
+    String userPassword = ((UserVO) request.getSession().getAttribute("loginUser")).getPassword();
+
+    if (!passwordEncoder.matches(currentPassword, userPassword)) {
+      return ApiResponse.respondFail(409, "비밀번호 오류", "현재 비밀번호가 올바르지 않습니다.", HttpStatus.CONFLICT);
+    } else {
+      return ApiResponse.respondOk(200, "성공", "현재 비밀번호가 맞습니다.");
+    }
+
+  }
+
+
   @PostMapping("/changePassword")
   public ResponseEntity<ApiResponse<String>> changePassword(HttpServletRequest request,
           @RequestBody Map<String, String> data) {
@@ -349,6 +389,39 @@ public class UserController {
     } else {
       return ApiResponse.respondOk(200, "ID찾기 성공", userVO.getLoginId());
     }
+  }
+
+  @PostMapping("/modifyEmail")
+  public ResponseEntity<ApiResponse<String>> modifyEmail(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+    String email = data.get("email");
+    int id = Integer.parseInt(data.get("id"));
+
+    userService.updateEmail(email, id);
+    ((UserVO) request.getSession().getAttribute("loginUser")).setEmail(email);
+    return ApiResponse.respondOk(200, "성공", "이메일 변경 성공");
+  }
+
+  @PostMapping("/modifyMobile")
+  public ResponseEntity<ApiResponse<String>> modifyMobile(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+    String mobile = data.get("mobile");
+    int id = Integer.parseInt(data.get("id"));
+
+    userService.updateMobile(mobile, id);
+    ((UserVO) request.getSession().getAttribute("loginUser")).setMobile(mobile);
+    return ApiResponse.respondOk(200, "성공", "휴대폰 번호 변경 성공");
+  }
+
+  @PostMapping("/modifyAddress")
+  public ResponseEntity<ApiResponse<String>> modifyAddress(HttpServletRequest request,
+          @RequestBody Map<String, String> data) {
+    String address = data.get("address");
+    int id = Integer.parseInt(data.get("id"));
+
+    userService.updateAddress(address, id);
+    ((UserVO) request.getSession().getAttribute("loginUser")).setAddress(address);
+    return ApiResponse.respondOk(200, "성공", "주소 변경 성공");
   }
 
 }

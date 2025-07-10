@@ -29,7 +29,7 @@
             data-toggle="modal"
             data-target="#passwordChangeModal">
             <span class="icon text-white-50">
-              <i class="fas fa-plus"></i>
+              <i class="fa fa-unlock-alt"></i>
             </span>
             <span class="text">비밀번호 변경</span>
           </button>
@@ -38,6 +38,7 @@
     </div>
     <div class="card-body">
       <div class="row">
+
         <div class="col-4">
           <div class="card text-center">
             <div id="imgArea">
@@ -53,7 +54,7 @@
                 <span th:if="${session.loginUser.type == 'INSTRUCTOR'}">강사</span>
                 <span th:if="${session.loginUser.type == 'LEARNER'}">교육생</span>
               </h4>
-              <p class="text-muted mb-4">계정 생성일 : <span
+              <p class="text-muted mb-5">계정 생성일 : <span
                 th:text="${#temporals.format(session.loginUser.createdAt, 'yyyy-MM-dd')}"></span></p>
               <button id="profileImgBtn" class="btn btn-primary w-60 mb-4">프로필 이미지 수정</button>
               <div id="profileImgInput" class="custom-file row mb-4">
@@ -68,15 +69,20 @@
         <div class="col-8">
           <div class="card mb-4">
             <div class="card-body">
+
               <div class="row">
                 <div class="col-sm-4 pl-5">
                   <p class="mb-0">이름</p>
                 </div>
                 <div class="col-sm-8">
-                  <p class="text-muted mb-0" th:text="${session.loginUser.fullName}"></p>
+                  <p
+                    id="fullname"
+                    class="text-muted mb-0"
+                    th:text="${session.loginUser.fullName}"></p>
                 </div>
               </div>
               <hr>
+
               <div class="row">
                 <div class="col-sm-4 pl-5">
                   <p class="mb-0">생년월일</p>
@@ -88,33 +94,7 @@
                 </div>
               </div>
               <hr>
-              <div class="row">
-                <div class="col-sm-4 pl-5">
-                  <p class="mb-0">로그인ID</p>
-                </div>
-                <div class="col-sm-8">
-                  <p class="text-muted mb-0" th:text="${session.loginUser.loginId}"></p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-4 pl-5">
-                  <p class="mb-0">이메일</p>
-                </div>
-                <div class="col-sm-8">
-                  <p class="text-muted mb-0" th:text="${session.loginUser.email}"></p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-4 pl-5">
-                  <p class="mb-0">휴대폰 번호</p>
-                </div>
-                <div class="col-sm-8">
-                  <p class="text-muted mb-0" th:text="${session.loginUser.mobile}"></p>
-                </div>
-              </div>
-              <hr>
+
               <div class="row">
                 <div class="col-sm-4 pl-5">
                   <p class="mb-0">성별</p>
@@ -125,22 +105,79 @@
                 </div>
               </div>
               <hr>
+
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">로그인ID</p>
+                </div>
+                <div class="col-sm-8">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.loginId}"></p>
+                </div>
+              </div>
+              <hr>
+
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">이메일</p>
+                </div>
+                <div class="col-sm-6">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.email}"></p>
+                </div>
+                <div class="col-sm-2">
+                  <button
+                    id="modifyEmailBtn"
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    data-action="email">수정
+                </button>
+                </div>
+              </div>
+              <hr>
+
+              <div class="row">
+                <div class="col-sm-4 pl-5">
+                  <p class="mb-0">휴대폰 번호</p>
+                </div>
+                <div class="col-sm-6">
+                  <p class="text-muted mb-0" th:text="${session.loginUser.mobile}"></p>
+                </div>
+                <div class="col-sm-2">
+                  <button
+                    id="modifyMobileBtn"
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    data-action="mobile">수정
+                  </button>
+                </div>
+              </div>
+              <hr>
+
               <div class="row">
                 <div class="col-sm-4 pl-5">
                   <p class="mb-0">주소</p>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-6">
                   <p class="text-muted mb-0" th:text="${session.loginUser.address}"></p>
                 </div>
+                <div class="col-sm-2">
+                  <button
+                    id="modifyAddressBtn"
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    data-action="address">수정
+                  </button>
+                </div>
               </div>
+
             </div>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
   <!-- content body 끝 -->
+
   <!-- 비밀번호 변경 모달 -->
   <div
     class="modal fade"
@@ -149,7 +186,7 @@
     role="dialog"
     aria-labelledby="myModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h6 class="modal-title" id="myModalLabel">비밀번호 변경</h6>
@@ -203,8 +240,6 @@
                 placeholder="비밀번호를 한번 더 입력하세요."/>
             </div>
           </div>
-
-
         </div>
         <div class="modal-footer">
           <button id="passwordChangeBtn" class="btn btn-primary btn-icon-split">
@@ -225,10 +260,10 @@
   </div>
   <!-- 모달 끝 -->
 
-  <!-- 비밀번호 변경 성공 Modal-->
+  <!-- 변경 성공 Modal-->
   <div
     class="modal fade"
-    id="changePasswordSuccessModal"
+    id="changeSuccessModal"
     tabindex="-1"
     role="dialog"
     aria-labelledby="exampleModalLabel"
@@ -236,12 +271,12 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="">비밀번호 변경 성공</h5>
+          <h5 class="modal-title" id="">정보 변경 성공</h5>
           <button class="close" type="button" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>
         </div>
-        <div class="modal-body">비밀번호가 변경 되었습니다.</div>
+        <div class="modal-body">입력하신 정보가 정상 반영 되었습니다.</div>
         <div class="modal-footer">
           <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
         </div>
@@ -249,9 +284,202 @@
     </div>
   </div>
 
+  <!-- 현재 비밀번호 확인 모달 -->
+  <div
+    class="modal fade"
+    id="checkCurrentPasswordModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="">현재 비밀번호 입력</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <div class="form-group">
+              <label
+                class="form-label"
+                for="curPassword">현재 비밀번호<span class="text-danger">*</span>&nbsp;&nbsp;</label>
+              <span id="curPassword-msg" class="text-danger small"></span>
+              <input
+                type="password"
+                id="curPassword"
+                class="form-control"
+                placeholder="개인정보 수정을 위해 현재 비밀번호를 입력해주세요."/>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="checkCurrentPasswordBtn" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-check"></i>
+            </span>
+            <span class="text px-3">확인</span>
+          </button>
+          <button id="" class="btn btn-secondary btn-icon-split" data-dismiss="modal">
+            <span class="icon text-white-50">
+                <i class="fas fa-times"></i>
+            </span>
+            <span class="text px-3">닫기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 끝 -->
+
+  <!-- 이메일 수정 모달 -->
+  <div class="modal fade" id="modifyEmailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">이메일 수정</h5>
+          <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="email">변경하실 이메일 주소<span class="text-danger">*
+            </span>&nbsp;&nbsp;</label>
+            <span id="email-msg" class="text-danger small">이메일 주소 인증이 필요합니다.</span>
+            <div class="input-group">
+              <input
+                type="text" id="email" name="email" class="modify-val form-control"
+                placeholder="변경하실 이메일 주소를 입력하세요.">
+              <div class="input-group-append">
+                <button
+                  id="emailSendBtn"
+                  class="btn btn-outline-primary"
+                  type="button">이메일 인증</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="certificateNo">인증번호<span class="text-danger">*
+            </span>&nbsp;&nbsp;</label>
+            <span id="emailValid-msg" class="text-danger small"></span>
+            <div class="input-group">
+              <input
+                type="text" id="certificateNo" class="modify-val form-control"
+                placeholder="이메일로 발송된 인증번호를 입력하세요.">
+              <div class="input-group-append">
+                <button
+                  id="emailValidCheckBtn"
+                  class="btn btn-outline-primary"
+                  type="button" disabled>인증번호 확인</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveEmailBtn" class="btn btn-primary" disabled>저장</button>
+          <button class="btn btn-secondary" data-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일 수정 모달 -->
+  <div class="modal fade" id="modifyMobileModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">휴대폰 번호 수정</h5>
+          <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="mobile">변경하실 휴대폰 번호<span class="text-danger">*
+            </span>&nbsp;&nbsp;</label>
+            <span id="mobile-msg" class="text-danger small">휴대폰번호 인증을 해주세요.</span>
+            <input type="hidden" id="mobile" name="mobile"/>
+            <div class="form-inline">
+              <select
+                id="mobile1" class="form-control mr-2" style="width:
+               24%;">
+                <option value="010" selected>010</option>
+                <option value="011">011</option>
+                <option value="016">016</option>
+                <option value="017">017</option>
+                <option value="018">018</option>
+                <option value="019">019</option>
+              </select>
+
+              <input
+                type="text"
+                id="mobile2"
+                maxlength="4"
+                class="modify-val form-control mr-2"
+                style="width: 25%"
+                placeholder="0000"
+              />
+              <input
+                type="text"
+                id="mobile3"
+                maxlength="4"
+                class="modify-val form-control mr-2"
+                style="width: 25%"
+                placeholder="0000"
+              />
+              <button
+                id="mobileCheckBtn"
+                class="btn btn-outline-primary"
+                type="button" style="width: 20%;">번호 인증</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveMobileBtn" class="btn btn-primary" disabled>저장</button>
+          <button class="btn btn-secondary" data-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주소 수정 모달 -->
+  <div class="modal fade" id="modifyAddressModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">주소 수정</h5>
+          <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="address">변경하실 주소<span class="text-danger">*
+            </span>&nbsp;&nbsp;</label>
+            <span id="address-msg" class="text-danger small">주소검색 버튼을 클릭하세요.</span>
+            <div class="input-group">
+              <input
+                type="text" id="address" name="address" class="modify-val form-control"
+                placeholder="주소를 검색해주세요." readonly>
+              <div class="input-group-append">
+                <button
+                  id="addressSearchBtn"
+                  class="btn btn-outline-primary"
+                  type="button">주소검색</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveAddressBtn" class="btn btn-primary" disabled>저장</button>
+          <button class="btn btn-secondary" data-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <th:block layout:fragment="script" th:inline="javascript">
+  <!-- 주소 검색 api -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
+    const id = [[${session.loginUser.id}]]
 
       $("#courseSelector").hide();
 
@@ -262,41 +490,39 @@
         $("#profileImgBtn").hide();
       });
 
-      $(function () {
-        $("#customFileBtn").click(function () {
-          $("#attachedFile").click();
-        });
+      $("#customFileBtn").click(function () {
+        $("#attachedFile").click();
+      });
 
-        $(document).on("change", "#attachedFile", function () {
-          const files = this.files;
-          console.log("Files:", files);
+      $(document).on("change", "#attachedFile", function () {
+        const files = this.files;
+        console.log("Files:", files);
 
-          if (!files || files.length === 0) {
-            console.warn("파일이 선택되지 않았습니다.");
+        if (!files || files.length === 0) {
+          console.warn("파일이 선택되지 않았습니다.");
+          return;
+        }
+
+        $("#imgArea").empty();
+
+        Array.from(files).forEach(file => {
+          if (!file.type.startsWith("image/")) {
             return;
           }
 
-          $("#imgArea").empty();
-
-          Array.from(files).forEach(file => {
-            if (!file.type.startsWith("image/")) {
-              return;
-            }
-
-            const reader  = new FileReader();
-            reader.onload = function (e) {
-              const img = $(
-                "<img class='rounded-circle mt-3 mx-auto d-block' style='object-fit: cover;'>")
-              .attr("src", e.target.result)
-              .css({
-                     width : "200px",
-                     height: "200px",
-                     border: "1px solid #ccc"
-                   });
-              $("#imgArea").append(img);
-            };
-            reader.readAsDataURL(file);
-          });
+          const reader  = new FileReader();
+          reader.onload = function (e) {
+            const img = $(
+              "<img class='rounded-circle mt-3 mx-auto d-block' style='object-fit: cover;'>")
+            .attr("src", e.target.result)
+            .css({
+                   width : "200px",
+                   height: "200px",
+                   border: "1px solid #ccc"
+                 });
+            $("#imgArea").append(img);
+          };
+          reader.readAsDataURL(file);
         });
       });
 
@@ -428,7 +654,7 @@
                .then(function (response) {
                  if (response.data.code === 200) {
                    $("#passwordChangeModal").modal("hide");
-                   $("#changePasswordSuccessModal").modal("show");
+                   $("#changeSuccessModal").modal("show");
 
                  }
                })
@@ -446,6 +672,344 @@
       $("#passwordChangeModal").on("hidden.bs.modal", function () {
         $(this).find("input").val("");
       });
+
+      let actionAfterPasswordCheck = "";
+      $("#modifyEmailBtn, #modifyMobileBtn, #modifyAddressBtn").on("click", function () {
+        actionAfterPasswordCheck = $(this).data("action");
+
+        $("#curPassword").val("");
+        $("#curPassword-msg").text("");
+        $("#email-msg").text("");
+        $("#emailValid-msg").text("");
+        $("#mobile1").prop("disabled", false);
+        $("#mobile2").prop("disabled", false);
+        $("#mobile3").prop("disabled", false);
+        $("#mobile-msg").text("휴대폰번호 인증을 해주세요.").removeClass("text-info").addClass("text-danger");
+        $("#address-msg").text("주소검색 버튼을 클릭하세요.").removeClass("text-info").addClass("text-danger");
+        $(".modify-val").val("");
+
+        $("#saveEmailBtn").prop("disabled", true);
+        $("#saveMobileBtn").prop("disabled", true);
+        $("#saveAddressBtn").prop("disabled", true);
+
+        $("#checkCurrentPasswordModal").modal("show");
+      });
+
+      $("#curPassword").on("keydown", function (e) {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault();
+          $("#checkCurrentPasswordBtn").click();
+        }
+      });
+
+      // 현재 비밀번호 확인 버튼
+      $("#checkCurrentPasswordBtn").on("click", function () {
+        const curPassword = $("#curPassword").val();
+
+        if (curPassword.trim() === "") {
+          $("#curPassword-msg").text("현재 비밀번호를 입력해주세요.");
+          return;
+        }
+
+        axios.post("/user/checkCurrentPassword", {
+          password: curPassword
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 $("#checkCurrentPasswordModal").modal("hide");
+
+                 setTimeout(() => {
+                   switch (actionAfterPasswordCheck) {
+                     case "email":
+                       $("#modifyEmailModal").modal("show");
+                       break;
+                     case "mobile":
+                       $("#modifyMobileModal").modal("show");
+                       break;
+                     case "address":
+                       $("#modifyAddressModal").modal("show");
+                       break;
+                   }
+                 }, 500);
+               }
+             })
+             .catch(function (error) {
+               console.log(error);
+               if (error.response && error.response.data.code === 409) {
+                 $("#curPassword-msg").text("비밀번호가 일치하지 않습니다.").addClass("text-danger");
+               } else {
+                 $("#curPassword-msg").text("확인하는 과정에서 오류가 발생했습니다. 다시 한번 시도해주세요.")
+                                      .addClass("text-danger");
+               }
+             });
+      });
+
+      $("#emailSendBtn").on("click", function () {
+        $("#emailSendBtn").prop("disabled", true);
+
+        let email          = $("#email").val();
+        let emailRegExp    = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        let $emailMsg      = $("#email-msg");
+        let $emailValidMsg = $("#emailValid-msg");
+
+        if (!emailRegExp.test(email)) {
+          $emailMsg
+          .text("유효하지 않은 이메일 주소입니다.")
+          .removeClass("text-info")
+          .addClass("text-danger");
+          $("#emailSendBtn").prop("disabled", false);
+        } else {
+          $emailMsg
+          .text("이메일 주소 확인 중입니다. 잠시만 기다려주세요.")
+          .removeClass("text-danger")
+          .addClass("text-info");
+
+          axios.post("/user/sendAuthCodeForChangeEmail", {
+            email: email,
+
+          })
+               .then(function (response) {
+                 if (response.data.code === 200) {
+                   $("#emailValidCheckBtn").prop("disabled", false);
+                   $emailMsg
+                   .text("유효한 이메일 주소입니다.")
+                   .removeClass("text-danger")
+                   .addClass("text-info");
+                   startEmailTimer();
+                 }
+               })
+               .catch(function (error) {
+                 console.log(error);
+                 if (error.response.data.code === 409) {
+                   $emailMsg.text(error.response.data.data).removeClass("text-info")
+                            .addClass("text-danger");
+                 } else {
+                   $emailValidMsg.text("이메일 발송에 문제가 생겼습니다. 다시 한번 발송해주세요.").removeClass("text-info")
+                                 .addClass("text-danger");
+                 }
+                 $("#emailSendBtn").prop("disabled", false);
+               });
+
+        }
+
+      });
+
+      $("#emailValidCheckBtn").on("click", function () {
+        axios.post("/user/certificateAuthCode", {
+          certificateNo: $("#certificateNo").val(),
+
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 clearInterval(timerId);
+                 $("#emailValid-msg")
+                 .text("인증 확인되었습니다.")
+                 .removeClass("text-danger")
+                 .addClass("text-info");
+                 $("#emailValidCheckBtn").prop("disabled", true);
+                 $("#saveEmailBtn").prop("disabled", false);
+               }
+             })
+             .catch(function (error) {
+               console.log(error);
+               if (error.response.data.code === 409) {
+                 $("#emailValid-msg").text(error.response.data.data).removeClass("text-info")
+                                     .addClass("text-danger");
+               } else {
+                 $("#emailValid-msg").text("통신 에러가 생겼습니다. 다시 한번 시도해주세요.").removeClass("text-info")
+                                     .addClass("text-danger");
+               }
+             });
+
+      });
+
+      // 인증번호 입력에 대한 타이머 동작
+      let timerId;
+      let timeLeft = 180;
+
+      function startEmailTimer() {
+        clearInterval(timerId);
+        timeLeft           = 180;
+        let $emailValidMsg = $("#emailValid-msg");
+
+        $emailValidMsg.text(`이메일이 발송되었습니다.`).removeClass("text-danger")
+                      .addClass("text-info");
+
+        timerId = setInterval(function () {
+          timeLeft--;
+
+          let minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+          let seconds = String(timeLeft % 60).padStart(2, "0");
+
+          $emailValidMsg
+          .text(`인증번호를 입력해주세요(남은 시간: ${minutes}:${seconds})`);
+
+          if (timeLeft <= 0) {
+            clearInterval(timerId);
+            $emailValidMsg
+            .text("인증 시간이 만료되었습니다.")
+            .removeClass("text-info")
+            .addClass("text-danger");
+
+            $("#saveEmailBtn").prop("disabled", true);
+            removeCertificateNo();
+          }
+        }, 1000);
+      }
+
+      // 타이머 만료에 따른 인증번호 삭제
+      function removeCertificateNo() {
+
+        axios.post("/user/removeCertificateNo", {})
+             .then(function (response) {
+               if (response.data.code === 200) {
+
+                 $("#emailValidCheckBtn").prop("disabled", true);
+                 $("#emailSendBtn").prop("disabled", false);
+                 $("#email-msg")
+                 .html("이메일 인증을 다시 해주세요.")
+                 .removeClass("text-info")
+                 .addClass("text-danger");
+               }
+             })
+             .catch(function (error) {
+               console.log(error);
+             });
+
+      }
+
+      $("#mobileCheckBtn").on("click", function () {
+
+        let m1         = $("#mobile1").val();
+        let m2         = $("#mobile2").val();
+        let m3         = $("#mobile3").val();
+        let $mobileMsg = $("#mobile-msg");
+
+        // 숫자만 허용하는 정규표현식
+        const numberOnly = /^[0-9]+$/;
+
+        if (!m1 || !m2 || !m3) {
+          $mobileMsg.text("휴대폰 번호를 모두 입력해주세요.");
+          return;
+        }
+
+        if (!numberOnly.test(m2) || !numberOnly.test(m3)) {
+          $mobileMsg.text("숫자만 입력해주세요.");
+          return;
+        }
+
+        if (m2.length < 3 || m2.length > 4 || m3.length !== 4) {
+          $mobileMsg.text("휴대폰 번호 형식을 확인해주세요.");
+          return;
+        }
+
+        // 정상일 경우
+        $mobileMsg.text("");
+        let mobile = `${m1}-${m2}-${m3}`;
+
+        axios.post("/user/mobileDuplicateCheck", {
+          mobile: mobile
+
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 $mobileMsg.text(response.data.data).removeClass("text-danger")
+                           .addClass("text-info");
+                 $("#mobile1").prop("disabled", true);
+                 $("#mobile2").prop("disabled", true);
+                 $("#mobile3").prop("disabled", true);
+                 $("#mobile").val(mobile);
+                 $("#saveMobileBtn").prop("disabled", false);
+               }
+             })
+             .catch(function (error) {
+               console.log(error);
+               if (error.response.data.code === 409) {
+                 $mobileMsg.text(error.response.data.data).removeClass("text-info")
+                           .addClass("text-danger");
+               }
+             });
+      });
+
+      $("#addressSearchBtn").on("click", function () {
+
+        new daum.Postcode({
+                            oncomplete: function (data) {
+                              document.getElementById("address").value = data.roadAddress;
+                              $("#address-msg").text("");
+                              $("#saveAddressBtn").prop("disabled", false);
+                            }
+                          }).open();
+      });
+
+      $("#saveMobileBtn").on("click", function () {
+        let m1     = $("#mobile1").val();
+        let m2     = $("#mobile2").val();
+        let m3     = $("#mobile3").val();
+        let mobile = `${m1}-${m2}-${m3}`;
+
+        axios.post("/user/modifyMobile", {
+          mobile: mobile,
+          id: id,
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 $("#modifyMobileModal").modal("hide");
+                 $("#changeSuccessModal").modal("show");
+                 $("#changeSuccessModal").on("hidden.bs.modal", function () {
+                   location.reload();
+                 });
+               }
+             })
+             .catch(function (error) {
+               console.error(error);
+               $("#mobile-msg").text("휴대폰 번호 변경 중 오류가 발생했습니다.").addClass("text-danger")
+                               .removeClass("text-info");
+             });
+      });
+
+      $("#saveEmailBtn").on("click", function () {
+        axios.post("/user/modifyEmail", {
+          email: $("#email").val(),
+          id: id,
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 $("#modifyEmailModal").modal("hide");
+                 $("#changeSuccessModal").modal("show");
+                 $("#changeSuccessModal").on("hidden.bs.modal", function () {
+                   location.reload();
+                 });
+               }
+             })
+             .catch(function (error) {
+               console.error(error);
+               $("#email-msg").text("이메일주소 변경 중 오류가 발생했습니다.").addClass("text-danger")
+                              .removeClass("text-info");
+             });
+      });
+
+      $("#saveAddressBtn").on("click", function () {
+        axios.post("/user/modifyAddress", {
+          address: $("#address").val(),
+          id: id,
+        })
+             .then(function (response) {
+               if (response.data.code === 200) {
+                 $("#modifyAddressModal").modal("hide");
+                 $("#changeSuccessModal").modal("show");
+                 $("#changeSuccessModal").on("hidden.bs.modal", function () {
+                   location.reload();
+                 });
+               }
+             })
+             .catch(function (error) {
+               console.error(error);
+               $("#address-msg").text("주소 변경 중 오류가 발생했습니다.");
+             });
+      });
+
+
 
   </script>
 </th:block>

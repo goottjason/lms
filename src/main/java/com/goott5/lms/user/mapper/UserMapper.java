@@ -60,4 +60,13 @@ public interface UserMapper {
 
   @Select("select count(*) from staff_assignment where user_id = #{userId}")
   int selectStaffAssignment(@Param("userId") int userId);
+
+  @Update("update user set email = #{email} where id = #{id}")
+  void updateEmail(@Param("email") String email, @Param("id") int id);
+
+  @Update("update user set mobile = #{mobile} where id = #{id}")
+  void updateMobile(@Param("mobile") String mobile, @Param("id") int id);
+
+  @Update("update user set address = #{address} where id = #{id}")
+  void updateAddress(@Param("address") String address, @Param("id") int id);
 }

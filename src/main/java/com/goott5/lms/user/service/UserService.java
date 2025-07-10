@@ -40,4 +40,10 @@ public interface UserService {
   boolean checkEnrollment(int userId);
 
   boolean checkAssignment(int userId);
+
+  void updateEmail(String email, int id);
+
+  void updateMobile(String mobile, int id);
+
+  void updateAddress(String address, int id);
 }

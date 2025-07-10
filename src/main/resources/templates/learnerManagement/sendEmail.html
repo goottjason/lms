@@ -185,8 +185,6 @@
       const urlParams = new URLSearchParams(window.location.search);
       const leId      = urlParams.get("leId");
 
-      console.log(leId);
-
       if (leId !== null) {
         loadLearnersByLeId(leId);
       } else {
@@ -214,10 +212,28 @@
           $("#send-target").show();
           $(".search-course").show();
           $(".search-fullname").hide();
+
+          let learnerTable = `
+            <tr>
+            <td colspan="7" class="align-middle text-center pt-4">
+              과정을 선택하세요.
+            </td>
+            </tr>
+        `;
+          $("#learner-info").html(learnerTable);
         } else if (selected === "fullname") {
           $("#send-target").show();
           $(".search-course").hide();
           $(".search-fullname").show();
+
+          let learnerTable = `
+            <tr>
+            <td colspan="7" class="align-middle text-center pt-4">
+              이름으로 검색하세요.
+            </td>
+            </tr>
+        `;
+          $("#learner-info").html(learnerTable);
         }
       }
 
@@ -228,6 +244,14 @@
 
         if (!courseId) {
           $("#learner-info").empty();
+          let learnerTable = `
+            <tr>
+            <td colspan="7" class="align-middle text-center pt-4">
+              과정을 선택하세요.
+            </td>
+            </tr>
+        `;
+          $("#learner-info").html(learnerTable);
           return;
         }
 
@@ -247,6 +271,14 @@
 
         if (!fullname) {
           $("#learner-info").empty();
+          let learnerTable = `
+            <tr>
+            <td colspan="7" class="align-middle text-center pt-4">
+              이름으로 검색하세요.
+            </td>
+            </tr>
+        `;
+          $("#learner-info").html(learnerTable);
           return;
         }
 
@@ -286,7 +318,11 @@
         if (selected !== "all") {
           let checkedBoxes = $("input.target-check:checked");
           if (checkedBoxes.length === 0) {
-            alert("대상자를 선택해주세요.");
+
+            Swal.fire({
+                        title: "대상자를 선택해주세요.",
+                        icon : "warning"
+                      });
 
             return;
           }
@@ -355,14 +391,13 @@
       let learners = await apiGetRequestParams(
         "/api/learnermanagement/learners",
         {...baseConfig, ...learnerConfig});
-      console.log(learners);
 
       let learnerTable = "";
 
       if (learners.totalRecords === 0) {
         learnerTable += `
             <tr>
-            <td colspan="7" class="align-middle text-center pt-5">
+            <td colspan="7" class="align-middle text-center pt-4">
               조회된 교육생이 없습니다.
             </td>
             </tr>
@@ -472,7 +507,6 @@
       let course = await apiGetRequestParams(
         "/api/coursemanagement/courses",
         {...baseConfig, ...courseConfig});
-      console.log(course);
 
       const $courseSelect = $("#courseId");
       $courseSelect.empty(); // 기존 옵션 제거
@@ -514,7 +548,6 @@
       let learners = await apiGetRequestParams(
         "/api/learnermanagement/learners",
         {...baseConfig, ...learnerConfig});
-      console.log(learners.records);
 
       let title    = $("#title").val();
       let contents = $("#contents").val();
