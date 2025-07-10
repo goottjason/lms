@@ -198,6 +198,7 @@ $(document).ready(function () {
 
         clearErr(this);
         $("#end-date-input").val("");
+        clearErr("#end-date-input");
         scheduleArr = [];
 
         let startDate = new Date($("#start-date-input").val());
@@ -226,6 +227,8 @@ $(document).ready(function () {
         $("#lunch-end-time-input").val("");
         $("#lesson-end-time-input").val("");
         clearErr(this);
+        clearErr("#lunch-end-time-input");
+        clearErr("#lesson-end-time-input");
         let totalDays = $("#total-days-input").val();
         if (totalDays == "") {
             showErr(this, "총훈련시간과 일일훈련시간을 먼저 입력해주세요.");
@@ -254,6 +257,7 @@ $(document).ready(function () {
         $("#lunch-start-time-input").val("");
         $("#lunch-end-time-input").val("");
         clearErr(this);
+        clearErr("#lunch-end-time-input");
         let lessonEndTime = $("#lesson-end-time-input").val();
         let breakTime     = $("#break-time-input").val();
         if (lessonEndTime == "") {
@@ -304,6 +308,35 @@ $(document).ready(function () {
         `;
         $("#subject-table").append(output);
     });
+
+    $("#instructor").change(function(){
+
+        clearErr(this);
+        if($(this).val() == ""){
+            showErr(this, "강사는 필수입니다.");
+        }
+
+    });
+
+    $("#administrator").change(function(){
+
+        clearErr(this);
+        if($(this).val() == ""){
+            showErr(this, "관리자는 필수입니다.");
+        }
+
+    });
+
+    $("#classroom").change(function(){
+
+        clearErr(this);
+        if($(this).val() == ""){
+            showErr(this, "강의실은 필수입니다.");
+        }
+
+    });
+
+
 });
 
 function calLunchTime() {
@@ -416,18 +449,18 @@ function calTotalDays() {
 
 }
 
-function clearErr(nextErr) {
-    if ($(nextErr).prev().hasClass("errMsg")) {
-        $(nextErr).prev().empty();
+function clearErr(prevErr) {
+    if ($(prevErr).next().hasClass("errMsg")) {
+        $(prevErr).next().empty();
     }
 }
 
-function showErr(nextErr, errMsg) {
+function showErr(prevErr, errMsg) {
 
-    if (!$(nextErr).prev().hasClass("errMsg")) {
-        $(nextErr).before("<span class='text-danger small errMsg'></span>");
+    if (!$(prevErr).next().hasClass("errMsg")) {
+        $(prevErr).after("<small id='' class='text-danger d-block errMsg'></small>");
     }
-    $(nextErr).prev().text(errMsg);
+    $(prevErr).next().text(errMsg);
 }
 
 function checkInt(data) {
