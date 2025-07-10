@@ -14,7 +14,7 @@ $(document).ready(function () {
 
   const courseName = new URLSearchParams(window.location.search).get(
       "courseName");
-  console.log(courseName);
+  // console.log(courseName);
   const pageNo = new URLSearchParams(window.location.search).get(
       "currentPageNo");
   $("#prev-page").data("page-no", pageNo);
@@ -23,7 +23,7 @@ $(document).ready(function () {
 
   axios.get(`/api/courses`)
        .then(function (response) {
-         console.log(response);
+         // console.log(response);
          renderCourseFilterOptionsForAdminForUser(response.data.data);
        })
        .catch(function (error) {
@@ -118,7 +118,7 @@ function reIndexQuestionNumber() {
 
     let $questionType = $questionCard.find(".question-type");
     $.each($questionType, function (i, item) {
-      console.log(item);
+      // console.log(item);
       $(item).attr("name", `question-type-${newQuestionNum}`);
     });
 
@@ -127,9 +127,9 @@ function reIndexQuestionNumber() {
                   .attr("data-question-no", newQuestionNum);
 
     let $questionOptionRadioBtn = $questionCard.find(".question-answer");
-    console.log($questionOptionRadioBtn);
+    // console.log($questionOptionRadioBtn);
     $.each($questionOptionRadioBtn, function (i, item) {
-      console.log($(item));
+      // console.log($(item));
       $(item).attr("name", `question-${newQuestionNum}`);
     });
 
@@ -276,10 +276,10 @@ $(document).on("click", ".add-option-btn", function (e) {
   let $questionAnswerSection = $(e.target)
   .closest(".question-answer-section");
   let $optionList = $questionAnswerSection.find(".option-list");
-  console.log($questionAnswerSection);
+  // console.log($questionAnswerSection);
 
   let optionCnt = $questionAnswerSection.find(".question-option").length + 1;
-  console.log(optionCnt);
+  // console.log(optionCnt);
 
   let questionOption = `
     <div class="row align-items-center mb-2 option-row">
@@ -478,21 +478,21 @@ $("#test-register-btn").on("click", async function () {
 
     // 문항번호
     let questionNo = $(item).data("question-no");
-    console.log(questionNo);
+    // console.log(questionNo);
     // 문항 제목
     let questionTitle = $(item).find(".question-title").val();
-    console.log(questionTitle);
+    // console.log(questionTitle);
     // 문항 배점
     let questionScore = $(item).find(".question-score").val();
-    console.log(questionScore);
+    // console.log(questionScore);
     // 문항 유형
     let questionType = $(item).find(".question-type:checked").val();
-    console.log(questionType);
+    // console.log(questionType);
 
     if (questionType === "SHORT") {
       // 단답형 주관식
       question.questionAnswer = $(item).find(".short-answer").val();
-      console.log(questionAnswer);
+      // console.log(questionAnswer);
       questionArr.push(question);
       return true;
     }
@@ -512,26 +512,26 @@ $("#test-register-btn").on("click", async function () {
         // 선택지 번호
         let optionNo = $(item).find(".question-option")
                               .data("option-no");
-        console.log(optionNo);
+        // console.log(optionNo);
         // 선택지 내용
         let optionContent = $(item).find(".question-option").val();
-        console.log(optionContent);
+        // console.log(optionContent);
         // 선택지 정답 여부
         let isCorrect = $(item).find(".question-answer").is(":checked");
-        console.log(isCorrect);
+        // console.log(isCorrect);
 
-        console.log(option);
+        // console.log(option);
         questionOptions.push(option);
       });
     }
-    console.log(questionOptions);
+    // console.log(questionOptions);
 
     questionArr.push(question);
-    console.log(JSON.stringify(questionArr));
+    // console.log(JSON.stringify(questionArr));
 
   });
 
-  console.log(JSON.stringify(testInfo));
+  // console.log(JSON.stringify(testInfo));
 
   try {
     // 시험 등록
@@ -540,14 +540,14 @@ $("#test-register-btn").on("click", async function () {
         testInfo,
         { headers: { "Content-Type": "application/json" } }
     );
-    console.log(postRes);
+    // console.log(postRes);
 
     // courseId 가져오기
     const getRes = await axios.get(
         "/api/test/courseId",
         { params: { courseName: $("#courseSelector").val() } }
     );
-    console.log(getRes);
+    // console.log(getRes);
     const courseId = getRes.data.data;
 
     // 알림 전송
@@ -593,7 +593,7 @@ function renderCourseFilterOptionsForAdminForUser(data) {
 $("#prev-page").on("click", function () {
 
   let prevPageNo = $(this).data("page-no");
-  console.log(prevPageNo);
+  // console.log(prevPageNo);
 
   location.href = `/test/testList?currentPageNo=${prevPageNo}`;
 });

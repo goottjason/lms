@@ -55,7 +55,7 @@ public class TestRegisterController {
       @RequestParam(required = false) String courseName,
       @RequestParam(defaultValue = "1") int currentPageNo,
       @Parameter(hidden = true) HttpSession session) {
-    log.info("courseName: {}", courseName);
+//    log.info("courseName: {}", courseName);
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 
     if (currentPageNo == 0) {
@@ -87,7 +87,7 @@ public class TestRegisterController {
         errorsMap.put(err.getField(), err.getDefaultMessage());
       }
 
-      log.info("errors={}", errorsMap);
+//      log.info("errors={}", errorsMap);
 
       return ApiResult.<T>respondFail(400, "ERROR", (T) errorsMap, HttpStatus.BAD_REQUEST);
     }

@@ -81,7 +81,7 @@ public class TestDetailController {
   public <T> ResponseEntity<ApiResult<T>> modifyTestDetail(@PathVariable("testId") int testId,
       @Valid @RequestBody TestRegisterDTO testDetailDTO, BindingResult bindingResult) {
 
-    log.info("testDetailDTO: {}", testDetailDTO);
+//    log.info("testDetailDTO: {}", testDetailDTO);
 
     if (bindingResult.hasErrors()) {
       Map<String, String> errorsMap = new HashMap<>();

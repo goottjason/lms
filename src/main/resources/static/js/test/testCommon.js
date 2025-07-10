@@ -80,7 +80,7 @@ function renderTestHeader(testInfo) {
 function buildQuiz(quiz, questionInfo) {
 
   $.each(questionInfo, function (index, item) {
-    console.log(item);
+    // console.log(item);
     const {
       questionNo,
       questionType,
@@ -91,9 +91,9 @@ function buildQuiz(quiz, questionInfo) {
     } = item;
     let question = new Question(questionNo, questionType, questionTitle,
         questionScore);
-    console.log(questionAnswer);
+    // console.log(questionAnswer);
     question.setShortAnswer(questionAnswer);
-    console.log(question);
+    // console.log(question);
 
     while (question.options.length < options.length) {
       question.addOption();
@@ -113,11 +113,11 @@ function buildQuiz(quiz, questionInfo) {
     quiz.addQuestion(question);
     // console.log(question);
   });
-  console.log(quiz);
+  // console.log(quiz);
 }
 
 function buildUserAnswer(questions, score) {
-  console.log(questions);
+  // console.log(questions);
   $(".user-score").text(score);
 
   $.each(questions, function (index, q) {
@@ -134,7 +134,7 @@ function buildUserAnswer(questions, score) {
 const $testDetailBody = $(".test-detail-body");
 
 function renderTestDetailPageForLearnerBySubmissionStatus(data) {
-  console.log(data);
+  // console.log(data);
   const submissionStatus = data.submissionStatus;
   $testDetailBody.empty();
   $testDetailBody.append(makeTestDetailPageBodyForLearner(submissionStatus));
