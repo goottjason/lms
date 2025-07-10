@@ -305,10 +305,10 @@ function makeQnARow(userType, qnaData) {
   const isSecret = qnaData.secretStatus === true;
   let titleTh;
   if (userType === "LEARNER" && isSecret && !isOwner) {
-    titleTh = `<td class="align-middle text-center text-muted"><em>비밀글입니다.</em></td>`;
+    titleTh = `<td class="text-center text-muted"><em>비밀글입니다.</em></td>`;
   } else {
     titleTh = `
-        <td class="align-middle">
+        <td>
             <a class="qna-detail-page" data-board-no="${qnaData.boardNo}" href="#">
               ${qnaData.title}
             </a>
@@ -317,13 +317,13 @@ function makeQnARow(userType, qnaData) {
   }
 
   return `
-    <tr class="text-center">
-      <td class="align-middle" scope="col">${qnaData.boardNo}</td>
+    <tr class="">
+      <td class="align-middle text-center" scope="col">${qnaData.boardNo}</td>
       ${titleTh}
-      <td class="align-middle" scope="col">${qnaData.courseName}</td>
-      <td class="align-middle" scope="col">${qnaData.writer}</td>
-      <td class="align-middle" scope="col">${qnaData.regDate}</td>
-      <td class="align-middle" scope="col">${qnaData.answerStatus}</td>
+      <td class="" scope="col">${qnaData.courseName}</td>
+      <td class="align-middle text-center" scope="col">${qnaData.writer}</td>
+      <td class="align-middle text-center" scope="col">${qnaData.regDate}</td>
+      <td class="align-middle text-center" scope="col">${qnaData.answerStatus}</td>
     </tr>
     `;
 }

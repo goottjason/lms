@@ -212,8 +212,8 @@ function makeTestRow(userType, test) {
 
   return `
     <tr>
-      <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
-      <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
+      <td class="text-center title align-middle test-detail-btn"><a href="${detailPageUrl}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
+      <td class="text-center title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
       <td class="text-center align-middle">${test.testStatus}</td>
       <td class="text-center align-middle">${test.testTime}</td>
