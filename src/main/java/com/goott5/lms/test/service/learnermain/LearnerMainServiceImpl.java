@@ -132,9 +132,9 @@ public class LearnerMainServiceImpl implements LearnerMainService {
     Integer learnerEnrollmentId = learnerMainMapper.selectLearnerEnrollmentId(courseName,
         ((UserVO) session.getAttribute("loginUser")).getId());
 
-    log.info("courseName: {}", courseName);
-    log.info("learnerEnrollmentId:{}", learnerEnrollmentId);
-    log.info("localdate:{}", LocalDate.now());
+//    log.info("courseName: {}", courseName);
+//    log.info("learnerEnrollmentId:{}", learnerEnrollmentId);
+//    log.info("localdate:{}", LocalDate.now());
 
     return learnerMainMapper.selectAttendanceStatus(learnerEnrollmentId, LocalDate.now());
   }

@@ -137,7 +137,7 @@ $courseSelect.on("change", function () {
 // Pagination 요소 생성
 function renderPagination(data) {
   $paginationContainer.empty(); // 페이지 부분 초기화
-  console.log(data.items);
+  // console.log(data.items);
 
   if (!data.items.length) {
     return;
@@ -212,7 +212,6 @@ function makeTestRow(userType, test) {
 
   return `
     <tr>
-      <td class="text-center align-middle">${test.testId}</td>
       <td class="title align-middle test-detail-btn"><a href="${detailPageUrl}?userId=${userId}&currentPageNo=${currentPageNo}&courseName=${$courseSelect.val()}&testStatus=${test.testStatus}">${test.testTitle}</a></td>     
       <td class="title align-middle text-truncate" style="max-width: 200px;">${test.courseName}</td>
       <td class="text-center align-middle">${test.testPeriod}</td>
@@ -251,11 +250,11 @@ function renderPageByUserType(userType, currentPageNo = 1) {
 // 시험 리스트 페이지 호출
 function renderTestListPage(courseName = "", currentPageNo = 1) {
 
-  console.log(courseName);
+  // console.log(courseName);
 
   fetchTests({ courseName: courseName, currentPageNo: currentPageNo })
   .then(function (response) {
-    console.log(response);
+    // console.log(response);
 
     renderTestList(response.data.message, response.data.data.items);
     renderPagination(response.data.data);
@@ -281,10 +280,10 @@ function renderTestList(userType, data) {
     return;
   }
 
-  console.log(data);
+  // console.log(data);
   let testNo = 1;
   $.each(data, function (index, el) {
-    console.log(el);
+    // console.log(el);
 
     let test = {
       testNo: testNo++,
@@ -362,12 +361,12 @@ $(document).ready(function () {
         ? UrlUtils.getQueryParam(
             "courseName") : null;
     $courseSelect.val(selectedCourse);
-    console.log(selectedCourse);
+    // console.log(selectedCourse);
   }
 
   fetchTests({ courseName: selectedCourse, currentPageNo: currentPageNo })
   .then(function (response) {
-    console.log(response);
+    // console.log(response);
 
     renderPageByUserType(response.data.message,
         response.data.data.currentPageNo);

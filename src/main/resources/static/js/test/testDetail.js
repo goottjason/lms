@@ -34,7 +34,7 @@ $(document).ready(function () {
 
   $("#prev-page").data("page-no", pageNo);
 
-  console.log(UrlUtils.getQueryParam("courseName"));
+  // console.log(UrlUtils.getQueryParam("courseName"));
 
   axios.get(`/api/courses`)
        .then(function (response) {
@@ -54,12 +54,12 @@ $(document).ready(function () {
 
   const parts = window.location.pathname.split("/");
   const testId = parseInt(UrlUtils.getPathSegment(2));
-  console.log(testId);
+  // console.log(testId);
 
   apiCall("get", `/api/tests/${testId}`)
   .then((res) => {
 
-    console.log(res);
+    // console.log(res);
     const data = res.data.data;
     originalTestInfo = new TestInfo(data.testTitle, data.startDate,
         data.endDate, data.testTime,
@@ -73,20 +73,24 @@ $(document).ready(function () {
     hideAllBtn(true);
     renderTestModifyBtn(data.startDate, res.data.message);
   })
-  .catch(error => console.log(error));
+  .catch(error => {
+    // console.log(error);
+  });
 
   apiCall("get", `/api/tests/${testId}/learners`)
   .then((res) => {
-    console.log(res);
+    // console.log(res);
     renderLearnerList(res.data.data);
     renderTestDelBtn(res.data.data);
   })
-  .catch(error => console.log(error));
+  .catch(error => {
+    // console.log(error);
+  });
 
 });
 
 function makeQuestionCard(question) {
-  console.log(question);
+  // console.log(question);
   let questionCard = `
     <div class="card mb-4 question-card" data-question-no="${question.questionNo}">
       <div class="card-header py-2">
@@ -298,11 +302,11 @@ function renderTestModifyBtn(startDate, userType) {
 }
 
 function renderLearnerList(learnerArray) {
-  console.log(learnerArray);
+  // console.log(learnerArray);
   $learnerTableBody.empty();
 
   $.each(learnerArray, function (index, item) {
-    console.log(item);
+    // console.log(item);
 
     const learnerInfo = {
       learnerId: item.learnerId,

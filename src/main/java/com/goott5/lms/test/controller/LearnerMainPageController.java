@@ -65,7 +65,7 @@ public class LearnerMainPageController {
       @RequestParam(name = "courseName", required = true) String courseName,
       HttpSession session) {
 
-    log.info("courseName={}", courseName);
+//    log.info("courseName={}", courseName);
     return ApiResult.respondOk(200, "SUCCESS",
         learnerMainService.getAttendanceStatus(courseName, session));
   }

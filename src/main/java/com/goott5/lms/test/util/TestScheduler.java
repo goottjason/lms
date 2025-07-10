@@ -37,11 +37,11 @@ public class TestScheduler implements ApplicationRunner {
 
       if (!end.isAfter(now)) {
         // 이미 종료된 시험 → 즉시 0점 처리
-        log.info("Auto-grading immediately for past test id={}", testId);
+//        log.info("Auto-grading immediately for past test id={}", testId);
         testSubmissionService.assignZeroToNoShows(testId);
       } else {
         // 아직 종료되지 않은 시험 → 종료 시각에 예약
-        log.info("Scheduling auto-grading for future test id={} at {}", testId, end);
+//        log.info("Scheduling auto-grading for future test id={} at {}", testId, end);
         scheduleAutoGrading(testId, end);
       }
     }
