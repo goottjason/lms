@@ -81,7 +81,7 @@ function getHomeData(){
                async   : false, // 비동기옵션 off
                success : function (data) { // 통신이 성공하면 수행할 함수
 
-                   console.log(data);
+                   // console.log(data);
                    renderHomeData(data);
 
                },
@@ -296,7 +296,8 @@ function renderTestChartForInstructor(data){
         let tmpObj = {
             name: studentArr[i],
             type: 'column',
-            data: studentScoreArr[i]
+            data: studentScoreArr[i],
+            yAxisIndex: 0
         }
         series.push(tmpObj);
     }
@@ -314,95 +315,110 @@ function renderTestChartForInstructor(data){
         data: stdDevSeries
                 });
 
-    let yaxis = [];
+    let yaxis = [{
+        seriesName: "성적",
+        axisTicks: { show: true },
+        axisBorder: { show: true, color: '#008FFB' },
+        labels: {
+            show: true,
+            style: { colors: '#008FFB' }
+        },
+        title: {
+            text: "성적",
+            style: { color: '#008FFB' }
+        },
+        tooltip: { enabled: true }
+    }];
 
-    for(let i = 0; i < studentArr.length; i++){
+    // let yaxis = [];
 
-        let isShow = (i === 0);
-        yaxis.push({
-                       seriesName: studentArr[i],
-                       axisTicks: {
-                           show: isShow,
-                       },
-                       axisBorder: {
-                           show: isShow,
-                           color: '#008FFB'
-                       },
-                       labels: {
-                           show: isShow,
-                           style: {
-                               colors: '#008FFB',
-                           }
-                       },
-                       title: {
-                           text: isShow ? "성적" : "",
-                           style: {
-                               color: '#008FFB',
-                           }
-                       },
-                       tooltip: {
-                           enabled: true
-                       }
-                   });
-    }
-    yaxis.push({
-                   seriesName: "평균",
-                   opposite: true,
-                   axisTicks: {
-                       show: true,
-                   },
-                   axisBorder: {
-                       show: true,
-                       color: '#FF9800'
-                   },
-                   labels: {
-                       style: {
-                           colors: '#FF9800',
-                       }
-                   },
-                   title: {
-                       text: "평균",
-                       style: {
-                           color: '#FF9800',
-                       }
-                   },
-                   tooltip: {
-                       enabled: true
-                   }
-               });
-    yaxis.push({
-                   seriesName: "표준편차",
-                   opposite: true,
-                   axisTicks: {
-                       show: true,
-                   },
-                   axisBorder: {
-                       show: true,
-                       color: '#F44336'
-                   },
-                   labels: {
-                       style: {
-                           colors: '#F44336',
-                       }
-                   },
-                   title: {
-                       text: "표준편차",
-                       style: {
-                           color: '#F44336',
-                       }
-                   },
-                   tooltip: {
-                       enabled: true
-                   }
-               })
+    // for(let i = 0; i < studentArr.length; i++){
+    //
+    //     let isShow = (i === 0);
+    //     yaxis.push({
+    //                    seriesName: studentArr[i],
+    //                    axisTicks: {
+    //                        show: isShow,
+    //                    },
+    //                    axisBorder: {
+    //                        show: isShow,
+    //                        color: '#008FFB'
+    //                    },
+    //                    labels: {
+    //                        show: isShow,
+    //                        style: {
+    //                            colors: '#008FFB',
+    //                        }
+    //                    },
+    //                    title: {
+    //                        text: isShow ? "성적" : "",
+    //                        style: {
+    //                            color: '#008FFB',
+    //                        }
+    //                    },
+    //                    tooltip: {
+    //                        enabled: true
+    //                    }
+    //                });
+    // }
+    // yaxis.push({
+    //                seriesName: "평균",
+    //                opposite: true,
+    //                axisTicks: {
+    //                    show: true,
+    //                },
+    //                axisBorder: {
+    //                    show: true,
+    //                    color: '#FF9800'
+    //                },
+    //                labels: {
+    //                    style: {
+    //                        colors: '#FF9800',
+    //                    }
+    //                },
+    //                title: {
+    //                    text: "평균",
+    //                    style: {
+    //                        color: '#FF9800',
+    //                    }
+    //                },
+    //                tooltip: {
+    //                    enabled: true
+    //                }
+    //            });
+    // yaxis.push({
+    //                seriesName: "표준편차",
+    //                opposite: true,
+    //                axisTicks: {
+    //                    show: true,
+    //                },
+    //                axisBorder: {
+    //                    show: true,
+    //                    color: '#F44336'
+    //                },
+    //                labels: {
+    //                    style: {
+    //                        colors: '#F44336',
+    //                    }
+    //                },
+    //                title: {
+    //                    text: "표준편차",
+    //                    style: {
+    //                        color: '#F44336',
+    //                    }
+    //                },
+    //                tooltip: {
+    //                    enabled: true
+    //                }
+    //            })
 
 
 
     var options = {
         series: series,
         chart: {
-            width: '100%',
-            height: '100%',
+            // width: '100%',
+            // height: '100%',
             type: 'line',
             stacked: false
         },
@@ -435,9 +451,12 @@ function renderTestChartForInstructor(data){
         }
     };
 
+
     var chart = new ApexCharts(document.querySelector("#test-chart"), options);
     chart.render();
 }
+
+
 
 function renderInquiriesForInstructor(data){
     let output = ``;
