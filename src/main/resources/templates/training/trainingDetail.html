@@ -302,8 +302,8 @@
     });
 
     $(function () {
-        console.log("finalSelectTraining", finalSelectTraining);
-        console.log("detailWithSubMap", detailWithSubMap);
+        // console.log("finalSelectTraining", finalSelectTraining);
+        // console.log("detailWithSubMap", detailWithSubMap);
 
         // 엑셀 다운로드 버튼 클릭
         $("#excel").on("click", function (e) {
@@ -315,10 +315,10 @@
                 detailWithSubMap   : detailWithSubMap
             };
 
-            console.log("data", data);
+            // console.log("data", data);
 
             axios.post("/training/excel", data).then(function (response) {
-                console.log("response", response);
+                // console.log("response", response);
                 // console.log(response.headers['content-type']);
                 let responseCode    = response.data.code;
                 let responseMessage = response.data.message;
@@ -331,7 +331,7 @@
                               });
                 }
             }).catch(function (error) {
-                console.log("error", error);
+                // console.log("error", error);
                 let errorCode    = error.data.code;
                 let errorMessage = error.data.message;
                 // let errorData = error.data.data;

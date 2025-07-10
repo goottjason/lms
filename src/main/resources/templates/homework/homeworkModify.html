@@ -192,8 +192,8 @@
       // alert($(this).data("file"));
       $(x).closest(".card.mb-2.w-100").remove();
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
-      console.log("deleteFileList", deleteFileList);
-      console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
+      // console.log("deleteFileList", deleteFileList);
+      // console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
     }
 
     //---------파일 새로 넣기---------------
@@ -221,7 +221,7 @@
             })
           } else {
             fileList.push(file);
-            console.log("file push", file);
+            // console.log("file push", file);
           }
         }
       }
@@ -234,7 +234,7 @@
       if (fileList != null) {
         fileList.forEach(function (file, index) {
           if (file.type.indexOf("image/") === -1) {
-            console.log("이미지 아님");
+            // console.log("이미지 아님");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -251,7 +251,7 @@
             }
 
           } else {
-            console.log("이미지 맞음");
+            // console.log("이미지 맞음");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -271,7 +271,7 @@
           }
         })
       }
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
@@ -289,8 +289,8 @@
       //과정명 출력
       showCourseSelector();
 
-      let prevUrl = localStorage.getItem("sessionSaveUrl");
-      console.log("prevUrl", prevUrl);
+      // let prevUrl = localStorage.getItem("sessionSaveUrl");
+      // console.log("prevUrl", prevUrl);
 
       // db에서 삭제할 파일id 배열에 담기
       $(".softDeleteFile").click(function () {
@@ -302,6 +302,7 @@
         //파일 사이즈
         pushFileList();
         previewFile(fileList);
+        $(this).val("");
       })
 
       //취소 버튼 클릭 시 상세로 이동
@@ -337,19 +338,19 @@
         })
 
         for (let [key, value] of formData.entries()) {
-          console.log("formData entry:", key, value);
+          // console.log("formData entry:", key, value);
         }
 
         axios.post("/homework/homeworkModify",
             formData
         ).then(function (response) {
-          console.log(response)
+          // console.log(response)
          location.href = "/homework/homeworkDetail?homeworkId=" + homeworkId;
         }).catch(function (error) {
-          console.log("API 요청 실패", error);
+          // console.log("API 요청 실패", error);
           errorMap = error.response.data.data;
           if(errorMap) {
-            console.log("errorMap", errorMap);
+            // console.log("errorMap", errorMap);
 
             if (errorMap.title) {
               $("#titleError").html(errorMap.title);

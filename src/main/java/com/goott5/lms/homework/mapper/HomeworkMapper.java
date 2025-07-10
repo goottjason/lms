@@ -15,8 +15,13 @@ import org.apache.ibatis.annotations.Update;
 public interface HomeworkMapper {
 
 
-  // 공통으로 쓰임
-  @Select("select login_id from user \n"
+//  // 공통으로 쓰임
+//  @Select("select login_id from user \n"
+//      + "where id = #{id}")
+//  String selectInstructorIdForHomework(int id);
+
+  // 공통으로 쓰임 (loginId => fullname으로 변경)
+  @Select("select fullname from user \n"
       + "where id = #{id}")
   String selectInstructorIdForHomework(int id);
 

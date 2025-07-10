@@ -177,7 +177,7 @@
         }
         dataArray.push(actualData);
       })
-      console.log("dataArray", dataArray);
+      // console.log("dataArray", dataArray);
 
       let finalData = {
         dataArray: dataArray,
@@ -187,7 +187,7 @@
 
       axios.post("/training/trainingRegister", finalData)
       .then(function (response) {
-        console.log(response);
+        // console.log(response);
         let responseCode = response.data.code;
         let responseMessage = response.data.message;
         let responseData = response.data.data;
@@ -204,7 +204,7 @@
           })
         }
       }).catch(function (error) {
-        console.log("error", error);
+        // console.log("error", error);
         let errorCode = error.response.data.code;
         let errorMessage = error.response.data.message;
         let errorData = error.response.data.data;
@@ -231,7 +231,7 @@
             //value : dataArray[0].actual:Array(1)
             //value[0].defaultMessage,
             let errorMsg = value[0].defaultMessage;
-            console.log("errorMsg", errorMsg);
+            // console.log("errorMsg", errorMsg);
             if (errorMsg != null && errorMsg.length > 0) {
               $("#fieldError").html(errorMsg);
               // alert(errorMsg);
@@ -244,9 +244,9 @@
     }
 
     $(function () {
-      console.log("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
-      console.log("adminIdList", adminIdList);
-      console.log("adminArr", adminArr);
+      // console.log("selectAllWithoutActualDTO", selectAllWithoutActualDTO);
+      // console.log("adminIdList", adminIdList);
+      // console.log("adminArr", adminArr);
 
       // 파라미터의 registerDate
       queryDate();

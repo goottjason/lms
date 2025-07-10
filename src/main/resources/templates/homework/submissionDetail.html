@@ -372,7 +372,7 @@
           }
         }
 
-        console.log(error);
+        // console.log(error);
       })
     }
 
@@ -392,13 +392,13 @@
 
       axios.post("/homework/evalRegister", formData)
       .then(function (response) {
-        console.log(response);
+        // console.log(response);
         let userARR = [learnerId];
         sendNotification(userARR, "평가가 등록 되었습니다", false,
             "/homework/submissionDetail?submissionId=" + submissionId);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId;
       }).catch(function (error) {
-        console.log("error", error);
+        // console.log("error", error);
         let errorCode = error.response.data.code;
         let errorMsg = error.response.data.message;
         if (errorCode === 400) {
@@ -496,7 +496,7 @@
           }
         })
       }
-      console.log(fileList);
+      // console.log(fileList);
       // console.log("evalFile", $("#preview"));
     }
 
@@ -511,7 +511,7 @@
       //상단 과정명 출력
       showCourseSelector();
 
-      console.log("eval", evalDTO); //평가가 null 일때 evalDTO를 못읽음
+      // console.log("eval", evalDTO); //평가가 null 일때 evalDTO를 못읽음
 
       // 평가 등록 보여주기
       if (evalDTO === null) {
@@ -565,10 +565,11 @@
       // eval 등록- 파일 클릭 시 fileList에 push
       $("#evalFile").on("change", function (e) {
         e.preventDefault();
-        console.log(e.target.files);
+        // console.log(e.target.files);
         let files = e.target.files;
         pushFileList(files);
         previewFile(fileList);
+        $(this).val("");
       })
 
     })

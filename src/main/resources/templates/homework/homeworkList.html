@@ -102,12 +102,12 @@
           <thead>
           <tr class="text-center">
             <!--            <th scope="col" class="align-middle">No</th>-->
-            <th scope="col" class="align-middle">과제명</th>
-            <th scope="col" class="align-middle">과정명</th>
-            <th scope="col" class="align-middle">제출기한</th>
-            <th scope="col" class="align-middle">조회수</th>
-            <th scope="col" class="align-middle">제출 조회</th>
-            <th scope="col" class="align-middle" th:if="${loginUser.getType() == 'LEARNER'}">제출
+            <th scope="col" class="align-middle" style="width: 25%">과제명</th>
+            <th scope="col" class="align-middle" style="width: 35%">과정명</th>
+            <th scope="col" class="align-middle" style="width: 10%">제출기한</th>
+            <th scope="col" class="align-middle" style="width: 10%">조회수</th>
+            <th scope="col" class="align-middle" style="width: 10%">제출 조회</th>
+            <th scope="col" class="align-middle" th:if="${loginUser.getType() == 'LEARNER'}" style="width: 10%">제출
               여부
             </th>
           </tr>
@@ -174,12 +174,14 @@
       </th:block>
 
       <!-- 페이지 -->
-      <nav aria-label="Page navigation example" class="col mt-4">
+      <nav aria-label="Page navigation example" class="col mt-4"
+           th:if="${pagingResponseDTO.dtoList.size() > 0}">
         <ul class="pagination justify-content-center" style="cursor: default;">
-          <li class="page-item" th:if="${pagingResponseDTO.isPrev()}"  style="cursor:pointer;">
+          <li class="page-item" th:if="${pagingResponseDTO.isPrev()}" style="cursor:pointer;">
             <a class="page-link" th:if="${loginUser.getType() =='ADMINISTRATOR'}" th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getStart() -1}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy},
                progress=${param.progress}, nameForAdmin=${param.nameForAdmin})}">이전</a>
-            <a class="page-link" th:unless="${loginUser.getType() =='ADMINISTRATOR'}" th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getStart() -1}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">이전</a>
+            <a class="page-link" th:unless="${loginUser.getType() =='ADMINISTRATOR'}"
+               th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getStart() -1}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">이전</a>
           </li>
           <li class="page-item" th:unless="${pagingResponseDTO.isPrev()}"
               style="cursor: default; pointer-events: none;">
@@ -200,10 +202,10 @@
                 style="cursor:pointer;"
                 th:unless="${loginUser.getType() =='ADMINISTRATOR'}">
               <a class="page-link" th:text="${i}"
-                  th:href="@{/homework/homeworkList(pageNo=${i}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">1</a>
+                 th:href="@{/homework/homeworkList(pageNo=${i}, nameForLt=${nameForLt}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy})}">1</a>
             </li>
           </th:block>
-          <li class="page-item" th:if="${pagingResponseDTO.isNext()}"  style="cursor:pointer;">
+          <li class="page-item" th:if="${pagingResponseDTO.isNext()}" style="cursor:pointer;">
             <a class="page-link" th:if="${loginUser.getType() =='ADMINISTRATOR'}"
                th:href="@{/homework/homeworkList(pageNo=${pagingResponseDTO.getEnd() +1}, keyword=${param.keyword}, order=${param.order}, sortBy=${param.sortBy},
                progress=${param.progress}, nameForAdmin=${param.nameForAdmin})}">다음</a>
@@ -238,12 +240,12 @@
             <table class="table">
               <thead>
               <tr class="text-center">
-                <th scope="col" class="align-middle">작성자</th>
-                <th scope="col" class="align-middle">과제명</th>
-                <th scope="col" class="align-middle">제출 답안명</th>
-                <th scope="col" class="align-middle">조회수</th>
-                <th scope="col" class="align-middle">평가 여부</th>
-                <th scope="col" class="align-middle">바로 가기</th>
+                <th scope="col" class="align-middle" style="width: 10%">작성자</th>
+                <th scope="col" class="align-middle" style="width: 30%">과제명</th>
+                <th scope="col" class="align-middle" style="width: 30%">제출 답안명</th>
+                <th scope="col" class="align-middle" style="width: 10%">조회수</th>
+                <th scope="col" class="align-middle" style="width: 10%">평가 여부</th>
+                <th scope="col" class="align-middle" style="width: 10%">바로 가기</th>
               </tr>
               </thead>
               <tbody id="submission">
@@ -274,7 +276,7 @@
   <script>
 
     let pagingRequestDTO = [[${pagingRequestDTO}]];
-    console.log(pagingRequestDTO);
+    // console.log(pagingRequestDTO);
 
     //정렬
     let order = $("#order").val();
@@ -305,12 +307,12 @@
     //+) 현재 진행 중인 nameForLt가 아니면 등록 버튼 막기
 
     let nameForLtList = /*[[${menuListForLt}]]*/ null; //강사,학생용 과정 리스트
-    console.log("nameForLtList", nameForLtList);
+    // console.log("nameForLtList", nameForLtList);
 
     //강사, 교육생용 select 박스 값 나타내주기
     function createOptionForLT(selected) {
       courseSelector.empty();
-      console.log("nameForLtList", nameForLtList);
+      // console.log("nameForLtList", nameForLtList);
 
       //nameForLtlist가 존재할때만 실행
       if (nameForLtList && nameForLtList.length > 0) {
@@ -344,7 +346,7 @@
 
       // 현재 URL에 있는 nameForLt를 디코딩해서 비교
       const currentCourse = decodeURIComponent(params.get("nameForLt") || "").trim();
-      console.log("currentCourse", currentCourse); //인코딩된 param 값을 디코딩
+      // console.log("currentCourse", currentCourse); //인코딩된 param 값을 디코딩
 
       // 값이 바뀌지 않았으면 이동 x
       if (nameForLt === currentCourse) {
@@ -362,17 +364,17 @@
     //관리자용 select 박스 값(string->boolean) 컨트롤러로 보내기
     function sendBooleanForAdmin() {
       progress = $("#isInProgressForAdmin").val(); //string 상태
-      console.log("progress", progress);
+      // console.log("progress", progress);
 
       axios.get("/homework/homeworkForAdminBoolean?progress=" + progress, {
         params: {
           progress: progress
         }
       }).then(function (response) {
-        console.log(response);
+        // console.log(response);
         let menuForAdminName = response.data; //boolean에 따라 받은 것
         createOptionForAdminName(menuForAdminName);
-        console.log(menuForAdminName);
+        // console.log(menuForAdminName);
 
         //location.href = "/homework/homeworkList?progress=" + progress;
       }).catch(function (error) {
@@ -443,15 +445,15 @@
         }
         // homeworkId를 제외한 두 개 값은 모두 현 쿼리스트링에 붙어있음
       }).then(function (response) {
-        console.log(response);
-        console.log(Object.entries(response.data)); //배열
+        // console.log(response);
+        // console.log(Object.entries(response.data)); //배열
         let resultMap = Object.entries(response.data);
         let homeworkMap = resultMap[0];
-        console.log("homeworkMap", homeworkMap);
+        // console.log("homeworkMap", homeworkMap);
         let homeworkName = homeworkMap[0];
         let pagingData = homeworkMap[1];
         let submissionList = pagingData.dtoList;
-        console.log(submissionList); //리스트 맞음
+        // console.log(submissionList); //리스트 맞음
 
         let output = "";
         let outputNull = "";
@@ -466,7 +468,7 @@
         } else {
           submissionList.forEach(function (submission) {
             // console.log(submission.id);
-            let evalStatus = submission.hsId !== null? "평가 완료" : "평가 중";
+            let evalStatus = submission.hsId !== null ? "평가 완료" : "평가 중";
             output += `<tr>
                 <td class="text-center align-middle">${submission.fullname}</td>
                 <td class="text-center align-middle">${homeworkName}</td>
@@ -484,44 +486,47 @@
         }
 
         let pagingOutput = "";
+        if (submissionList.length > 0) {
 
-        pagingOutput += `<nav aria-label="Page navigation example " class="col mt-4">
+          pagingOutput += `<nav aria-label="Page navigation example " class="col mt-4">
         <ul class="pagination justify-content-center"  style="cursor: default">`;
 
-        if (pagingData.prev) {
-          pagingOutput += `<li class="page-item" style="cursor: pointer;">
+          if (pagingData.prev) {
+            pagingOutput += `<li class="page-item" style="cursor: pointer;">
             <a class="page-link" onclick="updateModal(${homeworkId},${pagingData.start
-          - 1},${pagingData.pageSize})">이전</a>
+            - 1},${pagingData.pageSize})">이전</a>
           </li>`;
-        } else {
-          pagingOutput += `<li class="page-item" style="cursor: default; pointer-events: none;">
+          } else {
+            pagingOutput += `<li class="page-item" style="cursor: default; pointer-events: none;">
             <a class="page-link" style="color: grey;">이전</a>
           </li>`;
-        }
+          }
 
-        for (let i = pagingData.start; i <= pagingData.end; i++) {
+          for (let i = pagingData.start; i <= pagingData.end; i++) {
 
-          let isActive = (i === pagingData.pageNo) ? "active" : "";
+            let isActive = (i === pagingData.pageNo) ? "active" : "";
 
-          pagingOutput += `<li class="page-item ${isActive}" style="cursor: pointer;">
+            pagingOutput += `<li class="page-item ${isActive}" style="cursor: pointer;">
             <a class="page-link"
             onclick="updateModal(${homeworkId},${i},${pagingData.pageSize})">${i}</a>
           </li>`;
-        }
+          }
 
-        if (pagingData.next) {
-          pagingOutput += `<li class="page-item" style="cursor: pointer;">
+          if (pagingData.next) {
+            pagingOutput += `<li class="page-item" style="cursor: pointer;">
             <a class="page-link page-move" onclick="updateModal(${homeworkId},${pagingData.end
-          +
-          1},${pagingData.pageSize})" >다음</a>
+            +
+            1},${pagingData.pageSize})" >다음</a>
           </li>`;
-        } else {
-          pagingOutput += `<li class="page-item" style="cursor: default; pointer-events: none;">
+          } else {
+            pagingOutput += `<li class="page-item" style="cursor: default; pointer-events: none;">
             <a class="page-link page-move" style="color: grey;">다음</a>
           </li>`;
 
+          }
+          pagingOutput += `</ul></nav>`;
+
         }
-        pagingOutput += `</ul></nav>`;
 
         $("#submission").html(output);
         $("#notSubmission").html(outputNull);
@@ -539,7 +544,7 @@
       //현재 페이지를 저장 + link된 url로 이동
       let savePage = location.href;
       localStorage.setItem("savePage", savePage);
-      console.log("저장된 savePage:", savePage);
+      // console.log("저장된 savePage:", savePage);
 
       // 추후 필요없으면 삭제(프론트 단에서 해결되면)
       // axios.post("/session/savePage", {
@@ -566,7 +571,7 @@
     //페이지 로드
     function initializePage(nameForLt) {
 
-      console.log("initializePage: 실행");
+      // console.log("initializePage: 실행");
 
       if (loginUserType !== "ADMINISTRATOR") {
 
@@ -603,9 +608,9 @@
 
     //$function 모음
     $(function () {
-      console.log("savePage", localStorage.getItem("savePage"));
-      console.log("location.href", location.href);
-      console.log("courseSelector 선택값:", courseSelector.val());
+      // console.log("savePage", localStorage.getItem("savePage"));
+      // console.log("location.href", location.href);
+      // console.log("courseSelector 선택값:", courseSelector.val());
       const params = new URLSearchParams(window.location.search);
       const nameForLt = decodeURIComponent(params.get("nameForLt") || "").trim();
 
@@ -645,7 +650,7 @@
         e.preventDefault();
 
         let courseName = courseSelector.val(); //select한 과정명 보내기
-        console.log("courseName", courseName);
+        // console.log("courseName", courseName);
         prevPage("/homework/homeworkRegister?courseName=" + encodeURIComponent(
             courseName.trim()));
 
@@ -674,10 +679,10 @@
         let submissionPageSize = 5;
 
         let homeworkId = $(this).data("id");
-        console.log("homeworkId", homeworkId);
+        // console.log("homeworkId", homeworkId);
 
         if (!homeworkId) {
-          console.log("homeworkId == null", null);
+          // console.log("homeworkId == null", null);
           return;
         }
         updateModal(homeworkId, submissionPageNo, submissionPageSize);
@@ -690,13 +695,13 @@
         e.preventDefault();
 
         let submissionId = $(this).data("id");
-        console.log("submissionId", submissionId);
+        // console.log("submissionId", submissionId);
         axios.get(
             "/homework/submissionDetailAuth?submissionId=" + encodeURIComponent(submissionId),
             {
               submissionId: submissionId
             }).then(function (response) {
-          console.log(response);
+          // console.log(response);
           Swal.fire({
             title: response.data.message,
             text: "해당 제출물로 이동하시겠습니까?",
@@ -717,7 +722,7 @@
             }
           });
         }).catch(function (error) {
-          console.log(error);
+          // console.log(error);
           //location.href = error.response.data.data;
           let msg = error.response.data.message;
           let errorCode = error.response.data.code;

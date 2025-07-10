@@ -246,7 +246,7 @@
         // 삭제 모달창 뜨기
         $(document).on("click","#deleteHomework", function () {
           // alert("!");
-          console.log("모달 존재 여부",$(".delete").length);
+          // console.log("모달 존재 여부",$(".delete").length);
           $(".delete").modal("show");
         })
 
@@ -257,14 +257,14 @@
         })
 
         $(".deleteBtn").on("click", function () {
-          console.log(homeworkId);
+          // console.log(homeworkId);
           axios.delete("/homework/deleteHomework?homeworkId=" + homeworkId)
           .then(function (response) {
             location.href = "/homework/homeworkList";
           }).catch(function (error) {
             let msg = error.response.data.message;
             let errorCode = error.response.data.code;
-            console.log(error);
+            // console.log(error);
             Swal.fire({
               title: '과제를 삭제할 수 없습니다',
               text: msg,

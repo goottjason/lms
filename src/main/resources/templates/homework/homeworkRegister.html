@@ -151,8 +151,8 @@
     //파일 사이즈
     const MAX_FILE_SIZE = 1024 * 1024 * 8;
 
-    console.log("courseId", courseId);
-    console.log("userId", userId);
+    // console.log("courseId", courseId);
+    // console.log("userId", userId);
 
     // 파일 담을 배열
     let fileList = [];
@@ -180,7 +180,7 @@
             })
           } else {
             fileList.push(file);
-            console.log("file push", file);
+            // console.log("file push", file);
           }
         }
       }
@@ -193,7 +193,7 @@
       if (fileList != null) {
         fileList.forEach(function (file, index) {
           if (file.type.indexOf("image/") === -1) {
-            console.log("이미지 아님");
+            // console.log("이미지 아님");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -210,7 +210,7 @@
             }
 
           } else {
-            console.log("이미지 맞음");
+            // console.log("이미지 맞음");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -230,14 +230,14 @@
           }
         })
       }
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //프리뷰에서 파일 x 누르면 파일리스트에서 삭제
     function removeFile(index) {
       fileList.splice(index, 1);
       previewFile(fileList);
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     // 알림 function (해당 과정의 학생들에게)
@@ -252,6 +252,7 @@
       $("#file").on("change", function () {
         pushFileList();
         previewFile(fileList);
+        $(this).val("");
       })
 
       // 폼 전송
@@ -269,14 +270,14 @@
         axios.post("/homework/homeworkRegister",
             formData
         ).then(function (response) {
-          console.log(response)
-          console.log(response.data)
+          // console.log(response)
+          // console.log(response.data)
           let targetNum = response.data.data;
           sendNotificationToAllInCourse(courseId, "과제가 등록 되었습니다", false,
               "/homework/homeworkDetail?homeworkId=" + targetNum);
           location.href = "/homework/homeworkDetail?homeworkId=" + targetNum;
         }).catch(function (error) {
-          console.log("error", error);
+          // console.log("error", error);
           if (error.response.data.data != null) {
             errorMap = error.response.data.data;
             if (errorMap.title) {

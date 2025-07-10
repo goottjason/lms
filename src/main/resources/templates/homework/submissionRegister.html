@@ -139,7 +139,7 @@
       if (fileList != null) {
         fileList.forEach(function (file, index) {
           if (file.type.indexOf("image/") === -1) {
-            console.log("이미지 아님");
+            // console.log("이미지 아님");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -156,7 +156,7 @@
             }
 
           } else {
-            console.log("이미지 맞음");
+            // console.log("이미지 맞음");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -176,7 +176,7 @@
           }
         })
       }
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //파일 넣을 때  사이즈 크면 막고 아니면 넣기
@@ -198,7 +198,7 @@
           })
         } else {
           fileList.push(file);
-          console.log("fileList", fileList);
+          // console.log("fileList", fileList);
         }
       }
     }
@@ -218,18 +218,18 @@
       fileList.forEach(function (file) {
         formData.append("fileList", file);
       })
-      console.log("fileList", fileList);
-      console.log("formData", formData);
+      // console.log("fileList", fileList);
+      // console.log("formData", formData);
 
       axios.post("/homework/submissionRegister", formData)
       .then(function (response) {
-        console.log("response", response);
+        // console.log("response", response);
         let submissionId = response.data.data;
         let userARR = [instructorId];
         sendNotification(userARR, "제출물이 등록 되었습니다", false, "/homework/submissionDetail?submissionId=" + submissionId);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId
       }).catch(function (error) {
-        console.log("error", error);
+        // console.log("error", error);
         if (error.response.data.data != null) {
           errorMap = error.response.data.data;
           if (errorMap.title) {
@@ -284,10 +284,11 @@
       $("#file").change(function (e) {
         e.preventDefault();
         let files = e.target.files;
-        console.log(files); //FileList로 나옴.
+        // console.log(files); //FileList로 나옴.
         checkFileSize(files);
         //프리뷰 만들기(파일 리스트에 있는 것들 보여주기) //이미지/비이미지 나누기 //기본 조회 파일 폼에 있는 것, 동적으로 만들기
         previewFile(fileList);
+        $(this).val("");
       })
 
       $("#formSubmit").on("submit", function (e) {

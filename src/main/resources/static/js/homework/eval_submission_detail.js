@@ -98,9 +98,9 @@ function showEvalModify() {
 // passValue 고정
 function passValue() {
   if (evalDTO != null) {
-    console.log("evalDTO", evalDTO);
-    console.log("isPass", isPass); //null
-    console.log("isPass select 박스값 존재 여부", $("#isPass").length);
+    // console.log("evalDTO", evalDTO);
+    // console.log("isPass", isPass); //null
+    // console.log("isPass select 박스값 존재 여부", $("#isPass").length);
     $("#isPass").val(evalDTO.isPass ? "1" : "0");
   }
 }
@@ -108,9 +108,9 @@ function passValue() {
 //평가 수정 란의 기존 파일 삭제
 function removeModifyBefore(x) {
   $(x).closest(".card.mb-2").remove();
-  console.log($(x).data("id"));
+  // console.log($(x).data("id"));
   deleteModifyFileList.push($(x).data("id"));
-  console.log(deleteModifyFileList);
+  // console.log(deleteModifyFileList);
 }
 
 // 파일 추가 시 파일 리스트에 넣기
@@ -133,7 +133,7 @@ function pushFileListModify(files) {
       })
     } else {
       modifyFileList.push(file);
-      console.log(modifyFileList);
+      // console.log(modifyFileList);
     }
   }
 }
@@ -142,7 +142,7 @@ function pushFileListModify(files) {
 function previewFileModify(modifyFileList) {
   $("#modifyPreview").empty();
 
-  console.log(modifyFileList);
+  // console.log(modifyFileList);
 
   modifyFileList.forEach(function (file, index) {
     if (!file.type.match('image/*')) {
@@ -206,11 +206,11 @@ function modifyEvalPost() {
 
   axios.post("/homework/modifyEvalPost", formData)
   .then(function (response) {
-    console.log(response)
-    console.log("submissionId", submissionId);
+    // console.log(response)
+    // console.log("submissionId", submissionId);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
   }).catch(function (error) {
-    console.log("error", error);
+    // console.log("error", error);
     let errorCode = error.response.data.code;
     let errorMsg = error.response.data.message;
     if (errorCode === 400) {
@@ -265,10 +265,10 @@ function deleteEvalPost() {
     data: evalDTO
   })
   .then(function (response) {
-    console.log(response);
+    // console.log(response);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
   }).catch(function (error) {
-    console.log("error", error);
+    // console.log("error", error);
     let errorMsg = error.response.data.message || "알 수 없는 오류가 발생했습니다.";
     let errorCode = error.response.data.code || 500;
     // alert(errorMsg);
@@ -292,9 +292,9 @@ function deleteEvalPost() {
 $(function () {
   // console.log("eval_submission_detail_test:", "js 전송 성공");
 
-  console.log("eval", evalDTO);
-  console.log("id", evalId);
-  console.log("instructorId", instructorId);
+  // console.log("eval", evalDTO);
+  // console.log("id", evalId);
+  // console.log("instructorId", instructorId);
 
   // 수정 버튼 클릭하면 수정 폼 나오기
   $("#modifyEval").click(function () {
@@ -304,18 +304,18 @@ $(function () {
 
   $(document).on("change", "#evalModifyFile", function (e) {
     e.preventDefault();
-    console.log(e.target.files);
+    // console.log(e.target.files);
     let files = e.target.files;
     pushFileListModify(files);
     previewFileModify(modifyFileList);
-
+    $("#evalModifyFile").val("");
   });
 
   // 폼 데이터 보내기
   $(document).on("click", "#evalModifyPost", function (e) {
     e.preventDefault();
 
-    console.log("modifyFileList", modifyFileList);
+    // console.log("modifyFileList", modifyFileList);
     modifyEvalPost();
   });
 
@@ -341,7 +341,7 @@ $(function () {
 
   //목록으로(취소)
   $(document).on("click", "#toDetail", function () {
-    console.log("instructorId", instructorId);
+    // console.log("instructorId", instructorId);
     location.href = "/homework/submissionDetail?submissionId=" + submissionId;
 
   })
