@@ -177,6 +177,8 @@ function displayCardList(staffsWithPaging) {
                     <span style="visibility:hidden;">퇴사일 2000-01-01</span>
                  </p>`;
             const colorStatus = staff.leaveDate ? '#e74a3b' : '#4e73df';
+            const buttonStatus =
+                      staff.leaveDate ? 'btn-danger' : 'btn-primary';
             let rowHtml = `
                 <div class="col mb-4">
                   <div class="card text-center" style="border-top: 5px solid ${colorStatus};">
@@ -188,7 +190,8 @@ function displayCardList(staffsWithPaging) {
                       <p class="card-text mt-4 mb-1">입사일 ${staff.hireDate}</p>
                       ${leaveDateHtml}
                       <a href="staffDetail?staffId=${staff.userId}" 
-                         class="btn btn-primary w-100" onclick="setFlag();">상세보기</a>
+                         class="btn ${buttonStatus} w-100" onclick="setFlag();"
+                         >상세보기</a>
                     </div>
                   </div>
                 </div>
