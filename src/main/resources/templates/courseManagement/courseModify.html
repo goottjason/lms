@@ -23,7 +23,7 @@
   <form class="row mb-4" method="" action="">
     <!-- 과정 등록 -->
     <div class="col-lg-6">
-      <div class="card position-relative">
+      <div class="card shadow position-relative">
         <div class="card-header py-3">
           <div class="row align-items-center">
             <div class="col">
@@ -185,9 +185,11 @@
 
     <!-- 교과목 및 교재 등록 -->
     <div class="col-lg-6">
-      <div class="card position-relative">
-        <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">교과목 및 교재 등록</h6>
+      <div class="card shadow position-relative">
+        <div class="card-header py-3 d-flex">
+          <h6 class="m-0 font-weight-bold text-primary">교과목 및 교재 등록</h6><span
+            class="text-danger">*</span><span id="subject-error"
+                                              class='text-danger small errMsg'></span>
         </div>
         <div class="card-body">
           <div class="table-responsive">
