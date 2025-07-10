@@ -303,9 +303,9 @@
                 stringBoolean: stringBoolean
               }
             });
-            console.log(response);
+            // console.log(response);
             let datas = response.data.data;
-            console.log(datas);
+            // console.log(datas);
             outputMenuForAdmin(datas);
           } catch (e) {
             console.log(e);
@@ -327,7 +327,7 @@
         if (loginUserType === "INSTRUCTOR") {
           try {
             let response = await axios.get("/training/getMenuForTeacher");
-            console.log(response);
+            // console.log(response);
             let datas = response.data.data;
             outputMenuForTeacher(datas);
           } catch (e) {
@@ -368,11 +368,11 @@
               courseName: encodeURIComponent(courseName)
             }
           });
-          console.log(response);
+          // console.log(response);
           let trainingLogMap = response.data.data;
           let responseCode = response.data.code;
 
-          console.log("trainingLogMap", trainingLogMap);
+          // console.log("trainingLogMap", trainingLogMap);
 
           // 달력의 위치를 반드시 변경해야 할때(종료 중) + 종료 중 과정명에서 진행 중/전체로 돌아올 때
           if (!isChangeMonth) {
@@ -391,7 +391,7 @@
           for (let [key, value] of Object.entries(trainingLogMap)) {
             // parsingTrainDate(value.trainingDate,".calendar-day",key);
             //여러 개의 trainingDate가 필요(리스트이므로)
-            console.log(`${key}`, value);
+            // console.log(`${key}`, value);
             if(Array.isArray(value) && value.length > 0){
               value.forEach(function (val) {
                 if (val?.trainingDate) {
@@ -423,11 +423,11 @@
         renderCalendar();
         // generateCurrentMonthDaysOnly();
 
-        console.log("=== 조회 페이지 초기화 완료 ===");
+        // console.log("=== 조회 페이지 초기화 완료 ===");
         isInProgressForAdmin = $("#isInProgressForAdmin").val();
-        console.log("isInProgressForAdmin의 길이", $("#isInProgressForAdmin").length); //1
-        console.log("isInProgressForAdmin의 타입 : ", typeof (isInProgressForAdmin)); //object
-        console.log("isInProgressForAdmin : ", isInProgressForAdmin); //null?
+        // console.log("isInProgressForAdmin의 길이", $("#isInProgressForAdmin").length); //1
+        // console.log("isInProgressForAdmin의 타입 : ", typeof (isInProgressForAdmin)); //object
+        // console.log("isInProgressForAdmin : ", isInProgressForAdmin); //null?
 
         // 관리자용 boolean 보내기
         getMenuForAdminName(isInProgressForAdmin); //처음 로드 시
@@ -436,7 +436,7 @@
         $("#isInProgressForAdmin").on("change", function () {
           isInProgressForAdmin = $("#isInProgressForAdmin").val();
           getMenuForAdminName(isInProgressForAdmin);
-          console.log("change 후 isInProgressForAdmin : ", isInProgressForAdmin);
+          // console.log("change 후 isInProgressForAdmin : ", isInProgressForAdmin);
         });
 
         //강사용 메뉴 select
@@ -496,7 +496,7 @@
         let month = dateArr[1];
         let day = dateArr[2];
         let isFileId = value.hasFile === true? "alert-primary" : "alert-danger";
-        console.log("hasFile",value.hasFile);
+        // console.log("hasFile",value.hasFile);
 
         // console.log("year", year);
         // console.log("month", month);
@@ -512,7 +512,7 @@
 
           if (calendarDay === day && calendarMonth === month && calendarYear
               === year) {
-            console.log("성공");
+            // console.log("성공");
             if ($(this).find("#insertTrain").length === 0) {
               $(this).append(`<div id = "insertTrain"></div>`);
             }

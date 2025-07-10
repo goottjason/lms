@@ -48,7 +48,7 @@ $(function () {
   function sendSignature(base64) {
     axios.post("/training/signature", base64)
     .then(function (response) {
-      console.log(response);
+      // console.log(response);
       // let responseData = response.data.data;
       let userArr = [instructorId];
       let msg = response.data.message;
@@ -62,7 +62,7 @@ $(function () {
         location.href = "/training/trainingDetail?trainingId=" + trainingId;
       })
     }).catch(function (error) {
-      console.log(error);
+      // console.log(error);
       let errorMsg = error.response.data.message;
       swal.fire({
         title: "서명 저장 실패",
@@ -75,7 +75,7 @@ $(function () {
 
   function isSignatureEmpty() {
     let dataURL = signaturePad.toDataURL();
-    console.log("dataURL", dataURL); //base64 인코딩한 문자열
+    // console.log("dataURL", dataURL); //base64 인코딩한 문자열
 
     let base64 = {
       "dataURL": dataURL,

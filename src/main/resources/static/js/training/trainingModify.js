@@ -11,7 +11,7 @@ function modifyView() {
     // console.log(typeof($(e).data("id"))); //number
   });
 
-  console.log("(수정 전)actualMap", actualMap);
+  // console.log("(수정 전)actualMap", actualMap);
 
   let output = "";
   output = `<button class="btn btn-primary" id = "modifyRegister">
@@ -41,7 +41,7 @@ function modifyData() {
   });
 
   let postMap = Object.fromEntries(actualMap)
-  console.log("(수정 후)postMap", postMap);
+  // console.log("(수정 후)postMap", postMap);
 
   let modifyFinalDTO = {
     postMap: postMap,
@@ -54,7 +54,7 @@ function modifyData() {
     }
   })
   .then(function (response) {
-    console.log("response", response);
+    // console.log("response", response);
     let responseMessage = response.data.message;
     swal.fire({
       title: responseMessage,
@@ -65,7 +65,7 @@ function modifyData() {
       location.href = "/training/trainingDetail?trainingId=" + trainingId;
     })
   }).catch(function (error) {
-    console.log("error", error);
+    // console.log("error", error);
     let errorMessage = error.response.data.message;
     let errorCode = error.response.data.code;
     let errorData = error.response.data.data;
@@ -112,10 +112,10 @@ function deleteTraining() {
     courseIdBody: courseId
   })
   .then(function (response) {
-    console.log("response", response);
+    // console.log("response", response);
     location.href = "/training/trainingList";
   }).catch(function (error) {
-    console.log("error", error);
+    // console.log("error", error);
     let errorMessage = error.response.data.message;
     swal.fire({
       title: '훈련일지 삭제 실패',

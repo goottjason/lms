@@ -176,7 +176,7 @@ public class TrainingServiceImpl implements TrainingService {
           .selectTrainingDetailDTOList(selectTrainingDetailDTOList)
           .build();
     } catch (Exception e) {
-      log.error("trainingDetail 조회 실패:{}", e.getMessage());
+//      log.error("trainingDetail 조회 실패:{}", e.getMessage());
       throw new RuntimeException(e);
     }
 
@@ -189,10 +189,10 @@ public class TrainingServiceImpl implements TrainingService {
       RequestParticipationDTO request, SelectTrainingDetailDTO selectTrainingDetailDTO) {
 
     SelectCourseDTO selectCourseDTO = trainingMapper.selectCourse(userId);
-    log.info("selectCourseDTO={}", selectCourseDTO);
+//    log.info("selectCourseDTO={}", selectCourseDTO);
 
     int learnerNum = trainingMapper.countOfLearner(selectCourseDTO.getId());
-    log.info("learnerNum={}", learnerNum);
+//    log.info("learnerNum={}", learnerNum);
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     Date thisDate = new Date();
@@ -240,11 +240,11 @@ public class TrainingServiceImpl implements TrainingService {
         .vacationPaddingList(participationLearnerMap.get("VACATION_PENDING"))
         .build();
 
-    log.info("responseParticipationDTO={}", responseParticipationDTO);
+//    log.info("responseParticipationDTO={}", responseParticipationDTO);
 
     List<SelectSchSubDTO> schSubDTOList = trainingMapper.selectSchSub(thisDate, userId);
     for (SelectSchSubDTO selectSchSubDTO : schSubDTOList) {
-      log.info("selectSchSubDTO={}", selectSchSubDTO);
+//      log.info("selectSchSubDTO={}", selectSchSubDTO);
     }
 
     SelectAllWithoutActualDTO selectAllWithoutActualDTO = SelectAllWithoutActualDTO.builder()
@@ -255,7 +255,7 @@ public class TrainingServiceImpl implements TrainingService {
         .selectSchSubDTOList(schSubDTOList)
         .build();
 
-    log.info("selectAllWithoutActualDTO={}", selectAllWithoutActualDTO);
+//    log.info("selectAllWithoutActualDTO={}", selectAllWithoutActualDTO);
 
     return selectAllWithoutActualDTO;
   }
@@ -283,19 +283,19 @@ public class TrainingServiceImpl implements TrainingService {
     //훈련일지(메인) 넣기
     int insertTraining = trainingMapper.insertTrainingLog(insertTrainingDTO);
     if (insertTraining == 1) {
-      log.info("insertTraining={}", insertTraining);
+//      log.info("insertTraining={}", insertTraining);
     } else {
-      log.warn("insertTraining 실패");
+//      log.warn("insertTraining 실패");
       throw new RuntimeException("insertTraining 실패");
     }
 
     int lastAutoNum = utilMapper.selectLastIdFromAll();
     if (lastAutoNum == 0 || lastAutoNum == -1) {
-      log.warn("최근 insert auto-increment id 가져오기 실패");
+//      log.warn("최근 insert auto-increment id 가져오기 실패");
       throw new RuntimeException("최근 insert auto-increment id 가져오기 실패");
     }
 
-    log.info("lastAutoNum={}", lastAutoNum);
+//    log.info("lastAutoNum={}", lastAutoNum);
 
     for (RegisterTrainingParamDTO registerTrainingParamDTO : registerParamList) {
 
@@ -311,9 +311,9 @@ public class TrainingServiceImpl implements TrainingService {
       int insertTrainingDetail = trainingMapper.insertTrainingDetail(insertTrainingDetailDTO);
 
       if (insertTrainingDetail == 1) {
-        log.info("insertTrainingDetail={}", insertTrainingDetail);
+//        log.info("insertTrainingDetail={}", insertTrainingDetail);
       } else {
-        log.warn("insertTrainingDetail 실패");
+//        log.warn("insertTrainingDetail 실패");
         throw new RuntimeException("insertTrainingDetail 실패");
       }
 
@@ -431,14 +431,14 @@ public class TrainingServiceImpl implements TrainingService {
     // 2. 훈련일지 detail 삭제
     int deleteDetail = trainingMapper.deleteTrainingDetail(trainingId);
     if (deleteDetail <= 0) {
-      log.info("해당 아이디로 조회된 trainingDetail 존재 x:{}", trainingId);
+//      log.info("해당 아이디로 조회된 trainingDetail 존재 x:{}", trainingId);
       throw new RuntimeException("trainingDetail 삭제 실패" + trainingId);
     }
 
     // 3. 훈련일지  trainingLog 삭제
     int deleteLog = trainingMapper.deleteTrainingLog(trainingId);
     if (deleteLog != 1) {
-      log.info("해당 아이디로 조회된 trainingLog 존재 x:{}", trainingId);
+//      log.info("해당 아이디로 조회된 trainingLog 존재 x:{}", trainingId);
       throw new RuntimeException("trainingLog 삭제 실패" + trainingId);
     }
 
@@ -448,11 +448,11 @@ public class TrainingServiceImpl implements TrainingService {
   @Transactional(rollbackFor = Exception.class)
   public MyResponseWithDataPYJ signature(Map<String, String> base64, UserVO loginUser) {
 
-    log.info("base64: {}", base64);
+//    log.info("base64: {}", base64);
     String base64Str = base64.get("dataURL");
     String pureBase64 = base64Str.split(",")[1];
-    log.info("pureBase64: {}", pureBase64);
-    log.info("trainingId: {}", base64.get("trainingId"));
+//    log.info("pureBase64: {}", pureBase64);
+//    log.info("trainingId: {}", base64.get("trainingId"));
     int trainingId = Integer.parseInt(base64.get("trainingId"));
 
     //파일 이름 생성
@@ -469,9 +469,9 @@ public class TrainingServiceImpl implements TrainingService {
     String path = "";
     try {
       path = s3Uploader.uploadFile(dir,inputStream,fileName);
-      log.info("파일 서버 저장 성공?{}",path);
+//      log.info("파일 서버 저장 성공?{}",path);
     } catch (IOException e) {
-      log.info("파일 서버 저장 실패{}",path);
+//      log.info("파일 서버 저장 실패{}",path);
       throw new RuntimeException(e);
     }
 
@@ -496,7 +496,7 @@ public class TrainingServiceImpl implements TrainingService {
     try {
       dbFileNum = utilService.insertService(fileDTO);
     } catch (Exception e) {
-      log.info("서명 db 저장 실패:{}", dbFileNum);
+//      log.info("서명 db 저장 실패:{}", dbFileNum);
       throw new RuntimeException("db 저장 실패",e);
     }
 
@@ -523,7 +523,7 @@ public class TrainingServiceImpl implements TrainingService {
 
   @Override
   public boolean isSuperAdmin(int userId) {
-    return userId == 33;
+    return trainingMapper.isSuperAdmin(userId);
   }
 
 }

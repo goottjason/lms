@@ -13,7 +13,7 @@ function parseDate(calendarDay) {
   // console.log(registerMonth); //성공
 
   let registerDate = `${registerYear}-${registerMonth}-${registerDay}`; //보낼 날짜
-  console.log(registerDate);
+  // console.log(registerDate);
 
   if (registerDay !== "00" && loginUserType === "INSTRUCTOR") {
     location.href = `/training/trainingRegister?registerDate=`

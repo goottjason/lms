@@ -174,5 +174,12 @@ public interface TrainingMapper {
 
   //====================== 훈련일지 서명 ==============================
 
+  // ===== 슈퍼 매니저 ==========
+  @Select("select exists (\n"
+      + "select 1 from staff_detail sd\n"
+      + "inner join user u\n"
+      + "on sd.user_id = u.id\n"
+      + "where sd.position = 'GENERAL_MANAGER' and sd.user_id = #{userId})")
+  boolean isSuperAdmin(int userId);
 
 }

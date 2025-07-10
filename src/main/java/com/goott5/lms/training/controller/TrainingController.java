@@ -107,6 +107,11 @@ public class TrainingController {
 
     List<String> menuList = trainingService.selectCourseMenuForAdmin(progressBoolean);
 
+    if (menuList == null || menuList.isEmpty()) {
+      menuList = new ArrayList<>();
+      menuList.add("선택된 강의가 없습니다.");
+    }
+
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "관리자 메뉴 select 박스 받아오기 성공", menuList));
   }
 
@@ -163,8 +168,11 @@ public class TrainingController {
       }
     }
 
-    if (trainingDTOList != null) {
+//    if(trainingDTOList != null || trainingDTOList.isEmpty()) {
+//      return ResponseEntity.ok(new MyResponseWithDataPYJ(200,""))
+//    }
 
+    if (trainingDTOList != null) {
       //if decodeCourseName이 ""일 경우(전체)일 때는 해당 과정명에 맞는 SelectTrainingDTO만 조회해 리스트로 만들어 맵으로 넣어주기
       if ((decodeCourseName.trim()).isEmpty()) {
         for (SelectTrainingForListDTO selectTrainingDTO : trainingDTOList) {
@@ -359,7 +367,7 @@ public class TrainingController {
 
     String decodeRegisterDate = "";
     try {
-      log.info("registerDate: {}", URLDecoder.decode(registerDate, "UTF-8")); //받아옴
+//      log.info("registerDate: {}", URLDecoder.decode(registerDate, "UTF-8")); //받아옴
       decodeRegisterDate = URLDecoder.decode(registerDate, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
@@ -405,7 +413,7 @@ public class TrainingController {
         trainingService.selectAllWithoutActual(userId, decodeRegisterDate, request,
             selectTrainingDetailDTO);
 
-    log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
+//    log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
 
     //해당 일자의 훈련일지가 있으면, 등록 막기
     int courseId = selectAllWithoutActualDTO.getSelectCourseDTO().getId(); //현재 진행중인 해당 강사의 과정 dto
@@ -436,7 +444,7 @@ public class TrainingController {
       if (selectCourseDTO != null) {
         List<Integer> adminIdList =
             trainingService.selectAdminIdList(selectCourseDTO.getId());
-        log.info("adminIdList: {}", adminIdList);
+//        log.info("adminIdList: {}", adminIdList);
         model.addAttribute("adminIdList", adminIdList);
       }
     }
@@ -450,7 +458,7 @@ public class TrainingController {
       BindingResult bindingResult,
       HttpSession session) {
 
-    log.info("finalData: {}", finalData);
+//    log.info("finalData: {}", finalData);
 
     //로그인한 유저가 해당 과정의 강사인지 확인
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
@@ -519,7 +527,7 @@ public class TrainingController {
       }
     }
 
-    log.info("modifyFinalDTO: {}", modifyFinalDTO); //성공
+//    log.info("modifyFinalDTO: {}", modifyFinalDTO); //성공
 
     // 필드에러 (유효성) 추가
     trainingService.addFieldErrorsModify(bindingResult, modifyFinalDTO);
@@ -563,8 +571,8 @@ public class TrainingController {
       userId = loginUser.getId();
     }
 
-    log.info("trainingIdBody: {}", body.get("trainingIdBody")); //ok
-    log.info("courseIdBody: {}", body.get("courseIdBody")); //ok
+//    log.info("trainingIdBody: {}", body.get("trainingIdBody")); //ok
+//    log.info("courseIdBody: {}", body.get("courseIdBody")); //ok
     int trainingId = body.get("trainingIdBody");
     int courseId = body.get("courseIdBody");
 

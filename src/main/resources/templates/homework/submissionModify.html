@@ -174,8 +174,8 @@
       // alert($(this).data("file"));
       $(x).closest(".card.mb-2.w-100").remove(); //기존 파일 조회 리스트에서 삭제
       deleteFileList.push($(x).data("file")); // id 배열에 넣기
-      console.log("deleteFileList", deleteFileList);
-      console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
+      // console.log("deleteFileList", deleteFileList);
+      // console.log("아이디 타입 확인", typeof ($(x).data("file"))); //number
     }
 
     //-------- 새로 넣을 파일--------------------
@@ -197,7 +197,7 @@
       if (fileList != null) {
         fileList.forEach(function (file, index) {
           if (file.type.indexOf("image/") === -1) {
-            console.log("이미지 아님");
+            // console.log("이미지 아님");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -214,7 +214,7 @@
             }
 
           } else {
-            console.log("이미지 맞음");
+            // console.log("이미지 맞음");
             let reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (e) {
@@ -234,7 +234,7 @@
           }
         })
       }
-      console.log("fileList", fileList);
+      // console.log("fileList", fileList);
     }
 
     //파일 넣을 때  사이즈 크면 막고 아니면 넣기
@@ -256,7 +256,7 @@
           })
         } else {
           fileList.push(file);
-          console.log("fileList", fileList);
+          // console.log("fileList", fileList);
         }
       }
     }
@@ -284,15 +284,15 @@
         formData.append("deleteFileList", fileId);
       })
 
-      console.log("fileList", fileList);
-      console.log("formData", formData);
+      // console.log("fileList", fileList);
+      // console.log("formData", formData);
 
       axios.post("/homework/submissionModify", formData)
       .then(function (response) {
         console.log("response", response);
         location.href = "/homework/submissionDetail?submissionId=" + submissionId
       }).catch(function (error) {
-        console.log("error", error);
+        // console.log("error", error);
         if (error.response.data.code === 400) {
           errorMap = error.response.data.data;
           if (errorMap.title) {
@@ -336,20 +336,21 @@
       //상단 과정명
       showCourseSelector();
 
-      console.log("learnerId", learnerId);
-      console.log("submission", submission); //받아옴
-      console.log("beforeFiles", beforeFiles); //받아옴
-      console.log("noAuth", noAuth); //받아옴
+      // console.log("learnerId", learnerId);
+      // console.log("submission", submission); //받아옴
+      // console.log("beforeFiles", beforeFiles); //받아옴
+      // console.log("noAuth", noAuth); //받아옴
 
       // 파일 리스트에 파일 넣을때, 사이즈가 크면 막기
       // 파일 리스트에 파일 넣기 => 성공
       $("#file").change(function (e) {
         e.preventDefault();
         let files = e.target.files;
-        console.log(files); //FileList로 나옴.
+        // console.log(files); //FileList로 나옴.
         checkFileSize(files);
         //프리뷰 만들기(파일 리스트에 있는 것들 보여주기) //이미지/비이미지 나누기 //기본 조회 파일 폼에 있는 것, 동적으로 만들기
         previewFile(fileList);
+        $(this).val("");
       })
 
       // 등록
