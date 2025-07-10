@@ -47,7 +47,7 @@ public interface InstructorHomeMapper {
   @Select("select id as test_id, title, total_score from test where course_id = #{courseId} and end_date < current_timestamp() order by end_date")
   List<CustomTestDTO> selectTestByCourseId(int courseId);
 
-  @Select("select ts.id as test_submission_id, ts.learner_id, ts.score, u.fullname as learner_name from test_submission ts join user u on ts.learner_id = u.id join test t on t.id = ts.test_id join learner_enrollment le on t.course_id = le.course_id and le.user_id = u.id where ts.test_id = #{testId} and le.completion_status != 'DROPPED' order by ts.learner_id")
+  @Select("select ts.id as test_submission_id, ts.learner_id, ts.score, u.fullname as learner_name from test_submission ts join user u on ts.learner_id = u.id join test t on t.id = ts.test_id join learner_enrollment le on t.course_id = le.course_id and le.user_id = u.id where ts.test_id = #{testId} order by ts.learner_id")
   List<CustomTestSubmissionDTO> selectTestSubmission(CustomTestDTO customTestDTO);
 
   @Select("select cq.id, cq.title, cq.created_at, u.id as writer_id, u.fullname as writer_name from course_qna cq join user u on cq.writer_id = u.id where course_id = #{courseId} and is_answer = 0 order by created_at desc limit 3")
@@ -70,7 +70,7 @@ public interface InstructorHomeMapper {
 
   List<CourseScheduleVO> selectCourseSchedules(@Param("today") LocalDate today , @Param("courseId") int courseId);
 
-  @Select("select u.id, u.fullname from user u join learner_enrollment le on u.id = le.user_id and le.course_id = #{courseId} where le.completion_status != 'DROPPED' order by u.id")
+  @Select("select u.id, u.fullname from user u join learner_enrollment le on u.id = le.user_id and le.course_id = #{courseId} order by u.id")
   List<EnrolledLearnerVO> selectEnrolledLearners(int courseId);
 
   @Select("select c.name from classroom c join classroom_allocation ca on c.id = ca.classroom_id and ca.course_id = #{courseId}")
