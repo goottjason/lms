@@ -81,15 +81,15 @@ public class UserServiceImpl implements UserService {
   @Override
   public String sendAuthCodeForSignup(String email) throws MessagingException {
 
-    String title = "Goot5 LMS 회원가입을 위한 인증번호 메일입니다.";
+    String title = "Goott5 LMS에서 보내는 인증번호 메일입니다.";
 
 //    String authCode = UUID.randomUUID().toString();
     String authCode = Integer.toString((int) (Math.random() * 899999) + 100000);
     log.info("인증번호::::::::::::{}", authCode);
 
-    String html = "<h1>회원가입을 환영합니다.</h1>";
-    html += "<h2>인증번호를 입력하시고 회원가입을 완료하세요</h2>";
-    html += "<h3>인증 코드 : " + authCode + "</h3>";
+    String html = "<h1>안녕하세요. Goott5 LMS입니다.</h1>";
+    html += "<h2>아래의 인증 번호를 확인하시고, 서비스 화면으로 돌아가 입력해주세요.</h2>";
+    html += "<h3>인증 번호 : " + authCode + "</h3>";
 
     sendEmailService.sendEmail(email, title, html);
 
