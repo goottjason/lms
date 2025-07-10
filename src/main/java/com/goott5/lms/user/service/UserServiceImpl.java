@@ -222,4 +222,19 @@ public class UserServiceImpl implements UserService {
     return result != 0;
   }
 
+  @Override
+  public void updateEmail(String email, int id) {
+    userMapper.updateEmail(email, id);
+  }
+
+  @Override
+  public void updateMobile(String mobile, int id) {
+    userMapper.updateMobile(mobile, id);
+  }
+
+  @Override
+  public void updateAddress(String address, int id) {
+    userMapper.updateAddress(address, id);
+  }
+
 }
