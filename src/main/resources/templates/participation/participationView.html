@@ -955,7 +955,7 @@
                     if (data.currentCourse) {
                         const currentOption = document.createElement('option');
                         currentOption.value = data.currentCourse.id;
-                        currentOption.textContent = `[진행중] ${data.currentCourse.name}`;
+                        currentOption.textContent = `${data.currentCourse.name}`;
                         currentOption.selected = true;
                         courseSelector.appendChild(currentOption);
 
@@ -967,7 +967,7 @@
                         data.previousCourses.forEach(course => {
                             const option = document.createElement('option');
                             option.value = course.id;
-                            option.textContent = `[종료] ${course.name}`;
+                            option.textContent = `${course.name}`;
                             courseSelector.appendChild(option);
                         });
 
