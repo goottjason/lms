@@ -683,21 +683,23 @@
 
 </div>
 
-
-            <!--수업일인 경우: 입퇴실 버튼들, 항상 렌더링하되 조건부 표시 -->
-<div class="attendance-buttons">
-    <button id="checkInBtn" class="btn-attendance btn-checkin" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'"
-            onclick="handleCheckIn()">
+            <!-- 입실/퇴실 버튼: 수업일에만 표시 -->
+<div class="attendance-buttons" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
+    <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
         <i class="fas fa-sign-in-alt"></i> 입실
     </button>
-    <button id="checkOutBtn" class="btn-attendance btn-checkout" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'"
-            onclick="handleCheckOut()">
+    <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
         <i class="fas fa-sign-out-alt"></i> 퇴실
     </button>
+</div>
+
+            <!-- 휴가신청 버튼: 항상 표시, 단 과정 종료 시 숨김 -->
+<th:block th:if="${currentCourse != null and currentCourse.endDate != null and currentCourse.endDate >= today}">
     <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
         <i class="fas fa-calendar-alt"></i> 휴가신청
     </button>
-</div>
+</th:block>
+
 
 
             <!-- 수업 없는 날 알림 -->

@@ -152,7 +152,7 @@ public class NoticeServiceImpl implements NoticeService {
         if (file == null || file.isEmpty()) continue;
         String originalName = file.getOriginalFilename();
         String newName = createNewName(originalName);
-        String s3Path = s3Uploader.uploadFile(TABLE_NAME, file.getInputStream(), newName);
+        String s3Path = s3Uploader.uploadFile("upload/community_notice", file.getInputStream(), newName);
         FileDTO fileDTO = FileDTO.builder()
             .tableName(TABLE_NAME)
             .tableId(noticeId)

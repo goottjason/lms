@@ -210,7 +210,7 @@
                  .then(response => {
 
                      if($("#isFixed").prop("checked")){
-                         sendNotificationToAll(`(필독) 공지사항이 등록되었습니다. ${$("#title").val()}`, false,
+                         sendNotificationToAll(`(중요) 공지사항이 등록되었습니다. ${$("#title").val()}`, false,
                                                `/communityNotice/noticeDetail/${response.data.noticeId}`)
 
                      }
