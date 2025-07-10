@@ -106,7 +106,7 @@
     select
     cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
     c.name AS courseName, c.is_in_progress AS courseIsInProgress,
-    c.start_date, c.end_date,
+    c.start_date AS courseStartDate, c.end_date AS courseEndDate,
     u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
     u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
     from classroom cr
@@ -115,10 +115,10 @@
     JOIN user u_pri ON cr.primary_admin_id = u_pri.id
     JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
     union
-    select
+    select distinct
     cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
-    c.name AS courseName, c.is_in_progress AS courseIsInProgress,
-    c.start_date, c.end_date,
+    '' AS courseName, c.is_in_progress AS courseIsInProgress,
+    '' as courseStartDate, '' AS courseEndDate,
     u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
     u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
     from classroom cr
@@ -132,6 +132,35 @@
     join course c on c.id = ca.course_id and c.is_in_progress = 1)
     order by name asc
   </select>
+
+  <!--select
+  cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+  c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+  c.start_date, c.end_date,
+  u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+  u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+  from classroom cr
+  join classroom_allocation ca on cr.id = ca.classroom_id
+  join course c on c.id = ca.course_id and c.is_in_progress = 1
+  JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+  JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+  union
+  select
+  cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+  c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+  c.start_date, c.end_date,
+  u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+  u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+  from classroom cr
+  left join classroom_allocation ca on cr.id = ca.classroom_id
+  left join course c on c.id = ca.course_id
+  LEFT JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+  LEFT JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+  where cr.id not in
+  (select cr.id from classroom cr
+  join classroom_allocation ca on cr.id = ca.classroom_id
+  join course c on c.id = ca.course_id and c.is_in_progress = 1)
+  order by name asc-->
 
   <update id="updateClassroom">
     UPDATE classroom SET
