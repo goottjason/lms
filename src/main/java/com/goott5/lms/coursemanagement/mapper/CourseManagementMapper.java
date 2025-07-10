@@ -16,6 +16,7 @@ import com.goott5.lms.learnermanagement.domain.UserReqDTO;
 import com.goott5.lms.learnermanagement.domain.UserRespDTO;
 import com.goott5.lms.operationsmanagement.domain.BaseReqDTO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.apache.ibatis.annotations.Delete;
@@ -215,5 +216,15 @@ public interface CourseManagementMapper {
   })
   Integer selectNumberOfLearnerByCoId(Integer courseId);
 
+  @Insert({
+      "INSERT INTO participation (learner_enrollment_id, status, check_in, check_out, training_time, participation_date) "
+          + "VALUES (#{learnerEnrollmentId}, 'ATTENDANCE', #{checkIn}, #{checkOut}, 8, #{participationDate})"
+  })
+  Integer insertPartTable(
+      @Param("learnerEnrollmentId") Integer learnerEnrollmentId,
+      @Param("checkIn") LocalDateTime checkIn,
+      @Param("checkOut") LocalDateTime checkOut,
+      @Param("participationDate") LocalDate participationDate
+  );
 
 }

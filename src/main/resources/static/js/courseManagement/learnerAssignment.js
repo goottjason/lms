@@ -52,7 +52,7 @@ async function initCourseSelect() {
       loginUserType: loginUserType,
       isInProgress: isInProgress});
   let courses = coursesWithPagination?.respDTOS || [];
-  if (!Array.isArray(courses)) courses = [];
+  /*if (!Array.isArray(courses)) courses = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0); // 시간 제거
   // courses 배열 필터링
@@ -67,8 +67,9 @@ async function initCourseSelect() {
     $('#course-select').prop('disabled', true);
   } else {
     updateSelectBox('#course-select', filteredCourses);
-  }
+  }*/
 
+  updateSelectBox('#course-select', courses);
   // 첫 번째 옵션을 선택 상태로 변경
   $("#course-select option:eq(0)").prop("selected", true);
   // 이벤트 핸들러 강제 실행
