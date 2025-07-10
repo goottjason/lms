@@ -44,7 +44,7 @@ public interface InstructorHomeMapper {
   @Select("select count(*) from participation p join learner_enrollment le on p.learner_enrollment_id = le.id and le.course_id = #{courseId} where p.status = 'VACATION_PENDING'")
   int selectCountOfNotApproveVacation(int courseId);
 
-  @Select("select id as test_id, title, total_score from test where course_id = #{courseId} and end_date < current_date() order by end_date")
+  @Select("select id as test_id, title, total_score from test where course_id = #{courseId} and end_date < current_timestamp() order by end_date")
   List<CustomTestDTO> selectTestByCourseId(int courseId);
 
   @Select("select ts.id as test_submission_id, ts.learner_id, ts.score, u.fullname as learner_name from test_submission ts join user u on ts.learner_id = u.id join test t on t.id = ts.test_id join learner_enrollment le on t.course_id = le.course_id and le.user_id = u.id where ts.test_id = #{testId} and le.completion_status != 'DROPPED' order by ts.learner_id")
