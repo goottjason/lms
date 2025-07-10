@@ -163,12 +163,12 @@
 
   <!-- ======================== 메인 컨텐츠 영역 ======================== -->
   <div class="attendance-container">
-
+    
     <!-- 페이지 제목 -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-      <h1 class="h3 mb-0 text-gray-800">훈련 일지</h1>
+    <div class="d-sm-flex row align-items-center justify-content-between mb-4">
+      <h1 class="col-3 h3 text-gray-800">훈련 일지</h1>
 
-      <div class="col d-flex justify-content-end">
+      <div class="col-9 d-flex justify-content-end">
         <form class="row col-12 mb-3" method="get" th:action="@{/training/trainingList}">
           <div class="col-3" th:if="${loginUser.getType() == 'ADMINISTRATOR'}">
             <select id="isInProgressForAdmin" class="form-control">
