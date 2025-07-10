@@ -47,7 +47,7 @@ public class TestDetailServiceImpl implements TestDetailService {
     // 시험 기본 정보 수정
     testDetailMapper.updateTestInfo(testDetailVO);
 
-    // 시험 문항 정보 수정
+    // 시험 문항 정보 수정  wq
     // 기존 시험 문항 정보 가져오기
     TestRegisterVO testRegisterVO = testDetailMapper.selectTestDetail(testId);
 

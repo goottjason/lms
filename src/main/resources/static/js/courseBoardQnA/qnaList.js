@@ -457,6 +457,11 @@ $qnaSearchBtn.on("click", function () {
   });
 });
 
+$("form.row.mb-3").on("submit", function (e) {
+  e.preventDefault(); // 폼 submit 막기
+  $qnaSearchBtn.click(); // 검색 버튼 클릭 트리거
+});
+
 $answerStatus.on("change", function () {
 
   console.log($(this).val());
