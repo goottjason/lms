@@ -176,10 +176,10 @@ function displayCardList(staffsWithPaging) {
                     `<p class="card-text">
                     <span style="visibility:hidden;">퇴사일 2000-01-01</span>
                  </p>`;
-
+            const colorStatus = staff.leaveDate ? '#e74a3b' : '#4e73df';
             let rowHtml = `
                 <div class="col mb-4">
-                  <div class="card text-center">
+                  <div class="card text-center" style="border-top: 5px solid ${colorStatus};">
                     <img src="${staff.profileImg != null ? staff.profileImg : baseImg}" class="rounded-circle mt-3 mx-auto d-block" style="width: 150px; height: 150px; object-fit: cover;">
                     <div class="card-body">
                       <h5 class="card-title mb-1" style="min-height: 48px;">${staff.fullname} ${positionText}님</h5>

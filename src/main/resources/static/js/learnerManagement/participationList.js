@@ -291,8 +291,9 @@ async function displayTableList(learnersWithPaging) {
 
                     const partDate = new Date(part.partParticipationDate);
 
+
                     // 오늘 날짜와 동일한 데이터에 대한 처리
-                    if (partDate.getDate() == currentDate.getDate()) {
+                    if (toYMD(partDate).getTime() == toYMD(currentDate).getTime()) {
 
                         if (part.partCheckIn != null) {
                             // null이 아니면(입실함)

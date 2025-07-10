@@ -199,7 +199,7 @@ function updateStatusBar(learnersWithPagination) {
     let radioFilterStatus = ' (전체)';
 
     if (learnerConfig.radioFilter == 'onlyInProgress') {
-        radioFilterStatus = ' (교육진행생만)';
+        radioFilterStatus = ' (진행중교육생만)';
     } else if (learnerConfig.radioFilter == 'onlyNotEnrolled') {
         radioFilterStatus = ' (미배정만)';
     } else if (learnerConfig.radioFilter == 'onlyCompleted') {
