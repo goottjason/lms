@@ -91,33 +91,35 @@
   <div class="container bg-white shadow rounded p-4 mb-4">
     <h1 class="h3 mb-2 text-gray-800 text-center" id="detailTitle">훈련 일지 상세</h1>
 
-      <!-- 상단 버튼 -->
+    <!-- 상단 버튼 -->
     <div class="row mb-3">
       <!-- 왼쪽: 서명 또는 결재 버튼 -->
       <div class="col-auto d-flex align-items-center">
-        <div th:if="${loginUserType == 'ADMINISTRATOR' && (signatureList == null || signatureList.isEmpty())}">
+        <div
+            th:if="${loginUserType == 'ADMINISTRATOR' && (signatureList == null || signatureList.isEmpty())}">
           <button
               class="btn btn-info btn-sm"
               id="signature"
               data-toggle="modal"
-              data-target="#signatureModal">결재란</button>
+              data-target="#signatureModal">결재란
+          </button>
         </div>
 
-       <table
-           class="table table-bordered mt-3" style="max-width: 300px; border-radius: 6px;"
-           th:if="${signatureList != null && !signatureList.isEmpty()}">
-  <tbody>
-    <tr>
-      <th scope="row" class="text-center align-middle bg-light" style="width: 80px;">결재란</th>
-      <td class="p-2">
-        <img
-            th:src="${signatureList[0].getPath()}"
-            class="img-fluid rounded border"
-            style="height: 60px; width: 60px; object-fit: contain;">
-      </td>
-    </tr>
-  </tbody>
-</table>
+        <table
+            class="table table-bordered mt-3" style="max-width: 300px; border-radius: 6px;"
+            th:if="${signatureList != null && !signatureList.isEmpty()}">
+          <tbody>
+          <tr>
+            <th scope="row" class="text-center align-middle bg-light" style="width: 80px;">결재란</th>
+            <td class="p-2">
+              <img
+                  th:src="${signatureList[0].getPath()}"
+                  class="img-fluid rounded border"
+                  style="height: 60px; width: 60px; object-fit: contain;">
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- 오른쪽: 엑셀 버튼 -->
@@ -126,7 +128,7 @@
       </div>
     </div>
 
-      <!-- 과정 정보 -->
+    <!-- 과정 정보 -->
     <div class="form-row mb-3" th:if="${finalSelectTraining != null}">
       <div class="form-group col-md-6">
         <label><strong>과정명</strong></label>
@@ -148,7 +150,7 @@
       </div>
     </div>
 
-      <!-- 출석 정보 -->
+    <!-- 출석 정보 -->
     <div
         class="table-responsive mb-4"
         th:if="${finalSelectTraining != null && finalSelectTraining.getResponseParticipationDTO() != null}">
@@ -207,7 +209,7 @@
     </div>
 
 
-      <!-- 훈련 과목 -->
+    <!-- 훈련 과목 -->
     <div class="table-responsive mb-4">
       <span id="fieldError" style="color: red;"></span>
       <table class="table table-bordered text-center">
@@ -239,7 +241,7 @@
       </table>
     </div>
 
-      <!-- 하단 버튼 -->
+    <!-- 하단 버튼 -->
     <div class="text-right" id="modifyDeleteDiv">
       <button class="btn btn-primary" id="modifyBtn" th:if="${loginUserType == 'INSTRUCTOR'}">
         <span class="icon text-white-50">
@@ -252,6 +254,12 @@
         <i class="fa fa-times"></i>
       </span>
         <span class="text px-3">삭제</span>
+      </button>
+      <button id="toList" class="btn btn-secondary btn-icon-split">
+      <span class="icon text-white-50">
+          <i class="fas fa-list"></i>
+      </span>
+        <span class="text px-4">목록</span>
       </button>
     </div>
 
@@ -286,65 +294,70 @@
 <th:block layout:fragment="script" th:inline="javascript">
   <script>
     let finalSelectTraining = /*[[${finalSelectTraining}]]*/ null;
-    let detailWithSubMap    = /*[[${detailWithSubMap}]]*/ null;
-    let courseId            = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
-    let instructorId        = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
-    let trainingId          =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
+    let detailWithSubMap = /*[[${detailWithSubMap}]]*/ null;
+    let courseId = /*[[${finalSelectTraining.selectTrainingDTO.courseId}]]*/ -1;
+    let instructorId = /*[[${finalSelectTraining.selectTrainingDTO.instructorId}]]*/ -1;
+    let trainingId =  /*[[${finalSelectTraining.selectTrainingDTO.id}]]*/ -1;
 
     $(document).ready(function () {
-        $("[data-toggle=\"tooltip\"]").tooltip({
-                                                   placement: "top",
-                                                   boundary : "window",
-                                                   trigger  : "hover",
-                                                   html     : true,
-                                                   container: "body"
-                                               });
+      $("[data-toggle=\"tooltip\"]").tooltip({
+        placement: "top",
+        boundary: "window",
+        trigger: "hover",
+        html: true,
+        container: "body"
+      });
     });
 
     $(function () {
-        // console.log("finalSelectTraining", finalSelectTraining);
-        // console.log("detailWithSubMap", detailWithSubMap);
+      // console.log("finalSelectTraining", finalSelectTraining);
+      // console.log("detailWithSubMap", detailWithSubMap);
 
-        // 엑셀 다운로드 버튼 클릭
-        $("#excel").on("click", function (e) {
-            // alert("excel");
-            e.preventDefault();
+      // 엑셀 다운로드 버튼 클릭
+      $("#excel").on("click", function (e) {
+        // alert("excel");
+        e.preventDefault();
 
-            let data = {
-                finalSelectTraining: finalSelectTraining,
-                detailWithSubMap   : detailWithSubMap
-            };
+        let data = {
+          finalSelectTraining: finalSelectTraining,
+          detailWithSubMap: detailWithSubMap
+        };
 
-            // console.log("data", data);
+        // console.log("data", data);
 
-            axios.post("/training/excel", data).then(function (response) {
-                // console.log("response", response);
-                // console.log(response.headers['content-type']);
-                let responseCode    = response.data.code;
-                let responseMessage = response.data.message;
-                if (responseCode === 200) {
-                    Swal.fire({
-                                  title            : responseMessage,
-                                  text             : "c:/downloads를 확인해주세요.",
-                                  icon             : "info",
-                                  confirmButtonText: "예"
-                              });
-                }
-            }).catch(function (error) {
-                // console.log("error", error);
-                let errorCode    = error.data.code;
-                let errorMessage = error.data.message;
-                // let errorData = error.data.data;
-                if (errorCode === 500) {
-                    Swal.fire({
-                                  title            : errorMessage,
-                                  text             : "다시 확인해주세요",
-                                  icon             : "error",
-                                  confirmButtonText: "예"
-                              });
-                }
+        axios.post("/training/excel", data).then(function (response) {
+          // console.log("response", response);
+          // console.log(response.headers['content-type']);
+          let responseCode = response.data.code;
+          let responseMessage = response.data.message;
+          if (responseCode === 200) {
+            Swal.fire({
+              title: responseMessage,
+              text: "c:/downloads를 확인해주세요.",
+              icon: "info",
+              confirmButtonText: "예"
             });
+          }
+        }).catch(function (error) {
+          // console.log("error", error);
+          let errorCode = error.data.code;
+          let errorMessage = error.data.message;
+          // let errorData = error.data.data;
+          if (errorCode === 500) {
+            Swal.fire({
+              title: errorMessage,
+              text: "다시 확인해주세요",
+              icon: "error",
+              confirmButtonText: "예"
+            });
+          }
         });
+      });
+
+      $("#toList").on("click", function (e) {
+        e.preventDefault();
+        window.location.href = "/training/trainingList";
+      })
 
     });
 
