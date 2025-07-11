@@ -548,7 +548,7 @@ public class HomeworkSubmissionController {
     if (bindingResult.hasErrors()) {
       for (FieldError error : bindingResult.getFieldErrors()) {
         errorMap.put(error.getField(), error.getDefaultMessage());
-        log.info("errorMap:{}", errorMap);
+//        log.info("errorMap:{}", errorMap);
       }
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "필드에러 발생", errorMap));
     }
@@ -558,23 +558,23 @@ public class HomeworkSubmissionController {
           .body(new MyResponseWithDataPYJ(404, "submission 못 받음", homeworkSubmissionDTO));
     }
 
-    log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
-    log.info("fileList:{}", fileList);
-    log.info("deleteFileList:{}", deleteFileList);
+//    log.info("homeworkSubmissionDTO:{}", homeworkSubmissionDTO);
+//    log.info("fileList:{}", fileList);
+//    log.info("deleteFileList:{}", deleteFileList);
 
     // 수정 작업 시작
     homeworkSubmissionDTO.setUpdatedAt(LocalDateTime.now().withNano(0));
     int updateSubmission = homeworkService.updateSubmission(homeworkSubmissionDTO);
-    log.info("homeworkSubmissionDTO update 날짜 수정:{}", homeworkSubmissionDTO); //여기까지 됨
+//    log.info("homeworkSubmissionDTO update 날짜 수정:{}", homeworkSubmissionDTO); //여기까지 됨
     if (updateSubmission != 1) {
-      log.info("insert 실패:{}", homeworkSubmissionDTO);
-      log.info("updateSubmission 수:{}", updateSubmission);
+//      log.info("insert 실패:{}", homeworkSubmissionDTO);
+//      log.info("updateSubmission 수:{}", updateSubmission);
 
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "게시글 insert 실패", homeworkSubmissionDTO));
     } else {
       // 게시글 insert 성공
-      log.info("게시글 insert 성공:{}", homeworkSubmissionDTO);
+//      log.info("게시글 insert 성공:{}", homeworkSubmissionDTO);
     }
 
     // 삭제할 파일 삭제(서버+db)
@@ -588,7 +588,7 @@ public class HomeworkSubmissionController {
           // db에서 삭제
           int deleteFileNum = utilService.deleteFileById(i);
           if (deleteFileNum == 1) {
-            log.info("파일 삭제 성공 :{}", deleteFileNum);
+//            log.info("파일 삭제 성공 :{}", deleteFileNum);
           } else {
             return ResponseEntity.badRequest()
                 .body(new MyResponseWithDataPYJ(500, "파일 db 삭제 실패", "id:" + i));
@@ -603,12 +603,12 @@ public class HomeworkSubmissionController {
       homeworkService.insertFileFor(fileList, "homework_submission", homeworkSubmissionDTO.getId(),
           "upload/homework");
     } catch (FileException e) {
-      log.info("새 파일 저장 실패");
+//      log.info("새 파일 저장 실패");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(e.getStatusCode(), e.getMessage(), e.getError()));
     }
 
-    log.info("제출 수정 성공");
+//    log.info("제출 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "수정 데이터 전송 성공", homeworkSubmissionDTO));
   }
 
@@ -619,24 +619,24 @@ public class HomeworkSubmissionController {
 //    1) 로그인한 유저인지
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
-      log.info("로그인 유저가 아닙니다.");
+//      log.info("로그인 유저가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "로그인 유저가 아닙니다.", null));
     }
 
 //    2) 해당 과제가 있는지
     if (submissionId == null) {
-      log.info("해당 과제가 없습니다.");
+//      log.info("해당 과제가 없습니다.");
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "해당 과제가 없습니다.", null));
     } else if (homeworkService.selectSubmission(submissionId) == null) {
-      log.info("해당 과제 제출물이 없습니다.");
+//      log.info("해당 과제 제출물이 없습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "해당 과제 제출물이 없습니다.", submissionId));
     }
 
 //    3) 해당 과제의 작성자가 맞는지
     if (loginUser.getId() != homeworkService.selectSubmission(submissionId).getLearnerId()) {
-      log.info("해당 과제물의 작성자가 아닙니다.");
+//      log.info("해당 과제물의 작성자가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(403, "해당 과제물의 작성자가 아닙니다.", null));
     }
@@ -645,7 +645,7 @@ public class HomeworkSubmissionController {
     if (homeworkService.selectHomeworkDTOById(
             homeworkService.selectSubmission(submissionId).getHomeworkId()).getEndDate()
         .isBefore(LocalDateTime.now())) {
-      log.info("해당 과제의 제출기한이 지났습니다.");
+//      log.info("해당 과제의 제출기한이 지났습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(409, "해당 과제의 제출기한이 지났습니다.", submissionId));
     }
@@ -686,13 +686,13 @@ public class HomeworkSubmissionController {
 
             //db 삭제 실패 시
             if (deleteNum != 1) {
-              log.info("파일 db 삭제 실패:{}", fileSelectDTO);
+//              log.info("파일 db 삭제 실패:{}", fileSelectDTO);
               return ResponseEntity.badRequest()
                   .body(new MyResponseWithDataPYJ(500, "파일 db 삭제 실패", fileSelectDTO));
             }
 
           } catch (UnsupportedEncodingException e) {
-            log.info("파일 삭제 실패", fileSelectDTO.getNewName());
+//            log.info("파일 삭제 실패", fileSelectDTO.getNewName());
             return ResponseEntity.badRequest()
                 .body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", fileSelectDTO));
           }
@@ -700,7 +700,7 @@ public class HomeworkSubmissionController {
       }
     }
 
-    log.info("제출 삭제 성공");
+//    log.info("제출 삭제 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "제출 삭제 성공", null));
   }
 
@@ -716,13 +716,13 @@ public class HomeworkSubmissionController {
     //1. 로그인 유저가 맞는지
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
-      log.info("로그인한 유저가 아닙니다.");
+//      log.info("로그인한 유저가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "로그인한 유저가 아닙니다.", null));
     }
 
     if (homeworkEvalDTO == null) {
-      log.info("평가할 자료가 넘어오지 않았습니다.");
+//      log.info("평가할 자료가 넘어오지 않았습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "평가할 자료가 넘어오지 않았습니다.", null));
     }
@@ -732,13 +732,13 @@ public class HomeworkSubmissionController {
         homeworkEvalDTO.getHsId());
 
     if (homeworkDTO == null) {
-      log.info("평가할 과제가 없습니다.");
+//      log.info("평가할 과제가 없습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "평가할 과제가 없습니다.", null));
     }
 
     if (homeworkEvalDTO.getHsId() == null) {
-      log.info("평가할 제출물이 없습니다.");
+//      log.info("평가할 제출물이 없습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "평가할 제출물이 없습니다.", null));
     }
@@ -761,11 +761,11 @@ public class HomeworkSubmissionController {
       for (FieldError error : bindingResult.getFieldErrors()) {
         errorMap.put(error.getField(), error.getDefaultMessage());
       }
-      log.info("에러 메세지:{}", errorMap);
+//      log.info("에러 메세지:{}", errorMap);
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorMap));
     }
 
-    log.info("homeworkEvalDTO:{}", homeworkEvalDTO); //바인딩 ok
+//    log.info("homeworkEvalDTO:{}", homeworkEvalDTO); //바인딩 ok
 
 //    if(fileList != null){
 //      log.info("eval fileList:{}",fileList);
@@ -778,7 +778,7 @@ public class HomeworkSubmissionController {
     int insertEval = homeworkService.insertEval(homeworkEvalDTO); //게시글이 저장되는 즉시 반환되는 id값
 
     if (insertEval == -1) {
-      log.info("게시글 저장 실패");
+//      log.info("게시글 저장 실패");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "게시글이 저장되지 않았습니다.", insertEval));
     }
@@ -792,7 +792,7 @@ public class HomeworkSubmissionController {
 
     }
 
-    log.info("평가 등록 완료");
+//    log.info("평가 등록 완료");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 등록 완료", null));
   }
 
@@ -809,20 +809,20 @@ public class HomeworkSubmissionController {
     //1. 로그인 유저가 맞는지
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
-      log.info("로그인한 유저가 아닙니다.");
+//      log.info("로그인한 유저가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "로그인한 유저가 아닙니다.", null));
     }
 
     if (homeworkEvalModifyDTO == null) {
-      log.info("수정할 평가가 넘어오지 않았습니다.");
+//      log.info("수정할 평가가 넘어오지 않았습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "수정할 평가가 넘어오지 않았습니다.", null));
     }
 
     // 해당 평가의 작성자인지 확인
     if (loginUser.getId() != instructorId) {
-      log.info("해당 과제의 평가자가 아닙니다.");
+//      log.info("해당 과제의 평가자가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "해당 과제의 평가자가 아닙니다.", null));
     }
@@ -846,12 +846,12 @@ public class HomeworkSubmissionController {
       for (FieldError error : bindingResult.getFieldErrors()) {
         errorModifyMap.put(error.getField(), error.getDefaultMessage());
       }
-      log.info("에러 메세지:{}", errorModifyMap);
+//      log.info("에러 메세지:{}", errorModifyMap);
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorModifyMap));
     }
 
-    log.info("homeworkEvalModifyDTO:{}", homeworkEvalModifyDTO);
+//    log.info("homeworkEvalModifyDTO:{}", homeworkEvalModifyDTO);
 //    log.info("id:{}",id);
 
     //----------update 진행---------------------
@@ -862,7 +862,7 @@ public class HomeworkSubmissionController {
     boolean updateResult = homeworkService.updateEval(homeworkEvalModifyDTO);
 
     if (!updateResult) {
-      log.info("평가 갱신 실패했습니다.");
+//      log.info("평가 갱신 실패했습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "평가 갱신 실패했습니다.", homeworkEvalModifyDTO));
     }
@@ -880,17 +880,17 @@ public class HomeworkSubmissionController {
             int deleteDB = utilService.deleteFileById(i);
 
             if (deleteDB != 1) {
-              log.info("파일 db 삭제 실패");
+//              log.info("파일 db 삭제 실패");
               return ResponseEntity.badRequest()
                   .body(new MyResponseWithDataPYJ(500, "파일 db 삭제 실패", deleteDB));
             }
           } catch (UnsupportedEncodingException e) {
-            log.info("파일 서버 삭제 실패");
+//            log.info("파일 서버 삭제 실패");
             return ResponseEntity.badRequest()
                 .body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", e.getMessage()));
           }
         }
-        log.info("파일 db 삭제 성공");
+//        log.info("파일 db 삭제 성공");
       }
     }
 
@@ -899,12 +899,12 @@ public class HomeworkSubmissionController {
       homeworkService.insertFileFor(modifyFileList, "homework_eval", homeworkEvalModifyDTO.getId(),
           "upload/homework");
     } catch (FileException e) {
-      log.info("파일 서버 저장 실패");
+//      log.info("파일 서버 저장 실패");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "파일 서버 저장 실패", e.getMessage()));
     }
 
-    log.info("평가 수정 성공");
+//    log.info("평가 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 수정 성공", homeworkEvalModifyDTO));
   }
 
@@ -915,25 +915,25 @@ public class HomeworkSubmissionController {
     // 로그인한 아이디가 해당 평가 작성자와 일치하는 지 확인
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     if (loginUser == null) {
-      log.info("로그인한 유저가 아닙니다.");
+//      log.info("로그인한 유저가 아닙니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "로그인한 유저가 아닙니다.", null));
     }
 
     if (eval == null) {
-      log.info("삭제할 평가가 넘어오지 않았습니다.");
+//      log.info("삭제할 평가가 넘어오지 않았습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "삭제할 평가가 넘어오지 않았습니다.", null));
     }
 
     if (eval.getInstructorId() != loginUser.getId()) {
-      log.info("해당 과제를 삭제할 권한이 없습니다.");
+//      log.info("해당 과제를 삭제할 권한이 없습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(401, "해당 과제를 삭제할 권한이 없습니다.", null));
     }
 
     //(받음)
-    log.info("eval:{}", eval);
+//    log.info("eval:{}", eval);
 
     // 기존 파일 삭제
     List<FileSelectDTO> fileList = utilService.selectFileList("homework_eval", eval.getId());
@@ -949,29 +949,29 @@ public class HomeworkSubmissionController {
             // 서버 삭제 성공 시(키 이름 확인)
             int dbDeleteNum = utilService.deleteFileById(fileSelectDTO.getId());
             if (dbDeleteNum != 1) {
-              log.info("db 파일 삭제 실패");
+//              log.info("db 파일 삭제 실패");
               return ResponseEntity.badRequest()
                   .body(new MyResponseWithDataPYJ(409, "db 파일 삭제 실패", dbDeleteNum));
             }
           } catch (UnsupportedEncodingException e) {
-            log.info("파일 서버 삭제 실패");
+//            log.info("파일 서버 삭제 실패");
             return ResponseEntity.badRequest()
                 .body(new MyResponseWithDataPYJ(500, "파일 서버 삭제 실패", e.getMessage()));
           }
         }
-        log.info("db 파일 삭제 성공");
+//        log.info("db 파일 삭제 성공");
       }
     }
 
     //게시글 삭제
     boolean isDeleteEval = homeworkService.deleteEvalById(eval.getId());
     if (!isDeleteEval) {
-      log.info("과제 삭제 실패했습니다.");
+//      log.info("과제 삭제 실패했습니다.");
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(500, "과제 삭제 실패했습니다.", eval));
     }
 
-    log.info("평가 삭제 성공");
+//    log.info("평가 삭제 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "평가 삭제 완료", eval));
   }
 

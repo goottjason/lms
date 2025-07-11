@@ -61,7 +61,7 @@ public class S3Uploader {
 
         //파일 확장자(ext)검사
         if(ext.equalsIgnoreCase("exe")){
-            log.info("실행 파일은 서버 업로드 불가합니다:{}",originalFileName);
+//            log.info("실행 파일은 서버 업로드 불가합니다:{}",originalFileName);
             return "exe";
         }
 
@@ -102,8 +102,8 @@ public class S3Uploader {
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder.bucket(bucket).key(key));
 //        log.info("delete : {}",  s3Client.deleteObject(builder -> builder.bucket(bucket).key(key)));
-          log.info("key:{}",key); // 성공
-          log.info("파일 서버 삭제 성공:{}",key);
+//          log.info("key:{}",key); // 성공
+//          log.info("파일 서버 삭제 성공:{}",key);
     }
 
     private File convert(InputStream inputStream, String fileName) throws IOException {

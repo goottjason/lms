@@ -122,7 +122,7 @@ public class TrainingController {
 //    log.info("디버깅: {}", "getMenuForTeacher");
     List<String> menuList = new ArrayList<>();
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-    log.info("loginUser 디버깅: {}", loginUser);
+//    log.info("loginUser 디버깅: {}", loginUser);
 
     if (loginUser != null) {
       menuList = trainingService.selectCourseMenuForTeacher(loginUser.getId());
