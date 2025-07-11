@@ -74,7 +74,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         .total(total)
         .build();
 
-    log.info(pagingResponseDTO.toString());
+//    log.info(pagingResponseDTO.toString());
 
     return pagingResponseDTO;
   }
@@ -136,7 +136,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         .total(total)
         .build();
 
-    log.info("페이징 결과: 서비스 단 " + pagingResponseDTO.toString());
+//    log.info("페이징 결과: 서비스 단 " + pagingResponseDTO.toString());
 
     return pagingResponseDTO;
   }
@@ -282,7 +282,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       if (insertNum == 1) {
         int updateNum = homeworkMapper.updateReadCount(tableId);
         if (updateNum == 1) {
-          log.info("처음 사용자: 조회수 insert && update 성공");
+//          log.info("처음 사용자: 조회수 insert && update 성공");
           return true;
         }
       }
@@ -291,7 +291,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
       if (dateNum == 1) {
         // 하루 이내 방문
-        log.info("이후 사용자: 조회수 증가 x");
+//        log.info("이후 사용자: 조회수 증가 x");
         return true;
       } else {
         // 하루 이후 방문
@@ -299,7 +299,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (updateReadDate == 1) {
           int updateReadCount = homeworkMapper.updateReadCount(tableId);
           if (updateReadCount == 1) {
-            log.info("이후 사용자: 조회수 증가 o");
+//            log.info("이후 사용자: 조회수 증가 o");
             return true;
           }
         }
@@ -341,7 +341,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       if (insertNum == 1) {
         int updateNum = homeworkMapper.updateReadCountForSubmission(tableId);
         if (updateNum == 1) {
-          log.info("처음 submission 사용자: 조회수 insert && update 성공");
+//          log.info("처음 submission 사용자: 조회수 insert && update 성공");
           return true;
         }
       }
@@ -350,7 +350,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
       if (dateNum == 1) {
         // 하루 이내 방문
-        log.info("이후 submission 사용자: 조회수 증가 x");
+//        log.info("이후 submission 사용자: 조회수 증가 x");
         return true;
       } else {
         // 하루 이후 방문
@@ -358,7 +358,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (updateReadDate == 1) {
           int updateReadCount = homeworkMapper.updateReadCountForSubmission(tableId);
           if (updateReadCount == 1) {
-            log.info("이후 submission 사용자: 조회수 증가 o");
+//            log.info("이후 submission 사용자: 조회수 증가 o");
             return true;
           }
         }
@@ -386,7 +386,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       if (insertNum == 1) {
         int updateNum = homeworkMapper.updateReadCountForEval(tableId);
         if (updateNum == 1) {
-          log.info("처음 eval 사용자: 조회수 insert && update 성공");
+//          log.info("처음 eval 사용자: 조회수 insert && update 성공");
           return true;
         }
       }
@@ -395,7 +395,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       int dateNum = readCountLogMapper.checkReadCountLogByDate(readCountLog);
       if (dateNum == 1) {
         // 하루 이내 방문
-        log.info("이후 eval 사용자: 조회수 증가 x");
+//        log.info("이후 eval 사용자: 조회수 증가 x");
         return true;
       } else {
         // 하루 이후 방문
@@ -403,7 +403,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (updateReadDate == 1) {
           int updateReadCount = homeworkMapper.updateReadCountForEval(tableId);
           if (updateReadCount == 1) {
-            log.info("이후 eval 사용자: 조회수 증가 o");
+//            log.info("이후 eval 사용자: 조회수 증가 o");
             return true;
           }
         }
@@ -479,14 +479,14 @@ public class HomeworkServiceImpl implements HomeworkService {
     //게시글 등록 후 파일 서버 업로드
     //파일 받기
     if (fileList != null) {
-      log.info("eval fileList:{}", fileList);
+//      log.info("eval fileList:{}", fileList);
       for (MultipartFile file : fileList) {
         String uploadPath = "";
         if (file == null || file.isEmpty() || file.getSize() == 0) {
 
           //롤백
           deleteFileForRollback(deleteList);
-          log.info("파일이 누락되었습니다");
+//          log.info("파일이 누락되었습니다");
          throw new FileException(422,"파일이 누락되었습니다",file);
         }
         //파일 서버에 저장
@@ -499,7 +499,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             //롤백
             deleteFileForRollback(deleteList);
 
-            log.info("파일 서버 저장 실패:{}", uploadPath);
+//            log.info("파일 서버 저장 실패:{}", uploadPath);
             throw new FileException(503,"파일 서버 저장 실패",file);
 
           }
@@ -523,7 +523,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             //롤백
             deleteFileForRollback(deleteList);
 
-            log.info("db 파일 저장 실패");
+//            log.info("db 파일 저장 실패");
             throw new FileException(409,"db 파일 저장 실패",file);
 
           }
@@ -532,7 +532,7 @@ public class HomeworkServiceImpl implements HomeworkService {
           //롤백
           deleteFileForRollback(deleteList);
 
-          log.info("db 파일 서버 저장 실패");
+//          log.info("db 파일 서버 저장 실패");
 
           throw new FileException(503,"파일 서버 저장 실패",file);
 
@@ -548,7 +548,7 @@ public class HomeworkServiceImpl implements HomeworkService {
       try {
         s3Uploader.deleteFile(key);
       } catch (Exception e) {
-        log.info("파일 삭제 실패:{}", key, e.getMessage());
+//        log.info("파일 삭제 실패:{}", key, e.getMessage());
       }
     }
   }

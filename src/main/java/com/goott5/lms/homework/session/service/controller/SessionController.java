@@ -40,7 +40,7 @@ public class SessionController {
       }
     }
 
-    log.info("saveUrl: {}", saveUrl);
+//    log.info("saveUrl: {}", saveUrl);
 
     return ResponseEntity.ok(saveUrl);
   }

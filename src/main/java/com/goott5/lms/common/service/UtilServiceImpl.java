@@ -30,7 +30,7 @@ public class UtilServiceImpl implements UtilService {
 
         // 확장자 "exe" 걸러내기
         if(ext.equals("exe")){
-            log.info("exe는 db 저장 불가합니다:{}",fileDTO.getOriginalName());
+//            log.info("exe는 db 저장 불가합니다:{}",fileDTO.getOriginalName());
             return 0; //file insert mapper 하기 전
         }
 
@@ -48,7 +48,7 @@ public class UtilServiceImpl implements UtilService {
         try {
             result = utilMapper.insertFile(fileDTO);
         } catch (Exception e) {
-            log.info("예외발생:{}",e.getMessage());
+//            log.info("예외발생:{}",e.getMessage());
         }
 
 

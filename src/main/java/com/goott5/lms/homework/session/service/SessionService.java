@@ -14,7 +14,7 @@ public class SessionService {
 
     String sessionQueryString = request.getQueryString();
 
-    log.info("sessionQueryString:{}",sessionQueryString);
+//    log.info("sessionQueryString:{}",sessionQueryString);
 
     // 쿼리스트링이 있을 경우 결합
     if(sessionQueryString != null) {
@@ -22,7 +22,7 @@ public class SessionService {
     }
 
     request.getSession().setAttribute("sessionSaveUrl",sessionUrl); //세션에 저장
-    log.info("sessionUrl 저장 성공:{}",request.getSession().getAttribute("sessionSaveUrl"));
+//    log.info("sessionUrl 저장 성공:{}",request.getSession().getAttribute("sessionSaveUrl"));
 
     return sessionUrl;
   }

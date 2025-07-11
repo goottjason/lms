@@ -35,19 +35,19 @@ public class CreatePOI {
     //파일 이름 생성
     UUID uuid = UUID.randomUUID();
     String newFileName = uuid.toString() + "_" + originalFileName;
-    log.info("파일 이름 생성:{}", newFileName);
+//    log.info("파일 이름 생성:{}", newFileName);
 
     // 빈 WorkBook 생성
     XSSFWorkbook workBook = new XSSFWorkbook();
-    log.info("workbook 생성:{}", workBook);
+//    log.info("workbook 생성:{}", workBook);
 
     // 빈 sheet 생성
     XSSFSheet sheet = workBook.createSheet("tmp_sheet");
-    log.info("sheet 생성:{}", sheet);
+//    log.info("sheet 생성:{}", sheet);
 
     //sheet를 채우기 위한 데이터 저장
     Map<String, Object> sheetMap = new LinkedHashMap<>();
-    log.info("sheetMap 초기 생성:{}", sheetMap);
+//    log.info("sheetMap 초기 생성:{}", sheetMap);
 
     sheetMap.putAll(data);
 
@@ -55,13 +55,13 @@ public class CreatePOI {
     File dir = new File(filePath);
     if (!dir.exists()) {
       boolean isDirCreated = dir.mkdirs();
-      log.info("dir 생성됨:{}", isDirCreated);
+//      log.info("dir 생성됨:{}", isDirCreated);
     }
 
     //sheetMap에서 keySet 가져오기 => 조회하면서 sheet에 입력
     Set<String> keySet = sheetMap.keySet();
     int rowNum = 0;
-    log.info("sheetMap의 keySet 생성:{}", keySet);
+//    log.info("sheetMap의 keySet 생성:{}", keySet);
 
     // treeMap을 통해 생성된 keySet=> 키값이 오름차순으로 조회됨
 
@@ -102,106 +102,27 @@ public class CreatePOI {
       rowNum++;
 
     }
-    log.info("sheet list 형성 완료:{}", sheet);
+//    log.info("sheet list 형성 완료:{}", sheet);
     try (FileOutputStream out = new FileOutputStream(
         new File(filePath, newFileName + ext[1]))){
-      log.info("파일 생성 완료:{}", out);
+//      log.info("파일 생성 완료:{}", out);
 
       try {
         workBook.write(out);
 //        out.close();
-        log.info("과정 완료:{}", out, "workBook:{}", workBook);
+//        log.info("과정 완료:{}", out, "workBook:{}", workBook);
       } catch (IOException e) {
-        log.info("파일 접근 불가:{}", e.getMessage());
+//        log.info("파일 접근 불가:{}", e.getMessage());
         throw new RuntimeException(e);
       }
 
     } catch (IOException e) {
-      log.info("파일 찾을 수 x:{}", e.getMessage());
+//      log.info("파일 찾을 수 x:{}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-//  public static void isExcel(String originalFileName, Map<String, List<Object>> data) {
-//
-//    //파일 이름 생성
-//    UUID uuid = UUID.randomUUID();
-//    String newFileName = uuid.toString() + "_" + originalFileName;
-//    log.info("파일 이름 생성:{}", newFileName);
-//
-//    // 빈 WorkBook 생성
-//    XSSFWorkbook workBook = new XSSFWorkbook();
-//    log.info("workbook 생성:{}", workBook);
-//
-//    // 빈 sheet 생성
-//    XSSFSheet sheet = workBook.createSheet("tmp_sheet");
-//    log.info("sheet 생성:{}", sheet);
-//
-//    //sheet를 채우기 위한 데이터 저장
-//    Map<String, List<Object>> sheetMap = new TreeMap<>(Comparator.comparing(String::toString));
-//    log.info("sheetMap 초기 생성:{}", sheetMap);
-//
-//    sheetMap.putAll(data);
-//
-//    //디렉토리 확인 및 생성
-//    File dir = new File(filePath);
-//    if (!dir.exists()) {
-//      boolean isDirCreated = dir.mkdirs();
-//      log.info("dir 생성됨:{}", isDirCreated);
-//    }
-//
-//    //sheetMap에서 keySet 가져오기 => 조회하면서 sheet에 입력
-//    Set<String> keySet = sheetMap.keySet();
-//    int rowNum = 0;
-//    log.info("sheetMap의 keySet 생성:{}", keySet);
-//
-//    // treeMap을 통해 생성된 keySet=> 키값이 오름차순으로 조회됨
-//
-//
-//    for (String key : keySet) {
-//      Row row = sheet.createRow(rowNum); //row 초기화
-//      List<Object> valueList = sheetMap.get(key); //row 값 리스트
-//
-//      // 첫번째 셀에 키 넣기
-//      Cell cell = row.createCell(0);
-//
-//      for (int i = 0; i < valueList.size(); i++) {
-//        if (valueList.get(i) == null || valueList.get(i).toString().isEmpty()) {
-//          continue;
-//        }
-//
-//        cell = row.createCell(i + 1);
-//
-//        if (valueList.get(i) instanceof String) {
-//          cell.setCellValue(valueList.get(i).toString());
-//        } else if (valueList.get(i) instanceof Integer) {
-//          cell.setCellValue((Integer) valueList.get(i));
-//        }
-//      }
-//      rowNum++;
-//
-//      log.info("sheet 형성 완료:{}", sheet);
-//
-//      try {
-//        FileOutputStream out = new FileOutputStream(
-//            new File(filePath, newFileName + "_" + key + ext[1]));
-//        log.info("파일 생성 완료:{}", out);
-//
-//        try {
-//          workBook.write(out);
-//          out.close();
-//          log.info("과정 완료:{}", out, "workBook:{}", workBook);
-//        } catch (IOException e) {
-//          log.info("파일 접근 불가:{}", e.getMessage());
-//          throw new RuntimeException(e);
-//        }
-//
-//      } catch (FileNotFoundException e) {
-//        log.info("파일 찾을 수 x:{}", e.getMessage());
-//        throw new RuntimeException(e);
-//      }
-//    }
-//  }
+
 
   public Map<String, Object> dtoToMap(Object dto) {
     // 파라미터 dto를 map으로 변환(엑셀 전환에 쓰일 맵으로)

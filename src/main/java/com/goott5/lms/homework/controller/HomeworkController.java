@@ -330,7 +330,7 @@ public class HomeworkController {
       return "redirect:/homework/homeworkList";
     }
 
-    log.info("courseName:{}", courseName);
+//    log.info("courseName:{}", courseName);
     boolean isRegister = true;
     Map<String, Integer> resultMap = new HashMap<>();
 
@@ -339,7 +339,7 @@ public class HomeworkController {
       resultMap = homeworkService.selectIdCourse(URLDecoder.decode(courseName), loginUser.getId(),
           loginUser.getType());
     }
-    log.info("resultMap:{}", resultMap);
+//    log.info("resultMap:{}", resultMap);
 
     // 선택한 과정이 진행 중 x or 과정명이 선택한 과정 x or 해당 과정이 등록된 유저 아이디가 로그인 유저 아이디x or 유저 타입이 instructor x
     if (resultMap == null || resultMap.get("course_id") == null
@@ -356,8 +356,8 @@ public class HomeworkController {
     model.addAttribute("userId", resultMap.get("user_id"));
 
 //    log.info("resultMap:{}",resultMap);
-    log.info("user_id:{}", resultMap.get("user_id"));
-    log.info("courseId:{}", resultMap.get("course_id"));
+//    log.info("user_id:{}", resultMap.get("user_id"));
+//    log.info("courseId:{}", resultMap.get("course_id"));
 
     return "homework/homeworkRegister";
   }
@@ -369,7 +369,7 @@ public class HomeworkController {
       BindingResult bindingResult, @RequestParam(required = false) MultipartFile[] files,
       Model model) throws IOException {
 
-    log.info("등록한 homeworkDTO:{}", homeworkDTO);
+//    log.info("등록한 homeworkDTO:{}", homeworkDTO);
 
     if (homeworkDTO == null) {
       return ResponseEntity.badRequest()
@@ -414,7 +414,7 @@ public class HomeworkController {
       }
     }
 
-    log.info("content.getBytes:{}", content.getBytes(StandardCharsets.UTF_8).length);
+//    log.info("content.getBytes:{}", content.getBytes(StandardCharsets.UTF_8).length);
 
     if (bindingResult.hasErrors()) {
       Map<String, String> errorMap = new HashMap<>();
@@ -431,14 +431,14 @@ public class HomeworkController {
     int homeworkIdForFile = homeworkService.insertHomework(homeworkDTO);
 
     if (homeworkIdForFile != -1) {
-      log.info("과제 등록 성공:{}", homeworkDTO);
+//      log.info("과제 등록 성공:{}", homeworkDTO);
     } else {
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "과제 등록 실패", null));
     }
 
     if (files != null && files.length > 0) {
       //일단 파일 전달 확인
-      log.info("requestParam files:{}", Arrays.stream(files).toList());
+//      log.info("requestParam files:{}", Arrays.stream(files).toList());
 
       for (MultipartFile file : files) {
         // 첨부 파일 서버에 저장 + 경로 저장
@@ -446,7 +446,7 @@ public class HomeworkController {
         String insertPath = s3Uploader.uploadFile("upload/homework", file.getInputStream(),
             file.getOriginalFilename());
 
-        log.info("파일 서버 저장 성공");
+//        log.info("파일 서버 저장 성공");
 
         // 받은 파일 dto에 세팅
         // db 에서 해당 테이블의 게시글 id 다시 받아오기
@@ -461,18 +461,18 @@ public class HomeworkController {
 
         // 첨부 파일 db에 저장
         int fileInsert = utilService.insertService(fileDTO);
-        if (fileInsert == 1) {
-          log.info("파일 db에 저장 성공:{}", fileDTO);
+        if (fileInsert != 1) {
+          return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "파일 저장 실패",null));
         }
       }
 
     } else {
-      log.info("파일 등록 없는 insert 성공");
+//      log.info("파일 등록 없는 insert 성공");
       return ResponseEntity.ok(
           new MyResponseWithDataPYJ(200, "파일 등록 없는 insert 성공", homeworkIdForFile));
     }
 
-    log.info("파일 등록 with insert 성공");
+//    log.info("파일 등록 with insert 성공");
     return ResponseEntity.ok(
         new MyResponseWithDataPYJ(200, "파일 등록 with insert 성공", homeworkIdForFile));
 
@@ -543,14 +543,14 @@ public class HomeworkController {
           .body(new MyResponseWithDataPYJ(404, "수정할 과제 전달 실패했습니다.", null));
     }
 
-    log.info("전송 받은 homeworkModifyDTO", homeworkModifyDTO);
+//    log.info("전송 받은 homeworkModifyDTO", homeworkModifyDTO);
 
     if (files != null) {
-      log.info("전송 받은 files:{}", files);
+//      log.info("전송 받은 files:{}", files);
     }
 
     if (deleteFiles != null) {
-      log.info("전송 받은 deleteFiles:{}", deleteFiles);
+//      log.info("전송 받은 deleteFiles:{}", deleteFiles);
     }
 
     //title과 관련된 bindingResultFieldError 추가
@@ -582,7 +582,7 @@ public class HomeworkController {
     LocalDateTime endDate = homeworkModifyDTO.getEndDate();
     if (endDate != null && startDate != null) {
       if (endDate.isBefore(startDate)) {
-        bindingResult.addError(new FieldError("homeworkDTO", "endDate", "과제 마감일은 시작일 이후여야 합니다."));
+        bindingResult.addError(new FieldError("homeworkModifyDTO", "endDate", "과제 마감일은 시작일 이후여야 합니다."));
       }
     }
 
@@ -596,10 +596,10 @@ public class HomeworkController {
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(400, "필드 에러 발생", errorMap));
     }
 
-    log.info("전송 성공한 homeworkModifyDTO:{}", homeworkModifyDTO);
-    log.info("전송 성공한 files:{}", files);
-    log.info("전송 성공한 deleteFiles:{}", deleteFiles);
-    log.info("homeworkId:{}", homeworkId);
+//    log.info("전송 성공한 homeworkModifyDTO:{}", homeworkModifyDTO);
+//    log.info("전송 성공한 files:{}", files);
+//    log.info("전송 성공한 deleteFiles:{}", deleteFiles);
+//    log.info("homeworkId:{}", homeworkId);
 
     // 게시글 수정
     homeworkModifyDTO.setId(homeworkId);
@@ -611,27 +611,34 @@ public class HomeworkController {
 
     // deleteList의 id에 해당하는 파일 dto 가져오기
     List<FileSelectDTO> deleteFileList = new ArrayList<>();
-    FileSelectDTO fileSelectDTO = null;
+
 
     if (deleteFiles != null) {
       if (!deleteFiles.isEmpty()) {
 
         for (Integer num : deleteFiles) {
-          fileSelectDTO = utilService.selectFileById(num);
+          FileSelectDTO fileSelectDTO =  utilService.selectFileById(num);
+          if(fileSelectDTO == null){
+            return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "삭제할 파일이 존재 x", null));
+          }
           deleteFileList.add(fileSelectDTO);
         }
 
-        log.info("삭제할 deleteFileList:{}", deleteFileList);
+//        log.info("삭제할 deleteFileList:{}", deleteFileList);
 
         // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
         for (FileSelectDTO selectDTO : deleteFileList) {
-          log.info("selectDTO.getPath:{}", selectDTO.getPath());
+//          log.info("selectDTO.getPath:{}", selectDTO.getPath());
+
           s3Uploader.deleteFile(
               "upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
-          log.info("파일 서버 삭제 성공"); // 성공 못함
+//          log.info("파일 서버 삭제 성공");
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
-            log.info("파일 db 삭제 성공"); // 성공
+//            log.info("파일 db 삭제 성공"); // 성공
+          } else {
+            return ResponseEntity.badRequest()
+                .body(new MyResponseWithDataPYJ(404, "파일 삭제 실패", null));
           }
         }
       }
@@ -645,7 +652,7 @@ public class HomeworkController {
           // putObject 뒤에 경로 반환
           String insertPath = s3Uploader.uploadFile("upload/homework", file.getInputStream(),
               file.getOriginalFilename());
-          log.info("파일 서버 저장 성공");
+//          log.info("파일 서버 저장 성공");
 
           // 받은 파일 dto에 세팅
           // db 에서 해당 테이블의 게시글 id 다시 받아오기
@@ -661,14 +668,15 @@ public class HomeworkController {
           // 첨부 파일 db에 저장
           int fileInsert = utilService.insertService(fileDTO);
           if (fileInsert == 1) {
-            log.info("파일 db에 저장 성공:{}", fileDTO);
+//            log.info("파일 db에 저장 성공:{}", fileDTO);
+          }else{
+            return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "파일 저장 실패", null));
           }
-          ;
         }
       }
     }
 
-    log.info("게시글 수정 성공");
+//    log.info("게시글 수정 성공");
     return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "전송 성공", homeworkModifyDTO));
 
   }
@@ -702,10 +710,12 @@ public class HomeworkController {
           // 해당 파일 dto의 getPath() 또는 지정한 dir와 getName()으로 파일 삭제해보기
           s3Uploader.deleteFile(
               "upload/homework/" + URLDecoder.decode(selectDTO.getNewName(), "UTF-8"));
-          log.info("파일 서버 삭제 성공");
+//          log.info("파일 서버 삭제 성공");
 
           if (utilService.deleteFileById(selectDTO.getId()) == 1) {
-            log.info("파일 db 삭제 성공"); // 성공
+//            log.info("파일 db 삭제 성공"); // 성공
+          }else{
+            return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404,"파일 db 삭제 실패",null));
           }
         }
       }
@@ -718,7 +728,7 @@ public class HomeworkController {
       return ResponseEntity.badRequest()
           .body(new MyResponseWithDataPYJ(404, "게시글 삭제 실패", homeworkId));
     } else {
-      log.info("게시글 삭제 성공");
+//      log.info("게시글 삭제 성공");
       return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "게시글 삭제 성공", homeworkId));
     }
   }
