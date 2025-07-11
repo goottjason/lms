@@ -178,7 +178,7 @@ public class TrainingController {
         for (SelectTrainingForListDTO selectTrainingDTO : trainingDTOList) {
           String courseNameById = trainingService.selectCourseNameById(
               selectTrainingDTO.getCourseId()); //공통용
-          log.info("courseNameById:{}", courseNameById); //여기선 잘 받아옴
+//          log.info("courseNameById:{}", courseNameById); //여기선 잘 받아옴
 
           resultMap.computeIfAbsent(courseNameById, k -> new ArrayList<>())
               .add(selectTrainingDTO);
@@ -410,8 +410,14 @@ public class TrainingController {
     int userId = loginUser.getId();
 
     SelectAllWithoutActualDTO selectAllWithoutActualDTO =
-        trainingService.selectAllWithoutActual(userId, decodeRegisterDate, request,
-            selectTrainingDetailDTO);
+        null;
+    try {
+      selectAllWithoutActualDTO = trainingService.selectAllWithoutActual(userId, decodeRegisterDate, request,
+          selectTrainingDetailDTO);
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("noGet", "현재 진행 중인 과정이 조회되지 않습니다.");
+      return "redirect:/training/trainingList";
+    }
 
 //    log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
 
