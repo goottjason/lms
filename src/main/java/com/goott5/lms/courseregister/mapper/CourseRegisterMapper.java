@@ -17,12 +17,12 @@ import org.apache.ibatis.annotations.Update;
 public interface CourseRegisterMapper {
 
 
-  @Select("select id, fullname from user where type = 'INSTRUCTOR' and id "
+  @Select("select u.id, u.fullname from user u join staff_detail sd on u.id = sd.user_id and sd.leave_date is null where u.type = 'INSTRUCTOR' and u.id "
           + "not in (select u.id from staff_assignment sa left join course c on sa.course_id = c.id  left join user u on sa.user_id = u.id "
           + "where c.is_in_progress = 1 and u.type = 'INSTRUCTOR')")
   List<UserVO> selectNotAssignmentInstructor();
 
-  @Select("select u.id, u.fullname from user u join staff_detail sd on u.id = sd.user_id where position = 'course_head'")
+  @Select("select u.id, u.fullname from user u join staff_detail sd on u.id = sd.user_id and sd.leave_date is null where position = 'course_head'")
   List<UserVO> selectCourseHead();
 
   @Select("select id, is_all, course_id, is_public_holiday, cancel_date, reason, created_at, updated_at, deleted_at from cancel_date where is_all = 1")
