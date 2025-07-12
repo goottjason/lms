@@ -91,7 +91,7 @@ public class TrainingController {
       @RequestParam(required = false) String stringBoolean) {
 
     //select 박스 출력
-    log.info("stringBoolean: {}", stringBoolean);
+//    log.info("stringBoolean: {}", stringBoolean);
 
     Boolean progressBoolean = null;
 
@@ -103,7 +103,7 @@ public class TrainingController {
       }
     }
 
-    log.info("progressBoolean: {}", progressBoolean);
+//    log.info("progressBoolean: {}", progressBoolean);
 
     List<String> menuList = trainingService.selectCourseMenuForAdmin(progressBoolean);
 
@@ -151,7 +151,7 @@ public class TrainingController {
     try {
       decodeCourseName = URLDecoder.decode(courseName, "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      log.error(e.getMessage());
+//      log.error(e.getMessage());
       return ResponseEntity.badRequest().body(new MyResponseWithDataPYJ(404, "디코딩 실패", courseName));
     }
 
@@ -205,7 +205,7 @@ public class TrainingController {
   @GetMapping("/trainingDetail")
   public String trainingDetail(@RequestParam(required = false) Integer trainingId,
       RequestParticipationDTO requestParticipationDTO,
-      SelectTrainingDetailDTO selectTrainingDetailDTO, Model model, HttpSession session) {
+      SelectTrainingDetailDTO selectTrainingDetailDTO, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     model.addAttribute("loginUser", loginUser);
@@ -214,13 +214,13 @@ public class TrainingController {
       model.addAttribute("loginUserType", loginUser.getType());
     }
 
-    log.info("trainingId: {}, requestParticipationDTO: {}, selectTrainingDetailDTO: {}", trainingId,
-        requestParticipationDTO, selectTrainingDetailDTO);
+//    log.info("trainingId: {}, requestParticipationDTO: {}, selectTrainingDetailDTO: {}", trainingId,
+//        requestParticipationDTO, selectTrainingDetailDTO);
 
     try {
       SelectAllTrainingDTO finalSelectTraining = trainingService.selectAllTraining(trainingId,
           requestParticipationDTO, selectTrainingDetailDTO);
-      log.info("finalSelectTraining: {}", finalSelectTraining);
+//      log.info("finalSelectTraining: {}", finalSelectTraining);
       model.addAttribute("finalSelectTraining", finalSelectTraining);
 
       // 훈련 과목 map으로 형성(과목명:training_detail에 쓰일 dto)
@@ -242,13 +242,14 @@ public class TrainingController {
       List<FileSelectDTO> signatureList = utilService.selectFileList("training_log", trainingId);
       if (signatureList != null) {
         model.addAttribute("signatureList", signatureList);
-        log.info("signatureList: {}", signatureList);
+//        log.info("signatureList: {}", signatureList);
       }
 
 
     } catch (Exception e) {
-      log.error("훈련 일지 상세 조회 실패:{}", e.getMessage());
-//      return "training/trainingList";
+//      log.error("훈련 일지 상세 조회 실패:{}", e.getMessage());
+      redirectAttributes.addFlashAttribute("noGet", "해당 훈련일지가 존재하지 않습니다.");
+      return "redirect:/training/trainingList";
     }
 
     return "training/trainingDetail";
@@ -259,28 +260,28 @@ public class TrainingController {
   public ResponseEntity<MyResponseWithDataPYJ> toExcel(
       @RequestBody ExcelRequestDTO excelRequestDTO) {
 
-    log.info("excelRequestDTO: {}", excelRequestDTO); //받아오기 성공
+//    log.info("excelRequestDTO: {}", excelRequestDTO); //받아오기 성공
 
     //빈 맵 형성
     Map<String, Object> realFinalMap = new LinkedHashMap<>();
 
     // 1. finalSelectTraining
     SelectAllTrainingDTO finalSelectTraining = excelRequestDTO.getFinalSelectTraining();
-    log.info("finalSelectTraining: {}", finalSelectTraining);
+//    log.info("finalSelectTraining: {}", finalSelectTraining);
 
     //finalSelectTraining => 맵 변환
     Map<String, Object> finalSelectTrainingMap = createPOI.dtoToMap(finalSelectTraining);
     finalSelectTrainingMap.remove("selectTrainingDTO");
     finalSelectTrainingMap.remove("selectTrainingDetailDTOList");
-    log.info("finalSelectTrainingMap: {}", finalSelectTrainingMap);
+//    log.info("finalSelectTrainingMap: {}", finalSelectTrainingMap);
 
     // 2. selectTrainingDTO
     SelectTrainingDTO selectTrainingDTO = finalSelectTraining.getSelectTrainingDTO();
-    log.info("selectTrainingDTO: {}", selectTrainingDTO);
+//    log.info("selectTrainingDTO: {}", selectTrainingDTO);
 
     //selectTrainingDTO => 맵 변환
     Map<String, Object> selectTrainingDTOMap = createPOI.dtoToMap(selectTrainingDTO);
-    log.info("selectTrainingDTOMap: {}", selectTrainingDTOMap);
+//    log.info("selectTrainingDTOMap: {}", selectTrainingDTOMap);
 
     //3. finalSelectTraining의 selectTrainingDetailDTOList
     Map<String, String> trainingDetailMap = new LinkedHashMap<>();
@@ -290,13 +291,13 @@ public class TrainingController {
     if (detailMap != null) {
       for (String s : detailMap.keySet()) {
         // period만 파싱
-        log.info("s: {}", s);
-        log.info(s.split("=")[3].split(",")[0]); //period 값
+//        log.info("s: {}", s);
+//        log.info(s.split("=")[3].split(",")[0]); //period 값
         String period = s.split("=")[3].split(",")[0];
         trainingDetailMap.put(period + "교시", detailMap.get(s));
       }
-      log.info("detailMap: {}", detailMap);
-      log.info("trainingDetailMap: {}", trainingDetailMap);
+//      log.info("detailMap: {}", detailMap);
+//      log.info("trainingDetailMap: {}", trainingDetailMap);
 
       // 실제 상황(plan과 다른)
       for (String s : detailMap.keySet()) {
@@ -305,7 +306,7 @@ public class TrainingController {
         String actual = tmp.substring(0, tmp.length() - 1);
         actualPeriodMap.put(period + "교시에 실제 한 것", actual);
       }
-      log.info("actualPeriodMap: {}", actualPeriodMap);
+//      log.info("actualPeriodMap: {}", actualPeriodMap);
 
     }
 
@@ -593,7 +594,7 @@ public class TrainingController {
     try {
       trainingService.deleteTraining(trainingId, "training_log");
     } catch (Exception e) {
-      log.error("훈련일지 삭제 error:{}", e.getMessage());
+//      log.error("훈련일지 삭제 error:{}", e.getMessage());
       throw new RuntimeException(e);
     }
 
@@ -610,7 +611,7 @@ public class TrainingController {
     try {
       trainingId = Integer.parseInt(base64.get("trainingId"));
     } catch (NumberFormatException e) {
-      log.info("int 파싱 실패: {}", e.getMessage());
+//      log.info("int 파싱 실패: {}", e.getMessage());
       throw new RuntimeException("int 파싱 실패", e);
     }
 

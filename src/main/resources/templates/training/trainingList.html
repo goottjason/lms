@@ -387,6 +387,8 @@
             }
           }
 
+          document.querySelectorAll(".calendar-day #insertTrain").forEach(e => e.remove());
+
           //trainingLog 출력
           for (let [key, value] of Object.entries(trainingLogMap)) {
             // parsingTrainDate(value.trainingDate,".calendar-day",key);
@@ -516,8 +518,13 @@
             if ($(this).find("#insertTrain").length === 0) {
               $(this).append(`<div id = "insertTrain"></div>`);
             }
-            $(this).find("#insertTrain").append(
-                `<div class="alert ${isFileId} mb-2" data-id="${value.id}" onclick="trainingDetail(event,this);">${name}</div>`);
+
+            //data-id 중복여부 확인
+            if ($(this).find(`#insertTrain [data-id = "${value.id}"]`).length === 0) {
+              $(this).find("#insertTrain").append(
+                  `<div class="alert ${isFileId} mb-2" data-id="${value.id}" onclick="trainingDetail(event,this);">${name}</div>`);
+
+            }
           }
         });
 
