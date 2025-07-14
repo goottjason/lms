@@ -21,6 +21,7 @@ import com.goott5.lms.training.domain.registerdto.SelectCourseDTO;
 import com.goott5.lms.training.service.TrainingService;
 import com.goott5.lms.user.domain.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.io.ByteArrayInputStream;
@@ -256,8 +257,7 @@ public class TrainingController {
   }
 
   @PostMapping("/excel")
-  @ResponseBody
-  public ResponseEntity<MyResponseWithDataPYJ> toExcel(
+  public void toExcel(HttpServletResponse response,
       @RequestBody ExcelRequestDTO excelRequestDTO) {
 
 //    log.info("excelRequestDTO: {}", excelRequestDTO); //받아오기 성공
@@ -344,14 +344,10 @@ public class TrainingController {
 
     // 훈련일지 파일 생성
     try {
-      createPOI.isExcel(safeDate + finalSelectTraining.getName(), realFinalMap);
+      createPOI.isExcel(response,safeDate + finalSelectTraining.getName(), realFinalMap);
     } catch (Exception e) {
-//      throw new RuntimeException(e);
-      return ResponseEntity.badRequest()
-          .body(new MyResponseWithDataPYJ(500, "엑셀 생성 실패", e.getMessage()));
+      throw new RuntimeException("엑셀 변환 실패",e);
     }
-
-    return ResponseEntity.ok(new MyResponseWithDataPYJ(200, "엑셀 변환 성공", excelRequestDTO));
   }
 
   @GetMapping("/trainingRegister")

@@ -1,10 +1,14 @@
 package com.goott5.lms.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +34,7 @@ public class CreatePOI {
   public static String filePath = "C:/downloads";
   public static String[] ext = {".xls", ".xlsx", ".doc", ".docx", ".ppt", ".pptx"};
 
-  public void isExcel(String originalFileName, Map<String, Object> data) {
+  public void isExcel(HttpServletResponse response,String originalFileName, Map<String, Object> data) {
 
     //파일 이름 생성
     UUID uuid = UUID.randomUUID();
@@ -52,11 +56,11 @@ public class CreatePOI {
     sheetMap.putAll(data);
 
     //디렉토리 확인 및 생성
-    File dir = new File(filePath);
-    if (!dir.exists()) {
-      boolean isDirCreated = dir.mkdirs();
-//      log.info("dir 생성됨:{}", isDirCreated);
-    }
+//    File dir = new File(filePath);
+//    if (!dir.exists()) {
+//      boolean isDirCreated = dir.mkdirs();
+////      log.info("dir 생성됨:{}", isDirCreated);
+//    }
 
     //sheetMap에서 keySet 가져오기 => 조회하면서 sheet에 입력
     Set<String> keySet = sheetMap.keySet();
@@ -102,11 +106,15 @@ public class CreatePOI {
       rowNum++;
 
     }
-//    log.info("sheet list 형성 완료:{}", sheet);
-    try (FileOutputStream out = new FileOutputStream(
-        new File(filePath, newFileName + ext[1]))){
-//      log.info("파일 생성 완료:{}", out);
 
+    // HttpServlet을 이용해 응답 스트림에 파일 내용 직접 써주기.
+    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    String encodedFileName = URLEncoder.encode(newFileName + ext[1], StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+    response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+
+//    log.info("sheet list 형성 완료:{}", sheet);
+    try (ServletOutputStream out = response.getOutputStream()){
+//      log.info("파일 생성 완료:{}", out);
       try {
         workBook.write(out);
 //        out.close();
