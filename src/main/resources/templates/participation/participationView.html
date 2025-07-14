@@ -50,7 +50,7 @@
               color: #4e73df;
             }
 
-            /* 입퇴실 버튼 영역 (이미지와 동일한 3개 버튼) */
+            /* 입퇴실 버튼 영역 (3개 버튼) */
             .attendance-buttons {
               display: flex;
               justify-content: center; /* 버튼들을 중앙 정렬 */
@@ -684,21 +684,26 @@
 </div>
 
             <!-- 입실/퇴실 버튼: 수업일에만 표시 -->
-<div class="attendance-buttons" th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
-    <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
+<div class="attendance-buttons">
+    <div th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
+        <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
         <i class="fas fa-sign-in-alt"></i> 입실
-    </button>
-    <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
+        </button>
+    </div>
+    <div th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
+        <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
         <i class="fas fa-sign-out-alt"></i> 퇴실
-    </button>
+        </button>
+    </div>
+    <!-- 휴가신청 버튼: 항상 표시, 단 과정 종료 시 숨김 -->
+    <th:block th:if="${currentCourse != null and currentCourse.endDate != null and currentCourse.endDate >= today}">
+        <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
+        <i class="fas fa-calendar-alt"></i> 휴가신청
+        </button>
+    </th:block>
 </div>
 
-            <!-- 휴가신청 버튼: 항상 표시, 단 과정 종료 시 숨김 -->
-<th:block th:if="${currentCourse != null and currentCourse.endDate != null and currentCourse.endDate >= today}">
-    <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
-        <i class="fas fa-calendar-alt"></i> 휴가신청
-    </button>
-</th:block>
+
 
 
 
@@ -1616,7 +1621,7 @@
                         location.reload();
                     }
                 } else {
-                    alert('입실 처리에 실패했습니다: ' + data.message);
+                    alert('출결기록이 생성되지 않았습니다.' + data.message);
                 }
             })
             .catch(error => {
