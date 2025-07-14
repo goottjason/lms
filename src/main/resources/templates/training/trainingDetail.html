@@ -325,32 +325,41 @@
 
         // console.log("data", data);
 
-        axios.post("/training/excel", data).then(function (response) {
-          // console.log("response", response);
-          // console.log(response.headers['content-type']);
-          let responseCode = response.data.code;
-          let responseMessage = response.data.message;
-          if (responseCode === 200) {
-            Swal.fire({
-              title: responseMessage,
-              text: "c:/downloads를 확인해주세요.",
-              icon: "info",
-              confirmButtonText: "예"
-            });
-          }
+        axios.post("/training/excel", data, {
+          responseType: "blob"
+        }).then(function (response) {
+          console.log("response", response);
+          // blob 객체 생성
+          let blob = new Blob([response.data], {type: response.headers['content-type']});
+          // 다운로드 할 url 생성
+          let downloadUrl = window.URL.createObjectURL(blob);
+
+          // a 태그 / a.href 생성
+          let aTag = document.createElement("a");
+          aTag.href = downloadUrl;
+
+          // 다운로드 할 파일 이름 가져오기
+          aTag.download = window.decodeURI(response.headers['content-disposition'].split(";")[1].split("=")[1]);
+
+          //body에 a 태그를 추가
+          document.body.appendChild(aTag);
+
+          aTag.click();
+          aTag.remove();
+
+          // window.URL.createObjectURL(blob) 삭제
+          window.URL.revokeObjectURL(downloadUrl);
+
+        }).then(function (){
+          swal.fire({
+            title: "엑셀 다운이 완료되었습니다.",
+            text: "파일을 확인해주세요",
+            icon: "info",
+            confirmButtonText: "예"
+          });
         }).catch(function (error) {
-          // console.log("error", error);
-          let errorCode = error.data.code;
-          let errorMessage = error.data.message;
-          // let errorData = error.data.data;
-          if (errorCode === 500) {
-            Swal.fire({
-              title: errorMessage,
-              text: "다시 확인해주세요",
-              icon: "error",
-              confirmButtonText: "예"
-            });
-          }
+          console.log("error", error);
+
         });
       });
 
