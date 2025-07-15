@@ -40,7 +40,7 @@ $(document).ready(async function () {
   boardNo = UrlUtils.getPathSegment(2);
 
   const detailRes = await fetchQnADetail(boardNo);
-  console.log(detailRes);
+  // console.log(detailRes);
 
   writerId = detailRes.data.data.loginId;
 
@@ -225,8 +225,8 @@ $(document).on("click", ".js-comment-register", async function () {
     // 현재 쿼리스트링 보존
     const qs = window.location.search || "";
 
-    console.log(writerId);
-    console.log(boardNo);
+    // console.log(writerId);
+    // console.log(boardNo);
     // 알림 전송
     sendNotification(
         [writerId],
@@ -435,7 +435,7 @@ $(document).on("click", ".js-comment-delete", function () {
 //------------------------------------------------------------------------------
 
 $(document).on("click", "#comment-delete-btn", function () {
-  console.log($(this).text().trim());
+  // console.log($(this).text().trim());
 
   if ($(this).text().trim() !== "답변 삭제") {
     return;
@@ -512,32 +512,32 @@ $prevPage.on("click", function () {
 
 let stompClient = null;
 
-console.log(boardNo);
+// console.log(boardNo);
 
 function connectStomp(boardNo) {
   const socket = new SockJS(`${location.origin}/ws`);
   stompClient = Stomp.over(socket);
 
   stompClient.connect({}, function () {
-    console.log("STOMP 연결됨");
+    // console.log("STOMP 연결됨");
 
     stompClient.subscribe(`/topic/qna/${boardNo}`,
         async function (message) {
           const updatedLearner = JSON.parse(
               message.body);
 
-          console.log(updatedLearner);
+          // console.log(updatedLearner);
 
           try {
             const detailRes = await fetchQnADetail(boardNo);
-            console.log(detailRes);
+            // console.log(detailRes);
 
             userType = detailRes.data.message;
             renderQnADetailPageByUserType(userType, detailRes.data.data);
             renderQnAUpdateBtn(detailRes.data.data);
             renderDetailData(detailRes.data.data);
           } catch (e) {
-            console.log("fetchQnADetail 중 에러", e);
+            // console.log("fetchQnADetail 중 에러", e);
           }
 
         });
@@ -556,7 +556,9 @@ function getUserCourses() {
   .then((res) => {
     renderUserCourseOptions("#courseSelector", res.data.data);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    // console.log(err);
+  });
 }
 
 // 사용자(수강생/강사) 필터 생성
