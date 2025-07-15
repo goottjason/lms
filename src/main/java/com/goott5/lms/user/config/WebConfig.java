@@ -38,7 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/fonts/**", "/img/**", "/favicon.ico", "/vendor/**", "/api/**", "/error/**");
 
     registry.addInterceptor(authInterceptorForADMINISTRATOR)
-            .addPathPatterns("home/administratorHome", "/courseRegister",
+            .addPathPatterns("/home/administratorHome", "/courseRegister",
                     "/courseManagement/courseModify",
                     "/courseManagement/learnerAssignment",
                     "/courseManagement/cancelDateManagement",
@@ -49,7 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/communityNotice/noticeRegister", "/communityNotice/noticeModify");
 
     registry.addInterceptor(authInterceptorForINSTRUCTOR)
-            .addPathPatterns("home/instructorHome", "/homework/homeworkRegister",
+            .addPathPatterns("/home/instructorHome", "/homework/homeworkRegister",
                     "/homework/homeworkModify",
                     "/homework/deleteHomework", "/homework/evalRegister",
                     "/homework/modifyEvalPost", "/homework/deleteEval",
@@ -57,7 +57,7 @@ public class WebConfig implements WebMvcConfigurer {
                     "/training/trainingDelete", "/test/register", "/vacation/vacationApproval");
 
     registry.addInterceptor(authInterceptorForLEARNER)
-            .addPathPatterns("home/learnerHome", "/participation/participationView",
+            .addPathPatterns("/home/learnerHome", "/participation/participationView",
                     "/homework/submissionRegister",
                     "/homework/submissionModify", "/homework/submissionDelete",
                     "/test/testSubmission",
