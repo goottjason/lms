@@ -27,7 +27,7 @@ public class CourseRegisterController {
 
   @GetMapping("")
   public String courseRegister() {
-    return "/courseManagement/courseRegister";
+    return "courseManagement/courseRegister";
   }
 
   @GetMapping("/getNotAssignmentInstructor")
