@@ -1081,6 +1081,7 @@ const testId = parseInt(UrlUtils.getPathSegment(2));
 function connectStomp(testId) {
   const socket = new SockJS(`${location.origin}/ws`);
   stompClient = Stomp.over(socket);
+  stompClient.debug = () => {};
 
   stompClient.connect({}, function () {
     // console.log("STOMP 연결됨");

@@ -55,6 +55,7 @@ let stompP = null;
 function connectP(){
     let socket = new SockJS(`${location.origin}/ws`);
     stompP = Stomp.over(socket);
+    stompP.debug = () => {};
 
     stompP.connect({}, function(){
 
