@@ -34,7 +34,7 @@ public interface ParticipationService {
   String predictAttendanceStatus(Integer learnerEnrollmentId, LocalDateTime predictedCheckOut, LocalDate participationDate);
 
   // course_schedule 기반 수업일 여부 확인
-  boolean isClassDay(LocalDate date);
+  boolean isClassDay(Integer courseId, LocalDate date);
 
   // 새로 추가: 사용자 ID로 learnerEnrollmentId 조회
   Integer getLearnerEnrollmentIdByUserId(Integer userId);
