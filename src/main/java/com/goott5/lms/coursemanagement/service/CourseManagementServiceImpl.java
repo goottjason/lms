@@ -143,6 +143,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
 
   @Override
+  @Transactional
   public boolean addLearnerToCourse(
       Integer learnerId,
       Integer courseId) {
@@ -239,6 +240,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       trainingDateMap = Collections.emptyMap(); // 훈련일지등록 정보 PASS
       learnerOverviewMap = Collections.emptyMap(); // 과정을 수강중인 교육생 정보 PASS
     } else {
+      // 각 정보 조회
 
       // 2. 조회할 과정들의 정보들을 한번에 조회
       List<CourseSubject> subjectList =

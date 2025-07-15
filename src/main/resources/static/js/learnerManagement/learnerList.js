@@ -104,12 +104,11 @@ $(document).ready(() => {
     }
 
     // 페이지 로드시, 라디오버튼, 셀렉트박스 및 검색창 유지
-    console.log("유지안된다?", courseTopConfig, courseConfig, learnerConfig);
     $('#courseSelector').val(courseTopConfig.coId);
     let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
     $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
     $('#is-in-progress').val(courseConfig.coIsInProgress);
-    console.log(learnerConfig.leCourseId);
+    //console.log(learnerConfig.leCourseId);
     $('#course-select').val(learnerConfig.leCourseId);
     $('#search-input').val(learnerConfig.keyword);
 
