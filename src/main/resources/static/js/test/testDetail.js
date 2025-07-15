@@ -48,7 +48,7 @@ $(document).ready(function () {
 
          $("#courseSelector").prop("disabled", true);
 
-         renderTestListPage(param, UrlUtils.getQueryParam("currentPageNo"));
+         // renderTestListPage(param, UrlUtils.getQueryParam("currentPageNo"));
        })
        .catch(console.error);
 
@@ -321,7 +321,7 @@ function renderLearnerList(learnerArray) {
           item.submissionStatus,
           item.score)
     };
-    console.log(learnerInfo);
+    // console.log(learnerInfo);
 
     $learnerTableBody.append(makeLearnerListTr(learnerInfo));
 
@@ -336,7 +336,7 @@ function localDateTimeFormatter(date) {
 }
 
 function getStudentScoreDisplay(isInvalidated, submissionStatus, score) {
-  console.log(isInvalidated, submissionStatus, score);
+  // console.log(isInvalidated, submissionStatus, score);
 
   if (isInvalidated) {
     return "시험 무효";
@@ -373,7 +373,7 @@ function assignValueBySubmissionStatus(status) {
 }
 
 function makeLearnerListTr(data) {
-  console.log(data);
+  // console.log(data);
 
   return `
     <tr class="learner-row">
@@ -403,7 +403,7 @@ function makeLearnerListTr(data) {
 }
 
 function renderTestDelBtn(data) {
-  console.log(data);
+  // console.log(data);
   $.each(data, function (index, item) {
     if (item.submissionStatus === "COMPLETED") {
       $("#del-test-btn").hide();
@@ -425,7 +425,7 @@ function checkAllQuestionBtn(quiz) {
     $(".del-question-btn").prop("disabled", false);
   }
   let $questionCard = $(".question-card");
-  console.log($questionCard);
+  // console.log($questionCard);
   $.each(quiz.questions, function (index, q) {
     if (q.options.length === 4) {
       // 보기 추가 disabled
@@ -500,11 +500,11 @@ $(document).on("click", "#modify-test-btn", function (e) {
 
 $(document).on("click", "#confirm-modify", function (e) {
 
-  console.log(newQuiz);
-  console.log(newTestInfo);
+  // console.log(newQuiz);
+  // console.log(newTestInfo);
 
-  console.log(JSON.stringify(newTestInfo));
-  console.log(JSON.stringify(newQuiz));
+  // console.log(JSON.stringify(newTestInfo));
+  // console.log(JSON.stringify(newQuiz));
 
   if ((JSON.stringify(originalQuiz) === JSON.stringify(newQuiz))
       && (JSON.stringify(originalTestInfo) === JSON.stringify(newTestInfo))) {
@@ -558,20 +558,20 @@ $(document).on("click", "#confirm-modify", function (e) {
       testInfo.questions.push(question);
     });
 
-    console.log(JSON.stringify(testInfo));
+    // console.log(JSON.stringify(testInfo));
 
     const testId = parseInt(UrlUtils.getPathSegment(2));
     apiCall("put", `/api/tests/${testId}`, testInfo, {},
         { "Content-Type": "application/json" })
     .then((res) => {
-      console.log(res);
+      // console.log(res);
 
       const pageNo = UrlUtils.getQueryParam("currentPageNo");
       window.location.href = `/test/testDetail/${testId}?currentPageNo=${pageNo}&modified=true`;
 
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
 
       handleValidationErrors(err.response.data);
     });
@@ -579,7 +579,7 @@ $(document).on("click", "#confirm-modify", function (e) {
 });
 
 $(document).on("click", "#cancel-modify", function (e) {
-  console.log("수정 취소");
+  // console.log("수정 취소");
   $(".learner-tab").removeClass("disabled");
   newTestInfo = null;
   copyQuiz = null;
@@ -629,7 +629,9 @@ $(document).on("click", "#del-test-btn", function (e) {
           }
         });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        // console.log(err);
+      });
 
     }
   });
@@ -742,7 +744,7 @@ $(document).on("click", ".question-type", function (e) {
 });
 
 $(document).on("click", ".del-question-btn", function (e) {
-  console.log($(e.target));
+  // console.log($(e.target));
   const $delQuestionBtn = $(e.target).closest(".del-question-btn");
   if ($delQuestionBtn) {
     const $questionCard = $delQuestionBtn.closest(".question-card");
@@ -756,10 +758,10 @@ $(document).on("click", ".del-question-btn", function (e) {
 });
 
 $(document).on("click", "#add-question-btn", function (e) {
-  console.log(newQuiz);
+  // console.log(newQuiz);
   copyQuiz.addQuestion();
   newQuiz.addQuestion();
-  console.log(newQuiz);
+  // console.log(newQuiz);
   renderQuestions(newQuiz.questions);
   setQuestionFieldsDisabled(false);
   checkAllQuestionBtn(newQuiz);
@@ -785,7 +787,7 @@ $(document).on("click", ".del-option-btn", function (e) {
         "question-no");
     const optionNo = $questionOption.data("option-no");
 
-    console.log(newQuiz);
+    // console.log(newQuiz);
     copyQuiz.questions.find(q => q.questionNo === questionNo).removeOption(
         optionNo);
     newQuiz.questions.find(q => q.questionNo === questionNo).removeOption(
@@ -793,7 +795,7 @@ $(document).on("click", ".del-option-btn", function (e) {
 
     // const question = newQuiz.questions.find(q => q.questionNo ===
     // questionNo); question.removeOption(optionNo);
-    console.log(newQuiz);
+    // console.log(newQuiz);
     renderQuestions(newQuiz.questions);
     setQuestionFieldsDisabled(false);
     checkAllQuestionBtn(newQuiz);
@@ -801,7 +803,7 @@ $(document).on("click", ".del-option-btn", function (e) {
 });
 
 $(document).on("click", ".show-learner-answer-btn", async function (e) {
-  console.log($(e.target).closest(".show-learner-answer-btn"));
+  // console.log($(e.target).closest(".show-learner-answer-btn"));
   const testId = parseInt(UrlUtils.getPathSegment(2));
   const learnerId = $(e.target).closest(".show-learner-answer-btn")
                                .data("learner-id");
@@ -813,10 +815,10 @@ $(document).on("click", ".show-learner-answer-btn", async function (e) {
       `/api/my/tests/${testId}/learner/${learnerId}`);
 
   buildQuiz(userQuiz, quizRes.data.data.questions);
-  console.log(userQuiz);
+  // console.log(userQuiz);
   buildUserAnswer(quizRes.data.data.questions,
       quizRes.data.data.userScore);
-  console.log(userAnswer);
+  // console.log(userAnswer);
   renderQuestionResult(".answer-container", userQuiz, userAnswer);
 });
 
@@ -918,10 +920,10 @@ const $courseSelector = $("#courseSelector");
 $("#prev-page").on("click", function () {
 
   let prevPageNo = $(this).data("page-no");
-  console.log(prevPageNo);
+  // console.log(prevPageNo);
 
   let courseName = $courseSelector.val();
-  console.log(courseName);
+  // console.log(courseName);
 
   location.href = `/test/testList?currentPageNo=${prevPageNo}&courseName=${courseName}`;
 });
@@ -938,8 +940,8 @@ function renderQuestionResult(selector, quiz, userAnswer) {
 }
 
 function makeLearnerQuestionCard(q, ua) {
-  console.log(q);
-  console.log(ua);
+  // console.log(q);
+  // console.log(ua);
 
   const cardHeader = `
     <div class="card mb-4">
@@ -990,15 +992,15 @@ function makeLearnerQuestionCard(q, ua) {
       </div> 
     `;
 
-  console.log(q.options);
+  // console.log(q.options);
   if (q.type === "MULTIPLE") {
 
     cardBody += `<div class="mb-3">`;
 
     $.each(q.options, function (index, o) {
 
-      console.log(o);
-      console.log(ua);
+      // console.log(o);
+      // console.log(ua);
       cardBody += `
             <div class="align-items-center mb-2 option-row ${parseInt(
           ua.userAnswer) === o.optionNo ? "text-danger" : ""}" >
@@ -1074,34 +1076,36 @@ function makeLearnerQuestionCard(q, ua) {
 let stompClient = null;
 
 const testId = parseInt(UrlUtils.getPathSegment(2));
-console.log(testId);
+// console.log(testId);
 
 function connectStomp(testId) {
   const socket = new SockJS(`${location.origin}/ws`);
   stompClient = Stomp.over(socket);
 
   stompClient.connect({}, function () {
-    console.log("STOMP 연결됨");
+    // console.log("STOMP 연결됨");
 
     // 시험 ID에 따라 특정 채널 구독
     stompClient.subscribe(`/topic/submissions/${testId}`,
         function (message) {
           const updatedLearner = JSON.parse(
               message.body);
-          console.log(message);
-          console.log(message.body);
-          console.log(updatedLearner);
+          // console.log(message);
+          // console.log(message.body);
+          // console.log(updatedLearner);
 
-          console.log(testId);
+          // console.log(testId);
 
           apiCall("get",
               `/api/tests/${testId}/learners`)
           .then((res) => {
-            console.log(res);
+            // console.log(res);
             renderLearnerList(res.data.data);
             renderTestDelBtn(res.data.data);
           })
-          .catch(error => console.log(error));
+          .catch(error => {
+            // console.log(error);
+          });
         });
   });
 }

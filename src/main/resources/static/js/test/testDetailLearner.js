@@ -11,11 +11,11 @@ $(document).ready(async function () {
     const testId = parseInt(UrlUtils.getPathSegment(3));
 
     userId = parseInt(UrlUtils.getQueryParam("userId"));
-    console.log(userId);
+    // console.log(userId);
 
     const currentPageNo = parseInt(UrlUtils.getQueryParam("currentPageNo"));
     const testStatus = UrlUtils.getQueryParam("testStatus");
-    console.log(testStatus);
+    // console.log(testStatus);
 
     $("#prev-page").attr("data-page-no", currentPageNo)
                    .data("page-no", currentPageNo);
@@ -30,7 +30,7 @@ $(document).ready(async function () {
                         .data("current-page-no", currentPageNo);
 
     $("#courseSelector").prop("disabled", true);
-    console.log(testId);
+    // console.log(testId);
 
     const coursesRes = await apiCall("get", "/api/courses");
     renderCourseFilterOptionsForAdminForUser(coursesRes.data.data);
@@ -49,15 +49,15 @@ $(document).ready(async function () {
     renderTestHeader(testInfo);
 
     const courseName = UrlUtils.getQueryParam("courseName");
-    console.log(courseName);
+    // console.log(courseName);
 
     // const submissionRes = await apiCall("get",
     //     `/api/my/tests/${testId}/submission`);
 
-    console.log(userId);
+    // console.log(userId);
     const submissionRes = await apiCall("get",
         `/api/my/tests/${testId}/submission2`, null, { userId: userId });
-    console.log(submissionRes);
+    // console.log(submissionRes);
     const submissionStatus = submissionRes.data.data.submissionStatus;
     renderTestDetailPageForLearnerBySubmissionStatus(
         submissionRes.data.data);
@@ -66,7 +66,7 @@ $(document).ready(async function () {
 
       const quizRes = await apiCall("get", `/api/my/tests2/${testId}`, null,
           { userId: userId });
-      console.log(quizRes);
+      // console.log(quizRes);
       buildQuiz(quiz, quizRes.data.data.questions);
       buildUserAnswer(quizRes.data.data.questions,
           quizRes.data.data.userScore);
@@ -84,13 +84,13 @@ $(document).ready(async function () {
     }
 
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
 });
 
 function buildUserAnswer(questions, score) {
-  console.log(questions);
+  // console.log(questions);
   userAnswer = [];
   $(".user-score").text(score);
 
@@ -116,8 +116,8 @@ function renderQuestionResult(selector, quiz, userAnswer) {
 }
 
 function makeQuestionCard(q, ua) {
-  console.log(q);
-  console.log(ua);
+  // console.log(q);
+  // console.log(ua);
 
   const cardHeader = `
     <div class="card mb-4">
@@ -168,15 +168,15 @@ function makeQuestionCard(q, ua) {
       </div> 
     `;
 
-  console.log(q.options);
+  // console.log(q.options);
   if (q.type === "MULTIPLE") {
 
     cardBody += `<div class="mb-3">`;
 
     $.each(q.options, function (index, o) {
 
-      console.log(o);
-      console.log(ua);
+      // console.log(o);
+      // console.log(ua);
       cardBody += `
             <div class="align-items-center mb-2 option-row ${parseInt(
           ua.userAnswer) === o.optionNo ? "text-danger" : ""}" >
@@ -327,7 +327,7 @@ function renderCourseFilterOptionsForAdminForUser(data) {
 }
 
 $(document).on("click", ".test-caution-check", function (e) {
-  console.log($(e.target));
+  // console.log($(e.target));
 
   if ($(e.target).is(":checked")) {
 
@@ -349,10 +349,10 @@ $(document).on("click", ".test-caution-check", function (e) {
 $("#prev-page").on("click", function () {
 
   let prevPageNo = $(this).data("page-no");
-  console.log(prevPageNo);
+  // console.log(prevPageNo);
 
   let courseName = $("#courseSelector").val();
-  console.log(courseName);
+  // console.log(courseName);
 
   location.href = `/test/testList?currentPageNo=${prevPageNo}&courseName=${courseName}`;
 });
