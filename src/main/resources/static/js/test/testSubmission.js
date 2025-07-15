@@ -108,13 +108,13 @@ $(document).ready(async function () {
 
   testId = UrlUtils.getQueryParam("testId");
   userId = UrlUtils.getQueryParam("userId");
-  console.log(userId);
+  // console.log(userId);
   currentPageNo = parseInt(UrlUtils.getQueryParam("currentPageNo"));
   courseName = UrlUtils.getQueryParam("courseName");
 
   // 시험 정보
   const quizRes = await apiCall("get", `/api/tests/${testId}`);
-  console.log(quizRes);
+  // console.log(quizRes);
   const data = quizRes.data.data;
 
   testInfo = new TestInfo(data.testTitle, data.startDate, data.endDate,
@@ -169,7 +169,7 @@ function renderQuestions(questions) {
 // 시험 문항 렌더링
 function makeQuestionCard(q) {
 
-  console.log(q);
+  // console.log(q);
 
   let questionCard = `
     <div class="card shadow mb-4 question-card">
@@ -395,7 +395,7 @@ function buildUserAnswer() {
 function submitAnswers(userTestAnswer) {
   $("#test-submit-btn").prop("disabled", true);
   const testId = userTestAnswer.testId;
-  console.log(testId);
+  // console.log(testId);
 
   testFinished = true;
   focusLostCount = 0;
@@ -404,7 +404,7 @@ function submitAnswers(userTestAnswer) {
       userTestAnswer, {}, { "Content-Type": "application/json" })
   .then(() => apiCall("get", `/api/my/tests/${testId}`))
   .then(res => {
-    console.log(res);
+    // console.log(res);
     const userScore = res.data.data.userScore;
     return finishTestWithScore(userScore, testId);
   })
@@ -445,7 +445,7 @@ function finishTestWithScore(userScore, testId) {
   })
       .then(() => {
 
-        console.log(window.parent.document);
+        // console.log(window.parent.document);
 
         // 부모 문서에서 fullscreenElement 확인 후 전체화면 해제
         const parentDoc = window.parent.document;

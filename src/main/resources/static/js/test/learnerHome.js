@@ -737,9 +737,9 @@ async function loadCourseData(courseName) {
   };
   // 진행률/출석률/시험·과제 점수 불러오기
   const rateRes = await fetchAttendanceRateCourseProgressRate(courseName);
-  console.log(rateRes);
+  // console.log(rateRes);
   const testHwScoreRes = await fetchTestHwScore(courseName);
-  console.log(testHwScoreRes);
+  // console.log(testHwScoreRes);
   progressSummary.progressRate = rateRes.data.data.progressRate + "%";
   progressSummary.attendanceRate = rateRes.data.data.attendanceRate + "%";
   progressSummary.avgTestScore = testHwScoreRes.data.data.testAvgScore +
@@ -752,17 +752,17 @@ async function loadCourseData(courseName) {
 
   // 마감 일정
   const scheduleRes = await fetchTestHwSchedule(courseName);
-  console.log(scheduleRes);
+  // console.log(scheduleRes);
   renderDeadlineCarousel(scheduleRes.data.data);
 
   // 출석표
   const attendanceRes = await fetchAttendanceStatus(courseName);
-  console.log(attendanceRes);
+  // console.log(attendanceRes);
   renderAttendance(attendanceRes.data.data, inProg);
 
   // 수업 스케줄
   const courseScheduleRes = await fetchCourseSchedule(courseName);
-  console.log(courseScheduleRes);
+  // console.log(courseScheduleRes);
   renderSchedule(courseScheduleRes.data.data, inProg);
 
   // Inquiry / QnA / 자료 / 토론
@@ -775,7 +775,7 @@ async function loadCourseData(courseName) {
         courseName)
   ]);
 
-  console.log(qnaRes);
+  // console.log(qnaRes);
   renderInquiries(inqRes.data.data);
   renderQna(qnaRes.data.data);
   renderMaterials(matRes.data.data);
@@ -783,7 +783,7 @@ async function loadCourseData(courseName) {
 
   // 시험 통계 차트
   const statRes = await fetchTestStatistic(courseName);
-  console.log(statRes);
+  // console.log(statRes);
   renderTestChart(statRes.data.data);
 }
 
@@ -795,8 +795,8 @@ $courseSelect.on("change", async function () {
 
   const $opt = $(this).find("option:selected");
   const inProg = $opt.attr("data-is-in-progress");
-  console.log(inProg);
-  console.log($(this).val());
+  // console.log(inProg);
+  // console.log($(this).val());
   selectedCourse = $(this).val();
   await loadCourseData(selectedCourse);
 
@@ -811,10 +811,12 @@ function getUserCourses() {
 
   return fetchUserCourses()
   .then((res) => {
-    console.log(res);
+    // console.log(res);
     renderUserCourseOptions("#courseSelector", res.data.data);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    // console.log(err);
+  });
 }
 
 // 사용자(수강생/강사) 필터 생성

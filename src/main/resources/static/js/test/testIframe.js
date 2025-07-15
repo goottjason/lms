@@ -90,7 +90,7 @@ function preventEsc(e) {
 
 window.addEventListener("message", (e) => {
 
-  console.log(e.data.type);
+  // console.log(e.data.type);
 
   // 유효하지 않은 메시지 또는 시험 시작 전/종류 후의 경우 무시
   if (!e.data || !examStarted || testFinished) {
