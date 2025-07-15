@@ -53,7 +53,7 @@ $(document).ready(async function () {
 
   let qnaRes = await fetchQnA(rest);
 
-  console.log(qnaRes);
+  // console.log(qnaRes);
   userType = qnaRes.data.message.split("&")[0];
   userId = qnaRes.data.message.split("&")[1];
 
@@ -63,11 +63,11 @@ $(document).ready(async function () {
   } else {
     await getUserCourses();
 
-    console.log(selectedCourse);
+    // console.log(selectedCourse);
     qnaRequest.searchOptions.courseName = selectedCourse;
-    console.log(qnaRequest);
+    // console.log(qnaRequest);
     qnaRes = await fetchQnA(qnaObjectToQuery(qnaRequest));
-    console.log(qnaRes);
+    // console.log(qnaRes);
   }
 
   initFromQuery();
@@ -135,7 +135,7 @@ function initFromQuery() {
 
     // 과정별 필터
     const course = qnaRequest.searchOptions.courseName;
-    console.log(course);
+    // console.log(course);
     $courseFilter.val(course || "");
   }
 }
@@ -192,7 +192,9 @@ function getUserCourses() {
       qnaRequest.searchOptions.courseName = selectedCourse;
     }
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    // console.log(err);
+  });
 }
 
 // 사용자(수강생/강사) 필터 생성
@@ -273,9 +275,9 @@ function renderQnAList(data) {
     return;
   }
 
-  console.log(data);
+  // console.log(data);
   $.each(data, function (index, el) {
-    console.log(el);
+    // console.log(el);
     const qnaData = {
       boardNo: el.id,
       title: el.title,
@@ -298,9 +300,9 @@ function makeQnARow(userType, qnaData) {
   //     ? `/test/testDetail/${test.testId}/learner`
   //     : `/test/testDetail/${test.testId}`;
 
-  console.log(qnaData);
-  console.log(qnaData.writerId);
-  console.log(userId);
+  // console.log(qnaData);
+  // console.log(qnaData.writerId);
+  // console.log(userId);
   const isOwner = qnaData.writerId === userId;
   const isSecret = qnaData.secretStatus === true;
   let titleTh;
@@ -335,13 +337,13 @@ function makeQnARow(userType, qnaData) {
 // Pagination 요소 생성
 function renderPagination(data) {
   $paginationContainer.empty(); // 페이지 부분 초기화
-  console.log(data.items);
+  // console.log(data.items);
 
   if (!data.items.length) {
     return;
   }
 
-  console.log(data);
+  // console.log(data);
   // 이전 그룹 이동 버튼
   $paginationContainer.append(`
   <li class="page-item prev-page-group ${!data.prev ? "disabled"
@@ -392,7 +394,7 @@ function onPageChange(pageNo) {
 
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -420,7 +422,7 @@ $courseSelect.on("change", function () {
 
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -429,7 +431,7 @@ $courseSelect.on("change", function () {
 
 $qnaSearchBtn.on("click", function () {
 
-  console.log($searchType.val());
+  // console.log($searchType.val());
   const rawKeyword = $qnaSearchKeyword.val();
   const trimmedKeyword = rawKeyword.trim();
 
@@ -451,7 +453,7 @@ $qnaSearchBtn.on("click", function () {
   qnaRequest.searchOptions.keyWord = $qnaSearchKeyword.val().trim();
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -464,13 +466,13 @@ $("form.row.mb-3").on("submit", function (e) {
 
 $answerStatus.on("change", function () {
 
-  console.log($(this).val());
+  // console.log($(this).val());
   qnaRequest.currentPageNo = 1;
   qnaRequest.searchOptions.answerStatus = $(this).val();
-  console.log(qnaRequest);
+  // console.log(qnaRequest);
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -482,7 +484,7 @@ $sortBy.on("change", function () {
   qnaRequest.searchOptions.sortBy = $(this).val();
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -494,7 +496,7 @@ $sortOrder.on("change", function () {
   qnaRequest.searchOptions.sortOrder = $(this).val();
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -516,7 +518,7 @@ $progressFilter.on("change", function () {
     getAdminCourses();
     fetchQnA(qnaObjectToQuery(qnaRequest))
     .then((res) => {
-      console.log(res.data.data.items);
+      // console.log(res.data.data.items);
       renderQnAList(res.data.data.items);
       renderPagination(res.data.data);
     });
@@ -552,7 +554,7 @@ $courseFilter.on("change", function () {
   selectedCourse = $(this).val();
   fetchQnA(qnaObjectToQuery(qnaRequest))
   .then((res) => {
-    console.log(res.data.data.items);
+    // console.log(res.data.data.items);
     renderQnAList(res.data.data.items);
     renderPagination(res.data.data);
   });
@@ -588,7 +590,7 @@ function makeQnAQueryString(qnaRequest) {
 $qnaRegisterBtn.on("click", function () {
 
   const queryString = $.param(makeQnAQueryString(qnaRequest));
-  console.log(queryString);
+  // console.log(queryString);
 
   window.location.href = `/courseBoardQnA/register?${queryString}`;
 });
@@ -598,7 +600,7 @@ $(document).on("click", ".qna-detail-page", function (e) {
 
   const boardNo = $(this).data("board-no");
   const queryString = $.param(makeQnAQueryString(qnaRequest));
-  console.log(queryString);
+  // console.log(queryString);
 
   window.location.href = `/courseBoardQnA/detail/${boardNo}?${queryString}`;
 });

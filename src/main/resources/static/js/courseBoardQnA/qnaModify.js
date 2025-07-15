@@ -16,7 +16,7 @@ $(document).ready(async function () {
 
   boardNo = $("#qna-board-no").val();
   const detailRes = await fetchQnADetail(boardNo);
-  console.log(detailRes);
+  // console.log(detailRes);
 
   renderModifyData(detailRes.data.data);
   renderExistingFiles(detailRes.data.data.uploadFiles);
@@ -275,7 +275,9 @@ function getUserCourses() {
   .then((res) => {
     renderUserCourseOptions("#courseSelector", res.data.data);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    // console.log(err);
+  });
 }
 
 // 사용자(수강생/강사) 필터 생성

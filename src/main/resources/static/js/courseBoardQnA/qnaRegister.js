@@ -25,7 +25,9 @@ function getUserCourses() {
   .then((res) => {
     renderUserCourseOptions("#courseSelector", res.data.data);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    // console.log(err);
+  });
 }
 
 // 사용자(수강생/강사) 필터 생성
@@ -84,22 +86,22 @@ $fileInput.on("change", function (e) {
       uploadFiles.push(file);
     }
   });
-  console.log(uploadFiles); // 선택된 파일
+  // console.log(uploadFiles); // 선택된 파일
 
   updateFileInput();
   showPreview();
 });
 
 function updateFileInput() {
-  console.log(uploadFiles); // 선택된 파일
+  // console.log(uploadFiles); // 선택된 파일
   const dataTransfer = new DataTransfer();
   uploadFiles.forEach(function (file) {
     dataTransfer.items.add(file);
   });
 
   $("#qna-file")[0].files = dataTransfer.files;
-  console.log($("#qna-file")[0].files);
-  console.log(uploadFiles); // 선택된 파일
+  // console.log($("#qna-file")[0].files);
+  // console.log(uploadFiles); // 선택된 파일
 }
 
 function showPreview() {
@@ -179,7 +181,7 @@ $("#qna-register-btn").on("click", async function (e) {
         { headers: { "Content-Type": "multipart/form-data" } }
     );
 
-    console.log(res);
+    // console.log(res);
     // 성공 시 응답 처리
     if (res.data.data) {
       Swal.fire("완료", "Q&A가 등록되었습니다.", "success")
