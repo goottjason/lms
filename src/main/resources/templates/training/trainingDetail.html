@@ -328,7 +328,7 @@
         axios.post("/training/excel", data, {
           responseType: "blob"
         }).then(function (response) {
-          console.log("response", response);
+          // console.log("response", response);
           // blob 객체 생성
           let blob = new Blob([response.data], {type: response.headers['content-type']});
           // 다운로드 할 url 생성
@@ -358,7 +358,7 @@
             confirmButtonText: "예"
           });
         }).catch(function (error) {
-          console.log("error", error);
+          // console.log("error", error);
 
         });
       });
