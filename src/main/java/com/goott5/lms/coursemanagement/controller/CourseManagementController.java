@@ -80,8 +80,10 @@ public class CourseManagementController {
       Model model, HttpSession session, HttpServletRequest request
   ) {
 
-    // 로그인유저 정보
+    // 1. 로그인유저 정보
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+
+
     Integer loginUserId = Integer.valueOf(loginUser.getId());
     String loginUserType = loginUser.getType();
 
@@ -112,6 +114,8 @@ public class CourseManagementController {
     if (coId == -1) {
       // (쿼리문에서 정렬기준대로) 진행중-종료 순서, 과정시작일 빠른 순서로 조회되는 첫번째 과정
       pageCourseRequest.setCoId(null);
+
+      // 2. 과정 정보 조회
       PageCourseResponse<CourseOverviewResp> coursesWithPagination =
           courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
     }
@@ -121,8 +125,10 @@ public class CourseManagementController {
         courseManagementService.getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
 
     // 조회된 과정 목록 중 첫 번째 과정을 모델에 "record"라는 이름으로 추가
-    model.addAttribute("record", coursesWithPagination.getRecords().get(0));
 
+    // 3. 모델 객체에 추가
+    model.addAttribute("record", coursesWithPagination.getRecords().get(0));
+    // 4. 뷰 렌더링
     return "courseManagement/courseDetail";
   }
 

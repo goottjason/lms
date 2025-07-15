@@ -73,7 +73,6 @@ async function fetchAndDisplayCourses() {
     coursesWithPaging = await apiGetRequestParams(
         '/api/coursemanagement/courses',
         {...baseConfig, ...courseConfig});
-    console.log(coursesWithPaging);
     displayBubleChart();
     displayCourseTable();
     displayTrainingLogChart();
@@ -94,7 +93,7 @@ function displayBubleChart() {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) courses = [];
     if(courses.length == 0) {
-        console.log("진행중인 과정이 없는 상태");
+        // 진행중인 과정이 없는 상태
         return;
     }
     // 데이터 가공: 필요한 정보 추출
@@ -204,7 +203,7 @@ function displayCourseTable() {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) courses = [];
     if(courses.length == 0) {
-        console.log("진행중인 과정이 없는 상태");
+        // 진행중인 과정이 없는 상태
         return;
     }
     courses.forEach(course => {
@@ -252,7 +251,7 @@ function displayTrainingLogChart() {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) courses = [];
     if(courses.length == 0) {
-        console.log("진행중인 과정이 없는 상태");
+        // 진행중인 과정이 없는 상태
         return;
     }
 
@@ -316,7 +315,6 @@ function displayTrainingLogChart() {
         coName: course.courseWithAssignedInfo.coName,
         coId: course.courseWithAssignedInfo.coId
     }));
-    console.log("cardData", cardData);
     displayInstructorCard(cardData);
 
 }
@@ -550,7 +548,6 @@ function handlePartEmailButtonClick() {
 
     $('#check-all').prop("checked", true).trigger('change');
 
-    console.log(learnerList);
 
 
 }
@@ -563,7 +560,6 @@ function handleTargetCheckChange() {
     let leId = $(this).data('id');
     let emailText = $('.checked-email[data-id="' + leId + '"]').text().trim();
     let isChecked = $(this).is(':checked');
-    console.log('체크 상태:', isChecked, 'leId:', leId, 'emailText:', emailText);
     if (isChecked) {
         let html= `<span class="badge rounded-pill border border-primary text-primary bg-transparent mx-1 my-1" style="font-size: 1.0rem" id="leId-${leId}">${emailText}</span>`;
         $('#recipients').append(html);
@@ -590,7 +586,6 @@ function handleSendEmailModalBtnClick() {
         let emailText = $('.checked-email[data-id="' + leId + '"]').text().trim();
         sendEmailList.push(emailText);
     });
-    console.log(title, contents, sendEmailList);
 
     $("#sendEmailModal").modal({
                                    backdrop: "static",
@@ -640,7 +635,6 @@ async function sendEmail(title, contents, emailList) {
              }
          })
          .catch(function (error) {
-             console.log(error);
              $(".progress-modal-body").html(`<p class="text-danger">이메일 발송 중 오류가 발생했습니다.</p>`);
              $(".progress-modal-footer").html(`
                 <button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
@@ -778,7 +772,6 @@ function getIsTodayClassdate(classdateList) {
     let todayDate = new Date();
     let todayDateStr = formatDate(todayDate);
     let isValid = false;
-    console.log(classdateList);
     classdateList.forEach((classdate) => {
         if (classdate == todayDateStr) {
             isValid = true;
@@ -835,7 +828,7 @@ function displayPartBarChart(coId) {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) courses = [];
     if(courses.length == 0) {
-        console.log("진행중인 과정이 없는 상태");
+        // 진행중인 과정이 없는 상태
         return;
     }
     const course = courses.find(
@@ -992,7 +985,7 @@ function handleTriggerSchedulerClick() {
              updateLastExecutionTime();
          })
          .catch(function (error) {
-             console.log(error);
+             // error
          });
 }
 function handleTriggerSchedulerForPartClick() {
@@ -1001,7 +994,7 @@ function handleTriggerSchedulerForPartClick() {
              updateLastExecutionTimeForPart();
          })
          .catch(function (error) {
-             console.log(error);
+             // error
          });
 }
 

@@ -248,7 +248,7 @@ async function fetchAndDisplayLearners() {
     let learnersWithPaging = await apiGetRequestParams(
         "/api/learnermanagement/learnersonlypart",
         {...baseConfig, ...learnerConfig});
-    console.log(learnersWithPaging);
+    // console.log(learnersWithPaging);
     displayView(learnersWithPaging);
 }
 function displayView(learnersWithPaging) {
