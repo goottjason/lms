@@ -68,6 +68,8 @@ async function fetchAndDisplayCourses() {
   let coursesWithPaging= await apiGetRequestParams(
       '/api/coursemanagement/courses',
       {...baseConfig, ...courseConfig});
+  console.log(coursesWithPaging);
+
   displayView(coursesWithPaging);
 }
 async function apiGetRequestParams(endpoint, params) {

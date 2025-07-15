@@ -44,31 +44,42 @@ let courseConfig = {
     coId          : null
 };
 
+// 어딘가 -> 목록페이지로 '진입할 때' 동작
+document.addEventListener("DOMContentLoaded", function(e) {
+    // Flag가 없으면(외부로 이동 시), 세션 데이터 삭제
+    if (!sessionStorage.getItem("flag")) {
+        sessionStorage.removeItem("courseTopConfig");
+        sessionStorage.removeItem("courseConfig");
+        sessionStorage.removeItem("learnerConfig");
+    }
+    // Flag가 있으면(상세페이지로 이동 시), 그 Flag만 삭제
+    else {
+        sessionStorage.removeItem("flag");
+    }
+});
+
+
+
 $(document).ready(() => {
 
-    // 세션 관리
+    // 목록페이지 -> 어딘가로 '벗어날 때' 동작
     window.addEventListener("beforeunload", function (e) {
-        // 외부로 이동 시 config 데이터 삭제
-        if (!sessionStorage.getItem("isEnteringDetail")) {
+        // Flag가 없으면(외부로 이동 시), 세션 데이터 삭제
+        if (!sessionStorage.getItem("flag")) {
             sessionStorage.removeItem("courseTopConfig");
             sessionStorage.removeItem("courseConfig");
             sessionStorage.removeItem("learnerConfig");
         }
-        // 내부로 이동 시 플래그만 삭제 (목록으로 돌아와도 config 정보는 남아있음)
+        // Flag가 있으면(상세페이지로 이동 시), 그 Flag만 삭제
         else {
-            sessionStorage.removeItem("isEnteringDetail");
+            sessionStorage.removeItem("flag");
         }
     });
+
     // 세션 정보 불러오기
     getStatus();
 
-    // 페이지 로드시, 라디오버튼, 셀렉트박스 및 검색창 유지
-    $('#courseSelector').val(courseTopConfig.coId);
-    let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
-    $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
-    $('#is-in-progress').val(courseConfig.coIsInProgress);
-    $('#course-select').val(courseConfig.coId);
-    $('#search-input').val(learnerConfig.keyword);
+
 
     // 강사 -> 상단셀렉트박스O, 중간셀렉트박스X (교육생 -> 접근 불가)
     if (loginUserType == "INSTRUCTOR") {
@@ -91,6 +102,16 @@ $(document).ready(() => {
         $(document).on("change", "#is-in-progress", handleIsInProgressSelectChange);
         $(document).on("change", "#course-select", handleCourseSelectChange);
     }
+
+    // 페이지 로드시, 라디오버튼, 셀렉트박스 및 검색창 유지
+    console.log("유지안된다?", courseTopConfig, courseConfig, learnerConfig);
+    $('#courseSelector').val(courseTopConfig.coId);
+    let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
+    $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
+    $('#is-in-progress').val(courseConfig.coIsInProgress);
+    console.log(learnerConfig.leCourseId);
+    $('#course-select').val(learnerConfig.leCourseId);
+    $('#search-input').val(learnerConfig.keyword);
 
     // 이벤트 핸들러 (공통)
     $(document).on("change", "input[name='learner-filter']", handleLearnerFilterChange);
@@ -140,7 +161,7 @@ function setStatus() {
 }
 function setFlag() {
     sessionStorage.setItem(
-        'isEnteringDetail', 'true');
+        'flag', 'true');
 }
 
 async function fetchAndLoadTopCourseSelector() {
@@ -253,7 +274,7 @@ function displayCardList(learnersWithPaging) {
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                             <div class="card-body">
-                                <h5 class="card-title mb-1">${user.userFullname}</h5>
+                                <h5 class="card-title mb-1">${user.userFullname} (${user.userLoginId})</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
                                 <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
                                 <p class="card-text" style="min-height: 48px;">해당 과정에 배정 요망</p>
@@ -289,7 +310,7 @@ function displayCardList(learnersWithPaging) {
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                             <div class="card-body">
-                                <h5 class="card-title mb-1">${user.userFullname}</h5>
+                                <h5 class="card-title mb-1">${user.userFullname} (${user.userLoginId})</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
                                 <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
                                 <p class="card-text" style="min-height: 48px;">${course.coName || "-"}</p>
@@ -351,7 +372,7 @@ async function fetchAndLoadCourseSelect() {
     let coursesWithPaging = await apiGetRequestParams(
         "/api/coursemanagement/courses",
         {...baseConfig, ...courseConfig});
-    LoadCourseSelect(coursesWithPaging);
+    await LoadCourseSelect(coursesWithPaging);
 }
 function LoadCourseSelect(coursesWithPaging) {
     let courses = coursesWithPaging?.records || [];
@@ -426,8 +447,8 @@ function handleCourseSelectChange() {
     learnerConfig.leCourseId = $(this).val();
 
     // 셀렉트박스 옵션 변경
-    learnerConfig.leCourseId =
-        $("#course-select").val() === "" ? null : $("#course-select").val();
+    /*courseConfig.coId =
+        $("#course-select").val() === "" ? null : $("#course-select").val();*/
     setStatus();
     fetchAndDisplayLearners();
 }

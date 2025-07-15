@@ -47,7 +47,8 @@
         <table class="table table-bordered">
           <tr class="text-center">
             <th width="20%" class="text-center align-middle bg-gray-100">이름</th>
-            <td width="30%" class="text-left align-middle" th:text="${staffs.fullname}"></td>
+            <td width="30%" class="text-left align-middle"
+                th:text="|${staffs.fullname} (${staffs.loginId})|"></td>
             <th width="20%" class="text-center align-middle bg-gray-100">성별</th>
             <td width="30%" class="text-left align-middle"
                 th:text="${staffs.gender == 'M' ? '남성' : '여성'}">

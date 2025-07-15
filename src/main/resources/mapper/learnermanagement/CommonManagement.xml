@@ -39,11 +39,7 @@
     </if>
     <!-- 학습자: 본인 데이터만 조회 -->
     <if test="base.loginUserType == 'LEARNER'">
-      coId IN (
-      SELECT le.course_id
-      FROM learner_enrollment le
-      WHERE le.user_id = #{base.loginUserId}
-      )
+      coId IN (SELECT le.course_id FROM learner_enrollment le WHERE le.user_id = #{base.loginUserId})
     </if>
   </sql>
 

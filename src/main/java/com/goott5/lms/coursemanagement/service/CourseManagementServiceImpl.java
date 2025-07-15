@@ -212,7 +212,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
     List<CourseWithAssignedInfo> courses = courseManagementMapper.selectCoursesByAuth(
         baseReqDTO, pageCourseRequest);
 
-    // coId 리스트
+    // 1. 조회할 과정들 리스트
     List<Integer> coIds = courses.stream().map(
         CourseWithAssignedInfo::getCoId).collect(Collectors.toList());
 
@@ -229,25 +229,28 @@ public class CourseManagementServiceImpl implements CourseManagementService {
       referer = request.getHeader("referer");
       requestURI = request.getRequestURI();
     }
-
+    // courseList 페이지에서 요청하는 것인지?
     final boolean isCourseListPage = (referer != null && requestURI != null)
         && referer.contains("courseList") && !requestURI.contains("courseDetail");
 
     if (isCourseListPage) {
-      subjectMap = Collections.emptyMap();
-      classDateMap = Collections.emptyMap();
-      trainingDateMap = Collections.emptyMap();
-      learnerOverviewMap = Collections.emptyMap();
+      subjectMap = Collections.emptyMap(); // 교과목 정보 PASS
+      classDateMap = Collections.emptyMap(); // 수업일자 정보 PASS
+      trainingDateMap = Collections.emptyMap(); // 훈련일지등록 정보 PASS
+      learnerOverviewMap = Collections.emptyMap(); // 과정을 수강중인 교육생 정보 PASS
     } else {
 
+      // 2. 조회할 과정들의 정보들을 한번에 조회
       List<CourseSubject> subjectList =
           courseManagementMapper.selectSubjectByCoIds(coIds);
       List<CourseClassDate> classDateList =
           courseManagementMapper.selectClassDateByCoIds(coIds);
-      List<LearnerOverviewResp> learnersByAuthByCoIds = learnerManagementService.getLearnersByAuthByCoIds(
-          baseReqDTO, coIds);
+      List<LearnerOverviewResp> learnersByAuthByCoIds =
+          learnerManagementService.getLearnersByAuthByCoIds(baseReqDTO, coIds);
       List<CourseTrainingDate> trainingDateList =
           courseManagementMapper.selectTrainingDateByCoIds(coIds);
+
+      // 3. 각 과정 별로 그룹핑
       subjectMap = subjectList.stream()
           .collect(Collectors.groupingBy(CourseSubject::getCuCourseId));
       classDateMap = classDateList.stream()
@@ -260,6 +263,7 @@ public class CourseManagementServiceImpl implements CourseManagementService {
 
     LocalDate today = LocalDate.now();
 
+    // 4. 각 과정에 세팅
     List<CourseOverviewResp> courseOverviewResps =
         courses.stream().map(course -> {
           return buildCourseOverviewResp(
