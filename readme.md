@@ -22,17 +22,17 @@
 ## ✨ 기능 목록
 
 - ✅ 사용자 로그인 및 회원가입  
-- ✅ 강의 등록 및 학생 관리  
+- ✅ 과정 등록 및 교육생 관리  
 - ✅ 시험 출제 및 응시 기능  
-- 🔄 관리자 통계 대시보드 개발 중  
+- ✅ 관리자 통계 대시보드  
 
 ---
 
 ## 🖼️ 스크린샷
 
-| 로그인 화면                                                  | 시험 응시 화면 |
-|---------------------------------------------------------|----------------|
-| ![login](./src/main/resources//static/img/lmslogin.png) | ![exam](./assets/exam.png) |
+| 로그인 화면                                                   | 관리자 홈 화면                   |
+|----------------------------------------------------------|----------------------------|
+| ![login](./src/main/resources//static/img/lms_login.png) | ![exam](./src/main/resources//static/img/lms_administrator_home.png) |
 
 ---
 
@@ -69,14 +69,14 @@ cd lms
 ## 🧩 데이터베이스 정보
 
 - **Database**: MariaDB  
-- **ERD**: [📷 ERD 보기](./docs/db/erd.png)  
+- **ERD**: [📷 ERD 보기](./src/main/resources//static/img/erd.jpg)  
 - **초기 데이터**: `resources/db/init-data.sql`
 
 ---
 
 ## 🚀 배포 정보
 
-- **환경**: cafe24
+- **환경**: aws
 - **배포 주소**: 
 - **구조도**: 
 
@@ -94,15 +94,15 @@ cd lms
 
 ## 👥 팀원 및 역할
 
-| 이름 | 역할 | GitHub |
-|------|------|--------|
-| 류준규 | 팀장 | [@joon](https://github.com/) |
-| 김강 | 역할1 | [@khan](https://github.com/) |
-| 김영재 | 역할2 | [@jeff](https://github.com/) |
-| 김종원 | 역할3 | [@jason](https://github.com/) |
-| 박유진 | 역할4 | [@jin](https://github.com/) |
-| 여성욱 | 역할5 | [@corner](https://github.com/) |
-| 전인수 | 역할6 | [@Edward](https://github.com/alkali55) |
+| 이름 | 역할                     | GitHub |
+|------|------------------------|--------|
+| 류준규 | 팀장, UI 디자인, 로그인 개발     | [@joon](https://github.com/juncue) |
+| 김강 | 출결 및 게시판 개발            | [@khan](https://github.com/kang855) |
+| 김영재 | 게시판 및 신고기능 개발          | [@jeff](https://github.com/jeffkim98) |
+| 김종원 | DB 관리자, 과정 및 교육생 관리 개발 | [@jason](https://github.com/goottjason) |
+| 박유진 | 과제 및 훈련일지 개발           | [@jin](https://github.com/parkinglotlot) |
+| 여성욱 | Git 관리자, 시험 및 게시판 개발   | [@corner](https://github.com/WinterI5Coming) |
+| 전인수 | Git 관리자, 과정 및 알림 개발    | [@Edward](https://github.com/alkali55) |
 
 ---
 
@@ -116,8 +116,7 @@ cd lms
 
 ## 📎 기타 문서
 
-- [ERD](./docs/db/erd.png)  
-- [Figma UI 설계](https://figma.com/file/abc123/LMS-Design)  
-- [운영 정책 문서](./docs/policy.md)
+- [ERD](https://www.notion.so/ERD-1fee9988a01e80ae8befe88667bbc013?source=copy_link)  
+- [Figma UI 설계](https://www.figma.com/board/qKdHVQm8NrHptUlx5HJvga/Goott5-Final-Project---LMS%EC%8B%9C%EC%8A%A4%ED%85%9C?node-id=0-1&t=VQtjZSXRvgQzyTSy-1)
 
 ---
