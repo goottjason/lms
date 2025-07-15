@@ -357,7 +357,7 @@
         let currentSearchName = ''; // 현재 검색어
 
         // ========== 초기화 ==========
-        console.log('휴가 승인 페이지 초기화 시작', instructorData);
+        // console.log('휴가 승인 페이지 초기화 시작', instructorData);
 
         // 과정 선택기 설정
         setupCourseSelector();
@@ -420,10 +420,10 @@
             // 과정 정보 업데이트
             updateCourseInfo();
 
-            console.log('과정 선택기 설정 완료', {
-                currentCourseId: currentCourseId,
-                isCurrentCourse: isCurrentCourseSelected
-            });
+            // console.log('과정 선택기 설정 완료', {
+            //     currentCourseId: currentCourseId,
+            //     isCurrentCourse: isCurrentCourseSelected
+            // });
         }
 
         // ========== 과정 선택 변경 이벤트 ==========
@@ -435,11 +435,11 @@
             const selectedOption = $(this).find('option:selected');
             const selectedType = selectedOption.data('type');
 
-            console.log('과정 선택 변경:', {
-                selectedCourseId: selectedCourseId,
-                selectedType: selectedType,
-                previousCourseId: currentCourseId
-            });
+            // console.log('과정 선택 변경:', {
+            //     selectedCourseId: selectedCourseId,
+            //     selectedType: selectedType,
+            //     previousCourseId: currentCourseId
+            // });
 
             // 선택이 실제로 변경된 경우에만 처리
             if (selectedCourseId && selectedCourseId !== currentCourseId) {
@@ -487,10 +487,10 @@
                 }
             }
 
-            console.log('과정 정보 업데이트 완료:', {
-                isCurrentCourse: isCurrentCourseSelected,
-                courseId: currentCourseId
-            });
+            // console.log('과정 정보 업데이트 완료:', {
+            //     isCurrentCourse: isCurrentCourseSelected,
+            //     courseId: currentCourseId
+            // });
         }
 
         // ========== 검색 기능 ==========
@@ -527,7 +527,7 @@
                 return;
             }
 
-            console.log('검색 실행:', searchName);
+            // console.log('검색 실행:', searchName);
 
             currentSearchName = searchName;
             currentPage = 0; // 검색 시 첫 페이지로
@@ -556,7 +556,7 @@
             currentPage = 0;
             $('#clearSearchBtn').hide();
             $('#searchResultInfo').hide();
-            console.log('검색 초기화 완료');
+            // console.log('검색 초기화 완료');
         }
 
         /**
@@ -577,12 +577,12 @@
         function loadVacationData(courseId, page, searchName = '') {
             if (!courseId) return;
 
-            console.log('휴가 데이터 로드 시작:', {
-                courseId: courseId,
-                page: page,
-                searchName: searchName,
-                type: isCurrentCourseSelected ? 'all' : 'approved'
-            });
+            // console.log('휴가 데이터 로드 시작:', {
+            //     courseId: courseId,
+            //     page: page,
+            //     searchName: searchName,
+            //     type: isCurrentCourseSelected ? 'all' : 'approved'
+            // });
 
             showLoadingState();
 
@@ -605,11 +605,11 @@
                        type: 'GET',
                        data: requestData,
                        success: function(response) {
-                           console.log('휴가 데이터 응답:', {
-                               totalElements: response.data?.totalElements,
-                               contentLength: response.data?.content?.length,
-                               data: response.data
-                           });
+                           // console.log('휴가 데이터 응답:', {
+                           //     totalElements: response.data?.totalElements,
+                           //     contentLength: response.data?.content?.length,
+                           //     data: response.data
+                           // });
 
                            if (response.success) {
                                let data = response.data;
@@ -678,11 +678,11 @@
                 $tbody.append(row);
             });
 
-            console.log('휴가 목록 업데이트 완료:', {
-                총개수: data.totalElements,
-                현재페이지: data.pageable?.pageNumber || currentPage,
-                표시개수: vacations.length
-            });
+            // console.log('휴가 목록 업데이트 완료:', {
+            //     총개수: data.totalElements,
+            //     현재페이지: data.pageable?.pageNumber || currentPage,
+            //     표시개수: vacations.length
+            // });
         }
 
         // ========== 휴가 목록 헤더 업데이트 ==========
@@ -920,7 +920,7 @@
          * 새로고침 버튼을 클릭하면 현재 페이지를 다시 로드합니다.
          */
         $('#refreshBtn').click(function() {
-            console.log('수동 새로고침 요청');
+            // console.log('수동 새로고침 요청');
             if (currentCourseId) {
                 loadVacationData(currentCourseId, currentPage);
                 showSuccessMessage('데이터를 새로고침했습니다.');
@@ -938,10 +938,10 @@
             const $row = $('#vacation-row-' + participationId);
             const learnerName = $row.find('td:nth-child(2)').text().trim().split('\n')[0];
 
-            console.log('휴가 승인 요청:', {
-                participationId: participationId,
-                learnerName: learnerName
-            });
+            // console.log('휴가 승인 요청:', {
+            //     participationId: participationId,
+            //     learnerName: learnerName
+            // });
 
 
             Swal.fire({
@@ -963,7 +963,7 @@
                                url: `/vacation/approve/${participationId}`,
                                type: 'POST',
                                success: function(response) {
-                                   console.log('휴가 승인 응답:', response);
+                                   // console.log('휴가 승인 응답:', response);
 
 
                                    if (response.success) {
@@ -1018,10 +1018,10 @@
             const $row = $('#vacation-row-' + participationId);
             const learnerName = $row.find('td:nth-child(2)').text().trim().split('\n')[0];
 
-            console.log('휴가 거부 요청:', {
-                participationId: participationId,
-                learnerName: learnerName
-            });
+            // console.log('휴가 거부 요청:', {
+            //     participationId: participationId,
+            //     learnerName: learnerName
+            // });
 
             Swal.fire({
                           title: "휴가를 거부하시겠습니까?",
@@ -1042,7 +1042,7 @@
                                url: `/vacation/reject/${participationId}`,
                                type: 'POST',
                                success: function(response) {
-                                   console.log('휴가 거부 응답:', response);
+                                   // console.log('휴가 거부 응답:', response);
 
                                    if (response.success) {
 
@@ -1109,10 +1109,10 @@
             // 행에 성공 효과 추가
             $row.addClass('table-success');
 
-            console.log('행 업데이트 완료:', {
-                status: status,
-                message: message
-            });
+            // console.log('행 업데이트 완료:', {
+            //     status: status,
+            //     message: message
+            // });
         }
 
         // ========== 유틸리티 함수들 ==========
@@ -1138,7 +1138,7 @@
                 });
             }, 3000);
 
-            console.log('성공 메시지 표시:', message);
+            // console.log('성공 메시지 표시:', message);
         }
 
         /**
@@ -1162,7 +1162,7 @@
                 });
             }, 5000);
 
-            console.log('에러 메시지 표시:', message);
+            // console.log('에러 메시지 표시:', message);
         }
 
         /**
@@ -1204,7 +1204,7 @@
         }
 
 
-        console.log('휴가 승인 페이지 초기화 완료');
+        // console.log('휴가 승인 페이지 초기화 완료');
     });
         </script>
     </th:block>
