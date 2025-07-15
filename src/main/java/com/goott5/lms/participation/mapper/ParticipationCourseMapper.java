@@ -20,8 +20,12 @@ public interface ParticipationCourseMapper {
   CourseVO selectCourseByLearnerEnrollmentId(
       @Param("learnerEnrollmentId") Integer learnerEnrollmentId);
 
+  // 특정 과정, 특정 날짜의 수업일 존재 여부 확인 (0 또는 1 반환)
+  @Select("SELECT COUNT(*) FROM course_schedule WHERE course_id = #{courseId} AND DATE(class_date) = #{date}")
+  int countClassDayForCourse(@Param("courseId") Integer courseId, @Param("date") LocalDate date);
+
   // course_schedule 테이블에서 해당 날짜에 수업이 있는 과정 ID들 조회
-  @Select("SELECT DISTINCT course_id FROM course_schedule WHERE class_date = #{today}")
+  @Select("SELECT DISTINCT course_id FROM course_schedule WHERE DATE(class_date) = #{today}")
   List<Integer> selectCoursesBySchedule(@Param("today") LocalDate today);
 
   /**

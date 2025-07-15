@@ -685,22 +685,22 @@
 
             <!-- 입실/퇴실 버튼: 수업일에만 표시 -->
 <div class="attendance-buttons">
-    <div th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
+
+    <th:block th:if="${isClassDay}">
         <button id="checkInBtn" class="btn-attendance btn-checkin" onclick="handleCheckIn()">
-        <i class="fas fa-sign-in-alt"></i> 입실
+            <i class="fas fa-sign-in-alt"></i> 입실
         </button>
-    </div>
-    <div th:style="${isClassDay} ? 'display: flex;' : 'display: none;'">
         <button id="checkOutBtn" class="btn-attendance btn-checkout" onclick="handleCheckOut()">
-        <i class="fas fa-sign-out-alt"></i> 퇴실
-        </button>
-    </div>
-    <!-- 휴가신청 버튼: 항상 표시, 단 과정 종료 시 숨김 -->
-    <th:block th:if="${currentCourse != null and currentCourse.endDate != null and currentCourse.endDate >= today}">
-        <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
-        <i class="fas fa-calendar-alt"></i> 휴가신청
+            <i class="fas fa-sign-out-alt"></i> 퇴실
         </button>
     </th:block>
+
+    <th:block th:if="${currentCourse != null and currentCourse.endDate != null and #temporals.createNow().toLocalDate().isBefore(currentCourse.endDate.plusDays(1))}">
+        <button id="vacationBtn" class="btn-attendance btn-vacation" data-toggle="modal" data-target="#vacationModal">
+            <i class="fas fa-calendar-alt"></i> 휴가신청
+        </button>
+    </th:block>
+
 </div>
 
 
@@ -1038,12 +1038,12 @@
 
             // 기본 조건 확인
             if (!isClassDay || !learnerEnrollmentId || !checkInBtn || !checkOutBtn) {
-                console.log('기본 조건 미충족:', {
-                    isClassDay,
-                    learnerEnrollmentId,
-                    checkInBtn: !!checkInBtn,
-                    checkOutBtn: !!checkOutBtn
-                });
+                // console.log('기본 조건 미충족:', {
+                //     isClassDay,
+                //     learnerEnrollmentId,
+                //     checkInBtn: !!checkInBtn,
+                //     checkOutBtn: !!checkOutBtn
+                // });
                 return;
             }
 
@@ -1339,35 +1339,11 @@
          * 출결 관련 버튼들 표시 (현재 과정용)
          */
         function showActionButtons() {
-            // console.log('현재 과정 선택 - 버튼들 표시');
 
             const buttonContainer = document.querySelector('.attendance-buttons');
-            const checkInBtn = document.getElementById('checkInBtn');
-            const checkOutBtn = document.getElementById('checkOutBtn');
-            const vacationBtn = document.getElementById('vacationBtn');
 
-            // ✅ 요소 존재 여부 확인 후 처리
             if (buttonContainer) {
-                // 수업일인 경우에만 표시
-                if (isClassDay) { // 전역 변수로 isClassDay 값 참조
-                    checkInBtn.classList.remove('hidden'); // 수업일이면 보이게함
-                    checkOutBtn.classList.remove('hidden');
-
-                }else {
-                    checkInBtn.classList.add('hidden'); // 수업일이 아니면 숨김
-                    checkOutBtn.classList.add('hidden');
-                }
-            }
-
-            // 개별 버튼들도 안전하게 처리
-            if (checkInBtn && isClassDay) {
-                checkInBtn.style.display = 'inline-block';
-            }
-            if (checkOutBtn && isClassDay) {
-                checkOutBtn.style.display = 'inline-block';
-            }
-            if (vacationBtn && isClassDay) {
-                vacationBtn.style.display = 'inline-block';
+                buttonContainer.classList.remove('hidden');
             }
         }
 
@@ -1375,27 +1351,10 @@
          * 출결 관련 버튼들 숨김 (과거 과정용)
          */
         function hideActionButtons() {
-            // console.log('과거 과정 선택 - 버튼들 숨김');
-
+            console.log('과거 과정 선택 - 버튼 영역 숨김');
             const buttonContainer = document.querySelector('.attendance-buttons');
-            const checkInBtn = document.getElementById('checkInBtn');
-            const checkOutBtn = document.getElementById('checkOutBtn');
-            const vacationBtn = document.getElementById('vacationBtn');
-
-            // ✅ 요소 존재 여부 확인 후 처리
             if (buttonContainer) {
                 buttonContainer.classList.add('hidden');
-            }
-
-            // 개별 버튼들도 안전하게 처리
-            if (checkInBtn) {
-                checkInBtn.style.display = 'none';
-            }
-            if (checkOutBtn) {
-                checkOutBtn.style.display = 'none';
-            }
-            if (vacationBtn) {
-                vacationBtn.style.display = 'none';
             }
         }
 

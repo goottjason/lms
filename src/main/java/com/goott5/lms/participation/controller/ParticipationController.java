@@ -68,7 +68,7 @@ public class ParticipationController {
 
       // 오늘 날짜 및 수업일 여부 확인
       LocalDate today = LocalDate.now();
-      boolean isClassDay = participationService.isClassDay(today);
+      boolean isClassDay = participationService.isClassDay(currentCourse.getId(), LocalDate.now());
 
       // 모델에 기본 정보 추가
       model.addAttribute("loginUser", loginUser);

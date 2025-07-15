@@ -34,12 +34,9 @@ public class ParticipationServiceImpl implements ParticipationService {
    */
   @Override
   public void createDailyAttendanceForAllCourses(LocalDate participationDate) {
-    if (!isClassDay(participationDate)) {
-      log.info("오늘은 수업이 없는 날입니다: {}", participationDate);
-      return;
-    }
 
     // course_schedule에서 해당 날짜에 수업이 있는 과정들 조회
+    // 이 결과가 비어있으면 아래 for문은 실행되지 않으므로, isClassDay 체크와 동일한 역할을함
     List<Integer> courseIds = participationCourseMapper.selectCoursesBySchedule(participationDate);
     log.info("오늘 수업이 있는 과정 수: {}", courseIds.size());
 
@@ -80,9 +77,13 @@ public class ParticipationServiceImpl implements ParticipationService {
    */
   @Override
   @Transactional(readOnly = true)
-  public boolean isClassDay(LocalDate date) {
-    List<Integer> courseIds = participationCourseMapper.selectCoursesBySchedule(date);
-    return !courseIds.isEmpty();
+  public boolean isClassDay(Integer courseId, LocalDate date) {
+    // courseId가 없으면 수업일이 아님
+    if (courseId == null) {
+      return false;
+    }
+    // 새로 만든 매퍼 메소드를 호출하여 해당 과정의 수업일이 맞는지 확인
+    return participationCourseMapper.countClassDayForCourse(courseId, date) > 0;
   }
 
   /**
