@@ -366,8 +366,13 @@ function displayLearnerCard() {
 
                    // 미입실일 때 처리
                    if (part.partCheckIn == null) {
+                       let isVacation = false;
+                       if (part.partStatus == 'VACATION' || part.partStatus == 'VACATION_PENDING') {
+                          // 카드 없음
+                           isVacation = true;
+                       }
                        /* '입실마감시간-10분'부터 퇴실시작시간 직전까지 카드에 미입실, 이메일알림 버튼 출력
-                          그 외의 시간은 카드 없음 */
+                        그 외의 시간은 카드 없음 */
                        let buttonStartTime = fromTimeStrToTodayTime(
                            adjustMinutesToTimeStr(checkInEndTimeStr, -10));
                        let buttonEndTime   = fromTimeStrToTodayTime(
@@ -377,36 +382,42 @@ function displayLearnerCard() {
                        if (buttonStartTime.getTime() <= currentDate.getTime() &&
                            currentDate.getTime() <= buttonEndTime.getTime()) {
                            let colHtmlIn = `
-                               <div class="col-md-4">
-                                   <div class="learner-card card text-center shadow-sm h-100">
-                                      <div class="card-body d-flex flex-column px-4 py-3">
-                                          <div class="mb-3 not-check-in-status" data-id="${learner.leId}">
-                                            <span class="badge rounded-pill border border-danger text-danger bg-transparent px-3 py-2"
-                                                  style="font-size: 0.8rem;">
-                                              미입실
-                                            </span>
-                                          </div>
-                                          <div>
-                                            <a href="/courseManagement/courseDetail?courseId=${course.coId}"><h6 class="card-title mb-1 text-dark fw-bold not-check-in-coname" data-id="${learner.leId}"
-                                                style="font-size: 1rem;">${course.coName}</h6></a>
-                                            <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary not-check-in-fullname" data-id="${learner.leId}"><b>${learner.learnerUser.userFullname}</b></p></a>
-                                          </div>
-                                          <div class="mt-auto">
-                                            <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
-                                              <i class="fas fa-solid fa-envelope"></i>
-                                            </a>
-                                            <input type="hidden" value="${learner.learnerUser.userEmail}" class="not-check-in-email">
-                                          </div>
-                                    </div>
-                                   </div>
+                           <div class="col-md-4">
+                               <div class="learner-card card text-center shadow-sm h-100">
+                                  <div class="card-body d-flex flex-column px-4 py-3">
+                                      <div class="mb-3 not-check-in-status" data-id="${learner.leId}">
+                                        <span class="badge rounded-pill border bg-transparent px-3 py-2 ${isVacation ? 'border-primary text-primary':'border-danger text-danger'}"
+                                              style="font-size: 0.8rem;">
+                                          ${isVacation ? '휴가': '미입실'}
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <a href="/courseManagement/courseDetail?courseId=${course.coId}"><h6 class="card-title mb-1 text-dark fw-bold not-check-in-coname" data-id="${learner.leId}"
+                                            style="font-size: 1rem;">${course.coName}</h6></a>
+                                        <a href="/learnerManagement/learnerDetail?leId=${learner.leId}&coName=${course.coName}"><p class="card-text small mb-2 text-secondary not-check-in-fullname" data-id="${learner.leId}"><b>${learner.learnerUser.userFullname}</b></p></a>
+                                      </div>
+                                      <div class="mt-auto">
+                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                          <i class="fas fa-solid fa-envelope"></i>
+                                        </a>
+                                        <input type="hidden" value="${learner.learnerUser.userEmail}" class="not-check-in-email">
+                                      </div>
+                                </div>
                                </div>
-                           `;
+                           </div>
+                       `;
                            cards.push(colHtmlIn);
                        }
+
                    }
 
                    // 미퇴실일 때 처리
                    if (part.partCheckOut == null) {
+                       let isVacation = false;
+                       if (part.partStatus == 'VACATION' || part.partStatus == 'VACATION_PENDING') {
+                           // 카드 없음
+                           isVacation = true;
+                       }
                        /*null이면(미퇴실함),
                         '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
                         그 외의 시간은 초기 세팅대로 '-' 출력*/
@@ -420,9 +431,9 @@ function displayLearnerCard() {
                                   <div class="learner-card card text-center shadow-sm h-100">
                                     <div class="card-body d-flex flex-column px-4 py-3">
                                       <div class="mb-3 not-check-in-status" data-id="${learner.leId}">
-                                        <span class="badge rounded-pill border border-warning text-warning bg-transparent px-3 py-2"
+                                        <span class="badge rounded-pill border bg-transparent px-3 py-2 ${isVacation ? 'border-primary text-primary':'border-warning text-warning'}"
                                               style="font-size: 0.8rem;">
-                                          미퇴실
+                                          ${isVacation ? '휴가': '미퇴실'}
                                         </span>
                                       </div>
                                       <div>
@@ -736,6 +747,7 @@ function displayInstructorCard(cardData) {
     else if (cardData.length == 0) {
         $('#instructor-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
     }
+    $('#instructor-card-count').text(`(${cards.length}명)`);
 }
 function callAlarm(coInstructorId, coInstructorName, coName) {
     let content = `${coInstructorName}님 ${coName} 훈련일지 작성해주세요.`;

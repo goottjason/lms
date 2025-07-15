@@ -698,5 +698,7 @@ function handleEmployCancelButtonClick() {
   // 새로고침
   location.reload();
 }
-
-
+function setFlag() {
+  sessionStorage.setItem(
+      'flag', 'true');
+}

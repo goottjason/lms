@@ -10,6 +10,7 @@ import com.goott5.lms.user.domain.SignupDTO;
 import com.goott5.lms.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class CourseManagementTests {
         .loginUserPosition("GENERAL_MANAGER")
         .build();
     PageCourseRequest pageCourseRequest = PageCourseRequest.builder()
-        .coId(5)
+        .coId(8)
         .build();
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("referer", "https://example.com/prev-page");
@@ -64,17 +65,19 @@ public class CourseManagementTests {
     PageCourseResponse<CourseOverviewResp> coursesByAuth =
         courseManagementService.getCoursesByAuth(
             baseReqDTO, pageCourseRequest, request);
-
+    LocalDate tommorrow = LocalDate.now().plusDays(1);
     log.info("coursesByAuth: {}", coursesByAuth);
     coursesByAuth.getRecords().forEach(course -> {
-      int[] values = {16, 17, 18, 19};
+      int[] values = {29, 30, 31, 32};
       course.getScheduleOverview().getClassdateList().forEach(classDate -> {
-        for (int i : values) {
-          LocalDateTime checkIn = LocalDateTime.of(classDate.getYear(), classDate.getMonth(), classDate.getDayOfMonth(), 9, 27, 0);
-          LocalDateTime checkOut = LocalDateTime.of(classDate.getYear(), classDate.getMonth(), classDate.getDayOfMonth(), 18, 22, 0);
-          courseManagementMapper.insertPartTable(
-              i, checkIn, checkOut, classDate
-          );
+        if (classDate.isBefore(tommorrow)) {
+          for (int i : values) {
+            LocalDateTime checkIn = LocalDateTime.of(classDate.getYear(), classDate.getMonth(), classDate.getDayOfMonth(), 9, 28, 0);
+            LocalDateTime checkOut = LocalDateTime.of(classDate.getYear(), classDate.getMonth(), classDate.getDayOfMonth(), 18, 22, 0);
+            courseManagementMapper.insertPartTable(
+                i, checkIn, checkOut, classDate
+            );
+          }
         }
       });
     });

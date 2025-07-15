@@ -248,6 +248,7 @@ async function fetchAndDisplayLearners() {
     let learnersWithPaging = await apiGetRequestParams(
         "/api/learnermanagement/learnersonlypart",
         {...baseConfig, ...learnerConfig});
+    console.log(learnersWithPaging);
     displayView(learnersWithPaging);
 }
 function displayView(learnersWithPaging) {
@@ -300,21 +301,33 @@ async function displayTableList(learnersWithPaging) {
                             learnerCheckInStr = part.partCheckIn.split('T')[1];
 
                         } else if (part.partCheckIn == null) {
-                            /*null이면(미입실함),
-                                '입실마감시간-10분'부터 퇴실시작시간 직전까지 이메일알림 버튼 출력
-                                그 외의 시간은 초기 세팅대로 '-' 출력*/
-                            let buttonStartTime = fromTimeStrToTodayTime(adjustMinutesToTimeStr(checkInEndTimeStr, -10));
-                            let buttonEndTime = fromTimeStrToTodayTime(checkOutStartTimeStr);
-
-                            if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
-                                learnerCheckInStr = `
-                                    <span class="text-danger font-weight-bold">미입실</span><br>
-                                    <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
-                                      <i class="fas fa-solid fa-envelope"></i>
-                                    </a>
-                                `;
+                            // null이면 미입실인데, VACATION or VACATION_PENDING이면
+                            // 휴가 or 휴가(승인전) 표시
+                            if (part.partStatus == 'VACATION' || part.partStatus == 'VACATION_PENDING') {
+                                learnerCheckInStr = `<span class="text-primary font-weight-bold">휴가${part.partStatus =='VACATION_PENDING' ? '(승인전)':''}</span>`;
                             } else {
-                                learnerCheckInStr =`<span class="text-secondary">미입실</span>`
+                                /*null이면(미입실함),
+                                 '입실마감시간-10분'부터 퇴실시작시간 직전까지 이메일알림 버튼 출력
+                                 그 외의 시간은 초기 세팅대로 '-' 출력*/
+                                let buttonStartTime = fromTimeStrToTodayTime(
+                                    adjustMinutesToTimeStr(checkInEndTimeStr,
+                                                           -10));
+                                let buttonEndTime   = fromTimeStrToTodayTime(
+                                    checkOutStartTimeStr);
+
+                                if (buttonStartTime.getTime() <=
+                                    currentDate.getTime() &&
+                                    currentDate.getTime() <=
+                                    buttonEndTime.getTime()) {
+                                    learnerCheckInStr = `
+                                        <span class="text-danger font-weight-bold">미입실</span><br>
+                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                          <i class="fas fa-solid fa-envelope"></i>
+                                        </a>
+                                    `;
+                                } else {
+                                    learnerCheckInStr = `<span class="text-secondary">미입실</span>`
+                                }
                             }
                         }
 
@@ -322,21 +335,31 @@ async function displayTableList(learnersWithPaging) {
                             // null이 아니면(퇴실함)
                             learnerCheckOutStr = part.partCheckOut.split('T')[1];
                         } else if (part.partCheckOut == null) {
-                            /*null이면(미퇴실함),
-                             '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
-                             그 외의 시간은 초기 세팅대로 '-' 출력*/
-                            let buttonStartTime = fromTimeStrToTodayTime(adjustMinutesToTimeStr(checkOutEndTimeStr, -10));
-                            let buttonEndTime = fromTimeStrToTodayTime('23:59:59');
-
-                            if (buttonStartTime.getTime() <= currentDate.getTime() && currentDate.getTime() <= buttonEndTime.getTime()) {
-                                learnerCheckOutStr = `
-                                    <span class="text-danger font-weight-bold">미퇴실</span><br>
-                                    <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
-                                      <i class="fas fa-solid fa-envelope"></i>
-                                    </a>
-                                `;
+                            if (part.partStatus == 'VACATION' || part.partStatus == 'VACATION_PENDING') {
+                                learnerCheckOutStr = `<span class="text-primary font-weight-bold">휴가${part.partStatus =='VACATION_PENDING' ? '(승인전)':''}</span>`;
                             } else {
-                                learnerCheckOutStr =`<span class="text-secondary">미퇴실</span>`
+                                /*null이면(미퇴실함),
+                                 '퇴실마감시간-10분'부터 자정까지 이메일알림 버튼 출력
+                                 그 외의 시간은 초기 세팅대로 '-' 출력*/
+                                let buttonStartTime = fromTimeStrToTodayTime(
+                                    adjustMinutesToTimeStr(checkOutEndTimeStr,
+                                                           -10));
+                                let buttonEndTime   = fromTimeStrToTodayTime(
+                                    '23:59:59');
+
+                                if (buttonStartTime.getTime() <=
+                                    currentDate.getTime() &&
+                                    currentDate.getTime() <=
+                                    buttonEndTime.getTime()) {
+                                    learnerCheckOutStr = `
+                                        <span class="text-danger font-weight-bold">미퇴실</span><br>
+                                        <a href="/learnerManagement/sendEmail?leId=${learner.leId}" role="button">
+                                          <i class="fas fa-solid fa-envelope"></i>
+                                        </a>
+                                    `;
+                                } else {
+                                    learnerCheckOutStr = `<span class="text-secondary">미퇴실</span>`
+                                }
                             }
                         }
                     }

@@ -220,4 +220,39 @@
     ORDER BY crm.name, crs.start_date
   </select>
 
+  <!--주석
+  &lt;!&ndash; 강의실목록과 과정에 할당된 이력을 조인 &ndash;&gt;
+  SELECT &lt;!&ndash; 사용중 강의실은 강의실할당테이블에서 진행중과정을 조회 &ndash;&gt;
+    cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+    c.name AS courseName, c.is_in_progress AS courseIsInProgress,
+    c.start_date AS courseStartDate, c.end_date AS courseEndDate,
+    u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+    u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+  FROM classroom cr
+    JOIN classroom_allocation ca on cr.id = ca.classroom_id
+    JOIN course c on c.id = ca.course_id and c.is_in_progress = 1
+    JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+    JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+  UNION &lt;!&ndash; 사용중 강의실과 미사용중인 강의실목록의 합집합 &ndash;&gt;
+  SELECT DISTINCT &lt;!&ndash; 미사용 강의실은 진행중과정은 NOT IN
+                       (과정이력이 여러 개라면 그 수만큼 조회, DISTINCT) &ndash;&gt;
+    cr.id, cr.name, cr.is_active, cr.primary_admin_id, cr.secondary_admin_id,
+    '' AS courseName, c.is_in_progress AS courseIsInProgress,
+    '' as courseStartDate, '' AS courseEndDate,
+    u_pri.id AS priUserId, u_pri.fullname AS priUserFullname,
+    u_sec.id AS secUserId, u_sec.fullname AS secUserFullname
+  FROM classroom cr
+    LEFT JOIN classroom_allocation ca on cr.id = ca.classroom_id
+    LEFT JOIN course c on c.id = ca.course_id
+    LEFT JOIN user u_pri ON cr.primary_admin_id = u_pri.id
+    LEFT JOIN user u_sec ON cr.secondary_admin_id = u_sec.id
+  WHERE cr.id NOT IN
+    (SELECT cr.id from classroom cr
+    JOIN classroom_allocation ca on cr.id = ca.classroom_id
+    JOIN course c on c.id = ca.course_id and c.is_in_progress = 1)
+  ORDER BY name asc-->
+
 </mapper>
+
+
+
