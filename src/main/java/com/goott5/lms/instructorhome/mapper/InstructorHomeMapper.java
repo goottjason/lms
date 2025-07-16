@@ -38,7 +38,7 @@ public interface InstructorHomeMapper {
   @Select("select count(h.id) from homework h left join learner_enrollment le on h.course_id = le.course_id left join homework_submission hs on le.user_id = hs.learner_id and hs.homework_id = h.id where h.course_id = #{courseId} and current_timestamp() between h.start_date and h.end_date and hs.id is null and le.completion_status = 'IN_PROGRESS'")
   int setCountOfNotSubmitHomeworkLearner(int courseId);
 
-  @Select("select count(hs.id) from homework_submission hs left join homework_eval he on hs.id = he.hs_id left join homework h on hs.homework_id = h.id where he.id is null and h.course_id = #{courseId} and current_date() between h.start_date and h.end_date")
+  @Select("select count(hs.id) from homework_submission hs left join homework_eval he on hs.id = he.hs_id left join homework h on hs.homework_id = h.id where he.id is null and h.course_id = #{courseId} and current_timestamp() between h.start_date and h.end_date")
   int selectCountOfNotEvalHomework(int courseId);
 
   @Select("select count(*) from participation p join learner_enrollment le on p.learner_enrollment_id = le.id and le.course_id = #{courseId} where p.status = 'VACATION_PENDING'")
