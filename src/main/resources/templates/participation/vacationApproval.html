@@ -380,7 +380,7 @@
             if (instructorData.currentCourse) {
                 const currentOption = $('<option>', {
                     value: instructorData.currentCourse.id,
-                    text: `[진행중]: ${instructorData.currentCourse.name}`,
+                    text: `${instructorData.currentCourse.name}`,
                     'data-type': 'current',
                     'data-start-date': instructorData.currentCourse.startDate,
                     'data-end-date': instructorData.currentCourse.endDate
@@ -401,7 +401,7 @@
                 instructorData.previousCourses.forEach(course => {
                     const previousOption = $('<option>', {
                         value: course.id,
-                        text: `[종료]: ${course.name} (${course.startDate} ~ ${course.endDate})`,
+                        text: `${course.name} (${course.startDate} ~ ${course.endDate})`,
                         'data-type': 'previous',
                         'data-start-date': course.startDate,
                         'data-end-date': course.endDate
