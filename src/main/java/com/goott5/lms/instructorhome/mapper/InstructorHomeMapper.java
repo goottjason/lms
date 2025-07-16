@@ -32,7 +32,7 @@ public interface InstructorHomeMapper {
   @Select("select count(p.id) from participation p join learner_enrollment le on p.learner_enrollment_id = le.id and le.course_id = #{courseId} where p.participation_date = current_date() and status in ('IN_STUDY', 'LATE', 'ATTENDANCE')")
   int selectCountOfInStudyLearnerToday(int courseId);
 
-  @Select("select count(ts.id) from test_submission ts join (select * from test where course_id = #{courseId} and current_timestamp() between start_date and end_date) t on ts.test_id = t.id join learner_enrollment le on ts.learner_id = le.user_id and le.course_id = #{courseId} where submission_status = 'NOT_STARTED' and le.completion_status != 'IN_PROGRESS'")
+  @Select("select count(ts.id) from test_submission ts join (select * from test where course_id = #{courseId} and current_timestamp() between start_date and end_date) t on ts.test_id = t.id join learner_enrollment le on ts.learner_id = le.user_id and le.course_id = #{courseId} where submission_status != 'COMPLETED' and le.completion_status = 'IN_PROGRESS'")
   int selectCountOfNotSubmitTestLearner(int courseId);
 
   @Select("select count(h.id) from homework h left join learner_enrollment le on h.course_id = le.course_id left join homework_submission hs on le.user_id = hs.learner_id and hs.homework_id = h.id where h.course_id = #{courseId} and current_timestamp() between h.start_date and h.end_date and hs.id is null and le.completion_status = 'IN_PROGRESS'")
