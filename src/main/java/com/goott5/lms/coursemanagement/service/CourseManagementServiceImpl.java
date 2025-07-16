@@ -507,31 +507,21 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         .build();
     PageCourseRequest pageCourseRequest = PageCourseRequest.builder().build();
 
-
-
     PageCourseResponse<CourseOverviewResp> coursesWithPagination =
         getCoursesByAuth(baseReqDTO, pageCourseRequest, request);
 
-
-
     coursesWithPagination.getRecords().forEach(course -> {
-      // 오늘을 포함하여 이미 종료된 과정 조회
+      // '오늘을 포함하여 이미 종료된' 과정 조회 (혹시라도 종료되지 못한 과정 또한 종료처리하기 위함)
       if(today.isAfter(course.getCourseWithAssignedInfo().getCoEndDate())) {
         if (course.getCourseWithAssignedInfo().getCoIsInProgress()) {
-
-
           CourseWithAssignedInfo info = course.getCourseWithAssignedInfo();
-          // 오늘 종료된 과정은 종료처리 (혹시라도 종료되지 못한 과정 또한 종료처리)
-
-          // 과정 상태 업데이트
-          Boolean result1 = modifyCourseIsInProgressByCoId(info.getCoId());
-
-          // 강의실 비활성화
-          Boolean result2 = operationsManagementService.modifyClassroomIsActiveBycoClassroomId(
+          // 1. 과정 상태 업데이트
+          Boolean resultByCourseStatus = modifyCourseIsInProgressByCoId(info.getCoId());
+          // 2. 강의실 비활성화
+          Boolean resultByClassroomStatus = operationsManagementService.modifyClassroomIsActiveBycoClassroomId(
               info.getCoClassroomId());
-
-          // 교육생 수료처리
-          Boolean result3 = learnerManagementService.modifyCompletionStatusByCoId(
+          // 3. 교육생 수료처리
+          Boolean resultByLearnerCompletionStatus = learnerManagementService.modifyCompletionStatusByCoId(
               baseReqDTO, info.getCoId());
         }
       }

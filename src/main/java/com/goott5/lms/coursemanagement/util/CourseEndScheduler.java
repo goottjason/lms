@@ -25,7 +25,6 @@ public class CourseEndScheduler {
 
   @Scheduled(cron = "0 55 23 * * MON-FRI", zone = "Asia/Seoul")
   public void endCourseAutoProcess() {
-
     courseManagementService.endCoursesAutoProcess();
     schedulerStatusService.updateLastExecution();
   }

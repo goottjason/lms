@@ -44,36 +44,32 @@ let courseConfig = {
     coId          : null
 };
 
-// 어딘가 -> 목록페이지로 '진입할 때' 동작
-document.addEventListener("DOMContentLoaded", function(e) {
+// 목록페이지로 '진입할 때' 동작
+document.addEventListener("DOMContentLoaded", function() {
     // Flag가 없으면(외부로 이동 시), 세션 데이터 삭제
     if (!sessionStorage.getItem("flag")) {
         sessionStorage.removeItem("courseTopConfig");
         sessionStorage.removeItem("courseConfig");
-        sessionStorage.removeItem("learnerConfig");
-    }
+        sessionStorage.removeItem("learnerConfig"); }
     // Flag가 있으면(상세페이지로 이동 시), 그 Flag만 삭제
     else {
-        sessionStorage.removeItem("flag");
-    }
+        sessionStorage.removeItem("flag"); }
 });
 
 
 
 $(document).ready(() => {
 
-    // 목록페이지 -> 어딘가로 '벗어날 때' 동작
-    window.addEventListener("beforeunload", function (e) {
+    // 목록페이지에서 '벗어날 때' 동작
+    window.addEventListener("beforeunload", function () {
         // Flag가 없으면(외부로 이동 시), 세션 데이터 삭제
         if (!sessionStorage.getItem("flag")) {
             sessionStorage.removeItem("courseTopConfig");
             sessionStorage.removeItem("courseConfig");
-            sessionStorage.removeItem("learnerConfig");
-        }
+            sessionStorage.removeItem("learnerConfig"); }
         // Flag가 있으면(상세페이지로 이동 시), 그 Flag만 삭제
         else {
-            sessionStorage.removeItem("flag");
-        }
+            sessionStorage.removeItem("flag"); }
     });
 
     // 세션 정보 불러오기
@@ -103,13 +99,15 @@ $(document).ready(() => {
         $(document).on("change", "#course-select", handleCourseSelectChange);
     }
 
+    console.log("courseConfig", courseConfig);
+    console.log("learnerConfig", learnerConfig);
+
     // 페이지 로드시, 라디오버튼, 셀렉트박스 및 검색창 유지
     $('#courseSelector').val(courseTopConfig.coId);
     let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
     $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
     $('#is-in-progress').val(courseConfig.coIsInProgress);
-    //console.log(learnerConfig.leCourseId);
-    $('#course-select').val(learnerConfig.leCourseId);
+    // $('#course-select').val(learnerConfig.leCourseId);
     $('#search-input').val(learnerConfig.keyword);
 
     // 이벤트 핸들러 (공통)
@@ -373,27 +371,27 @@ async function fetchAndLoadCourseSelect() {
         {...baseConfig, ...courseConfig});
     await LoadCourseSelect(coursesWithPaging);
 }
-function LoadCourseSelect(coursesWithPaging) {
+async function LoadCourseSelect(coursesWithPaging) {
     let courses = coursesWithPaging?.records || [];
     if (!Array.isArray(courses)) {
         courses = [];
     }
-    LoadCourseSelectOption("#course-select", courses);
+    await LoadCourseSelectOption("#course-select", courses);
 }
-function LoadCourseSelectOption(selector, records) {
-    const $select = $(selector).empty().append("<option value=\"\">전체</option>");
+async function LoadCourseSelectOption(selector, records) {
+    const $select = $(selector).empty().append(`<option value="">전체</option>`);
     ;
     records.forEach(record => {
         const $option = $("<option>")
         .val(record.courseWithAssignedInfo.coId)
         .text(record.courseWithAssignedInfo.coName);
         $select.append($option);
-        if (record.courseWithAssignedInfo.coId == courseConfig.coId) {
+        if (record.courseWithAssignedInfo.coId == learnerConfig.leCourseId) {
             $option.prop("selected", true);
         }
     });
     // 초기 또는 전체로 선택시, 첫 번째(전체) 옵션
-    if (courseConfig.coId == null) {
+    if (learnerConfig.leCourseId == null) {
         $select.find("option:first").prop("selected", true);
     }
 }
@@ -429,6 +427,15 @@ function handleIsInProgressSelectChange() {
     learnerConfig.coIsInProgress =
         $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
 
+    // 나머지 초기화
+    learnerConfig.leCourseId = null;
+    learnerConfig.leId     = null;
+    learnerConfig.radioFilter = null;
+    let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
+    $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
+
+
+
     // course-select 옵션 로드 후 변경
     courseConfig.coIsInProgress =
         $("#is-in-progress").val() === "" ? null : $("#is-in-progress").val();
@@ -436,6 +443,8 @@ function handleIsInProgressSelectChange() {
 
     setStatus();
     fetchAndDisplayLearners();
+    console.log("courseConfig", courseConfig);
+    console.log("learnerConfig", learnerConfig);
 }
 function handleCourseSelectChange() {
     // 기존 검색과 페이징 초기화
@@ -443,13 +452,23 @@ function handleCourseSelectChange() {
     $("#search-input").val("");
     learnerConfig.pageNo     = 1;
     learnerConfig.pageSize   = 8;
+
+    // leCourseId 옵션 변경
     learnerConfig.leCourseId = $(this).val();
+    // 나머지 초기화
+    // learnerConfig.coIsInProgress = null; 그대로 유지?
+    learnerConfig.leId     = null;
+    learnerConfig.radioFilter = null;
+    let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
+    $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
 
     // 셀렉트박스 옵션 변경
     /*courseConfig.coId =
         $("#course-select").val() === "" ? null : $("#course-select").val();*/
     setStatus();
     fetchAndDisplayLearners();
+    console.log("courseConfig", courseConfig);
+    console.log("learnerConfig", learnerConfig);
 }
 function handleSearchButtonClick() {
 
@@ -464,16 +483,25 @@ function handleSearchButtonClick() {
         $("#is-in-progress").val("");
         learnerConfig.leCourseId = null;
         $("#course-select").val("");
+        learnerConfig.leId     = null;
+        learnerConfig.radioFilter = null;
+        let radioFilterStatus = learnerConfig.radioFilter == null ? '' : learnerConfig.radioFilter;
+        $(`input[name="learner-filter"][value="${radioFilterStatus}"]`).prop('checked', true);
+
     } else if (loginUserType == "INSTRUCTOR") {
         // 강사의 경우 해당 과정에서 검색 유지
     }
     setStatus();
     fetchAndDisplayLearners();
+    console.log("courseConfig", courseConfig);
+    console.log("learnerConfig", learnerConfig);
 }
 function handlePageButtonClick() {
     learnerConfig.pageNo = $(this).data("page");
 
     setStatus();
     fetchAndDisplayLearners();
+    console.log("courseConfig", courseConfig);
+    console.log("learnerConfig", learnerConfig);
 }
 
