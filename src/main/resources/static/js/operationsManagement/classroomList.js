@@ -91,7 +91,7 @@ function displayOnlyTr(classrooms, classroomId) {
                         </span>
                         <span class="text">저장</span>
                       </button>
-                      ${classroom.courseName == null ? `
+                      ${classroom.courseName == '' ? `
                         <button class="btn btn-danger btn-icon-split btn-sm remove-button" data-id="${classroom.id}">
                         <span class="icon text-white-50">
                           <i class="fa fa-wrench"></i>
@@ -137,7 +137,6 @@ async function handleAddBtnClick() {
     if(result == true){
         displayTableView();
     } else {
-        return;
     }
 }
 
@@ -251,6 +250,7 @@ async function apiPostRequestAboutClassroom(endpoint, additionalParams) {
         const response = await axios.post(endpoint, {
             baseReqDTO: baseConfig,
             classroomReqDTO: additionalParams });
+        console.log(response);
         Swal.fire({
                       icon: "success",
                       title: "추가완료!",
@@ -398,14 +398,14 @@ function displayClassrooms(classrooms) {
               <button class="btn btn-primary btn-icon-split btn-sm save-button" style="display:none" data-id="${classroom.id}">
               <span class="icon text-white-50">
               <i class="fas fa-upload"></i>
-          </span>
+                </span>
                 <span class="text">저장</span>
               </button>
-              ${classroom.courseName == null ? `
+              ${classroom.courseName == '' ? `
                 <button class="btn btn-danger btn-icon-split btn-sm remove-button" data-id="${classroom.id}">
-                <span class="icon text-white-50">
-              <i class="fas fa-wrench"></i>
-          </span>
+                    <span class="icon text-white-50">
+                      <i class="fas fa-wrench"></i>
+                    </span>
                   <span class="text">삭제</span>
                 </button>
                 ` : ''}
