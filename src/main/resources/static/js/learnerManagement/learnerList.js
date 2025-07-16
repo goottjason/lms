@@ -263,6 +263,7 @@ function displayCardList(learnersWithPaging) {
             let rowHtml = ``;
             if (learner.leId == null) {
                 let user   = learner.learnerUser;
+                let userLoginId = user.userLoginId ? user.userLoginId : '미가입';
                 rowHtml += `
                     <div class="col mb-4" style="min-height: 500px">
                         <div class="card text-center card-null"
@@ -271,7 +272,7 @@ function displayCardList(learnersWithPaging) {
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                             <div class="card-body">
-                                <h5 class="card-title mb-1">${user.userFullname} (${user.userLoginId})</h5>
+                                <h5 class="card-title mb-1">${user.userFullname} (${userLoginId})</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
                                 <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
                                 <p class="card-text" style="min-height: 48px;">해당 과정에 배정 요망</p>
@@ -289,6 +290,7 @@ function displayCardList(learnersWithPaging) {
                 `;
             } else {
                 let user   = learner.learnerUser;
+                let userLoginId = user.userLoginId ? user.userLoginId : '미가입';
                 let course = learner.learnerCourse;
                 let part   = learner.partOverview;
                 const encodedCoName = encodeURIComponent(course.coName);
@@ -307,7 +309,7 @@ function displayCardList(learnersWithPaging) {
                                  class="rounded-circle mt-3 mx-auto d-block" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                             <div class="card-body">
-                                <h5 class="card-title mb-1">${user.userFullname} (${user.userLoginId})</h5>
+                                <h5 class="card-title mb-1">${user.userFullname} (${userLoginId})</h5>
                                 <p class="card-text mb-1">${user.userMobile || "-"}</p>
                                 <p class="card-text" style="min-height: 48px;">${user.userEmail}</p>
                                 <p class="card-text" style="min-height: 48px;">${course.coName || "-"}</p>

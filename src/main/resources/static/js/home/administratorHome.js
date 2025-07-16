@@ -330,6 +330,7 @@ function displayLearnerCard() {
     // 진행중이 과정이 없는 상태
     if(courses.length == 0) {
         $('#learner-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
+        $('#part-email-button').attr('disabled', 'disabled');
         return;
     }
 
@@ -494,6 +495,7 @@ function displayLearnerCard() {
         $('#learner-box').html(html);
     } else {
         $('#learner-box').html(`<div class="text-center">데이터가 없습니다.</div>`);
+        $('#part-email-button').attr('disabled', 'disabled');
     }
 
     $('#learner-card-count').text(`(${cards.length}명)`);

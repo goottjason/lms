@@ -21,6 +21,8 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -109,12 +111,18 @@ public class OperationsManagementServiceImpl implements OperationsManagementServ
 
   @Override
   public Boolean updateClassroom(IntegratedReqDTO integratedReqDTO) {
-    int result = operationsManagementMapper.updateClassroom(
-        integratedReqDTO.getBaseReqDTO(),
-        integratedReqDTO.getClassroomReqDTO());
-    if (result == 1) {
-      return true;
-    } else {
+
+
+    try {
+      int result = operationsManagementMapper.updateClassroom(
+          integratedReqDTO.getBaseReqDTO(),
+          integratedReqDTO.getClassroomReqDTO());
+      return (result > 0);
+    } catch (DuplicateKeyException e) {
+      log.warn("중복된 강의실 이름입니다: {}", e.getMessage());
+      return false;
+    } catch (DataAccessException e) {
+      log.error("DB 접근 중 오류 발생: {}", e.getMessage(), e);
       return false;
     }
   }
@@ -134,13 +142,20 @@ public class OperationsManagementServiceImpl implements OperationsManagementServ
   @Override
   public Boolean addClassroom(IntegratedReqDTO integratedReqDTO) {
     String loginUserType = integratedReqDTO.getBaseReqDTO().getLoginUserType();
-    int result = 0;
     if (loginUserType != null
         && "ADMINISTRATOR".equals(loginUserType)) {
-      result = operationsManagementMapper.insertClassroom(
-          integratedReqDTO.getBaseReqDTO(),
-          integratedReqDTO.getClassroomReqDTO());
-      return true;
+      try {
+        int result = operationsManagementMapper.insertClassroom(
+            integratedReqDTO.getBaseReqDTO(),
+            integratedReqDTO.getClassroomReqDTO());
+        return (result > 0);
+      } catch (DuplicateKeyException e) {
+        log.warn("중복된 강의실 이름입니다: {}", e.getMessage());
+        return false;
+      } catch (DataAccessException e) {
+        log.error("DB 접근 중 오류 발생: {}", e.getMessage(), e);
+        return false;
+      }
     }
     return false;
   }

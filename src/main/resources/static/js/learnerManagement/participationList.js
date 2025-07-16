@@ -547,7 +547,9 @@ async function displayTableList(learnersWithPaging) {
     }
 }
 function displayPagination(data) {
-
+    if(data.totalRecords == 0) {
+        return;
+    }
     let output = `<ul class="pagination justify-content-center" style="margin:20px 0">`;
 
     // 이전 버튼
@@ -687,20 +689,21 @@ function handleNextBtnClick() {
 
 function adjustToMonday(date) {
     const day = date.getDay();
-    // 일요일(0)일 경우 월요일로 이동
+    // 일요일(0)일 경우 다음주 월요일로 이동
     if (day === 0) {
         date.setDate(date.getDate() + 1);
     }
-    // 토요일(6)일 경우 월요일로 이동
+    // 토요일(6)일 경우 다음주 월요일로 이동
     else if (day === 6) {
         date.setDate(date.getDate() + 2);
     }
-    // 그 외 요일: 월요일로 이동
+    // 그 외 요일: 월요일로 이동 [수요일(3)이면, (3-1)을 앞당김]
     else {
         date.setDate(date.getDate() - (day - 1));
     }
     return date;
 }
+
 // 날짜 출력
 function updateDateDisplay() {
     // 주말이면 월요일로 조정
