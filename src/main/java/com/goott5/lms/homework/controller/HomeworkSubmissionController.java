@@ -329,6 +329,13 @@ public class HomeworkSubmissionController {
       return "homework/submissionRegister";
     }
 
+    // 해당 과제의 제출기한이 아직 시작되지 않았을 때
+    //true 이면 막기(start_date가 오늘을 지나야 함)
+    if(homeworkService.isNotStart(homeworkId)) {
+      model.addAttribute("noAuth", "해당 과제의 제출기한 이전입니다.");
+      return "homework/submissionRegister";
+    }
+
     // 제출 기한이 지났을 때
     HomeworkDTO homeworkDTO = homeworkService.selectHomeworkDTOById(homeworkId);
     String courseName = "";

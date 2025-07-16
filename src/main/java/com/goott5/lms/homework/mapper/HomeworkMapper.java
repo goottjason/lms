@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool;
 
 @Mapper
 public interface HomeworkMapper {
@@ -234,6 +235,12 @@ public interface HomeworkMapper {
       + "from homework h \n"
       + "where h.id = #{homeworkId})")
   Boolean isInProgressByHomeworkId(int homeworkId);
+
+  //(유효성 추가) 제출하려하는 homework의 제출기한이 아직 시작되지 않았을 때 등록 막기 (boolean)
+  @Select("select start_date >= current_timestamp()\n"
+      + "from homework\n"
+      + "where id = #{homeworkId}")
+  Boolean isNotStart(int homeworkId);
 
   //--------테스트용 + insertSubmission------------------------------------------------------------------------
 

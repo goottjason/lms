@@ -130,6 +130,9 @@ public interface HomeworkService {
   //(기능 추가) 해당 homework_submission의 homeworkId가 속한 course_id가 현재 진행 중인지 확인
   Boolean isInProgressByHomeworkId(int homeworkId);
 
+  //(유효성 추가) 제출하려하는 homework의 제출기한이 아직 시작되지 않았을 때 등록 막기 (boolean)
+  Boolean isNotStart(int homeworkId);
+
   //---------과제 평가 등록----------------------------
 
   //homeworkEval insert
