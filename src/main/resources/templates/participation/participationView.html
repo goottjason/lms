@@ -696,10 +696,10 @@
     </th:block>
 
     <th:block th:if="${currentCourse != null and currentCourse.endDate != null and #temporals.createNow().toLocalDate().isBefore(currentCourse.endDate.plusDays(1))}">
-        <button id="vacationBtn" class="btn-attendance btn-vacation" data-toggle="modal" data-target="#vacationModal">
-            <i class="fas fa-calendar-alt"></i> 휴가신청
-        </button>
-    </th:block>
+    <button id="vacationBtn" class="btn-attendance btn-vacation" onclick="openVacationModal()">
+        <i class="fas fa-calendar-alt"></i> 휴가신청
+    </button>
+</th:block>
 
 </div>
 
@@ -1659,7 +1659,8 @@
                             headerClass = 'bg-warning';
                             break;
                         case 'NOT_ALLOWED':
-                            alert('지각자는 수업 종료 시간 전까지 퇴실할 수 없습니다.');
+                            message = '지각자는 수업 종료 시간 전까지 퇴실할 수 없습니다.';
+                            headerClass = 'bg-danger';
                             return;
                         default:
                             message = '퇴실하시겠습니까?';
@@ -1728,7 +1729,7 @@
                 // console.log('퇴실 처리 결과:', data);
 
                 if (data.success) {
-                    alert('퇴실 처리가 완료되었습니다.');
+                    // alert('퇴실 처리가 완료되었습니다.');
                     location.reload();
                 } else {
                     alert('퇴실 처리에 실패했습니다: ' + data.message);
@@ -1745,36 +1746,17 @@
          * 휴가 신청 모달 열기 (안전한 DOM 접근)
          */
         function openVacationModal() {
-            // console.log('휴가 신청 모달 열기');
 
-            // 에러 메시지 초기화
             clearVacationErrors();
 
-            // ✅ 안전성 확인과 함께 폼 초기화
             const vacationDateElement = document.getElementById('vacationDate');
             const vacationReasonElement = document.getElementById('vacationReason');
 
-            if (vacationDateElement) {
-                vacationDateElement.value = '';
-            } else {
-                console.error('vacationDate 요소를 찾을 수 없습니다.');
-                alert('휴가 신청 폼을 불러올 수 없습니다. 페이지를 새로고침해주세요.');
-                return; // 요소가 없으면 함수 종료
-            }
+            if (vacationDateElement) vacationDateElement.value = '';
+            if (vacationReasonElement) vacationReasonElement.value = '';
 
-            if (vacationReasonElement) {
-                vacationReasonElement.value = '';
-            } else {
-                console.error('vacationReason 요소를 찾을 수 없습니다.');
-                alert('휴가 신청 폼을 불러올 수 없습니다. 페이지를 새로고침해주세요.');
-                return; // 요소가 없으면 함수 종료
-            }
-
-            // 휴가 신청 가능 날짜 조회
+            // 휴가 신청 가능 날짜를 불러온 후에 모달을 열도록 수정
             loadAvailableVacationDates();
-
-            // 모달 표시
-            $('#vacationModal').modal('show');
         }
 
         /**
@@ -1789,23 +1771,33 @@
          * 휴가 신청 가능 날짜 조회 및 설정
          */
         function loadAvailableVacationDates() {
-            const currentLearnerEnrollmentId = window.selectedLearnerEnrollmentId || learnerEnrollmentId;
+            const learnerEnrollmentId = window.selectedLearnerEnrollmentId || /*[[${learnerEnrollmentId}]]*/ null;
 
-            if (!currentLearnerEnrollmentId) {
-                console.warn('learnerEnrollmentId가 없습니다.');
+            if (!learnerEnrollmentId) {
+                alert('휴가 신청을 위한 수강 정보를 찾을 수 없습니다.');
                 return;
             }
 
-            fetch(`/participation/available-vacation-dates/${currentLearnerEnrollmentId}`)
+            fetch(`/participation/available-vacation-dates/${learnerEnrollmentId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    availableVacationDates = data.availableDates;
-                    // console.log('휴가 신청 가능 날짜:', availableVacationDates);
-                    setupDateRestrictions();
+                    // [핵심] 서버에서 받은 날짜 목록을 먼저 확인
+                    if (data.availableDates && data.availableDates.length > 0) {
+                        // 신청 가능한 날짜가 있을 경우
+                        availableVacationDates = data.availableDates;
+                        setupDateRestrictions(); // 날짜 선택기 제한 설정
+                        $('#vacationModal').modal('show'); // 모달 열기
+                    } else {
+                        // 신청 가능한 날짜가 없을 경우, 모달을 열지 않고 바로 알림 표시
+                        Swal.fire({
+                                      icon: 'info',
+                                      title: '신청 불가',
+                                      text: '현재 휴가 신청 가능한 날짜가 없습니다. (주말, 휴강일, 이미 출결 처리된 날짜 등 제외)',
+                                  });
+                    }
                 } else {
-                    console.error('휴가 신청 가능 날짜 조회 실패:', data.message);
-                    alert('휴가 신청 가능 날짜를 조회할 수 없습니다.');
+                    alert('휴가 신청 가능 날짜를 조회할 수 없습니다: ' + data.message);
                 }
             })
             .catch(error => {
@@ -1819,32 +1811,19 @@
          */
         function setupDateRestrictions() {
             const dateInput = document.getElementById('vacationDate');
-
-            if (availableVacationDates.length === 0) {
-                // 신청 가능한 날짜가 없으면 비활성화
-                dateInput.disabled = true;
-                alert('현재 휴가 신청 가능한 날짜가 없습니다.');
-                return;
-            }
-
             dateInput.disabled = false;
 
             // 최소/최대 날짜 설정
             const minDate = availableVacationDates[0];
             const maxDate = availableVacationDates[availableVacationDates.length - 1];
-
             dateInput.min = minDate;
             dateInput.max = maxDate;
 
-            // ✅ 날짜 선택 이벤트 리스너 추가 (유효성 검사)
-            dateInput.addEventListener('change', function() {
-                validateVacationDate();
-            });
-
-            // ✅ 입력 이벤트 리스너 추가 (직접 입력 방지)
-            dateInput.addEventListener('input', function() {
-                validateVacationDate();
-            });
+            // 이벤트 리스너 추가 (기존 리스너 중복 방지를 위해 먼저 제거)
+            dateInput.removeEventListener('change', validateVacationDate);
+            dateInput.removeEventListener('input', validateVacationDate);
+            dateInput.addEventListener('change', validateVacationDate);
+            dateInput.addEventListener('input', validateVacationDate);
         }
 
         /**
@@ -1982,7 +1961,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('휴가가 삭제되었습니다.');
+                    // alert('휴가가 삭제되었습니다.');
 
                     // 모달 닫기
                     if (typeof $ !== 'undefined') {
