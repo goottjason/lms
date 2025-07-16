@@ -44,6 +44,9 @@ $(document).ready(async function () {
 
   writerId = detailRes.data.data.loginId;
 
+  // console.log(writerId);
+  // console.log(userId);
+
   if (userId !== writerId) {
     $qnaModifyBtn.remove();
     $qnaDeleteBtn.remove();
