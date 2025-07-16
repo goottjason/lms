@@ -32,7 +32,7 @@ public class AttendanceScheduler {
    * course_schedule 테이블 기반으로 수업이 있는 날에만 실행
    * 주말/공휴일/휴강일은 course_schedule에 데이터가 없으므로 아무것도 하지 않음
    */
-  @Scheduled(cron = "0 25 10 * * MON-FRI", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 0 6 * * MON-FRI", zone = "Asia/Seoul")
   public void createDailyAttendanceRecords() {
     LocalDate today = LocalDate.now();
     log.info("===== 출결 스케줄러 실행 시작: {} =====", today);
