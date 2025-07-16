@@ -100,6 +100,7 @@ function renderHomeData(data){
     $("#number-of-learner").text(data.course.numberOfLearner + "명");
     $("#lesson-time").text(data.course.lessonStartTime + " ~ " + data.course.lessonEndTime);
     renderProgress(data);
+    $("#classroom").text(data.classroom);
     $("#absence-learner-count").text(data.absenceLearnerCount + "명");
     $("#in-study-learner-count").text(data.inStudyLearnerCount + "명");
     $("#not-submit-test-learner-count").text(data.notSubmitTestLearnerCount + "명");
