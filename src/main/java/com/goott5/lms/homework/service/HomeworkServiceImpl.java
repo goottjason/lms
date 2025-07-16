@@ -460,6 +460,13 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public Boolean isNotStart(int homeworkId) {
+    //start_date가 오늘보다 작거나 같은 식이
+    //true 이면 막기(start_date가 오늘을 지나야 함)
+    return homeworkMapper.isNotStart(homeworkId);
+  }
+
+  @Override
   public int insertEval(HomeworkEvalDTO homeworkEvalDTO) {
       int idForHomework = -1;
       if (homeworkMapper.insertEval(homeworkEvalDTO) == 1) {

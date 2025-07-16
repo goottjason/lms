@@ -531,4 +531,20 @@ class HomeworkTest {
     log.info("selectHomeworkSubmissionIdByHomework:{}", result);
   }
 
+  @Test
+  public void isNotStart(){
+
+    int homeworkId = 10;
+    //start_date가 오늘보다 작거나 같은 식이
+    //true 이면 막기(start_date가 오늘을 지나야 함)
+    Boolean isNotStart = homeworkMapper.isNotStart(homeworkId);
+
+    if(isNotStart == true){
+      log.info("isNotStart true={}",isNotStart);
+    }else {
+      log.info("isNotStart false={}",isNotStart);
+    }
+
+  }
+
 }
