@@ -126,23 +126,31 @@ public class LearnerManagementServiceImpl implements LearnerManagementService {
           loginUserType,
           learner.getLeId()
         );
+
+        // 출결 상태별 개수를 저장할 HashMap 생성 (key: 상태 문자열, value: 개수)
         HashMap<String, Integer> participationCountMap = new HashMap<String, Integer>();
+
+        // participationRespDTOS 리스트를 순회하며 상태별로 개수를 집계
         for (ParticipationRespDTO participationRespDTO : participationRespDTOS) {
           String status = participationRespDTO.getPStatus();
-          participationCountMap.put(status, participationCountMap.getOrDefault(status, 0) + 1);
+          participationCountMap.put(
+              status, participationCountMap.getOrDefault(status, 0) + 1);
         }
 
-
+        // 각 상태별 개수를 Map에서 가져오고, 없으면 0으로 처리
         int attendance = participationCountMap.getOrDefault("ATTENDANCE", 0);
         int absence = participationCountMap.getOrDefault("ABSENCE", 0);
         int vacation = participationCountMap.getOrDefault("VACATION", 0);
         int late = participationCountMap.getOrDefault("LATE", 0);
         int leaveEarly = participationCountMap.getOrDefault("LEAVE_EARLY", 0);
+
+        // 출결 점수 계산 (출석/휴가: 1점, 지각/조퇴: 0.5점)
         double x = (attendance * 1.0) + (vacation * 1.0) + (late * 0.5) + (leaveEarly * 0.5);
         int y = attendance + absence + vacation + late + leaveEarly;
+
         Double attendanceRate = 0.0;
         if (y > 0) {
-          attendanceRate = Math.round((x/y) * 100 * 100.0) / 100.0;
+          attendanceRate = Math.round((x/y) * 100 * 100.0) / 100.0; // 83.45
         }
 
         PageParticipationRespDTO<ParticipationRespDTO> pageParticipationRespDTO

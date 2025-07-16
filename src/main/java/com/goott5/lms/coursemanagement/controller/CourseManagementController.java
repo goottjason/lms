@@ -260,9 +260,10 @@ public class CourseManagementController {
       // 추가 성공 시 200 코드, 성공 메시지 반환
       return ApiResponse.okResponse(200, "등록 성공", null);
     } else {
-      // 추가 성공 시 409 코드, 성공 메시지 반환
+      // 추가 실패 시 422 코드, 실패 메시지 반환
       return ApiResponse.failResponse(
-          409, "등록된 인원을 초과할 수 없습니다.", null, HttpStatus.CONFLICT
+          422, "등록된 인원을 초과할 수 없습니다.",
+          null, HttpStatus.UNPROCESSABLE_ENTITY
       );
     }
   }
