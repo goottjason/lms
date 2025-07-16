@@ -291,7 +291,7 @@ public class HomeworkController {
     // 파일이 있을 경우, 파일 조회
     List<FileSelectDTO> fileDTOList = utilService.selectFileList("homework", homeworkId);
     if (fileDTOList != null) {
-      log.info("fileDTOList:{}", fileDTOList);
+//      log.info("fileDTOList:{}", fileDTOList);
       model.addAttribute("fileDTOList", fileDTOList);
     }
 
@@ -305,9 +305,9 @@ public class HomeworkController {
     boolean result = homeworkService.updateReadCount(readCountLog);
 
     if (!result) {
-      log.info("조회수 증가에 오류가 있습니다.");
+//      log.info("조회수 증가에 오류가 있습니다.");
     } else {
-      log.info("조회수 업데이트에 성공했습니다.");
+//      log.info("조회수 업데이트에 성공했습니다.");
     }
 
     // 지난 과정에 등록하려면 막기
