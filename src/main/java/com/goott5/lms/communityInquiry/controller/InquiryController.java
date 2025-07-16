@@ -64,6 +64,7 @@ public class InquiryController {
     }
 
     int userId = ((UserVO) request.getSession().getAttribute("loginUser")).getId();
+    String userType = ((UserVO) request.getSession().getAttribute("loginUser")).getType();
     inquiryRequestParam.setUserId(userId);
 
     InquiryVO inquiryVO = inquiryService.getInquiryDetail(inquiryRequestParam);
@@ -71,6 +72,8 @@ public class InquiryController {
     if (inquiryVO == null) {
       redirectAttributes.addFlashAttribute("message", "유효하지 않은 접근입니다.");
       return "redirect:/inquiryList";
+    } else if (!userType.equals("ADMINISTRATOR") && inquiryVO.getWriter() != userId) {
+      return "redirect:/user/invalidAccess";
     } else {
       log.info(inquiryVO.toString());
       model.addAttribute("inquiryDetail", inquiryVO);
