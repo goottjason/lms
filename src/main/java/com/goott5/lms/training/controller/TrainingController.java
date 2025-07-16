@@ -35,6 +35,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -67,12 +68,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/training")
 public class TrainingController {
 
+  private static final ZoneId ZONE_SEOUL = ZoneId.of("Asia/Seoul"); //localDate or localDateTome에 넣기
   private final TrainingService trainingService;
   private final CreatePOI createPOI;
-  private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(),
+  private static final LocalDateTime IS_REGISTER_TODAY = LocalDateTime.of(LocalDate.now(ZONE_SEOUL),
       LocalTime.of(18, 30));
   private final S3Uploader s3Uploader;
   private final UtilService utilService;
+  //zoneId 설정
 
 //  private final HomeworkService homeworkService; //공통기능용
 
@@ -362,6 +365,8 @@ public class TrainingController {
       return "redirect:/training/trainingList";
     }
 
+
+
     String decodeRegisterDate = "";
     try {
 //      log.info("registerDate: {}", URLDecoder.decode(registerDate, "UTF-8")); //받아옴
@@ -378,22 +383,22 @@ public class TrainingController {
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     LocalDate thisRegisterDate = LocalDate.parse(decodeRegisterDate, dtf);
 
-    if (thisRegisterDate.isEqual(LocalDate.now())) {
-      if (LocalDateTime.now().isBefore(IS_REGISTER_TODAY)) {
+    if (thisRegisterDate.isEqual(LocalDate.now(ZONE_SEOUL))) {
+      if (LocalDateTime.now(ZONE_SEOUL).isBefore(IS_REGISTER_TODAY)) {
         redirectAttributes.addFlashAttribute("noGet", "금일 훈련일지 등록은 18시 30분 이후에 가능합니다.");
         return "redirect:/training/trainingList";
       }
     }
 
     // 훈련 일지는 금일 이후는 안됨!
-    if (thisRegisterDate.isAfter(LocalDate.now())) {
+    if (thisRegisterDate.isAfter(LocalDate.now(ZONE_SEOUL))) {
       redirectAttributes.addFlashAttribute("noGet", "훈련 일지는 미리 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
 
     // 공휴일,휴강 제외
     if (trainingService.isHoliday(decodeRegisterDate)) {
-      redirectAttributes.addFlashAttribute("noGet", "공휴일은 등록할 수 없습니다.");
+      redirectAttributes.addFlashAttribute("noGet", "공휴일 및 긴급휴일은 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
 

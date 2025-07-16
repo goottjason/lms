@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import jakarta.validation.Valid;
@@ -40,6 +41,7 @@ public class HomeworkController {
   private final HomeworkService homeworkService;
   private final S3Uploader s3Uploader;
   private final UtilService utilService;
+  private static final ZoneId ZONE_SEOUL = ZoneId.of("Asia/Seoul"); //localDate or localDateTome에 넣기
 
   @Value("${cloud.aws.s3.bucketName}")
   private String bucket;
@@ -401,7 +403,7 @@ public class HomeworkController {
     //1. 과제 시작 날짜가 now 이상
     LocalDateTime startDate = homeworkDTO.getStartDate();
     if (startDate != null) {
-      if (startDate.isBefore(LocalDateTime.now())) {
+      if (startDate.isBefore(LocalDateTime.now(ZONE_SEOUL))) {
         bindingResult.addError(new FieldError("homeworkDTO", "startDate", "과제 시작일은 오늘 이후여야 합니다."));
       }
     }
