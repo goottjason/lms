@@ -191,6 +191,11 @@ public class HomeworkServiceImpl implements HomeworkService {
   }
 
   @Override
+  public int isLearnerInCourse(int learnerId,int homeworkId) {
+    return homeworkMapper.isLearnerInCourse(learnerId, homeworkId);
+  }
+
+  @Override
   public Map<HomeworkSubmissionDTO, HomeworkEvalDTO> selectSubmissionEval(int submissionId) {
 
     Map<HomeworkSubmissionDTO, HomeworkEvalDTO> resultMap = new HashMap<>();

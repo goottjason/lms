@@ -329,8 +329,8 @@ public class TrainingServiceImpl implements TrainingService {
   }
 
   @Override
-  public boolean isHoliday(String trainingDate) {
-    return trainingMapper.isHoliday(trainingDate);
+  public boolean isHoliday(String trainingDate,int courseId) {
+    return trainingMapper.isHoliday(trainingDate,courseId);
   }
 
   @Override

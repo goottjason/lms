@@ -209,13 +209,23 @@ public class TrainingController {
   @GetMapping("/trainingDetail")
   public String trainingDetail(@RequestParam(required = false) Integer trainingId,
       RequestParticipationDTO requestParticipationDTO,
-      SelectTrainingDetailDTO selectTrainingDetailDTO, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+      SelectTrainingDetailDTO selectTrainingDetailDTO, Model model, HttpSession session,
+      RedirectAttributes redirectAttributes) {
 
     UserVO loginUser = (UserVO) session.getAttribute("loginUser");
     model.addAttribute("loginUser", loginUser);
     if (loginUser != null) {
 
       model.addAttribute("loginUserType", loginUser.getType());
+    }
+
+    //loginUser가 해당 과정의 강사가 아니라면 막기(관리자는 짜피 수정과 삭제에서 막음)
+    if (loginUser != null && "INSTRUCTOR".equals(loginUser.getType())) {
+      boolean isInstructorTraining = trainingService.isMyTrainingLog(trainingId, loginUser.getId());
+      if(!isInstructorTraining){
+        redirectAttributes.addFlashAttribute("noGet", "당신에게 해당되는 훈련일지가 아닙니다.");
+        return "redirect:/training/trainingList";
+      }
     }
 
 //    log.info("trainingId: {}, requestParticipationDTO: {}, selectTrainingDetailDTO: {}", trainingId,
@@ -347,9 +357,9 @@ public class TrainingController {
 
     // 훈련일지 파일 생성
     try {
-      createPOI.isExcel(response,safeDate + finalSelectTraining.getName(), realFinalMap);
+      createPOI.isExcel(response, safeDate + finalSelectTraining.getName(), realFinalMap);
     } catch (Exception e) {
-      throw new RuntimeException("엑셀 변환 실패",e);
+      throw new RuntimeException("엑셀 변환 실패", e);
     }
   }
 
@@ -364,8 +374,6 @@ public class TrainingController {
       redirectAttributes.addFlashAttribute("noGet", "등록할 날짜가 존재하지 않습니다.");
       return "redirect:/training/trainingList";
     }
-
-
 
     String decodeRegisterDate = "";
     try {
@@ -396,15 +404,11 @@ public class TrainingController {
       return "redirect:/training/trainingList";
     }
 
-    // 공휴일,휴강 제외
-    if (trainingService.isHoliday(decodeRegisterDate)) {
-      redirectAttributes.addFlashAttribute("noGet", "공휴일 및 긴급휴일은 등록할 수 없습니다.");
-      return "redirect:/training/trainingList";
-    }
+
 
     // 주말 제외
     DayOfWeek dayOfWeek = thisRegisterDate.getDayOfWeek();
-    if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+    if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
       redirectAttributes.addFlashAttribute("noGet", "주말은 등록할 수 없습니다.");
       return "redirect:/training/trainingList";
     }
@@ -414,7 +418,8 @@ public class TrainingController {
     SelectAllWithoutActualDTO selectAllWithoutActualDTO =
         null;
     try {
-      selectAllWithoutActualDTO = trainingService.selectAllWithoutActual(userId, decodeRegisterDate, request,
+      selectAllWithoutActualDTO = trainingService.selectAllWithoutActual(userId, decodeRegisterDate,
+          request,
           selectTrainingDetailDTO);
     } catch (Exception e) {
       redirectAttributes.addFlashAttribute("noGet", "현재 진행 중인 과정이 조회되지 않습니다.");
@@ -423,8 +428,17 @@ public class TrainingController {
 
 //    log.info("selectAllWithoutActualDTO: {}", selectAllWithoutActualDTO);
 
+
+
     //해당 일자의 훈련일지가 있으면, 등록 막기
     int courseId = selectAllWithoutActualDTO.getSelectCourseDTO().getId(); //현재 진행중인 해당 강사의 과정 dto
+
+    // 공휴일,휴강 제외
+//    log.info("courseId:{}",courseId); //null
+    if (trainingService.isHoliday(decodeRegisterDate, courseId)) {
+      redirectAttributes.addFlashAttribute("noGet", "공휴일 및 긴급휴일은 등록할 수 없습니다.");
+      return "redirect:/training/trainingList";
+    }
 
     // 훈련일지는 해당 과정의 시작일과 종료일 사이에만(해당 안되면 막기)
     boolean isRegisterDate = trainingService.isRegisterDate(registerDate, courseId);

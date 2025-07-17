@@ -59,6 +59,8 @@ public interface HomeworkService {
   // int id-> loginId 출력
   String selectLoginId(int id);
 
+  //(유효성 추가) //해당 과제의 과정에 속한 학생인지 확인
+  int isLearnerInCourse(int learnerId,int homeworkId);
 
   //------------등록--------------------
 

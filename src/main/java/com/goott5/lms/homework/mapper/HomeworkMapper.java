@@ -225,7 +225,7 @@ public interface HomeworkMapper {
   @Select("select id, hs_id, is_pass, content, read_count, instructor_id, created_at, updated_at, deleted_at from homework_eval where hs_id = #{hsId}")
   HomeworkEvalDTO selectEvalById(int hsId);
 
-  //submissionId로 해당 homeworkDTO조회
+  //submissionId로 해당 homeworkDTO 조회
   @Select("select id, title, start_date, end_date, content, course_id, read_count, instructor_id , created_at, updated_at, deleted_at "
       + "from homework where id = (select homework_id from homework_submission where id = #{submissionId})")
   HomeworkDTO selectHomeworkDTOBySubmissionId(int submissionId);
