@@ -63,7 +63,7 @@ public class AttendanceScheduler {
 
       log.info("전체 출결 기록 생성 완료: {}개 과정, {}건의 출결 기록", courseIds.size(), totalCreated);
 
-      // schedulerStatusService.updateLastExecutionForPart();
+      schedulerStatusService.updateLastExecutionForPart();
 
     } catch (Exception e) {
       log.error("출결 스케줄러 실행 중 오류 발생: ", e);
