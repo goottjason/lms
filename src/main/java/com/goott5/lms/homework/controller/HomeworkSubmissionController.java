@@ -241,7 +241,7 @@ public class HomeworkSubmissionController {
       }
     }
 
-    redirectAttributes.addFlashAttribute("noSubmissionDetail", "해당 제출물이 존재하지 않습니다.");
+    redirectAttributes.addFlashAttribute("noSubmissionDetail", "권한이 없습니다.");
     return "redirect:/homework/alertRedirect";
   }
 

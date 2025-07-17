@@ -275,7 +275,20 @@ public class HomeworkController {
       model.addAttribute("courseName", courseName);
       // 작성자 loginId 전달
       instructorLoginId = homeworkService.selectLoginId(homeworkDTO.getInstructorId());
+
       if (instructorLoginId != null) {
+
+        if("INSTRUCTOR".equals(user.getType()) && !instructorLoginId.equals(user.getFullName())){
+          // 강사로 로그인 시, 로그인한 유저가 일치하지 않으면 막기
+//          log.info("loginId:{}", user.getLoginId());
+//          log.info("instructorLoginId:{}", instructorLoginId);
+          redirectAttributes.addFlashAttribute("homeworkIdNull", "해당 과제의 작성자가 아닙니다.");
+          return "redirect:/homework/alertRedirect";
+        }else if("LEARNER".equals(user.getType()) && homeworkService.isLearnerInCourse(user.getId(), homeworkId) != 1){
+          // 학생으로 로그인 시, 로그인한 유저가 해당 과제의 과정에 속하지 않으면 막기
+          redirectAttributes.addFlashAttribute("homeworkIdNull", "해당 과정의 대상자가 아닙니다.");
+          return "redirect:/homework/alertRedirect";
+        }
         model.addAttribute("instructorLoginId", instructorLoginId);
       }
     } else {

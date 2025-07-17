@@ -138,8 +138,8 @@ public interface TrainingMapper {
 
   // 휴강일 확인
   @Select("select exists\n"
-      + "(select 1 from cancel_date where cancel_date = #{trainingDate})")
-  boolean isHoliday(String trainingDate);
+      + "(select 1 from cancel_date where cancel_date = #{trainingDate} and (course_id is null or course_id = #{courseId}))")
+  boolean isHoliday(String trainingDate,int courseId);
 
   // 재등록 막기(현재 날짜로 등록할 경우 막기)
   @Select("select exists(select 1 from training_log where training_date = #{trainingDate} and instructor_id = #{instructorId} and course_id = #{courseId})")

@@ -66,7 +66,7 @@ public interface TrainingService {
   SelectCourseDTO selectCourseDTO(int userId);
 
   //홀리데이 여부
-  boolean isHoliday(String trainingDate);
+  boolean isHoliday(String trainingDate,int courseId);
 
   //기존 훈련일지 여부
   boolean isReRegister(String trainingDate, int instructorId,int courseId);
