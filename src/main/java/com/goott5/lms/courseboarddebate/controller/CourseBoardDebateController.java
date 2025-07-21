@@ -373,9 +373,7 @@ public class CourseBoardDebateController {
       return ResponseEntity.badRequest().body(new MyResponseWithDataDebate(400, "게시글을 찾을 수 없습니다.", null));
     }
 
-    // 관리자/강사가 아니면서 본인 글이 아닐 때 접근 제한
-    String userType = loginUser.getType();
-    if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+    if (detail.getWriterId() != loginUser.getId()) {
       return ResponseEntity.status(403).body(new MyResponseWithDataDebate(403,"수정 권한이 없습니다!",null));
     }
 
@@ -486,9 +484,7 @@ public class CourseBoardDebateController {
         return ResponseEntity.badRequest().body(new MyResponseWithDataDebate(400, "게시글을 찾을 수 없습니다.", null));
       }
 
-      // 관리자/강사가 아니면서 본인 글이 아닐 때 접근 제한
-      String userType = loginUser.getType();
-      if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+      if (detail.getWriterId() != loginUser.getId()) {
         return ResponseEntity.status(403).body(new MyResponseWithDataDebate(403,"삭제 권한이 없습니다!",null));
       }
 
