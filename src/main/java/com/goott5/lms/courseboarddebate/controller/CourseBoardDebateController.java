@@ -325,6 +325,10 @@ public class CourseBoardDebateController {
 
     CourseBoardDebateDetailInfo detail = courseBoardDebateService.getCourseBoardDebateDetail(id, loginUser);
 
+    if (detail == null || detail.getWriterId() != loginUser.getId()) {
+      return "redirect:/user/invalidAccess";
+    }
+
     CourseBoardDebateDTO dto = new CourseBoardDebateDTO();
     dto.setId(detail.getId());
     dto.setCourseId(detail.getCourseId());
@@ -344,7 +348,7 @@ public class CourseBoardDebateController {
       @Valid @ModelAttribute CourseBoardDebateDTO courseBoardDebateDTO,
       BindingResult bindingResult,
       @RequestParam(value = "files", required = false) List<MultipartFile> files, // 새로 첨부된 파일
-      @RequestParam(required = false) List<Integer> deleteFiles) throws IOException {
+      @RequestParam(required = false) List<Integer> deleteFiles, HttpSession session) throws IOException {
 
 //    log.info("전송 받은 DTO = {}", courseBoardDebateDTO);
 
@@ -356,6 +360,23 @@ public class CourseBoardDebateController {
 //
     if (deleteFiles != null) {
 //      log.info("전송 받은 deleteFiles: {}", deleteFiles);
+    }
+
+    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+    if (loginUser == null) {
+      return ResponseEntity.status(401).body(new MyResponseWithDataDebate(401,"로그인이 필요합니다!",null));
+    }
+
+    // 게시글의 작성자 ID를 조회하여 현재 로그인한 사용자와 비교
+    CourseBoardDebateDetailInfo detail = courseBoardDebateService.getCourseBoardDebateDetail(courseBoardDebateDTO.getId(), loginUser);
+    if (detail == null) {
+      return ResponseEntity.badRequest().body(new MyResponseWithDataDebate(400, "게시글을 찾을 수 없습니다.", null));
+    }
+
+    // 관리자/강사가 아니면서 본인 글이 아닐 때 접근 제한
+    String userType = loginUser.getType();
+    if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+      return ResponseEntity.status(403).body(new MyResponseWithDataDebate(403,"수정 권한이 없습니다!",null));
     }
 
     if (bindingResult.hasErrors()) {
@@ -452,8 +473,25 @@ public class CourseBoardDebateController {
   // 삭제 처리
   @DeleteMapping("/{debateId}")
   @ResponseBody
-  public ResponseEntity<MyResponseWithDataDebate> deleteMaterial(@PathVariable("debateId") int debateId) {
+  public ResponseEntity<MyResponseWithDataDebate> deleteMaterial(@PathVariable("debateId") int debateId, HttpSession session) {
     try {
+      UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+      if (loginUser == null) {
+        return ResponseEntity.status(401).body(new MyResponseWithDataDebate(401,"로그인이 필요합니다!",null));
+      }
+
+      // 게시글의 작성자 ID를 조회하여 현재 로그인한 사용자와 비교
+      CourseBoardDebateDetailInfo detail = courseBoardDebateService.getCourseBoardDebateDetail(debateId, loginUser);
+      if (detail == null) {
+        return ResponseEntity.badRequest().body(new MyResponseWithDataDebate(400, "게시글을 찾을 수 없습니다.", null));
+      }
+
+      // 관리자/강사가 아니면서 본인 글이 아닐 때 접근 제한
+      String userType = loginUser.getType();
+      if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+        return ResponseEntity.status(403).body(new MyResponseWithDataDebate(403,"삭제 권한이 없습니다!",null));
+      }
+
       // 서비스 계층에 구현한 삭제 로직 호출
       courseBoardDebateService.deleteCourseBoardDebate(debateId);
 
