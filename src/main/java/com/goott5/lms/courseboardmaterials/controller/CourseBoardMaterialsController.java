@@ -164,6 +164,12 @@ public class CourseBoardMaterialsController {
         if (loginUser == null) {
             return ResponseEntity.status(401).body(new MyResponseWithData(401,"로그인이 필요합니다!",null));
         }
+
+        String userType = loginUser.getType();
+        if (!"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+            return ResponseEntity.status(403).body(new MyResponseWithData(403,"접근 권한이 없습니다!",null));
+        }
+
         courseBoardMaterialsDTO.setWriterId(loginUser.getId());
 
         String content = courseBoardMaterialsDTO.getContent();
@@ -321,9 +327,9 @@ public class CourseBoardMaterialsController {
         CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(id);
 
         // 게시글이 없거나, 다른 사람의 글을 수정하려고 할 경우 목록으로 리다이렉트
-        if (detail == null) {
+        if (detail == null || detail.getWriterId() != loginUser.getId()) {
 //            log.warn("ID {}에 해당하는 상세 정보를 찾을 수 없습니다.", id);
-            return "redirect:/courseBoardMaterials/materialsList";
+            return "redirect:/user/invalidAccess";
         }
 
         // --- 고정글 개수 계산 로직 ---
@@ -358,7 +364,7 @@ public class CourseBoardMaterialsController {
         @Valid @ModelAttribute CourseBoardMaterialsDTO courseBoardMaterialsDTO,
         BindingResult bindingResult,
         @RequestParam(value = "files", required = false) List<MultipartFile> files, // 새로 첨부된 파일
-        @RequestParam(required = false) List<Integer> deleteFiles) throws IOException {
+        @RequestParam(required = false) List<Integer> deleteFiles, HttpSession session) throws IOException {
 
 //        log.info("전송 받은 DTO = {}", courseBoardMaterialsDTO);
 
@@ -370,6 +376,23 @@ public class CourseBoardMaterialsController {
 //
         if (deleteFiles != null) {
 //            log.info("전송 받은 deleteFiles: {}", deleteFiles);
+        }
+
+        UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body(new MyResponseWithData(401,"로그인이 필요합니다!",null));
+        }
+
+        // 게시글의 작성자 ID를 조회하여 현재 로그인한 사용자와 비교
+        CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(courseBoardMaterialsDTO.getId());
+        if (detail == null) {
+            return ResponseEntity.badRequest().body(new MyResponseWithData(400, "게시글을 찾을 수 없습니다.", null));
+        }
+
+        // 관리자/강사가 아니면서 본인 글이 아닐 때 접근 제한
+        String userType = loginUser.getType();
+        if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) {
+            return ResponseEntity.status(403).body(new MyResponseWithData(403,"수정 권한이 없습니다!",null));
         }
 
         if (bindingResult.hasErrors()) {
@@ -465,8 +488,24 @@ public class CourseBoardMaterialsController {
 
     @DeleteMapping("/{materialId}")
     @ResponseBody
-    public ResponseEntity<MyResponseWithData> deleteMaterial(@PathVariable("materialId") int materialId) {
+    public ResponseEntity<MyResponseWithData> deleteMaterial(@PathVariable("materialId") int materialId, HttpSession session) {
         try {
+            UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+            if (loginUser == null) {
+                return ResponseEntity.status(401).body(new MyResponseWithData(401,"로그인이 필요합니다!",null));
+            }
+
+            CourseBoardMaterialsDetailInfo detail = courseBoardMaterialsService.getCourseBoardMaterialsDetail(materialId);
+            if (detail == null) {
+                return ResponseEntity.badRequest().body(new MyResponseWithData(400, "게시글을 찾을 수 없습니다.", null));
+            }
+
+            // 추가할 부분 시작
+            String userType = loginUser.getType();
+            if (detail.getWriterId() != loginUser.getId() && !"ADMINISTRATOR".equals(userType) && !"INSTRUCTOR".equals(userType)) { //
+                return ResponseEntity.status(403).body(new MyResponseWithData(403,"삭제 권한이 없습니다!",null)); //
+            }
+
             // 서비스 계층에 구현한 삭제 로직 호출
             courseBoardMaterialsService.deleteCourseBoardMaterials(materialId);
 
