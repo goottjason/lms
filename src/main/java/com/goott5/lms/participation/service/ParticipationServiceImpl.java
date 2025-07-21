@@ -273,21 +273,27 @@ public class ParticipationServiceImpl implements ParticipationService {
       return new AttendanceResult("ABSENCE", 0);
     }
 
-    long actualMinutes = TimeCalculationUtil.calculateActualStudyMinutes(
-        checkIn, checkOut, course.getLunchStartTime(), course.getLunchEndTime());
-    long actualHours = actualMinutes / 60;
-    boolean isLate = checkIn.toLocalTime().isAfter(course.getLessonStartTime());
+    try {
+      long actualMinutes = TimeCalculationUtil.calculateActualStudyMinutes(
+              checkIn, checkOut, course.getLunchStartTime(), course.getLunchEndTime());
 
-    // ✅ 수정: 과정별 daily_hours를 전달
-    String status = TimeCalculationUtil.determineAttendanceStatus(actualHours, isLate, course.getDailyHours());
+      long actualHours = actualMinutes / 60;
+      boolean isLate = checkIn.toLocalTime().isAfter(course.getLessonStartTime());
 
-    // ✅ 수정: 과정별 daily_hours를 전달
-    int trainingTime = TimeCalculationUtil.calculateTrainingTime(status, course.getDailyHours());
+      String status = TimeCalculationUtil.determineAttendanceStatus(actualHours, isLate, course.getDailyHours());
+      int trainingTime = TimeCalculationUtil.calculateTrainingTime(status, course.getDailyHours());
 
-    log.debug("출결 상태 계산 완료 - 실제시간: {}시간, 지각여부: {}, 최종상태: {}, 인정시간: {}시간, 과정일일시간: {}시간",
-        actualHours, isLate, status, trainingTime, course.getDailyHours());
+      log.debug("출결 상태 계산 완료 - 실제훈련: {}시간, 지각여부: {}, 최종상태: {}, 인정시간: {}시간",
+              actualHours, isLate, status, trainingTime);
 
-    return new AttendanceResult(status, trainingTime);
+      return new AttendanceResult(status, trainingTime);
+
+    } catch (IllegalArgumentException e) {
+      // daily_hours에 문제가 있을 경우, 오류 로그를 남기고 안전하게 '결석'으로 처리
+      log.error("출결 상태 계산 실패: Course ID {}의 daily_hours({})가 유효하지 않습니다. 결석으로 처리합니다.",
+              course.getId(), course.getDailyHours(), e);
+      return new AttendanceResult("ABSENCE", 0);
+    }
   }
 
   /**

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 출결 스케줄러 (course_schedule 기반)
- * 매일 자정에 다음 작업을 수행:
+ * 매일 새벽6시에 다음 작업을 수행:
  * 1. 전날까지 미완료된 출결 기록들을 결석 처리
  * 2. 오늘 수업이 있는 과정의 모든 수강생에게 기본 출결 기록 생성
  */
@@ -25,7 +25,7 @@ public class AttendanceScheduler {
   private final ParticipationCourseMapper participationCourseMapper;
   private final SchedulerStatusService schedulerStatusService;
   /**
-   * 매일 오전 00시 00분 (자정) 에 출결 관련 작업 수행
+   * 매일 오전 06시 00분 에 출결 관련 작업 수행
    * 1. 전날까지 미완료 기록 결석 처리 (입실했지만 퇴실 안한 기록)
    * 2. 오늘 수업이 있는 과정의 기본 출결 기록 생성
    *
