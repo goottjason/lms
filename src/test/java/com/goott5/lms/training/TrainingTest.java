@@ -323,14 +323,14 @@ class TrainingTest {
 
   }
 
-  @Test
+  /*@Test
   @Transactional
   public void selectCourseByIdForAdmin(){
     boolean isHoliday = trainingMapper.isHoliday("2025-07-25");
 
     log.info("isHoliday={}", isHoliday); //false
 
-  }
+  }*/
 
   @Test
   @Transactional

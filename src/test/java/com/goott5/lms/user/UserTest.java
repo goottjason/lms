@@ -17,12 +17,12 @@ public class UserTest {
   public void signupTest() throws IOException {
 
     SignupDTO signupDTO = SignupDTO.builder()
-        .id(7)
-        .loginId("ace")
-        .password("ace!@34")
-        .email("ace@lms.com")
-        .mobile("01034567890")
-        .address("서울시 노원구 노해로 432")
+        .id(1)
+        .loginId("goott5admin")
+        .password("admin123")
+        .email("goottjason@gmail.com")
+        .mobile("01027878712")
+        .address("서울시 금천구 시흥대로153길 90-4")
         .build();
 
     userService.signup(signupDTO);
