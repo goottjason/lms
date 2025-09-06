@@ -41,4 +41,10 @@ out/
 **/.DS_Store
 **/._.DS_Store
 
+# 민감한 설정 파일들
+application-local.yml
+application-secret.yml
+.env
+*.key
+*.pem
 application.properties
