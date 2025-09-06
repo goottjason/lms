@@ -1,0 +1,48 @@
+# 서버 포트 번호 (8090)
+server:
+  port: 8090
+  tomcat:
+    relaxed-query-chars: '[,]'  # 쿼리파라미터에 [,] 같은 특수문자를 포함하는 URL도 정상적으로 허용하도록 설정
+
+# Spring 설정(하나의 블록에 모아 정리)
+spring:
+  application:
+    name: lms  # 서비스명(프로젝트명)
+  output:
+    ansi:
+      enabled: always  # 로그 출력시, ANSI 컬러 코드를 항상 사용하도록 설정(info, warn, error, debug 등 다른 색상)
+  datasource:
+    # SSL 사용 안함, Public Key Retrieval 허용, 문자 인코딩 UTF-8, 서버 타임존 Asia/Seoul
+    url: |
+      jdbc:mariadb://goottjason.cafe24.com:3306/goottjason
+      ?useSSL=false
+      &allowPublicKeyRetrieval=true
+      &characterEncoding=UTF-8
+      &serverTimezone=Asia/Seoul
+    username: "goottjason"  # DB 아이디
+    password: "mimi1570!!@"  # DB 비번
+    driver-class-name: org.mariadb.jdbc.Driver  # 드라이버 클래스명
+  jpa:
+    hibernate:
+      ddl-auto: update # (처음엔 create 혹은 update 사용)
+    show-sql: true # 콘솔에 실행되는 SQL 보여줌
+    properties:
+      hibernate:
+        format_sql: true # SQL 예쁘게 정렬
+
+  servlet:
+    multipart:
+      max-file-size: 10MB  # 업로드 파일 최대 크기
+      max-request-size: 10MB  # 전체 요청의 최대 크기
+
+# 로그 레벨 세팅
+logging:
+  level:
+    root: info  # 전체 로그 레벨
+    org:
+      springframework: info  # springframework 로그 레벨(오타 correction)
+    com.goott5.lms: debug  # 내 프로젝트 패키지 로그 레벨
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mapper/
